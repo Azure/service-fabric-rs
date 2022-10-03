@@ -1,0 +1,26 @@
+[package]
+name = "sample_echomain"
+version = "0.2.0"
+edition = "2018"
+build = "build.rs"
+
+[dependencies]
+log = "0.4"
+env_logger = "*"
+ctrlc = { version = "3.0", features = ["termination"] }
+tokio = { version = "1", features = ["full"] }
+
+[dependencies.windows]
+version = "0.41.0"
+features = [
+    "implement"
+]
+
+[dependencies.service-fabric-rs]
+path = "../../../"
+features = [
+    "implement"
+]
+
+[dependencies.fabric_helper]
+path = "../../../crates/fabric/helper"

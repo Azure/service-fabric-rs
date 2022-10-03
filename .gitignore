@@ -1,0 +1,10 @@
+build
+.vscode
+bin
+obj
+.windows
+
+# cargo stuff
+target
+# do not checkin generated rust code yet
+src/Microsoft

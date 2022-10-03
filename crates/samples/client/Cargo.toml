@@ -1,0 +1,20 @@
+[package]
+name = "samples_client"
+version = "0.2.0"
+edition = "2018"
+build = "build.rs"
+
+[dependencies.windows]
+version = "0.41.0"
+features = [
+    "implement"
+]
+
+[dependencies.service-fabric-rs]
+path = "../../../"
+features = [
+    "implement"
+]
+
+[dependencies.fabric_helper]
+path = "../../../crates/fabric/helper"

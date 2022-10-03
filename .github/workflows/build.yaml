@@ -1,0 +1,56 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        BUILD_TYPE: ["Debug"]
+        os: [ windows-latest ]
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Get MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Get specific version CMake, v3.21.2
+      uses: lukka/get-cmake@v3.21.2
+
+    - name: setup dotnet
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0.x'
+    
+    - name: install ClangSharpPInvokeGenerator
+      run: dotnet tool install --global ClangSharpPInvokeGenerator --version 15.0.1
+
+    - name: Install rust stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: run cmake
+      run: > 
+        cmake . -DCMAKE_BUILD_TYPE=${{ matrix.BUILD_TYPE }} -B build
+    - name: run build
+      run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
+
+    - name: generate rust code
+      run: cmake --build build --config ${{ matrix.BUILD_TYPE }} --target generate_rust
+
+    - name: build sample rust app
+      run: cmake --build build --config ${{ matrix.BUILD_TYPE }} --target build_rust_sample_echomain
+
+    - name: check sf exist
+      run: Powershell.exe -File .\build\_deps\service_fabric_cpp-src\scripts\check_sf_installed.ps1
+
+    - name: start sf cluster
+      run: Powershell.exe -File "C:\Program Files\Microsoft SDKs\Service Fabric\ClusterSetup\DevClusterSetup.ps1" -CreateOneNodeCluster
+
+    - name: start connection
+      run: Powershell.exe -File .\build\_deps\service_fabric_cpp-src\scripts\check_cluster_online.ps1
+
+    - name: run echo example app
+      run: Powershell.exe -File .\tests\echo_script_test.ps1

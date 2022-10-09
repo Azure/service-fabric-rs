@@ -1,4 +1,4 @@
-use fabric_helper::fabric_helper::{IFabricWaitableCallback, WaitableCallback};
+use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
 use service_fabric_rs::FabricCommon::{FabricClient::*, IFabricAsyncOperationCallback};
 use service_fabric_rs::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
 use windows::core::*;

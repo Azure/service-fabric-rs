@@ -16,5 +16,5 @@ features = [
     "implement"
 ]
 
-[dependencies.fabric_helper]
-path = "../../../crates/fabric/helper"
+[dependencies.fabric_ext]
+path = "../../../crates/fabric/ext"

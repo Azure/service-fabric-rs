@@ -1,7 +1,11 @@
 [package]
-name = "fabric_helper"
+name = "fabric_ext"
 version = "0.2.0"
 edition = "2018"
+
+[dependencies]
+log = "0.4"
+env_logger = "*"
 
 [dependencies.windows]
 version = "0.41.0"

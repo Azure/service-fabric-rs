@@ -1,16 +1,17 @@
+use std::cell::Cell;
 use std::ffi::OsString;
-use std::os::windows::prelude::OsStrExt;
+use std::io::Error;
+use std::thread::JoinHandle;
 use std::{convert::TryInto, ptr::null};
 
+use fabric_ext::{AsyncContext, StringResult};
 use log::info;
 use service_fabric_rs::FabricCommon::FabricRuntime::{
     IFabricRuntime, IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
     IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
 };
-use service_fabric_rs::FabricCommon::{
-    IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl,
-    IFabricStringResult, IFabricStringResult_Impl,
-};
+use service_fabric_rs::FabricCommon::{IFabricAsyncOperationContext, IFabricStringResult};
+use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
 use windows::w;
 
@@ -77,12 +78,14 @@ impl IFabricStatelessServiceFactory_Impl for ServiceFactory {
     }
 }
 
-#[derive(Debug)]
+//#[derive(Debug)]
 #[implement(IFabricStatelessServiceInstance)]
 
 pub struct AppInstance {
     port_: u32,
     hostname_: OsString,
+    tx_: Cell<Option<Sender<()>>>, // hack to use this mutably
+    th_: Cell<Option<JoinHandle<Result<(), Error>>>>,
 }
 
 impl AppInstance {
@@ -90,6 +93,8 @@ impl AppInstance {
         return AppInstance {
             port_: port,
             hostname_: hostname,
+            tx_: Cell::from(None),
+            th_: Cell::from(None),
         };
     }
 }
@@ -113,9 +118,17 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
 
         // TODO: emplement stop thread.
+
         let port_copy = self.port_.clone();
         let hostname_copy = self.hostname_.clone();
-        std::thread::spawn(move || echo::start_echo(port_copy, hostname_copy));
+
+        let (tx, rx) = oneshot::channel::<()>();
+
+        // owns tx which is to be used when shutdown.
+        self.tx_.set(Some(tx));
+        let th = std::thread::spawn(move || echo::start_echo(rx, port_copy, hostname_copy));
+        self.th_.set(Some(th));
+
         Ok(ctx)
     }
 
@@ -151,6 +164,32 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
     ) -> windows::core::Result<service_fabric_rs::FabricCommon::IFabricAsyncOperationContext> {
         info!("AppInstance::BeginClose");
 
+        // triggers shutdown to tokio
+        if let Some(sender) = self.tx_.take() {
+            info!("AppInstance:: Triggering shutdown");
+            let res = sender.send(());
+            match res {
+                Ok(_) => {
+                    if let Some(th) = self.th_.take() {
+                        let res2 = th.join();
+                        match res2 {
+                            Ok(_) => {
+                                info!("AppInstance:: Background thread terminated");
+                            }
+                            Err(_) => {
+                                info!("AppInstance:: Background thread failed to join.")
+                            }
+                        }
+                    }
+                }
+                Err(_) => {
+                    info!("AppInstance:: failed to send");
+                }
+            }
+        } else {
+            info!("AppInstance:: sender is None");
+        }
+
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
@@ -179,79 +218,5 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
 
     fn Abort(&self) {
         info!("AppInstance::Abort");
-    }
-}
-
-#[derive(Debug)]
-#[implement(IFabricAsyncOperationContext)]
-struct AsyncContext {
-    callback_: IFabricAsyncOperationCallback,
-}
-
-impl AsyncContext {
-    // construct ctx. Note: caller needs to invoke callback.
-    // This is different from cpp impl.
-    pub fn new(
-        callback: &core::option::Option<
-            service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback,
-        >,
-    ) -> AsyncContext {
-        info!("AsyncContext::new");
-        let callback_copy: IFabricAsyncOperationCallback = callback.clone().expect("msg");
-
-        let ctx = AsyncContext {
-            callback_: callback_copy,
-        };
-        return ctx;
-    }
-}
-
-impl IFabricAsyncOperationContext_Impl for AsyncContext {
-    fn IsCompleted(&self) -> windows::Win32::Foundation::BOOLEAN {
-        return windows::Win32::Foundation::BOOLEAN::from(true);
-    }
-
-    fn CompletedSynchronously(&self) -> windows::Win32::Foundation::BOOLEAN {
-        return windows::Win32::Foundation::BOOLEAN::from(true);
-    }
-
-    fn Callback(
-        &self,
-    ) -> windows::core::Result<service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback> {
-        info!("AsyncContext::Callback");
-        // get a view of the callback
-        let callback_copy: IFabricAsyncOperationCallback = self.callback_.clone();
-        Ok(callback_copy)
-    }
-
-    fn Cancel(&self) -> windows::core::Result<()> {
-        info!("AsyncContext::Cancel");
-        Ok(())
-    }
-}
-
-#[derive(Debug)]
-#[implement(IFabricStringResult)]
-struct StringResult {
-    vec_: Vec<u16>,
-}
-
-impl StringResult {
-    pub fn new(data: OsString) -> StringResult {
-        let data_vec = data
-            .as_os_str()
-            .encode_wide()
-            .chain(Some(0))
-            .collect::<Vec<_>>();
-        let ret = StringResult { vec_: data_vec };
-        return ret;
-    }
-}
-
-impl IFabricStringResult_Impl for StringResult {
-    fn get_String(&self) -> windows::core::PWSTR {
-        // This is some hack to get the raw pointer out.
-        let ptr: *mut u16 = self.vec_.as_ptr() as *mut u16;
-        return windows::core::PWSTR::from_raw(ptr);
     }
 }

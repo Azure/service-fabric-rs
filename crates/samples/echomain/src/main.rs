@@ -2,7 +2,7 @@ use std::ffi::OsString;
 use std::os::windows::prelude::OsStringExt;
 
 use ctrlc;
-use fabric_helper::fabric_helper::{IFabricWaitableCallback, WaitableCallback};
+use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
 use log::info;
 use service_fabric_rs::FabricCommon::FabricRuntime::{
     FabricBeginGetNodeContext, FabricCreateRuntime, FabricEndGetNodeContext,

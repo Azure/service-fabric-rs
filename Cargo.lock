@@ -70,9 +70,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "fabric_helper"
+name = "fabric_ext"
 version = "0.2.0"
 dependencies = [
+ "env_logger",
+ "log",
  "service-fabric-rs",
  "windows",
 ]
@@ -231,24 +233,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
 
 [[package]]
-name = "sample_echomain"
+name = "samples_client"
 version = "0.2.0"
 dependencies = [
- "ctrlc",
- "env_logger",
- "fabric_helper",
- "log",
+ "fabric_ext",
  "service-fabric-rs",
- "tokio",
  "windows",
 ]
 
 [[package]]
-name = "samples_client"
+name = "samples_echomain"
 version = "0.2.0"
 dependencies = [
- "fabric_helper",
+ "ctrlc",
+ "env_logger",
+ "fabric_ext",
+ "log",
  "service-fabric-rs",
+ "tokio",
  "windows",
 ]
 

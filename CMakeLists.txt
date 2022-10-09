@@ -8,7 +8,7 @@ message(STATUS "feching service_fabric_cpp")
 include(FetchContent)
 FetchContent_Declare(service_fabric_cpp
     GIT_REPOSITORY https://github.com/youyuanwu/service-fabric-cpp.git
-    GIT_TAG 88df1525a4dce55917078b58d6020829b4d787d1
+    GIT_TAG 5587155dbdd5c7270a34208fc957644cfc50c279
 )
 FetchContent_GetProperties(service_fabric_cpp)
 if(NOT service_fabric_cpp_POPULATED)
@@ -80,13 +80,13 @@ add_custom_target(force_clean
 )
 
 add_custom_target(build_rust_sample_echomain
-    COMMAND ${cargo_exe} build -p sample_echomain
+    COMMAND ${cargo_exe} build -p samples_echomain
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 set(_pkg_root ${CMAKE_BINARY_DIR}/echoapp_root)
 set(_pkg_src  ${CMAKE_CURRENT_SOURCE_DIR}/crates/samples/echomain)
-set(_pkg_exe  ${CMAKE_CURRENT_SOURCE_DIR}/target/debug/sample_echomain.exe)
+set(_pkg_exe  ${CMAKE_CURRENT_SOURCE_DIR}/target/debug/samples_echomain.exe)
 add_custom_command(TARGET build_rust_sample_echomain POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root}
     COMMAND ${CMAKE_COMMAND} 

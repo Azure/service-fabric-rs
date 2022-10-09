@@ -1,5 +1,5 @@
 [package]
-name = "sample_echomain"
+name = "samples_echomain"
 version = "0.2.0"
 edition = "2018"
 build = "build.rs"
@@ -22,5 +22,5 @@ features = [
     "implement"
 ]
 
-[dependencies.fabric_helper]
-path = "../../../crates/fabric/helper"
+[dependencies.fabric_ext]
+path = "../../../crates/fabric/ext"

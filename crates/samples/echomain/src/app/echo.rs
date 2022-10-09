@@ -6,6 +6,7 @@ use std::io::Error;
 use log::info;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
+use tokio::sync::oneshot::Receiver;
 
 pub fn get_addr(port: u32, hostname: OsString) -> String {
     let mut addr = String::new();
@@ -15,16 +16,7 @@ pub fn get_addr(port: u32, hostname: OsString) -> String {
     return addr;
 }
 
-#[tokio::main()]
-pub async fn start_echo(port: u32, hostname: OsString) -> Result<(), Error> {
-    let addr = get_addr(port, hostname);
-
-    // Next up we create a TCP listener which will listen for incoming
-    // connections. This TCP listener is bound to the address we determined
-    // above and must be associated with an event loop.
-    let listener = TcpListener::bind(&addr).await?;
-    info!("Listening on: {}", addr);
-
+async fn echo_loop(listener: TcpListener) -> Result<(), Error> {
     loop {
         // Asynchronously wait for an inbound socket.
         let (mut socket, _) = listener.accept().await?;
@@ -58,4 +50,25 @@ pub async fn start_echo(port: u32, hostname: OsString) -> Result<(), Error> {
             }
         });
     }
+}
+
+#[tokio::main()]
+pub async fn start_echo(rx: Receiver<()>, port: u32, hostname: OsString) -> Result<(), Error> {
+    let addr = get_addr(port, hostname);
+
+    let listener = TcpListener::bind(&addr).await?;
+    info!("start_echo: Listening on: {}", addr);
+
+    // The accept loop runs until an error is encountered or rx receives a value.
+    tokio::select! {
+        _ = async {
+            echo_loop(listener).await?;
+            Ok::<_,Error>(())
+        } => {}
+        _ = rx => {
+            info!("start_echo: signal oneshot recieved. Terminate server.")
+        }
+    }
+    info!("start_echo: thread exiting");
+    Ok(())
 }

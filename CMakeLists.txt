@@ -8,7 +8,7 @@ message(STATUS "feching service_fabric_cpp")
 include(FetchContent)
 FetchContent_Declare(service_fabric_cpp
     GIT_REPOSITORY https://github.com/youyuanwu/service-fabric-cpp.git
-    GIT_TAG 5587155dbdd5c7270a34208fc957644cfc50c279
+    GIT_TAG ba55e0f8876a6928a9249afa22254fbe89457750
 )
 FetchContent_GetProperties(service_fabric_cpp)
 if(NOT service_fabric_cpp_POPULATED)
@@ -42,9 +42,20 @@ add_custom_command(
 )
 
 # force generate
-add_custom_target(generate_winmd ALL
+add_custom_target(generate_winmd
     DEPENDS ${_out_winmd_paths}
 )
+
+add_custom_target(generate_import_libs
+    DEPENDS 
+    FabricRuntime
+    FabricClient
+)
+
+# need to gen import lib files
+add_dependencies(generate_winmd
+    generate_import_libs
+)   
 
 # generate rust code
 find_program (
@@ -64,12 +75,13 @@ add_custom_target(build_rust
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_custom_target(build_rust_sample_client
+add_custom_target(build_rust_sample_client ALL
     COMMAND ${cargo_exe} build -p samples_client
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS generate_import_libs
 )
 
-add_custom_target(run_rust_sample
+add_custom_target(run_rust_sample_client
     COMMAND ${cargo_exe} run -p samples_client
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -79,9 +91,10 @@ add_custom_target(force_clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_custom_target(build_rust_sample_echomain
+add_custom_target(build_rust_sample_echomain ALL
     COMMAND ${cargo_exe} build -p samples_echomain
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS generate_import_libs
 )
 
 set(_pkg_root ${CMAKE_BINARY_DIR}/echoapp_root)

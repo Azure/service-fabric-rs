@@ -18,14 +18,6 @@ jobs:
     - name: Get specific version CMake, v3.21.2
       uses: lukka/get-cmake@v3.21.2
 
-    - name: setup dotnet
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '6.0.x'
-    
-    - name: install ClangSharpPInvokeGenerator
-      run: dotnet tool install --global ClangSharpPInvokeGenerator --version 15.0.1
-
     - name: Install rust stable
       uses: actions-rs/toolchain@v1
       with:
@@ -37,11 +29,8 @@ jobs:
     - name: run build
       run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
 
-    - name: generate rust code
-      run: cmake --build build --config ${{ matrix.BUILD_TYPE }} --target generate_rust
-
-    - name: build sample rust app
-      run: cmake --build build --config ${{ matrix.BUILD_TYPE }} --target build_rust_sample_echomain
+    # - name: build sample rust app
+    #   run: cmake --build build --config ${{ matrix.BUILD_TYPE }} --target build_rust_sample_echomain
 
     - name: check sf exist
       run: Powershell.exe -File .\build\_deps\service_fabric_cpp-src\scripts\check_sf_installed.ps1

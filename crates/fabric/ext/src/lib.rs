@@ -1,5 +1,7 @@
 // lib that contains all common extensions for the raw fabric apis.
 
+pub mod fasync;
+
 use std::os::windows::prelude::OsStrExt;
 use std::{
     ffi::OsString,

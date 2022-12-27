@@ -6,6 +6,8 @@ edition = "2018"
 [dependencies]
 log = "0.4"
 env_logger = "*"
+tokio = { version = "1", features = ["full"] }
+paste = "1.0"
 
 [dependencies.windows]
 version = "0.41.0"

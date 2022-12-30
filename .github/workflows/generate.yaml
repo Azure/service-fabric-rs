@@ -24,7 +24,7 @@ jobs:
         dotnet-version: '6.0.x'
     
     - name: install ClangSharpPInvokeGenerator
-      run: dotnet tool install --global ClangSharpPInvokeGenerator --version 15.0.1
+      run: dotnet tool install --global ClangSharpPInvokeGenerator --version 15.0.2
 
     - name: Install rust stable
       uses: actions-rs/toolchain@v1

@@ -425,16 +425,7 @@ impl IFabricApplicationManagementClient_Vtbl {
     }
 }
 pub trait IFabricApplicationManagementClient10_Impl:
-    Sized
-    + IFabricApplicationManagementClient_Impl
-    + IFabricApplicationManagementClient2_Impl
-    + IFabricApplicationManagementClient3_Impl
-    + IFabricApplicationManagementClient4_Impl
-    + IFabricApplicationManagementClient5_Impl
-    + IFabricApplicationManagementClient6_Impl
-    + IFabricApplicationManagementClient7_Impl
-    + IFabricApplicationManagementClient8_Impl
-    + IFabricApplicationManagementClient9_Impl
+    Sized + IFabricApplicationManagementClient9_Impl
 {
     fn BeginProvisionApplicationType3(
         &self,
@@ -652,7 +643,7 @@ impl IFabricApplicationManagementClient2_Vtbl {
     }
 }
 pub trait IFabricApplicationManagementClient3_Impl:
-    Sized + IFabricApplicationManagementClient_Impl + IFabricApplicationManagementClient2_Impl
+    Sized + IFabricApplicationManagementClient2_Impl
 {
     fn BeginUpdateApplicationUpgrade(
         &self,
@@ -826,10 +817,7 @@ impl IFabricApplicationManagementClient3_Vtbl {
     }
 }
 pub trait IFabricApplicationManagementClient4_Impl:
-    Sized
-    + IFabricApplicationManagementClient_Impl
-    + IFabricApplicationManagementClient2_Impl
-    + IFabricApplicationManagementClient3_Impl
+    Sized + IFabricApplicationManagementClient3_Impl
 {
     fn BeginDeployServicePackageToNode(
         &self,
@@ -917,11 +905,7 @@ impl IFabricApplicationManagementClient4_Vtbl {
     }
 }
 pub trait IFabricApplicationManagementClient5_Impl:
-    Sized
-    + IFabricApplicationManagementClient_Impl
-    + IFabricApplicationManagementClient2_Impl
-    + IFabricApplicationManagementClient3_Impl
-    + IFabricApplicationManagementClient4_Impl
+    Sized + IFabricApplicationManagementClient4_Impl
 {
     fn BeginRollbackApplicationUpgrade(
         &self,
@@ -998,12 +982,7 @@ impl IFabricApplicationManagementClient5_Vtbl {
     }
 }
 pub trait IFabricApplicationManagementClient6_Impl:
-    Sized
-    + IFabricApplicationManagementClient_Impl
-    + IFabricApplicationManagementClient2_Impl
-    + IFabricApplicationManagementClient3_Impl
-    + IFabricApplicationManagementClient4_Impl
-    + IFabricApplicationManagementClient5_Impl
+    Sized + IFabricApplicationManagementClient5_Impl
 {
     fn BeginUpdateApplication(
         &self,
@@ -1077,13 +1056,7 @@ impl IFabricApplicationManagementClient6_Vtbl {
     }
 }
 pub trait IFabricApplicationManagementClient7_Impl:
-    Sized
-    + IFabricApplicationManagementClient_Impl
-    + IFabricApplicationManagementClient2_Impl
-    + IFabricApplicationManagementClient3_Impl
-    + IFabricApplicationManagementClient4_Impl
-    + IFabricApplicationManagementClient5_Impl
-    + IFabricApplicationManagementClient6_Impl
+    Sized + IFabricApplicationManagementClient6_Impl
 {
     fn BeginDeleteApplication2(
         &self,
@@ -1158,14 +1131,7 @@ impl IFabricApplicationManagementClient7_Vtbl {
     }
 }
 pub trait IFabricApplicationManagementClient8_Impl:
-    Sized
-    + IFabricApplicationManagementClient_Impl
-    + IFabricApplicationManagementClient2_Impl
-    + IFabricApplicationManagementClient3_Impl
-    + IFabricApplicationManagementClient4_Impl
-    + IFabricApplicationManagementClient5_Impl
-    + IFabricApplicationManagementClient6_Impl
-    + IFabricApplicationManagementClient7_Impl
+    Sized + IFabricApplicationManagementClient7_Impl
 {
     fn BeginProvisionApplicationType2(
         &self,
@@ -1241,15 +1207,7 @@ impl IFabricApplicationManagementClient8_Vtbl {
     }
 }
 pub trait IFabricApplicationManagementClient9_Impl:
-    Sized
-    + IFabricApplicationManagementClient_Impl
-    + IFabricApplicationManagementClient2_Impl
-    + IFabricApplicationManagementClient3_Impl
-    + IFabricApplicationManagementClient4_Impl
-    + IFabricApplicationManagementClient5_Impl
-    + IFabricApplicationManagementClient6_Impl
-    + IFabricApplicationManagementClient7_Impl
-    + IFabricApplicationManagementClient8_Impl
+    Sized + IFabricApplicationManagementClient8_Impl
 {
     fn BeginUnprovisionApplicationType2(
         &self,
@@ -1498,7 +1456,7 @@ impl IFabricApplicationUpgradeProgressResult2_Vtbl {
     }
 }
 pub trait IFabricApplicationUpgradeProgressResult3_Impl:
-    Sized + IFabricApplicationUpgradeProgressResult_Impl + IFabricApplicationUpgradeProgressResult2_Impl
+    Sized + IFabricApplicationUpgradeProgressResult2_Impl
 {
     fn get_UpgradeProgress(&self) -> *mut super::super::FABRIC_APPLICATION_UPGRADE_PROGRESS;
 }
@@ -2043,16 +2001,7 @@ impl IFabricClusterManagementClient_Vtbl {
     }
 }
 pub trait IFabricClusterManagementClient10_Impl:
-    Sized
-    + IFabricClusterManagementClient_Impl
-    + IFabricClusterManagementClient2_Impl
-    + IFabricClusterManagementClient3_Impl
-    + IFabricClusterManagementClient4_Impl
-    + IFabricClusterManagementClient5_Impl
-    + IFabricClusterManagementClient6_Impl
-    + IFabricClusterManagementClient7_Impl
-    + IFabricClusterManagementClient8_Impl
-    + IFabricClusterManagementClient9_Impl
+    Sized + IFabricClusterManagementClient9_Impl
 {
     fn BeginGetClusterConfiguration2(
         &self,
@@ -2780,7 +2729,7 @@ impl IFabricClusterManagementClient2_Vtbl {
     }
 }
 pub trait IFabricClusterManagementClient3_Impl:
-    Sized + IFabricClusterManagementClient_Impl + IFabricClusterManagementClient2_Impl
+    Sized + IFabricClusterManagementClient2_Impl
 {
     fn BeginUpdateFabricUpgrade(
         &self,
@@ -3056,10 +3005,7 @@ impl IFabricClusterManagementClient3_Vtbl {
     }
 }
 pub trait IFabricClusterManagementClient4_Impl:
-    Sized
-    + IFabricClusterManagementClient_Impl
-    + IFabricClusterManagementClient2_Impl
-    + IFabricClusterManagementClient3_Impl
+    Sized + IFabricClusterManagementClient3_Impl
 {
     fn BeginRollbackFabricUpgrade(
         &self,
@@ -3128,11 +3074,7 @@ impl IFabricClusterManagementClient4_Vtbl {
     }
 }
 pub trait IFabricClusterManagementClient5_Impl:
-    Sized
-    + IFabricClusterManagementClient_Impl
-    + IFabricClusterManagementClient2_Impl
-    + IFabricClusterManagementClient3_Impl
-    + IFabricClusterManagementClient4_Impl
+    Sized + IFabricClusterManagementClient4_Impl
 {
     fn BeginResetPartitionLoad(
         &self,
@@ -3205,12 +3147,7 @@ impl IFabricClusterManagementClient5_Vtbl {
     }
 }
 pub trait IFabricClusterManagementClient6_Impl:
-    Sized
-    + IFabricClusterManagementClient_Impl
-    + IFabricClusterManagementClient2_Impl
-    + IFabricClusterManagementClient3_Impl
-    + IFabricClusterManagementClient4_Impl
-    + IFabricClusterManagementClient5_Impl
+    Sized + IFabricClusterManagementClient5_Impl
 {
     fn BeginToggleVerboseServicePlacementHealthReporting(
         &self,
@@ -3286,13 +3223,7 @@ impl IFabricClusterManagementClient6_Vtbl {
     }
 }
 pub trait IFabricClusterManagementClient7_Impl:
-    Sized
-    + IFabricClusterManagementClient_Impl
-    + IFabricClusterManagementClient2_Impl
-    + IFabricClusterManagementClient3_Impl
-    + IFabricClusterManagementClient4_Impl
-    + IFabricClusterManagementClient5_Impl
-    + IFabricClusterManagementClient6_Impl
+    Sized + IFabricClusterManagementClient6_Impl
 {
     fn BeginUpgradeConfiguration(
         &self,
@@ -3579,14 +3510,7 @@ impl IFabricClusterManagementClient7_Vtbl {
     }
 }
 pub trait IFabricClusterManagementClient8_Impl:
-    Sized
-    + IFabricClusterManagementClient_Impl
-    + IFabricClusterManagementClient2_Impl
-    + IFabricClusterManagementClient3_Impl
-    + IFabricClusterManagementClient4_Impl
-    + IFabricClusterManagementClient5_Impl
-    + IFabricClusterManagementClient6_Impl
-    + IFabricClusterManagementClient7_Impl
+    Sized + IFabricClusterManagementClient7_Impl
 {
     fn BeginGetClusterManifest2(
         &self,
@@ -3668,15 +3592,7 @@ impl IFabricClusterManagementClient8_Vtbl {
     }
 }
 pub trait IFabricClusterManagementClient9_Impl:
-    Sized
-    + IFabricClusterManagementClient_Impl
-    + IFabricClusterManagementClient2_Impl
-    + IFabricClusterManagementClient3_Impl
-    + IFabricClusterManagementClient4_Impl
-    + IFabricClusterManagementClient5_Impl
-    + IFabricClusterManagementClient6_Impl
-    + IFabricClusterManagementClient7_Impl
-    + IFabricClusterManagementClient8_Impl
+    Sized + IFabricClusterManagementClient8_Impl
 {
     fn BeginGetUpgradeOrchestrationServiceState(
         &self,
@@ -6687,9 +6603,7 @@ impl IFabricHealthClient2_Vtbl {
             || iid == &<IFabricHealthClient as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricHealthClient3_Impl:
-    Sized + IFabricHealthClient_Impl + IFabricHealthClient2_Impl
-{
+pub trait IFabricHealthClient3_Impl: Sized + IFabricHealthClient2_Impl {
     fn BeginGetClusterHealthChunk(
         &self,
         querydescription: *const super::super::FABRIC_CLUSTER_HEALTH_CHUNK_QUERY_DESCRIPTION,
@@ -6764,9 +6678,7 @@ impl IFabricHealthClient3_Vtbl {
             || iid == &<IFabricHealthClient2 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricHealthClient4_Impl:
-    Sized + IFabricHealthClient_Impl + IFabricHealthClient2_Impl + IFabricHealthClient3_Impl
-{
+pub trait IFabricHealthClient4_Impl: Sized + IFabricHealthClient3_Impl {
     fn ReportHealth2(
         &self,
         healthreport: *const super::super::FABRIC_HEALTH_REPORT,
@@ -9602,18 +9514,7 @@ impl IFabricQueryClient_Vtbl {
         iid == &<IFabricQueryClient as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricQueryClient10_Impl:
-    Sized
-    + IFabricQueryClient_Impl
-    + IFabricQueryClient2_Impl
-    + IFabricQueryClient3_Impl
-    + IFabricQueryClient4_Impl
-    + IFabricQueryClient5_Impl
-    + IFabricQueryClient6_Impl
-    + IFabricQueryClient7_Impl
-    + IFabricQueryClient8_Impl
-    + IFabricQueryClient9_Impl
-{
+pub trait IFabricQueryClient10_Impl: Sized + IFabricQueryClient9_Impl {
     fn BeginGetDeployedApplicationPagedList(
         &self,
         querydescription: *const super::super::FABRIC_PAGED_DEPLOYED_APPLICATION_QUERY_DESCRIPTION,
@@ -10018,9 +9919,7 @@ impl IFabricQueryClient2_Vtbl {
             || iid == &<IFabricQueryClient as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricQueryClient3_Impl:
-    Sized + IFabricQueryClient_Impl + IFabricQueryClient2_Impl
-{
+pub trait IFabricQueryClient3_Impl: Sized + IFabricQueryClient2_Impl {
     fn BeginGetNodeLoadInformation(
         &self,
         querydescription: *const super::super::FABRIC_NODE_LOAD_INFORMATION_QUERY_DESCRIPTION,
@@ -10151,9 +10050,7 @@ impl IFabricQueryClient3_Vtbl {
             || iid == &<IFabricQueryClient2 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricQueryClient4_Impl:
-    Sized + IFabricQueryClient_Impl + IFabricQueryClient2_Impl + IFabricQueryClient3_Impl
-{
+pub trait IFabricQueryClient4_Impl: Sized + IFabricQueryClient3_Impl {
     fn BeginGetServiceGroupMemberList(
         &self,
         querydescription: *const super::super::FABRIC_SERVICE_GROUP_MEMBER_QUERY_DESCRIPTION,
@@ -10293,13 +10190,7 @@ impl IFabricQueryClient4_Vtbl {
             || iid == &<IFabricQueryClient3 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricQueryClient5_Impl:
-    Sized
-    + IFabricQueryClient_Impl
-    + IFabricQueryClient2_Impl
-    + IFabricQueryClient3_Impl
-    + IFabricQueryClient4_Impl
-{
+pub trait IFabricQueryClient5_Impl: Sized + IFabricQueryClient4_Impl {
     fn BeginGetUnplacedReplicaInformation(
         &self,
         querydescription : *const super::super:: FABRIC_UNPLACED_REPLICA_INFORMATION_QUERY_DESCRIPTION,
@@ -10384,14 +10275,7 @@ impl IFabricQueryClient5_Vtbl {
             || iid == &<IFabricQueryClient4 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricQueryClient6_Impl:
-    Sized
-    + IFabricQueryClient_Impl
-    + IFabricQueryClient2_Impl
-    + IFabricQueryClient3_Impl
-    + IFabricQueryClient4_Impl
-    + IFabricQueryClient5_Impl
-{
+pub trait IFabricQueryClient6_Impl: Sized + IFabricQueryClient5_Impl {
     fn EndGetNodeList2(
         &self,
         context: &::core::option::Option<super::IFabricAsyncOperationContext>,
@@ -10533,15 +10417,7 @@ impl IFabricQueryClient6_Vtbl {
             || iid == &<IFabricQueryClient5 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricQueryClient7_Impl:
-    Sized
-    + IFabricQueryClient_Impl
-    + IFabricQueryClient2_Impl
-    + IFabricQueryClient3_Impl
-    + IFabricQueryClient4_Impl
-    + IFabricQueryClient5_Impl
-    + IFabricQueryClient6_Impl
-{
+pub trait IFabricQueryClient7_Impl: Sized + IFabricQueryClient6_Impl {
     fn BeginGetApplicationLoadInformation(
         &self,
         querydescription : *const super::super:: FABRIC_APPLICATION_LOAD_INFORMATION_QUERY_DESCRIPTION,
@@ -10628,16 +10504,7 @@ impl IFabricQueryClient7_Vtbl {
             || iid == &<IFabricQueryClient6 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricQueryClient8_Impl:
-    Sized
-    + IFabricQueryClient_Impl
-    + IFabricQueryClient2_Impl
-    + IFabricQueryClient3_Impl
-    + IFabricQueryClient4_Impl
-    + IFabricQueryClient5_Impl
-    + IFabricQueryClient6_Impl
-    + IFabricQueryClient7_Impl
-{
+pub trait IFabricQueryClient8_Impl: Sized + IFabricQueryClient7_Impl {
     fn BeginGetServiceName(
         &self,
         querydescription: *const super::super::FABRIC_SERVICE_NAME_QUERY_DESCRIPTION,
@@ -10773,17 +10640,7 @@ impl IFabricQueryClient8_Vtbl {
             || iid == &<IFabricQueryClient7 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricQueryClient9_Impl:
-    Sized
-    + IFabricQueryClient_Impl
-    + IFabricQueryClient2_Impl
-    + IFabricQueryClient3_Impl
-    + IFabricQueryClient4_Impl
-    + IFabricQueryClient5_Impl
-    + IFabricQueryClient6_Impl
-    + IFabricQueryClient7_Impl
-    + IFabricQueryClient8_Impl
-{
+pub trait IFabricQueryClient9_Impl: Sized + IFabricQueryClient8_Impl {
     fn BeginGetApplicationTypePagedList(
         &self,
         querydescription: *const super::super::PAGED_FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION,
@@ -12123,7 +11980,7 @@ impl IFabricServiceGroupManagementClient2_Vtbl {
     }
 }
 pub trait IFabricServiceGroupManagementClient3_Impl:
-    Sized + IFabricServiceGroupManagementClient_Impl + IFabricServiceGroupManagementClient2_Impl
+    Sized + IFabricServiceGroupManagementClient2_Impl
 {
     fn BeginCreateServiceGroupFromTemplate(
         &self,
@@ -12214,10 +12071,7 @@ impl IFabricServiceGroupManagementClient3_Vtbl {
     }
 }
 pub trait IFabricServiceGroupManagementClient4_Impl:
-    Sized
-    + IFabricServiceGroupManagementClient_Impl
-    + IFabricServiceGroupManagementClient2_Impl
-    + IFabricServiceGroupManagementClient3_Impl
+    Sized + IFabricServiceGroupManagementClient3_Impl
 {
     fn BeginCreateServiceGroupFromTemplate2(
         &self,
@@ -12819,7 +12673,7 @@ impl IFabricServiceManagementClient2_Vtbl {
     }
 }
 pub trait IFabricServiceManagementClient3_Impl:
-    Sized + IFabricServiceManagementClient_Impl + IFabricServiceManagementClient2_Impl
+    Sized + IFabricServiceManagementClient2_Impl
 {
     fn BeginRemoveReplica(
         &self,
@@ -12940,10 +12794,7 @@ impl IFabricServiceManagementClient3_Vtbl {
     }
 }
 pub trait IFabricServiceManagementClient4_Impl:
-    Sized
-    + IFabricServiceManagementClient_Impl
-    + IFabricServiceManagementClient2_Impl
-    + IFabricServiceManagementClient3_Impl
+    Sized + IFabricServiceManagementClient3_Impl
 {
     fn BeginRegisterServiceNotificationFilter(
         &self,
@@ -13087,11 +12938,7 @@ impl IFabricServiceManagementClient4_Vtbl {
     }
 }
 pub trait IFabricServiceManagementClient5_Impl:
-    Sized
-    + IFabricServiceManagementClient_Impl
-    + IFabricServiceManagementClient2_Impl
-    + IFabricServiceManagementClient3_Impl
-    + IFabricServiceManagementClient4_Impl
+    Sized + IFabricServiceManagementClient4_Impl
 {
     fn BeginDeleteService2(
         &self,
@@ -13164,12 +13011,7 @@ impl IFabricServiceManagementClient5_Vtbl {
     }
 }
 pub trait IFabricServiceManagementClient6_Impl:
-    Sized
-    + IFabricServiceManagementClient_Impl
-    + IFabricServiceManagementClient2_Impl
-    + IFabricServiceManagementClient3_Impl
-    + IFabricServiceManagementClient4_Impl
-    + IFabricServiceManagementClient5_Impl
+    Sized + IFabricServiceManagementClient5_Impl
 {
     fn BeginCreateServiceFromTemplate2(
         &self,
@@ -14100,9 +13942,7 @@ impl IFabricTestManagementClient2_Vtbl {
             || iid == &<IFabricTestManagementClient as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricTestManagementClient3_Impl:
-    Sized + IFabricTestManagementClient_Impl + IFabricTestManagementClient2_Impl
-{
+pub trait IFabricTestManagementClient3_Impl: Sized + IFabricTestManagementClient2_Impl {
     fn BeginStartNodeTransition(
         &self,
         description: *const super::super::FABRIC_NODE_TRANSITION_DESCRIPTION,
@@ -14227,12 +14067,7 @@ impl IFabricTestManagementClient3_Vtbl {
             || iid == &<IFabricTestManagementClient2 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricTestManagementClient4_Impl:
-    Sized
-    + IFabricTestManagementClient_Impl
-    + IFabricTestManagementClient2_Impl
-    + IFabricTestManagementClient3_Impl
-{
+pub trait IFabricTestManagementClient4_Impl: Sized + IFabricTestManagementClient3_Impl {
     fn BeginGetChaos(
         &self,
         timeoutmilliseconds: u32,
@@ -14643,9 +14478,7 @@ impl IFabricUpgradeProgressResult2_Vtbl {
             || iid == &<IFabricUpgradeProgressResult as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricUpgradeProgressResult3_Impl:
-    Sized + IFabricUpgradeProgressResult_Impl + IFabricUpgradeProgressResult2_Impl
-{
+pub trait IFabricUpgradeProgressResult3_Impl: Sized + IFabricUpgradeProgressResult2_Impl {
     fn get_UpgradeProgress(&self) -> *mut super::super::FABRIC_UPGRADE_PROGRESS;
 }
 impl ::windows::core::RuntimeName for IFabricUpgradeProgressResult3 {}

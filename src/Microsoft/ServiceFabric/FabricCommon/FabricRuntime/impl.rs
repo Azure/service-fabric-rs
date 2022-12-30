@@ -1018,7 +1018,7 @@ impl IFabricCodePackageActivationContext2_Vtbl {
     }
 }
 pub trait IFabricCodePackageActivationContext3_Impl:
-    Sized + IFabricCodePackageActivationContext_Impl + IFabricCodePackageActivationContext2_Impl
+    Sized + IFabricCodePackageActivationContext2_Impl
 {
     fn ReportApplicationHealth(
         &self,
@@ -1101,10 +1101,7 @@ impl IFabricCodePackageActivationContext3_Vtbl {
     }
 }
 pub trait IFabricCodePackageActivationContext4_Impl:
-    Sized
-    + IFabricCodePackageActivationContext_Impl
-    + IFabricCodePackageActivationContext2_Impl
-    + IFabricCodePackageActivationContext3_Impl
+    Sized + IFabricCodePackageActivationContext3_Impl
 {
     fn ReportApplicationHealth2(
         &self,
@@ -1203,11 +1200,7 @@ impl IFabricCodePackageActivationContext4_Vtbl {
     }
 }
 pub trait IFabricCodePackageActivationContext5_Impl:
-    Sized
-    + IFabricCodePackageActivationContext_Impl
-    + IFabricCodePackageActivationContext2_Impl
-    + IFabricCodePackageActivationContext3_Impl
-    + IFabricCodePackageActivationContext4_Impl
+    Sized + IFabricCodePackageActivationContext4_Impl
 {
     fn get_ServiceListenAddress(&self) -> ::windows::core::PWSTR;
     fn get_ServicePublishAddress(&self) -> ::windows::core::PWSTR;
@@ -1256,12 +1249,7 @@ impl IFabricCodePackageActivationContext5_Vtbl {
     }
 }
 pub trait IFabricCodePackageActivationContext6_Impl:
-    Sized
-    + IFabricCodePackageActivationContext_Impl
-    + IFabricCodePackageActivationContext2_Impl
-    + IFabricCodePackageActivationContext3_Impl
-    + IFabricCodePackageActivationContext4_Impl
-    + IFabricCodePackageActivationContext5_Impl
+    Sized + IFabricCodePackageActivationContext5_Impl
 {
     fn GetDirectory(
         &self,
@@ -2902,9 +2890,7 @@ impl IFabricKeyValueStoreReplica_Vtbl {
             || iid == &<IFabricStatefulServiceReplica as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricKeyValueStoreReplica2_Impl:
-    Sized + IFabricStatefulServiceReplica_Impl + IFabricKeyValueStoreReplica_Impl
-{
+pub trait IFabricKeyValueStoreReplica2_Impl: Sized + IFabricKeyValueStoreReplica_Impl {
     fn Backup(&self, backupdirectory: &::windows::core::PCWSTR) -> ::windows::core::Result<()>;
     fn Restore(&self, backupdirectory: &::windows::core::PCWSTR) -> ::windows::core::Result<()>;
     fn CreateTransaction2(
@@ -2976,12 +2962,7 @@ impl IFabricKeyValueStoreReplica2_Vtbl {
             || iid == &<IFabricKeyValueStoreReplica as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricKeyValueStoreReplica3_Impl:
-    Sized
-    + IFabricStatefulServiceReplica_Impl
-    + IFabricKeyValueStoreReplica_Impl
-    + IFabricKeyValueStoreReplica2_Impl
-{
+pub trait IFabricKeyValueStoreReplica3_Impl: Sized + IFabricKeyValueStoreReplica2_Impl {
     fn BeginBackup(
         &self,
         backupdirectory: &::windows::core::PCWSTR,
@@ -3053,13 +3034,7 @@ impl IFabricKeyValueStoreReplica3_Vtbl {
             || iid == &<IFabricKeyValueStoreReplica2 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricKeyValueStoreReplica4_Impl:
-    Sized
-    + IFabricStatefulServiceReplica_Impl
-    + IFabricKeyValueStoreReplica_Impl
-    + IFabricKeyValueStoreReplica2_Impl
-    + IFabricKeyValueStoreReplica3_Impl
-{
+pub trait IFabricKeyValueStoreReplica4_Impl: Sized + IFabricKeyValueStoreReplica3_Impl {
     fn BeginRestore(
         &self,
         backupdirectory: &::windows::core::PCWSTR,
@@ -3126,14 +3101,7 @@ impl IFabricKeyValueStoreReplica4_Vtbl {
             || iid == &<IFabricKeyValueStoreReplica3 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricKeyValueStoreReplica5_Impl:
-    Sized
-    + IFabricStatefulServiceReplica_Impl
-    + IFabricKeyValueStoreReplica_Impl
-    + IFabricKeyValueStoreReplica2_Impl
-    + IFabricKeyValueStoreReplica3_Impl
-    + IFabricKeyValueStoreReplica4_Impl
-{
+pub trait IFabricKeyValueStoreReplica5_Impl: Sized + IFabricKeyValueStoreReplica4_Impl {
     fn TryAdd(
         &self,
         transaction: &::core::option::Option<IFabricTransactionBase>,
@@ -3382,15 +3350,7 @@ impl IFabricKeyValueStoreReplica5_Vtbl {
             || iid == &<IFabricKeyValueStoreReplica4 as ::windows::core::Interface>::IID
     }
 }
-pub trait IFabricKeyValueStoreReplica6_Impl:
-    Sized
-    + IFabricStatefulServiceReplica_Impl
-    + IFabricKeyValueStoreReplica_Impl
-    + IFabricKeyValueStoreReplica2_Impl
-    + IFabricKeyValueStoreReplica3_Impl
-    + IFabricKeyValueStoreReplica4_Impl
-    + IFabricKeyValueStoreReplica5_Impl
-{
+pub trait IFabricKeyValueStoreReplica6_Impl: Sized + IFabricKeyValueStoreReplica5_Impl {
     fn BeginRestore2(
         &self,
         backupdirectory: &::windows::core::PCWSTR,
@@ -5485,7 +5445,7 @@ impl IFabricStatefulServicePartition1_Vtbl {
     }
 }
 pub trait IFabricStatefulServicePartition2_Impl:
-    Sized + IFabricStatefulServicePartition_Impl + IFabricStatefulServicePartition1_Impl
+    Sized + IFabricStatefulServicePartition1_Impl
 {
     fn ReportReplicaHealth(
         &self,
@@ -5542,10 +5502,7 @@ impl IFabricStatefulServicePartition2_Vtbl {
     }
 }
 pub trait IFabricStatefulServicePartition3_Impl:
-    Sized
-    + IFabricStatefulServicePartition_Impl
-    + IFabricStatefulServicePartition1_Impl
-    + IFabricStatefulServicePartition2_Impl
+    Sized + IFabricStatefulServicePartition2_Impl
 {
     fn ReportReplicaHealth2(
         &self,
@@ -6093,7 +6050,7 @@ impl IFabricStatelessServicePartition1_Vtbl {
     }
 }
 pub trait IFabricStatelessServicePartition2_Impl:
-    Sized + IFabricStatelessServicePartition_Impl + IFabricStatelessServicePartition1_Impl
+    Sized + IFabricStatelessServicePartition1_Impl
 {
     fn ReportInstanceHealth(
         &self,
@@ -6150,10 +6107,7 @@ impl IFabricStatelessServicePartition2_Vtbl {
     }
 }
 pub trait IFabricStatelessServicePartition3_Impl:
-    Sized
-    + IFabricStatelessServicePartition_Impl
-    + IFabricStatelessServicePartition1_Impl
-    + IFabricStatelessServicePartition2_Impl
+    Sized + IFabricStatelessServicePartition2_Impl
 {
     fn ReportInstanceHealth2(
         &self,

@@ -13,23 +13,7 @@ impl IFabricAsyncOperationCallback {
         )
     }
 }
-impl ::core::convert::From<IFabricAsyncOperationCallback> for ::windows::core::IUnknown {
-    fn from(value: IFabricAsyncOperationCallback) -> Self {
-        unsafe { ::core::mem::transmute(value) }
-    }
-}
-impl<'a> ::core::convert::From<&'a IFabricAsyncOperationCallback>
-    for &'a ::windows::core::IUnknown
-{
-    fn from(value: &'a IFabricAsyncOperationCallback) -> Self {
-        unsafe { ::core::mem::transmute(value) }
-    }
-}
-impl ::core::convert::From<&IFabricAsyncOperationCallback> for ::windows::core::IUnknown {
-    fn from(value: &IFabricAsyncOperationCallback) -> Self {
-        ::core::convert::From::from(::core::clone::Clone::clone(value))
-    }
-}
+::windows::core::interface_hierarchy!(IFabricAsyncOperationCallback, ::windows::core::IUnknown);
 impl ::core::clone::Clone for IFabricAsyncOperationCallback {
     fn clone(&self) -> Self {
         Self(self.0.clone())
@@ -87,21 +71,7 @@ impl IFabricAsyncOperationContext {
         (::windows::core::Vtable::vtable(self).Cancel)(::windows::core::Vtable::as_raw(self)).ok()
     }
 }
-impl ::core::convert::From<IFabricAsyncOperationContext> for ::windows::core::IUnknown {
-    fn from(value: IFabricAsyncOperationContext) -> Self {
-        unsafe { ::core::mem::transmute(value) }
-    }
-}
-impl<'a> ::core::convert::From<&'a IFabricAsyncOperationContext> for &'a ::windows::core::IUnknown {
-    fn from(value: &'a IFabricAsyncOperationContext) -> Self {
-        unsafe { ::core::mem::transmute(value) }
-    }
-}
-impl ::core::convert::From<&IFabricAsyncOperationContext> for ::windows::core::IUnknown {
-    fn from(value: &IFabricAsyncOperationContext) -> Self {
-        ::core::convert::From::from(::core::clone::Clone::clone(value))
-    }
-}
+::windows::core::interface_hierarchy!(IFabricAsyncOperationContext, ::windows::core::IUnknown);
 impl ::core::clone::Clone for IFabricAsyncOperationContext {
     fn clone(&self) -> Self {
         Self(self.0.clone())
@@ -154,23 +124,7 @@ impl IFabricGetReplicatorStatusResult {
         )
     }
 }
-impl ::core::convert::From<IFabricGetReplicatorStatusResult> for ::windows::core::IUnknown {
-    fn from(value: IFabricGetReplicatorStatusResult) -> Self {
-        unsafe { ::core::mem::transmute(value) }
-    }
-}
-impl<'a> ::core::convert::From<&'a IFabricGetReplicatorStatusResult>
-    for &'a ::windows::core::IUnknown
-{
-    fn from(value: &'a IFabricGetReplicatorStatusResult) -> Self {
-        unsafe { ::core::mem::transmute(value) }
-    }
-}
-impl ::core::convert::From<&IFabricGetReplicatorStatusResult> for ::windows::core::IUnknown {
-    fn from(value: &IFabricGetReplicatorStatusResult) -> Self {
-        ::core::convert::From::from(::core::clone::Clone::clone(value))
-    }
-}
+::windows::core::interface_hierarchy!(IFabricGetReplicatorStatusResult, ::windows::core::IUnknown);
 impl ::core::clone::Clone for IFabricGetReplicatorStatusResult {
     fn clone(&self) -> Self {
         Self(self.0.clone())
@@ -221,21 +175,7 @@ impl IFabricStringListResult {
         .ok()
     }
 }
-impl ::core::convert::From<IFabricStringListResult> for ::windows::core::IUnknown {
-    fn from(value: IFabricStringListResult) -> Self {
-        unsafe { ::core::mem::transmute(value) }
-    }
-}
-impl<'a> ::core::convert::From<&'a IFabricStringListResult> for &'a ::windows::core::IUnknown {
-    fn from(value: &'a IFabricStringListResult) -> Self {
-        unsafe { ::core::mem::transmute(value) }
-    }
-}
-impl ::core::convert::From<&IFabricStringListResult> for ::windows::core::IUnknown {
-    fn from(value: &IFabricStringListResult) -> Self {
-        ::core::convert::From::from(::core::clone::Clone::clone(value))
-    }
-}
+::windows::core::interface_hierarchy!(IFabricStringListResult, ::windows::core::IUnknown);
 impl ::core::clone::Clone for IFabricStringListResult {
     fn clone(&self) -> Self {
         Self(self.0.clone())
@@ -278,21 +218,7 @@ impl IFabricStringResult {
         (::windows::core::Vtable::vtable(self).get_String)(::windows::core::Vtable::as_raw(self))
     }
 }
-impl ::core::convert::From<IFabricStringResult> for ::windows::core::IUnknown {
-    fn from(value: IFabricStringResult) -> Self {
-        unsafe { ::core::mem::transmute(value) }
-    }
-}
-impl<'a> ::core::convert::From<&'a IFabricStringResult> for &'a ::windows::core::IUnknown {
-    fn from(value: &'a IFabricStringResult) -> Self {
-        unsafe { ::core::mem::transmute(value) }
-    }
-}
-impl ::core::convert::From<&IFabricStringResult> for ::windows::core::IUnknown {
-    fn from(value: &IFabricStringResult) -> Self {
-        ::core::convert::From::from(::core::clone::Clone::clone(value))
-    }
-}
+::windows::core::interface_hierarchy!(IFabricStringResult, ::windows::core::IUnknown);
 impl ::core::clone::Clone for IFabricStringResult {
     fn clone(&self) -> Self {
         Self(self.0.clone())

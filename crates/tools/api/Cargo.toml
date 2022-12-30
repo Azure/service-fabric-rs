@@ -6,5 +6,5 @@ publish = false
 
 [dependencies]
 serde = "1.0.136"
-windows-bindgen = "0.41"
-windows-metadata = "0.41"
+windows-bindgen = "0.43"
+windows-metadata = "0.43"

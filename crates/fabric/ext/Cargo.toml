@@ -1,6 +1,6 @@
 [package]
 name = "fabric_ext"
-version = "0.2.0"
+version = "0.0.2"
 edition = "2018"
 
 [dependencies]
@@ -10,7 +10,7 @@ tokio = { version = "1", features = ["full"] }
 paste = "1.0"
 
 [dependencies.windows]
-version = "0.41.0"
+version = "0.43"
 features = [
     "implement",
     "interface"

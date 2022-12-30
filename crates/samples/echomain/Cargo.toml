@@ -1,6 +1,6 @@
 [package]
 name = "samples_echomain"
-version = "0.2.0"
+version = "0.0.1"
 edition = "2018"
 build = "build.rs"
 
@@ -11,7 +11,7 @@ ctrlc = { version = "3.0", features = ["termination"] }
 tokio = { version = "1", features = ["full"] }
 
 [dependencies.windows]
-version = "0.41.0"
+version = "0.43"
 features = [
     "implement"
 ]

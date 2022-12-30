@@ -1,6 +1,6 @@
 [package]
 name = "service-fabric-rs"
-version = "0.1.0"
+version = "0.0.2"
 authors = [""]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -22,7 +22,7 @@ default-target = "x86_64-pc-windows-msvc"
 targets = []
 
 [dependencies.windows]
-version = "0.41"
+version = "0.43"
 features = [
     "Win32_Foundation"
 ]

@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         BUILD_TYPE: ["Debug"]
-        os: [ windows-latest ]
+        os: [ windows-2019 ] # windows-2022 sf cluster cannot start
     steps:
     - uses: actions/checkout@v2
 

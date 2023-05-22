@@ -1,3 +1,9 @@
+// ------------------------------------------------------------
+// Copyright 2022 Youyuan Wu
+// Licensed under the MIT License (MIT). See License.txt in the repo root for
+// license information.
+// ------------------------------------------------------------
+
 use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
 use service_fabric_rs::FabricCommon::{FabricClient::*, IFabricAsyncOperationCallback};
 use service_fabric_rs::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};

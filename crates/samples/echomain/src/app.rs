@@ -3,6 +3,11 @@ use std::ffi::OsString;
 use std::io::Error;
 use std::thread::JoinHandle;
 use std::{convert::TryInto, ptr::null};
+// ------------------------------------------------------------
+// Copyright 2022 Youyuan Wu
+// Licensed under the MIT License (MIT). See License.txt in the repo root for
+// license information.
+// ------------------------------------------------------------
 
 use fabric_ext::{AsyncContext, StringResult};
 use log::info;

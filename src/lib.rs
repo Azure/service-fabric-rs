@@ -1,3 +1,11 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT).
+// ------------------------------------------------------------
+
+// Code in this directory is generated from Service Fabric idl files,
+// and have the same license as the id files, i.e. Microsoft MIT License.
+
 #![doc(html_no_source)]
 
 extern crate windows;

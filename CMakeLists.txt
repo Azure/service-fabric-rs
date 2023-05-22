@@ -2,19 +2,30 @@ cmake_minimum_required(VERSION 3.14)
 
 project(service-fabric-rs)
 
-# only fetch the minimum cpp part
-set(service_fabric_BuildIDLOnly ON)
-message(STATUS "feching service_fabric_cpp")
+message(STATUS "fetching fabric_metadata")
+include(FetchContent)
+FetchContent_Declare(fabric_metadata
+    GIT_REPOSITORY https://github.com/youyuanwu/fabric-metadata.git
+    GIT_TAG db2dc233e1d6eb6eb2cc5d70d05ddc2eacd5a3d4
+)
+FetchContent_GetProperties(fabric_metadata)
+if(NOT fabric_metadata_POPULATED)
+    FetchContent_Populate(fabric_metadata)
+    # add all targets to main build. should not be too many for now.
+    add_subdirectory(${fabric_metadata_SOURCE_DIR} ${fabric_metadata_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+#fetch service-fabric-cpp for its scripts
+message(STATUS "fetching service-fabric-cpp")
 include(FetchContent)
 FetchContent_Declare(service_fabric_cpp
     GIT_REPOSITORY https://github.com/youyuanwu/service-fabric-cpp.git
-    GIT_TAG a9e8a3f744225ebeb8b58c523ed3e99db2e876b6
+    GIT_TAG 997f00bd4610834a3904b9cde8bf6b2c666bcb29
 )
 FetchContent_GetProperties(service_fabric_cpp)
 if(NOT service_fabric_cpp_POPULATED)
     FetchContent_Populate(service_fabric_cpp)
-    # add all targets to main build. should not be too many for now.
-    add_subdirectory(${service_fabric_cpp_SOURCE_DIR} ${service_fabric_cpp_BINARY_DIR})
+    # do not add to cmake build since we only use scripts
 endif()
 
 # generate

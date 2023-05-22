@@ -3,12 +3,12 @@
     <PropertyGroup Label="Globals">
         <OutputWinmd>../.windows/winmd/ServiceFabric.winmd</OutputWinmd>
         <WinmdVersion>255.255.255.255</WinmdVersion>
-        <SFIdlDir>../build/_deps/service_fabric_cpp-build/libs/fabric_idls</SFIdlDir>
+        <SFIdlDir>../build/_deps/fabric_metadata-src/idl</SFIdlDir>
         <AdditionalIncludes>$(SFIdlDir)</AdditionalIncludes>
     </PropertyGroup>
     <ItemGroup>
         <Idls Include="$(SFIdlDir)\FabricClient.idl;$(SFIdlDir)\FabricCommon.idl;$(SFIdlDir)\FabricRuntime.idl;$(SFIdlDir)\FabricTypes.idl" />
-        <ImportLibs Include="../build/_deps/service_fabric_cpp-build/libs/fabric_import_libs/*.lib" />
+        <ImportLibs Include="../build/_deps/fabric_metadata-build/src/*.lib" />
         <Partition Include="FabricTypes.cpp">
             <TraverseFiles>$(CompiledHeadersDir)\FabricTypes.h</TraverseFiles>
             <Namespace>Microsoft.ServiceFabric</Namespace>

@@ -41,6 +41,12 @@ add_custom_target(generate_rust
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+add_custom_target(generate_import_libs
+    DEPENDS 
+    FabricRuntime
+    FabricClient
+)
+
 add_custom_target(build_rust
     COMMAND ${cargo_exe} build
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

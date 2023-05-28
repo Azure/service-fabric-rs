@@ -9,10 +9,12 @@ fn main() {
     let _ = std::fs::remove_dir_all(&output_path);
     output_path.pop();
 
+    // use winmd files from fabric-metadata repo
     let winmd_files = [
-        File::new(".windows/winmd/ServiceFabric.winmd").unwrap(),
-        File::new(".windows/winmd/Windows.Win32.winmd").unwrap(),
-        File::new(".windows/winmd/Windows.Win32.Interop.winmd").unwrap(),
+        File::new("build/_deps/fabric_metadata-src/.windows/winmd/ServiceFabric.winmd").unwrap(),
+        File::new("build/_deps/fabric_metadata-src/.windows/winmd/Windows.Win32.winmd").unwrap(),
+        File::new("build/_deps/fabric_metadata-src/.windows/winmd/Windows.Win32.Interop.winmd")
+            .unwrap(),
     ];
     let reader = Reader::new(&winmd_files);
     let root = reader

@@ -6,7 +6,7 @@ message(STATUS "fetching fabric_metadata")
 include(FetchContent)
 FetchContent_Declare(fabric_metadata
     GIT_REPOSITORY https://github.com/youyuanwu/fabric-metadata.git
-    GIT_TAG db2dc233e1d6eb6eb2cc5d70d05ddc2eacd5a3d4
+    GIT_TAG a1bcca6ad6f6a772c9e5ff4bdba80ae5e5f24cfc
 )
 FetchContent_GetProperties(fabric_metadata)
 if(NOT fabric_metadata_POPULATED)
@@ -28,46 +28,6 @@ if(NOT service_fabric_cpp_POPULATED)
     # do not add to cmake build since we only use scripts
 endif()
 
-# generate
-find_program (
-    dotnet_exe
-    NAMES dotnet.exe
-    REQUIRED
-)
-
-set(_out_winmds
-    ServiceFabric.winmd
-    Windows.Win32.Interop.winmd
-    Windows.Win32.winmd
-)
-set(_out_winmd_paths "")
-foreach(_out_winmd ${_out_winmds})
-    list(APPEND _out_winmd_paths ${CMAKE_CURRENT_SOURCE_DIR}/.windows/winmd/${_out_winmd})
-endforeach()
-
-add_custom_command(
-    OUTPUT ${_out_winmd_paths}
-    COMMAND ${dotnet_exe} build
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/.metadata
-    VERBATIM
-)
-
-# force generate
-add_custom_target(generate_winmd
-    DEPENDS ${_out_winmd_paths}
-)
-
-add_custom_target(generate_import_libs
-    DEPENDS 
-    FabricRuntime
-    FabricClient
-)
-
-# need to gen import lib files
-add_dependencies(generate_winmd
-    generate_import_libs
-)   
-
 # generate rust code
 find_program (
     cargo_exe
@@ -76,7 +36,7 @@ find_program (
 )
 
 add_custom_target(generate_rust
-    DEPENDS generate_winmd
+    #DEPENDS generate_winmd
     COMMAND ${cargo_exe} run -p tools_api
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -97,8 +57,9 @@ add_custom_target(run_rust_sample_client
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# clean generated code
 add_custom_target(force_clean
-    COMMAND ${CMAKE_COMMAND} -E rm -rf .metadata/Obj src/Microsoft .windows
+    COMMAND ${CMAKE_COMMAND} -E rm -rf src/Microsoft
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

@@ -11,7 +11,7 @@ fn main() {
 
     // use winmd files from fabric-metadata repo
     let winmd_files = [
-        File::new("build/_deps/fabric_metadata-src/.windows/winmd/ServiceFabric.winmd").unwrap(),
+        File::new("build/_deps/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd").unwrap(),
         File::new("build/_deps/fabric_metadata-src/.windows/winmd/Windows.Win32.winmd").unwrap(),
         File::new("build/_deps/fabric_metadata-src/.windows/winmd/Windows.Win32.Interop.winmd")
             .unwrap(),

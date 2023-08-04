@@ -1,5 +1,6 @@
 pub mod FabricClient;
 pub mod FabricRuntime;
+pub mod FabricTransport;
 #[repr(transparent)]
 pub struct IFabricAsyncOperationCallback(::windows::core::IUnknown);
 impl IFabricAsyncOperationCallback {

@@ -21,6 +21,9 @@ members = [
 default-target = "x86_64-pc-windows-msvc"
 targets = []
 
+[dependencies]
+fabric-metadata = { git = "https://github.com/youyuanwu/fabric-metadata.git", rev = "9d62ca15573a0716fb9828dce03a489ae4b8a4a7"}
+
 [dependencies.windows]
 version = "0.43"
 features = [

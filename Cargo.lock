@@ -70,6 +70,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "fabric-metadata"
+version = "0.1.0"
+source = "git+https://github.com/youyuanwu/fabric-metadata.git?rev=9d62ca15573a0716fb9828dce03a489ae4b8a4a7#9d62ca15573a0716fb9828dce03a489ae4b8a4a7"
+
+[[package]]
 name = "fabric_ext"
 version = "0.0.2"
 dependencies = [
@@ -278,6 +283,7 @@ checksum = "728eb6351430bccb993660dfffc5a72f91ccc1295abaa8ce19b27ebe4f75568b"
 name = "service-fabric-rs"
 version = "0.0.2"
 dependencies = [
+ "fabric-metadata",
  "windows",
 ]
 

@@ -1,21 +1,20 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(service-fabric-rs)
+project(service-fabric-rs LANGUAGES)
 
 message(STATUS "fetching fabric_metadata")
 include(FetchContent)
 FetchContent_Declare(fabric_metadata
     GIT_REPOSITORY https://github.com/youyuanwu/fabric-metadata.git
-    GIT_TAG 373636d89137d8b7427e4ea8da07e10db3fea842
+    GIT_TAG 9d62ca15573a0716fb9828dce03a489ae4b8a4a7
 )
 FetchContent_GetProperties(fabric_metadata)
 if(NOT fabric_metadata_POPULATED)
     FetchContent_Populate(fabric_metadata)
-    # add all targets to main build. should not be too many for now.
-    add_subdirectory(${fabric_metadata_SOURCE_DIR} ${fabric_metadata_BINARY_DIR} EXCLUDE_FROM_ALL)
+    # do not add to cmake build since we only need winmd file to generate code.
 endif()
 
-#fetch service-fabric-cpp for its scripts
+# fetch service-fabric-cpp for its scripts
 message(STATUS "fetching service-fabric-cpp")
 include(FetchContent)
 FetchContent_Declare(service_fabric_cpp
@@ -39,13 +38,6 @@ add_custom_target(generate_rust
     #DEPENDS generate_winmd
     COMMAND ${cargo_exe} run -p tools_api
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-add_custom_target(generate_import_libs
-    DEPENDS 
-    FabricRuntime
-    FabricClient
-    FabricTransport
 )
 
 add_custom_target(build_rust

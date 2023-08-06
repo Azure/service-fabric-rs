@@ -23,3 +23,5 @@ extern crate windows;
 mod Microsoft;
 
 pub use Microsoft::ServiceFabric::*;
+
+pub use fabric_metadata;

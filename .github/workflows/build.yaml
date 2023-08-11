@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         BUILD_TYPE: ["Debug"]
-        os: [ windows-2019 ] # windows-2022 sf cluster cannot start
+        os: [ windows-latest ]
     steps:
     - uses: actions/checkout@v2
 
@@ -29,8 +29,12 @@ jobs:
     - name: run build
       run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
 
-    # - name: build sample rust app
-    #   run: cmake --build build --config ${{ matrix.BUILD_TYPE }} --target build_rust_sample_echomain
+    # mysql bin has conflicting dlls with fabric than prevents fabric from starting
+    - name: Remove conflict dll paths
+      shell: powershell
+      run: |
+        get-command libprotobuf.dll
+        Remove-Item -Recurse -Force C:\mysql\bin
 
     - name: check sf exist
       run: Powershell.exe -File .\build\_deps\service_fabric_cpp-src\scripts\check_sf_installed.ps1

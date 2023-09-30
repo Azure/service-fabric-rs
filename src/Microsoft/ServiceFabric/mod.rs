@@ -8377,9 +8377,9 @@ impl ::core::default::Default for FABRIC_CHECK_VALUE_PROPERTY_OPERATION {
 #[repr(C)]
 pub struct FABRIC_CLAIMS_CREDENTIALS {
     pub ServerCommonNameCount: u32,
-    pub ServerCommonNames: *mut ::windows::core::PWSTR,
+    pub ServerCommonNames: *const ::windows::core::PWSTR,
     pub IssuerThumbprintCount: u32,
-    pub IssuerThumbprints: *mut ::windows::core::PWSTR,
+    pub IssuerThumbprints: *const ::windows::core::PWSTR,
     pub LocalClaims: ::windows::core::PCWSTR,
     pub ProtectionLevel: FABRIC_PROTECTION_LEVEL,
     pub Reserved: *mut ::core::ffi::c_void,
@@ -8426,7 +8426,7 @@ impl ::core::default::Default for FABRIC_CLAIMS_CREDENTIALS {
 #[repr(C)]
 pub struct FABRIC_CLAIMS_CREDENTIALS_EX1 {
     pub ServerThumbprintCount: u32,
-    pub ServerThumbprints: *mut ::windows::core::PWSTR,
+    pub ServerThumbprints: *const ::windows::core::PWSTR,
     pub Reserved: *mut ::core::ffi::c_void,
 }
 impl ::core::marker::Copy for FABRIC_CLAIMS_CREDENTIALS_EX1 {}
@@ -16981,7 +16981,7 @@ impl ::core::default::Default for FABRIC_NAMED_PARTITION_INFORMATION {
 #[repr(C)]
 pub struct FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION {
     pub PartitionCount: i32,
-    pub Names: *mut ::windows::core::PWSTR,
+    pub Names: *const ::windows::core::PWSTR,
     pub Reserved: *mut ::core::ffi::c_void,
 }
 impl ::core::marker::Copy for FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION {}
@@ -17151,9 +17151,9 @@ impl ::core::default::Default for FABRIC_NAMED_PROPERTY_METADATA_EX1 {
 #[repr(C)]
 pub struct FABRIC_NAMED_REPARTITION_DESCRIPTION {
     pub NamesToAddCount: u32,
-    pub NamesToAdd: *mut ::windows::core::PWSTR,
+    pub NamesToAdd: *const ::windows::core::PWSTR,
     pub NamesToRemoveCount: u32,
-    pub NamesToRemove: *mut ::windows::core::PWSTR,
+    pub NamesToRemove: *const ::windows::core::PWSTR,
     pub Reserved: *mut ::core::ffi::c_void,
 }
 impl ::core::marker::Copy for FABRIC_NAMED_REPARTITION_DESCRIPTION {}
@@ -31956,7 +31956,7 @@ impl ::core::default::Default for FABRIC_UNPLACED_REPLICA_INFORMATION {
 #[repr(C)]
 pub struct FABRIC_UNPLACED_REPLICA_INFORMATION_LIST {
     pub Count: u32,
-    pub Items: *mut ::windows::core::PWSTR,
+    pub Items: *const ::windows::core::PWSTR,
 }
 impl ::core::marker::Copy for FABRIC_UNPLACED_REPLICA_INFORMATION_LIST {}
 impl ::core::clone::Clone for FABRIC_UNPLACED_REPLICA_INFORMATION_LIST {
@@ -32841,7 +32841,7 @@ impl ::core::default::Default for FABRIC_WAITING_EVENT {
 pub struct FABRIC_WINDOWS_CREDENTIALS {
     pub RemoteSpn: ::windows::core::PCWSTR,
     pub RemoteIdentityCount: u32,
-    pub RemoteIdentities: *mut ::windows::core::PWSTR,
+    pub RemoteIdentities: *const ::windows::core::PWSTR,
     pub ProtectionLevel: FABRIC_PROTECTION_LEVEL,
     pub Reserved: *mut ::core::ffi::c_void,
 }
@@ -32885,7 +32885,7 @@ impl ::core::default::Default for FABRIC_WINDOWS_CREDENTIALS {
 #[repr(C)]
 pub struct FABRIC_X509_CREDENTIALS {
     pub AllowedCommonNameCount: u32,
-    pub AllowedCommonNames: *mut ::windows::core::PWSTR,
+    pub AllowedCommonNames: *const ::windows::core::PWSTR,
     pub FindType: FABRIC_X509_FIND_TYPE,
     pub FindValue: *mut ::core::ffi::c_void,
     pub StoreLocation: FABRIC_X509_STORE_LOCATION,
@@ -32937,7 +32937,7 @@ impl ::core::default::Default for FABRIC_X509_CREDENTIALS {
 pub struct FABRIC_X509_CREDENTIALS2 {
     pub CertLoadPath: ::windows::core::PCWSTR,
     pub RemoteCertThumbprintCount: u32,
-    pub RemoteCertThumbprints: *mut ::windows::core::PWSTR,
+    pub RemoteCertThumbprints: *const ::windows::core::PWSTR,
     pub RemoteX509NameCount: u32,
     pub RemoteX509Names: *mut FABRIC_X509_NAME,
     pub ProtectionLevel: FABRIC_PROTECTION_LEVEL,
@@ -32985,7 +32985,7 @@ impl ::core::default::Default for FABRIC_X509_CREDENTIALS2 {
 #[repr(C)]
 pub struct FABRIC_X509_CREDENTIALS_EX1 {
     pub IssuerThumbprintCount: u32,
-    pub IssuerThumbprints: *mut ::windows::core::PWSTR,
+    pub IssuerThumbprints: *const ::windows::core::PWSTR,
     pub Reserved: *mut ::core::ffi::c_void,
 }
 impl ::core::marker::Copy for FABRIC_X509_CREDENTIALS_EX1 {}
@@ -33026,7 +33026,7 @@ impl ::core::default::Default for FABRIC_X509_CREDENTIALS_EX1 {
 #[repr(C)]
 pub struct FABRIC_X509_CREDENTIALS_EX2 {
     pub RemoteCertThumbprintCount: u32,
-    pub RemoteCertThumbprints: *mut ::windows::core::PWSTR,
+    pub RemoteCertThumbprints: *const ::windows::core::PWSTR,
     pub RemoteX509NameCount: u32,
     pub RemoteX509Names: *mut FABRIC_X509_NAME,
     pub FindValueSecondary: *mut ::core::ffi::c_void,
@@ -33115,7 +33115,7 @@ impl ::core::default::Default for FABRIC_X509_CREDENTIALS_EX3 {
 pub struct FABRIC_X509_ISSUER_NAME {
     pub Name: ::windows::core::PCWSTR,
     pub IssuerStoreCount: u32,
-    pub IssuerStores: *mut ::windows::core::PWSTR,
+    pub IssuerStores: *const ::windows::core::PWSTR,
     pub Reserved: *mut ::core::ffi::c_void,
 }
 impl ::core::marker::Copy for FABRIC_X509_ISSUER_NAME {}

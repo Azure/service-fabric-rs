@@ -13,9 +13,7 @@ fn main() {
     let winmd_files = [
         File::new("build/_deps/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd")
             .unwrap(),
-        File::new("build/_deps/fabric_metadata-src/.windows/winmd/Windows.Win32.winmd").unwrap(),
-        File::new("build/_deps/fabric_metadata-src/.windows/winmd/Windows.Win32.Interop.winmd")
-            .unwrap(),
+        File::new("build/_deps/fabric_metadata-src/.windows/winmd/Windows.Win32.winmd").unwrap()
     ];
     let reader = Reader::new(&winmd_files);
     let root = reader

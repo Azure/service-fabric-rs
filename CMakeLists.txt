@@ -6,7 +6,7 @@ message(STATUS "fetching fabric_metadata")
 include(FetchContent)
 FetchContent_Declare(fabric_metadata
     GIT_REPOSITORY https://github.com/youyuanwu/fabric-metadata.git
-    GIT_TAG 9d62ca15573a0716fb9828dce03a489ae4b8a4a7
+    GIT_TAG d6104333941a14898d01b8403f707a6cf154198a
 )
 FetchContent_GetProperties(fabric_metadata)
 if(NOT fabric_metadata_POPULATED)

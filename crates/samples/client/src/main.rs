@@ -4,9 +4,9 @@
 // license information.
 // ------------------------------------------------------------
 
-use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
 use fabric_base::FabricCommon::{FabricClient::*, IFabricAsyncOperationCallback};
 use fabric_base::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
+use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
 use windows_core::{ComInterface, Interface};
 
 fn main() -> windows::core::Result<()> {

@@ -19,7 +19,7 @@ pub fn get_addr(port: u32, hostname: HSTRING) -> String {
     addr.push_str(&hostname.to_string());
     addr.push(':');
     addr.push_str(&port.to_string());
-    return addr;
+    addr
 }
 
 async fn echo_loop(listener: TcpListener) -> Result<(), Error> {

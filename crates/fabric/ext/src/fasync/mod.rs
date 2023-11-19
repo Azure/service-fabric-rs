@@ -58,14 +58,20 @@ pub struct AwaitableCallback {
     shared_state: Arc<Mutex<SharedState>>,
 }
 
+impl Default for AwaitableCallback {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AwaitableCallback {
     pub fn new() -> AwaitableCallback {
-        return AwaitableCallback {
+        AwaitableCallback {
             shared_state: Arc::new(Mutex::new(SharedState {
                 completed: false,
                 waker: None,
             })),
-        };
+        }
     }
 }
 
@@ -84,7 +90,7 @@ impl IFabricAsyncOperationCallback_Impl for AwaitableCallback {
 
 impl IFabricAwaitableCallback_Impl for AwaitableCallback {
     unsafe fn get_token(&self) -> AwaitableToken {
-        return AwaitableToken::new(self.shared_state.clone());
+        AwaitableToken::new(self.shared_state.clone())
     }
 }
 
@@ -95,9 +101,9 @@ pub struct AwaitableToken {
 
 impl AwaitableToken {
     pub fn new(state: Arc<Mutex<SharedState>>) -> AwaitableToken {
-        return AwaitableToken {
+        AwaitableToken {
             shared_state: state,
-        };
+        }
     }
 }
 
@@ -139,6 +145,12 @@ macro_rules! beginmyclient {
         unsafe impl Send for $name {}
         unsafe impl Sync for $name {}
 
+        impl Default for $name {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
+
         impl $name {
             pub fn new() -> $name {
                 return $name {
@@ -153,7 +165,7 @@ macro_rules! beginmyclient {
                 };
             }
         } // impl
-    }
+    };
 }
 
 // macros for impl async fn
@@ -215,7 +227,7 @@ unsafe impl<T> Send for SBox<T> {}
 
 impl<T> SBox<T> {
     pub fn new(x: T) -> SBox<T> {
-        return SBox { b: Box::new(x) };
+        SBox { b: Box::new(x) }
     }
 }
 
@@ -261,16 +273,22 @@ pub struct FabricQueryClient {
 unsafe impl Send for FabricQueryClient {}
 unsafe impl Sync for FabricQueryClient {}
 
+impl Default for FabricQueryClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FabricQueryClient {
     pub fn new() -> FabricQueryClient {
-        return FabricQueryClient {
+        FabricQueryClient {
             c_: SBox::new(unsafe {
                 IFabricQueryClient::from_raw(
                     FabricCreateLocalClient(&IFabricQueryClient::IID)
                         .expect("cannot get localclient"),
                 )
             }),
-        };
+        }
     }
 
     myasyncfunc!(

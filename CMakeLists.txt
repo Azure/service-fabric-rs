@@ -77,6 +77,15 @@ add_custom_target(build_fabric_rust_pal ALL
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# only format not generated code
+add_custom_target(format ALL
+    COMMAND ${cargo_exe} fmt -p fabric_ext
+    COMMAND ${cargo_exe} fmt -p pal
+    COMMAND ${cargo_exe} fmt -p samples_client
+    COMMAND ${cargo_exe} fmt -p samples_echomain
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 set(_pkg_root ${CMAKE_BINARY_DIR}/echoapp_root)
 set(_pkg_src  ${CMAKE_CURRENT_SOURCE_DIR}/crates/samples/echomain)
 if(WIN32)

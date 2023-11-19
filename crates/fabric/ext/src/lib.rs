@@ -13,12 +13,12 @@ pub mod fasync;
 //use std::os::windows::prelude::OsStrExt;
 use std::sync::{Arc, Condvar, Mutex};
 
-use log::info;
 use fabric_base::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
     IFabricAsyncOperationCallback_Vtbl, IFabricAsyncOperationContext,
     IFabricAsyncOperationContext_Impl, IFabricStringResult, IFabricStringResult_Impl,
 };
+use log::info;
 use windows::core::implement;
 use windows_core::{HSTRING, PCWSTR};
 
@@ -35,11 +35,17 @@ pub struct WaitableCallback {
     pair_: Arc<(Mutex<bool>, Condvar)>,
 }
 
+impl Default for WaitableCallback {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WaitableCallback {
     pub fn new() -> WaitableCallback {
-        return WaitableCallback {
+        WaitableCallback {
             pair_: Arc::new((Mutex::new(false), Condvar::new())),
-        };
+        }
     }
 }
 
@@ -81,7 +87,7 @@ pub fn pwstr_to_string(p: PCWSTR) -> String {
     let ret: String = unsafe {
         String::from_utf16_lossy(std::slice::from_raw_parts(p.0, end.offset_from(p.0) as _))
     };
-    return ret;
+    ret
 }
 
 // The basic implementation of async context
@@ -95,33 +101,26 @@ pub struct AsyncContext {
 impl AsyncContext {
     // construct ctx. Note: caller needs to invoke callback.
     // This is different from cpp impl.
-    pub fn new(
-        callback: core::option::Option<
-            &IFabricAsyncOperationCallback,
-        >,
-    ) -> AsyncContext {
+    pub fn new(callback: core::option::Option<&IFabricAsyncOperationCallback>) -> AsyncContext {
         info!("AsyncContext::new");
         let callback_copy: IFabricAsyncOperationCallback = callback.expect("msg").clone();
 
-        let ctx = AsyncContext {
+        AsyncContext {
             callback_: callback_copy,
-        };
-        return ctx;
+        }
     }
 }
 
 impl IFabricAsyncOperationContext_Impl for AsyncContext {
     fn IsCompleted(&self) -> windows::Win32::Foundation::BOOLEAN {
-        return windows::Win32::Foundation::BOOLEAN::from(true);
+        windows::Win32::Foundation::BOOLEAN::from(true)
     }
 
     fn CompletedSynchronously(&self) -> windows::Win32::Foundation::BOOLEAN {
-        return windows::Win32::Foundation::BOOLEAN::from(true);
+        windows::Win32::Foundation::BOOLEAN::from(true)
     }
 
-    fn Callback(
-        &self,
-    ) -> windows::core::Result<IFabricAsyncOperationCallback> {
+    fn Callback(&self) -> windows::core::Result<IFabricAsyncOperationCallback> {
         info!("AsyncContext::Callback");
         // get a view of the callback
         let callback_copy: IFabricAsyncOperationCallback = self.callback_.clone();
@@ -147,7 +146,7 @@ impl StringResult {
         let ret = StringResult {
             vec_: data.as_wide().to_vec(),
         };
-        return ret;
+        ret
     }
 }
 
@@ -155,6 +154,6 @@ impl IFabricStringResult_Impl for StringResult {
     fn get_String(&self) -> windows::core::PCWSTR {
         // This is some hack to get the raw pointer out.
         let ptr: *mut u16 = self.vec_.as_ptr() as *mut u16;
-        return windows::core::PCWSTR::from_raw(ptr);
+        windows::core::PCWSTR::from_raw(ptr)
     }
 }

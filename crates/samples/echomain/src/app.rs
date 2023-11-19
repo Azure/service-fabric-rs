@@ -6,17 +6,20 @@
 #![allow(non_snake_case)]
 
 use std::cell::Cell;
+use std::convert::TryInto;
 use std::io::Error;
 use std::thread::JoinHandle;
-use std::{convert::TryInto, ptr::null};
 
-use fabric_ext::{AsyncContext, StringResult};
-use log::info;
 use fabric_base::FabricCommon::FabricRuntime::{
     IFabricRuntime, IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
-    IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl, IFabricStatelessServicePartition,
+    IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
+    IFabricStatelessServicePartition,
 };
-use fabric_base::FabricCommon::{IFabricAsyncOperationContext, IFabricStringResult, IFabricAsyncOperationCallback};
+use fabric_base::FabricCommon::{
+    IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricStringResult,
+};
+use fabric_ext::{AsyncContext, StringResult};
+use log::info;
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
 use windows::core::w;
@@ -50,6 +53,7 @@ impl ServiceFactory {
 }
 
 impl IFabricStatelessServiceFactory_Impl for ServiceFactory {
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn CreateInstance(
         &self,
         servicetypename: &::windows::core::PCWSTR,
@@ -60,7 +64,7 @@ impl IFabricStatelessServiceFactory_Impl for ServiceFactory {
         instanceid: i64,
     ) -> ::windows::core::Result<IFabricStatelessServiceInstance> {
         let mut init_data: String = "".to_string();
-        if initializationdata != null() && initializationdatalength != 0 {
+        if initializationdata.is_null() && initializationdatalength != 0 {
             init_data = unsafe {
                 String::from_utf8_lossy(std::slice::from_raw_parts(
                     initializationdata,
@@ -69,17 +73,18 @@ impl IFabricStatelessServiceFactory_Impl for ServiceFactory {
                 .to_string()
             };
         }
-        info!("servicetypename: {}, servicename: {:?}, initdata: {}, partitionid: {:?}, instanceid {}", 
-            unsafe{servicetypename.display()},
+        info!(
+            "servicetypename: {}, servicename: {:?}, initdata: {}, partitionid: {:?}, instanceid {}",
+            unsafe { servicetypename.display() },
             servicename,
             init_data,
             partitionid,
             instanceid
         );
-        let port_copy = self.port_.clone();
+        let port_copy = self.port_;
         let hostname_copy = self.hostname_.clone();
         let instance = AppInstance::new(port_copy, hostname_copy);
-        return Ok(instance.into());
+        Ok(instance.into())
     }
 }
 
@@ -95,24 +100,20 @@ pub struct AppInstance {
 
 impl AppInstance {
     pub fn new(port: u32, hostname: HSTRING) -> AppInstance {
-        return AppInstance {
+        AppInstance {
             port_: port,
             hostname_: hostname,
             tx_: Cell::from(None),
             th_: Cell::from(None),
-        };
+        }
     }
 }
 
 impl IFabricStatelessServiceInstance_Impl for AppInstance {
     fn BeginOpen(
         &self,
-        partition: core::option::Option<
-            &IFabricStatelessServicePartition,
-        >,
-        callback: core::option::Option<
-            &IFabricAsyncOperationCallback,
-        >,
+        partition: core::option::Option<&IFabricStatelessServicePartition>,
+        callback: core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> windows::core::Result<IFabricAsyncOperationContext> {
         let p = partition.as_ref().expect("get partition failed");
         let info = unsafe { p.GetPartitionInfo() }.expect("getpartition info failed");
@@ -124,7 +125,7 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
 
         // TODO: emplement stop thread.
 
-        let port_copy = self.port_.clone();
+        let port_copy = self.port_;
         let hostname_copy = self.hostname_.clone();
 
         let (tx, rx) = oneshot::channel::<()>();
@@ -139,9 +140,7 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
 
     fn EndOpen(
         &self,
-        context: core::option::Option<
-            &IFabricAsyncOperationContext,
-        >,
+        context: core::option::Option<&IFabricAsyncOperationContext>,
     ) -> windows::core::Result<IFabricStringResult> {
         info!("AppInstance::EndOpen");
         let completed = unsafe {
@@ -163,9 +162,7 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
 
     fn BeginClose(
         &self,
-        callback: core::option::Option<
-            &IFabricAsyncOperationCallback,
-        >,
+        callback: core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> windows::core::Result<IFabricAsyncOperationContext> {
         info!("AppInstance::BeginClose");
 
@@ -203,9 +200,7 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
 
     fn EndClose(
         &self,
-        context: core::option::Option<
-            &IFabricAsyncOperationContext,
-        >,
+        context: core::option::Option<&IFabricAsyncOperationContext>,
     ) -> windows::core::Result<()> {
         info!("AppInstance::EndClose");
         let completed = unsafe {

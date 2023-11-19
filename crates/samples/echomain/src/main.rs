@@ -4,15 +4,14 @@
 // license information.
 // ------------------------------------------------------------
 
-use ctrlc;
-use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
-use log::info;
 use fabric_base::FabricCommon::FabricRuntime::{
     FabricBeginGetNodeContext, FabricCreateRuntime, FabricEndGetNodeContext,
     FabricGetActivationContext, IFabricCodePackageActivationContext, IFabricNodeContextResult,
     IFabricRuntime,
 };
 use fabric_base::FabricCommon::IFabricAsyncOperationCallback;
+use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
+use log::info;
 use std::sync::mpsc::channel;
 use windows::core::w;
 use windows::core::{Interface, HSTRING};
@@ -65,7 +64,7 @@ fn get_port(activation_ctx: &IFabricCodePackageActivationContext) -> u32 {
             .GetServiceEndpointResource(endpoint_name)
             .expect("cannot get endpoint")
     };
-    return unsafe { (*endpoint).Port };
+    unsafe { (*endpoint).Port }
 }
 
 fn get_hostname() -> HSTRING {
@@ -89,5 +88,5 @@ fn get_hostname() -> HSTRING {
 
     let ret = HSTRING::from_wide(unsafe { hostname_raw.as_wide() }).expect("hstring");
     info!("got hostname: {:?}", ret);
-    return ret;
+    ret
 }

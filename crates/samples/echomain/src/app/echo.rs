@@ -6,17 +6,17 @@
 
 // echo server impl using tokio
 
-use std::ffi::OsString;
 use std::io::Error;
 
 use log::info;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::oneshot::Receiver;
+use windows::core::HSTRING;
 
-pub fn get_addr(port: u32, hostname: OsString) -> String {
+pub fn get_addr(port: u32, hostname: HSTRING) -> String {
     let mut addr = String::new();
-    addr.push_str(hostname.to_str().expect("cannot convert hostname"));
+    addr.push_str(&hostname.to_string());
     addr.push(':');
     addr.push_str(&port.to_string());
     return addr;
@@ -59,7 +59,7 @@ async fn echo_loop(listener: TcpListener) -> Result<(), Error> {
 }
 
 #[tokio::main()]
-pub async fn start_echo(rx: Receiver<()>, port: u32, hostname: OsString) -> Result<(), Error> {
+pub async fn start_echo(rx: Receiver<()>, port: u32, hostname: HSTRING) -> Result<(), Error> {
     let addr = get_addr(port, hostname);
 
     let listener = TcpListener::bind(&addr).await?;

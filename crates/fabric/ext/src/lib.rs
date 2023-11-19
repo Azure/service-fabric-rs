@@ -8,11 +8,8 @@
 
 pub mod fasync;
 
-use std::os::windows::prelude::OsStrExt;
-use std::{
-    ffi::OsString,
-    sync::{Arc, Condvar, Mutex},
-};
+//use std::os::windows::prelude::OsStrExt;
+use std::sync::{Arc, Condvar, Mutex};
 
 use log::info;
 use service_fabric_rs::FabricCommon::{
@@ -21,7 +18,7 @@ use service_fabric_rs::FabricCommon::{
     IFabricAsyncOperationContext_Impl, IFabricStringResult, IFabricStringResult_Impl,
 };
 use windows::core::implement;
-use windows_core::PCWSTR;
+use windows_core::{HSTRING, PCWSTR};
 
 // Interface for waitable async callback.
 // This is a common use case to combine fabric Begin* and End* apis.
@@ -144,13 +141,10 @@ pub struct StringResult {
 }
 
 impl StringResult {
-    pub fn new(data: OsString) -> StringResult {
-        let data_vec = data
-            .as_os_str()
-            .encode_wide()
-            .chain(Some(0))
-            .collect::<Vec<_>>();
-        let ret = StringResult { vec_: data_vec };
+    pub fn new(data: HSTRING) -> StringResult {
+        let ret = StringResult {
+            vec_: data.as_wide().to_vec(),
+        };
         return ret;
     }
 }

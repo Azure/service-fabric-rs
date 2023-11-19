@@ -4,9 +4,6 @@
 // license information.
 // ------------------------------------------------------------
 
-use std::ffi::OsString;
-use std::os::windows::prelude::OsStringExt;
-
 use ctrlc;
 use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
 use log::info;
@@ -18,7 +15,7 @@ use service_fabric_rs::FabricCommon::FabricRuntime::{
 use service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback;
 use std::sync::mpsc::channel;
 use windows::core::w;
-use windows::core::{Interface, PCWSTR};
+use windows::core::{Interface, HSTRING};
 use windows_core::ComInterface;
 pub mod app;
 
@@ -71,7 +68,7 @@ fn get_port(activation_ctx: &IFabricCodePackageActivationContext) -> u32 {
     return unsafe { (*endpoint).Port };
 }
 
-fn get_hostname() -> OsString {
+fn get_hostname() -> HSTRING {
     // let result = String::from_utf16_lossy(std::slice::from_raw_parts(
     let callback: IFabricWaitableCallback = WaitableCallback::new().into();
 
@@ -88,9 +85,9 @@ fn get_hostname() -> OsString {
 
     let node_ctx = unsafe { result.get_NodeContext() };
 
-    let hostname_raw: PCWSTR = unsafe { (*node_ctx).IPAddressOrFQDN };
+    let hostname_raw = unsafe { (*node_ctx).IPAddressOrFQDN };
 
-    let ret = OsString::from_wide(unsafe { hostname_raw.as_wide() });
+    let ret = HSTRING::from_wide(unsafe { hostname_raw.as_wide() }).expect("hstring");
     info!("got hostname: {:?}", ret);
     return ret;
 }

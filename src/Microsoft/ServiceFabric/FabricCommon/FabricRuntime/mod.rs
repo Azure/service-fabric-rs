@@ -10,7 +10,7 @@ where
     P0: ::windows_core::IntoParam<IFabricProcessExitHandler>,
     P1: ::windows_core::IntoParam<super::IFabricAsyncOperationCallback>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricBeginCreateRuntime(
             riid: *const ::windows_core::GUID,
@@ -40,7 +40,7 @@ pub unsafe fn FabricBeginGetActivationContext<P0>(
 where
     P0: ::windows_core::IntoParam<super::IFabricAsyncOperationCallback>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricBeginGetActivationContext(
             riid: *const ::windows_core::GUID,
@@ -68,7 +68,7 @@ pub unsafe fn FabricBeginGetCodePackageActivator<P0>(
 where
     P0: ::windows_core::IntoParam<super::IFabricAsyncOperationCallback>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricBeginGetCodePackageActivator(
             riid: *const ::windows_core::GUID,
@@ -95,7 +95,7 @@ pub unsafe fn FabricBeginGetNodeContext<P0>(
 where
     P0: ::windows_core::IntoParam<super::IFabricAsyncOperationCallback>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricBeginGetNodeContext(
             timeoutmilliseconds: u32,
@@ -128,7 +128,7 @@ where
     P0: ::windows_core::IntoParam<::windows_core::PCWSTR>,
     P1: ::windows_core::IntoParam<IFabricStoreEventHandler>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricCreateKeyValueStoreReplica(
             riid: *const ::windows_core::GUID,
@@ -176,7 +176,7 @@ where
     P1: ::windows_core::IntoParam<IFabricStoreEventHandler>,
     P2: ::windows_core::IntoParam<IFabricSecondaryEventHandler>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricCreateKeyValueStoreReplica2(
             riid: *const ::windows_core::GUID,
@@ -228,7 +228,7 @@ where
     P1: ::windows_core::IntoParam<IFabricStoreEventHandler>,
     P2: ::windows_core::IntoParam<IFabricSecondaryEventHandler>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricCreateKeyValueStoreReplica3(
             riid: *const ::windows_core::GUID,
@@ -281,7 +281,7 @@ where
     P1: ::windows_core::IntoParam<IFabricStoreEventHandler>,
     P2: ::windows_core::IntoParam<IFabricSecondaryEventHandler>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricCreateKeyValueStoreReplica4(
             riid: *const ::windows_core::GUID,
@@ -336,7 +336,7 @@ where
     P1: ::windows_core::IntoParam<IFabricStoreEventHandler>,
     P2: ::windows_core::IntoParam<IFabricSecondaryEventHandler>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricCreateKeyValueStoreReplica5(
             riid: *const ::windows_core::GUID,
@@ -375,7 +375,7 @@ where
 pub unsafe fn FabricCreateRuntime(
     riid: *const ::windows_core::GUID,
 ) -> ::windows_core::Result<*mut ::core::ffi::c_void> {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricCreateRuntime(
             riid: *const ::windows_core::GUID,
@@ -393,7 +393,7 @@ pub unsafe fn FabricEndCreateRuntime<P0>(
 where
     P0: ::windows_core::IntoParam<super::IFabricAsyncOperationContext>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricEndCreateRuntime(
             context: *mut ::core::ffi::c_void,
@@ -411,7 +411,7 @@ pub unsafe fn FabricEndGetActivationContext<P0>(
 where
     P0: ::windows_core::IntoParam<super::IFabricAsyncOperationContext>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricEndGetActivationContext(
             context: *mut ::core::ffi::c_void,
@@ -429,7 +429,7 @@ pub unsafe fn FabricEndGetCodePackageActivator<P0>(
 where
     P0: ::windows_core::IntoParam<super::IFabricAsyncOperationContext>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricEndGetCodePackageActivator(
             context: *mut ::core::ffi::c_void,
@@ -447,7 +447,7 @@ pub unsafe fn FabricEndGetNodeContext<P0>(
 where
     P0: ::windows_core::IntoParam<super::IFabricAsyncOperationContext>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricEndGetNodeContext(
             context: *mut ::core::ffi::c_void,
@@ -462,7 +462,7 @@ where
 pub unsafe fn FabricGetActivationContext(
     riid: *const ::windows_core::GUID,
 ) -> ::windows_core::Result<*mut ::core::ffi::c_void> {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricGetActivationContext(
             riid: *const ::windows_core::GUID,
@@ -477,7 +477,7 @@ pub unsafe fn FabricGetActivationContext(
 pub unsafe fn FabricGetCodePackageActivator(
     riid: *const ::windows_core::GUID,
 ) -> ::windows_core::Result<*mut ::core::ffi::c_void> {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricGetCodePackageActivator(
             riid: *const ::windows_core::GUID,
@@ -490,7 +490,7 @@ pub unsafe fn FabricGetCodePackageActivator(
 #[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricRuntime\"`*"]
 #[inline]
 pub unsafe fn FabricGetNodeContext() -> ::windows_core::Result<*mut ::core::ffi::c_void> {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricGetNodeContext(
             nodecontext: *mut *mut ::core::ffi::c_void,
@@ -511,7 +511,7 @@ where
     P1: ::windows_core::IntoParam<::windows_core::PCWSTR>,
     P2: ::windows_core::IntoParam<::windows_core::PCWSTR>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricLoadEseLocalStoreSettings(
             codepackageactivationcontext: *mut ::core::ffi::c_void,
@@ -541,7 +541,7 @@ where
     P1: ::windows_core::IntoParam<::windows_core::PCWSTR>,
     P2: ::windows_core::IntoParam<::windows_core::PCWSTR>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricLoadReplicatorSettings(
             codepackageactivationcontext: *mut ::core::ffi::c_void,
@@ -571,7 +571,7 @@ where
     P1: ::windows_core::IntoParam<::windows_core::PCWSTR>,
     P2: ::windows_core::IntoParam<::windows_core::PCWSTR>,
 {
-    #[link(name = "fabricruntime")]
+    #[link(name = "FabricRuntime")]
     extern "system" {
         pub fn FabricLoadSecurityCredentials(
             codepackageactivationcontext: *mut ::core::ffi::c_void,

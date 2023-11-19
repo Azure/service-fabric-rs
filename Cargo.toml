@@ -18,11 +18,12 @@ members = [
 ]
 
 [package.metadata.docs.rs]
-default-target = "x86_64-pc-windows-msvc"
+# default-target = "x86_64-pc-windows-msvc"
 targets = []
 
 [dependencies]
-fabric-metadata = { git = "https://github.com/youyuanwu/fabric-metadata.git", rev = "9d62ca15573a0716fb9828dce03a489ae4b8a4a7"}
+fabric-metadata = { git = "https://github.com/youyuanwu/fabric-metadata.git", rev = "2e6a471c7752148c4dc8d0968c0f1161c2a6c76a"}
+pal = { path = "./crates/fabric/pal" }
 windows-core = "0.51"
 
 [dependencies.windows]

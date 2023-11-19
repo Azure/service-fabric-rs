@@ -111,7 +111,7 @@ dependencies = [
 [[package]]
 name = "fabric-metadata"
 version = "0.1.0"
-source = "git+https://github.com/youyuanwu/fabric-metadata.git?rev=9d62ca15573a0716fb9828dce03a489ae4b8a4a7#9d62ca15573a0716fb9828dce03a489ae4b8a4a7"
+source = "git+https://github.com/youyuanwu/fabric-metadata.git?rev=2e6a471c7752148c4dc8d0968c0f1161c2a6c76a#2e6a471c7752148c4dc8d0968c0f1161c2a6c76a"
 
 [[package]]
 name = "fabric_ext"
@@ -213,6 +213,13 @@ checksum = "19e64526ebdee182341572e50e9ad03965aa510cd94427a4549448f285e957a1"
 dependencies = [
  "hermit-abi",
  "libc",
+]
+
+[[package]]
+name = "pal"
+version = "0.1.0"
+dependencies = [
+ "windows",
 ]
 
 [[package]]
@@ -355,6 +362,7 @@ name = "service-fabric-rs"
 version = "0.0.2"
 dependencies = [
  "fabric-metadata",
+ "pal",
  "windows",
  "windows-core",
 ]

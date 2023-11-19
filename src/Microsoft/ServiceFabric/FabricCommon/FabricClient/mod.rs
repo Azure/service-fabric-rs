@@ -4,7 +4,7 @@ pub unsafe fn FabricCreateClient(
     connectionstrings: &[::windows_core::PCWSTR],
     iid: *const ::windows_core::GUID,
 ) -> ::windows_core::Result<*mut ::core::ffi::c_void> {
-    #[link(name = "fabricclient")]
+    #[link(name = "FabricClient")]
     extern "system" {
         pub fn FabricCreateClient(
             connectionstringssize: u16,
@@ -32,7 +32,7 @@ pub unsafe fn FabricCreateClient2<P0>(
 where
     P0: ::windows_core::IntoParam<IFabricServiceNotificationEventHandler>,
 {
-    #[link(name = "fabricclient")]
+    #[link(name = "FabricClient")]
     extern "system" {
         pub fn FabricCreateClient2(
             connectionstringssize: u16,
@@ -64,7 +64,7 @@ where
     P0: ::windows_core::IntoParam<IFabricServiceNotificationEventHandler>,
     P1: ::windows_core::IntoParam<IFabricClientConnectionEventHandler>,
 {
-    #[link(name = "fabricclient")]
+    #[link(name = "FabricClient")]
     extern "system" {
         pub fn FabricCreateClient3(
             connectionstringssize: u16,
@@ -91,7 +91,7 @@ where
 pub unsafe fn FabricCreateLocalClient(
     iid: *const ::windows_core::GUID,
 ) -> ::windows_core::Result<*mut ::core::ffi::c_void> {
-    #[link(name = "fabricclient")]
+    #[link(name = "FabricClient")]
     extern "system" {
         pub fn FabricCreateLocalClient(
             iid: *const ::windows_core::GUID,
@@ -110,7 +110,7 @@ pub unsafe fn FabricCreateLocalClient2<P0>(
 where
     P0: ::windows_core::IntoParam<IFabricServiceNotificationEventHandler>,
 {
-    #[link(name = "fabricclient")]
+    #[link(name = "FabricClient")]
     extern "system" {
         pub fn FabricCreateLocalClient2(
             __midl__fabricclientmodule0001: *mut ::core::ffi::c_void,
@@ -137,7 +137,7 @@ where
     P0: ::windows_core::IntoParam<IFabricServiceNotificationEventHandler>,
     P1: ::windows_core::IntoParam<IFabricClientConnectionEventHandler>,
 {
-    #[link(name = "fabricclient")]
+    #[link(name = "FabricClient")]
     extern "system" {
         pub fn FabricCreateLocalClient3(
             __midl__fabricclientmodule0004: *mut ::core::ffi::c_void,
@@ -167,7 +167,7 @@ where
     P0: ::windows_core::IntoParam<IFabricServiceNotificationEventHandler>,
     P1: ::windows_core::IntoParam<IFabricClientConnectionEventHandler>,
 {
-    #[link(name = "fabricclient")]
+    #[link(name = "FabricClient")]
     extern "system" {
         pub fn FabricCreateLocalClient4(
             __midl__fabricclientmodule0006: *mut ::core::ffi::c_void,
@@ -191,7 +191,7 @@ where
 #[inline]
 pub unsafe fn FabricGetDefaultRollingUpgradeMonitoringPolicy(
 ) -> ::windows_core::Result<IFabricGetRollingUpgradeMonitoringPolicyResult> {
-    #[link(name = "fabricclient")]
+    #[link(name = "FabricClient")]
     extern "system" {
         pub fn FabricGetDefaultRollingUpgradeMonitoringPolicy(
             result: *mut *mut ::core::ffi::c_void,

@@ -1,5 +1,4 @@
 use std::cell::Cell;
-use std::ffi::OsString;
 use std::io::Error;
 use std::thread::JoinHandle;
 use std::{convert::TryInto, ptr::null};
@@ -19,10 +18,11 @@ use service_fabric_rs::FabricCommon::{IFabricAsyncOperationContext, IFabricStrin
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
 use windows::core::w;
+use windows_core::HSTRING;
 
 mod echo;
 
-pub fn run(runtime: &IFabricRuntime, port: u32, hostname: OsString) {
+pub fn run(runtime: &IFabricRuntime, port: u32, hostname: HSTRING) {
     info!("port: {}, host: {:?}", port, hostname);
 
     let factory: IFabricStatelessServiceFactory = ServiceFactory::new(port, hostname).into();
@@ -35,11 +35,11 @@ pub fn run(runtime: &IFabricRuntime, port: u32, hostname: OsString) {
 #[implement(IFabricStatelessServiceFactory)]
 pub struct ServiceFactory {
     port_: u32,
-    hostname_: OsString,
+    hostname_: HSTRING,
 }
 
 impl ServiceFactory {
-    pub fn new(port: u32, hostname: OsString) -> ServiceFactory {
+    pub fn new(port: u32, hostname: HSTRING) -> ServiceFactory {
         ServiceFactory {
             port_: port,
             hostname_: hostname,
@@ -86,13 +86,13 @@ impl IFabricStatelessServiceFactory_Impl for ServiceFactory {
 
 pub struct AppInstance {
     port_: u32,
-    hostname_: OsString,
+    hostname_: HSTRING,
     tx_: Cell<Option<Sender<()>>>, // hack to use this mutably
     th_: Cell<Option<JoinHandle<Result<(), Error>>>>,
 }
 
 impl AppInstance {
-    pub fn new(port: u32, hostname: OsString) -> AppInstance {
+    pub fn new(port: u32, hostname: HSTRING) -> AppInstance {
         return AppInstance {
             port_: port,
             hostname_: hostname,
@@ -155,7 +155,7 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
 
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
 
-        let str_res: IFabricStringResult = StringResult::new(OsString::from(addr)).into();
+        let str_res: IFabricStringResult = StringResult::new(HSTRING::from(addr)).into();
         Ok(str_res)
     }
 

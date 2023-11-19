@@ -1,12 +1,13 @@
-//use std::{path::Path, env};
+use std::path::Path;
 
 fn main() {
-    // add link dir for fabric support libs. This is propagated to downstream targets
-    // let dir = String::from("build\\_deps\\fabric_metadata-build\\src");
-    // let package_root = env::var("CARGO_MANIFEST_DIR").unwrap();
-    // let abs_dir = package_root + &dir;
-    // println!(
-    //     "cargo:rustc-link-search=native={}",
-    //     Path::new(&abs_dir).display()
-    // );
+    if cfg!(unix) {
+        // Add link dir for fabric libs on linux.
+        let dir = String::from("/opt/microsoft/servicefabric/bin/Fabric/Fabric.Code/");
+        println!("cargo:rustc-link-search={}", Path::new(&dir).display());
+
+        // On linux, for windows-rs to work we need have a pal shared lib.
+        // No need to have search dir since it is in the target dir
+        println!("cargo:rustc-link-lib=dylib=fabric_rust_pal");
+    }
 }

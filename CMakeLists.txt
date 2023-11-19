@@ -30,13 +30,17 @@ endif()
 # generate rust code
 find_program (
     cargo_exe
-    NAMES cargo.exe
+    NAMES cargo.exe cargo
     REQUIRED
 )
 
+set(_runtime_file ${CMAKE_CURRENT_SOURCE_DIR}/src/Microsoft/ServiceFabric/FabricCommon/FabricRuntime/mod.rs)
+set(_client_file ${CMAKE_CURRENT_SOURCE_DIR}/src/Microsoft/ServiceFabric/FabricCommon/FabricClient/mod.rs)
 add_custom_target(generate_rust
     #DEPENDS generate_winmd
     COMMAND ${cargo_exe} run -p tools_api
+    COMMAND powershell -Command "\"(Get-Content ${_runtime_file}).Replace('\\\"fabricruntime\\\"','\\\"FabricRuntime\\\"') | Set-Content ${_runtime_file}\""
+    COMMAND powershell -Command "\"(Get-Content ${_client_file}).Replace('\\\"fabricclient\\\"','\\\"FabricClient\\\"') | Set-Content ${_client_file}\""
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
@@ -48,7 +52,7 @@ add_custom_target(build_rust
 add_custom_target(build_rust_sample_client ALL
     COMMAND ${cargo_exe} build -p samples_client
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS generate_import_libs
+    #DEPENDS generate_import_libs
 )
 
 add_custom_target(run_rust_sample_client
@@ -65,12 +69,27 @@ add_custom_target(force_clean
 add_custom_target(build_rust_sample_echomain ALL
     COMMAND ${cargo_exe} build -p samples_echomain
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS generate_import_libs
+    DEPENDS build_fabric_rust_pal
+)
+
+add_custom_target(build_fabric_rust_pal ALL
+    COMMAND ${cargo_exe} build -p pal
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 set(_pkg_root ${CMAKE_BINARY_DIR}/echoapp_root)
 set(_pkg_src  ${CMAKE_CURRENT_SOURCE_DIR}/crates/samples/echomain)
-set(_pkg_exe  ${CMAKE_CURRENT_SOURCE_DIR}/target/debug/samples_echomain.exe)
+if(WIN32)
+    set(_pkg_exe  ${CMAKE_CURRENT_SOURCE_DIR}/target/debug/samples_echomain.exe)
+else()
+    set(_pkg_exe  ${CMAKE_CURRENT_SOURCE_DIR}/target/debug/samples_echomain)
+    set(_pal_so ${CMAKE_CURRENT_SOURCE_DIR}/target/debug/libfabric_rust_pal.so)
+    add_custom_command(TARGET build_rust_sample_echomain POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root}
+        COMMAND ${CMAKE_COMMAND} 
+            -E copy_if_different ${_pal_so} ${_pkg_root}/EchoAppServicePackage/Code/libfabric_rust_pal.so
+    )
+endif(WIN32)
 add_custom_command(TARGET build_rust_sample_echomain POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root}
     COMMAND ${CMAKE_COMMAND} 

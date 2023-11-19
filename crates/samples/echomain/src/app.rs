@@ -18,7 +18,7 @@ use service_fabric_rs::FabricCommon::FabricRuntime::{
 use service_fabric_rs::FabricCommon::{IFabricAsyncOperationContext, IFabricStringResult};
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
-use windows::w;
+use windows::core::w;
 
 mod echo;
 
@@ -50,15 +50,13 @@ impl ServiceFactory {
 impl IFabricStatelessServiceFactory_Impl for ServiceFactory {
     fn CreateInstance(
         &self,
-        servicetypename: &windows::core::PCWSTR,
+        servicetypename: &::windows::core::PCWSTR,
         servicename: *const u16,
         initializationdatalength: u32,
         initializationdata: *const u8,
-        partitionid: &windows::core::GUID,
+        partitionid: &::windows::core::GUID,
         instanceid: i64,
-    ) -> windows::core::Result<
-        service_fabric_rs::FabricCommon::FabricRuntime::IFabricStatelessServiceInstance,
-    > {
+    ) -> ::windows::core::Result<IFabricStatelessServiceInstance> {
         let mut init_data: String = "".to_string();
         if initializationdata != null() && initializationdatalength != 0 {
             init_data = unsafe {
@@ -107,11 +105,11 @@ impl AppInstance {
 impl IFabricStatelessServiceInstance_Impl for AppInstance {
     fn BeginOpen(
         &self,
-        partition: &core::option::Option<
-            service_fabric_rs::FabricCommon::FabricRuntime::IFabricStatelessServicePartition,
+        partition: core::option::Option<
+            &service_fabric_rs::FabricCommon::FabricRuntime::IFabricStatelessServicePartition,
         >,
-        callback: &core::option::Option<
-            service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback,
+        callback: core::option::Option<
+            &service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback,
         >,
     ) -> windows::core::Result<service_fabric_rs::FabricCommon::IFabricAsyncOperationContext> {
         let p = partition.as_ref().expect("get partition failed");
@@ -139,8 +137,8 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
 
     fn EndOpen(
         &self,
-        context: &core::option::Option<
-            service_fabric_rs::FabricCommon::IFabricAsyncOperationContext,
+        context: core::option::Option<
+            &service_fabric_rs::FabricCommon::IFabricAsyncOperationContext,
         >,
     ) -> windows::core::Result<service_fabric_rs::FabricCommon::IFabricStringResult> {
         info!("AppInstance::EndOpen");
@@ -163,8 +161,8 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
 
     fn BeginClose(
         &self,
-        callback: &core::option::Option<
-            service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback,
+        callback: core::option::Option<
+            &service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback,
         >,
     ) -> windows::core::Result<service_fabric_rs::FabricCommon::IFabricAsyncOperationContext> {
         info!("AppInstance::BeginClose");
@@ -203,8 +201,8 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
 
     fn EndClose(
         &self,
-        context: &core::option::Option<
-            service_fabric_rs::FabricCommon::IFabricAsyncOperationContext,
+        context: core::option::Option<
+            &service_fabric_rs::FabricCommon::IFabricAsyncOperationContext,
         >,
     ) -> windows::core::Result<()> {
         info!("AppInstance::EndClose");

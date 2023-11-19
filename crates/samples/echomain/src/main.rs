@@ -17,8 +17,9 @@ use service_fabric_rs::FabricCommon::FabricRuntime::{
 };
 use service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback;
 use std::sync::mpsc::channel;
-use windows::core::{Interface, Vtable, PCWSTR};
-use windows::w;
+use windows::core::w;
+use windows::core::{Interface, PCWSTR};
+use windows_core::ComInterface;
 pub mod app;
 
 fn main() -> windows::core::Result<()> {
@@ -74,7 +75,9 @@ fn get_hostname() -> OsString {
     // let result = String::from_utf16_lossy(std::slice::from_raw_parts(
     let callback: IFabricWaitableCallback = WaitableCallback::new().into();
 
-    let callback_arg: IFabricAsyncOperationCallback = callback.cast().expect("castfailed");
+    let callback_arg = callback
+        .cast::<IFabricAsyncOperationCallback>()
+        .expect("castfailed");
     let ctx = unsafe { FabricBeginGetNodeContext(1000, &callback_arg).expect("getctx failed") };
 
     unsafe { callback.wait() };

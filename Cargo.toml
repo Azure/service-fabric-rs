@@ -23,12 +23,21 @@ targets = []
 
 [dependencies]
 fabric-metadata = { git = "https://github.com/youyuanwu/fabric-metadata.git", rev = "9d62ca15573a0716fb9828dce03a489ae4b8a4a7"}
+windows-core = "0.51"
 
 [dependencies.windows]
-version = "0.43"
+version = "0.51"
 features = [
-    "Win32_Foundation"
+    "Win32_Foundation",
+    "implement"
 ]
 
 [features]
+Win32_Foundation = []
 implement = []
+
+ServiceFabric = []
+ServiceFabric_FabricCommon = ["ServiceFabric"]
+ServiceFabric_FabricCommon_FabricClient = ["ServiceFabric_FabricCommon"]
+ServiceFabric_FabricCommon_FabricRuntime = ["ServiceFabric_FabricCommon"]
+ServiceFabric_FabricCommon_FabricTransport = ["ServiceFabric_FabricCommon"]

@@ -24,9 +24,10 @@ use service_fabric_rs::{
     },
     FABRIC_NODE_QUERY_DESCRIPTION,
 };
-use windows::core::{implement, Interface, Vtable};
-
+use windows::core::{implement, Interface};
+//use windows_core::com_interface::ComInterface;
 use windows::core::HSTRING;
+use windows_core::ComInterface;
 
 /// Shared state between the future and the waiting thread
 #[derive(Debug)]
@@ -44,7 +45,7 @@ pub struct SharedState {
 
 // fabric code begins here
 
-#[windows::core::interface("a9445a72-838b-4ed3-8073-bb6423198241")]
+#[windows::core::interface]
 pub unsafe trait IFabricAwaitableCallback: IFabricAsyncOperationCallback {
     // This has warning
     pub unsafe fn get_token(&self) -> AwaitableToken;
@@ -52,7 +53,7 @@ pub unsafe trait IFabricAwaitableCallback: IFabricAsyncOperationCallback {
 
 // This is implement a call back the supports rust .await syntax
 #[derive(Debug)]
-#[implement(IFabricAsyncOperationCallback, IFabricAwaitableCallback)]
+#[implement(IFabricAwaitableCallback)]
 pub struct AwaitableCallback {
     shared_state: Arc<Mutex<SharedState>>,
 }
@@ -70,7 +71,7 @@ impl AwaitableCallback {
 
 impl IFabricAsyncOperationCallback_Impl for AwaitableCallback {
     // notify the function has been invoked.
-    fn Invoke(&self, _context: &core::option::Option<IFabricAsyncOperationContext>) {
+    fn Invoke(&self, _context: ::core::option::Option<&IFabricAsyncOperationContext>) {
         let mut shared_state = self.shared_state.lock().unwrap();
         // Signal that the timer has completed and wake up the last
         // task on which the future was polled, if one exists.

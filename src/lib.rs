@@ -20,8 +20,9 @@ extern crate windows;
     clippy::extra_unused_lifetimes,
     clippy::useless_transmute
 )]
-mod Microsoft;
+pub mod Microsoft;
 
+#[cfg(feature = "ServiceFabric")]
 pub use Microsoft::ServiceFabric::*;
 
 pub use fabric_metadata;

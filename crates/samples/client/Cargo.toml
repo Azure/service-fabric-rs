@@ -4,7 +4,7 @@ version = "0.0.1"
 edition = "2018"
 
 [dependencies.windows]
-version = "0.43"
+version = "0.51"
 features = [
     "implement"
 ]
@@ -17,3 +17,6 @@ features = [
 
 [dependencies.fabric_ext]
 path = "../../../crates/fabric/ext"
+
+[dependencies]
+windows-core = "0.51"

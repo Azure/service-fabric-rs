@@ -21,6 +21,7 @@ use service_fabric_rs::FabricCommon::{
     IFabricAsyncOperationContext_Impl, IFabricStringResult, IFabricStringResult_Impl,
 };
 use windows::core::implement;
+use windows_core::PCWSTR;
 
 // Interface for waitable async callback.
 // This is a common use case to combine fabric Begin* and End* apis.
@@ -45,7 +46,7 @@ impl WaitableCallback {
 
 impl IFabricAsyncOperationCallback_Impl for WaitableCallback {
     // notify the function has been invoked.
-    fn Invoke(&self, _context: &core::option::Option<IFabricAsyncOperationContext>) {
+    fn Invoke(&self, _context: ::core::option::Option<&IFabricAsyncOperationContext>) {
         //println!("WaitableCallback Invoke.");
         let (lock, cvar) = &*self.pair_;
         let mut started = lock.lock().unwrap();
@@ -67,22 +68,22 @@ impl IFabricWaitableCallback_Impl for WaitableCallback {
     }
 }
 
-// pub fn pwstr_to_string(p: PCWSTR) -> String {
-//     if p.0.is_null() {
-//         return String::new();
-//     }
+pub fn pwstr_to_string(p: PCWSTR) -> String {
+    if p.0.is_null() {
+        return String::new();
+    }
 
-//     let mut end = p.0;
-//     unsafe {
-//         while *end != 0 {
-//             end = end.add(1);
-//         }
-//     }
-//     let ret: String = unsafe {
-//         String::from_utf16_lossy(std::slice::from_raw_parts(p.0, end.offset_from(p.0) as _))
-//     };
-//     return ret;
-// }
+    let mut end = p.0;
+    unsafe {
+        while *end != 0 {
+            end = end.add(1);
+        }
+    }
+    let ret: String = unsafe {
+        String::from_utf16_lossy(std::slice::from_raw_parts(p.0, end.offset_from(p.0) as _))
+    };
+    return ret;
+}
 
 // The basic implementation of async context
 // which use needs to trigger callback synchronously
@@ -96,12 +97,12 @@ impl AsyncContext {
     // construct ctx. Note: caller needs to invoke callback.
     // This is different from cpp impl.
     pub fn new(
-        callback: &core::option::Option<
-            service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback,
+        callback: core::option::Option<
+            &service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback,
         >,
     ) -> AsyncContext {
         info!("AsyncContext::new");
-        let callback_copy: IFabricAsyncOperationCallback = callback.clone().expect("msg");
+        let callback_copy: IFabricAsyncOperationCallback = callback.expect("msg").clone();
 
         let ctx = AsyncContext {
             callback_: callback_copy,
@@ -155,9 +156,9 @@ impl StringResult {
 }
 
 impl IFabricStringResult_Impl for StringResult {
-    fn get_String(&self) -> windows::core::PWSTR {
+    fn get_String(&self) -> windows::core::PCWSTR {
         // This is some hack to get the raw pointer out.
         let ptr: *mut u16 = self.vec_.as_ptr() as *mut u16;
-        return windows::core::PWSTR::from_raw(ptr);
+        return windows::core::PCWSTR::from_raw(ptr);
     }
 }

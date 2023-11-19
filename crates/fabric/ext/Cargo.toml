@@ -8,16 +8,22 @@ log = "0.4"
 env_logger = "*"
 tokio = { version = "1", features = ["full"] }
 paste = "1.0"
+windows-core = "0.51"
 
 [dependencies.windows]
-version = "0.43"
+version = "0.51"
 features = [
     "implement",
-    "interface"
+    "Win32_System_Com",
+    "Win32_Foundation"
 ]
 
 [dependencies.service-fabric-rs]
 path = "../../../"
 features = [
-    "implement"
+    "implement",
+    "Win32_Foundation",
+    "ServiceFabric",
+    "ServiceFabric_FabricCommon",
+    "ServiceFabric_FabricCommon_FabricClient"
 ]

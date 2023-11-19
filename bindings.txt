@@ -1,0 +1,8 @@
+--in  ./build/_deps/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd
+--out src/Microsoft.rs
+
+--filter
+    Microsoft
+  
+--config
+  package=true

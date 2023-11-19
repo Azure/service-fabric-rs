@@ -4,6 +4,8 @@
 // license information.
 // ------------------------------------------------------------
 
+#![allow(non_snake_case)]
+
 // lib that contains all common extensions for the raw fabric apis.
 
 pub mod fasync;
@@ -12,7 +14,7 @@ pub mod fasync;
 use std::sync::{Arc, Condvar, Mutex};
 
 use log::info;
-use service_fabric_rs::FabricCommon::{
+use fabric_base::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
     IFabricAsyncOperationCallback_Vtbl, IFabricAsyncOperationContext,
     IFabricAsyncOperationContext_Impl, IFabricStringResult, IFabricStringResult_Impl,
@@ -95,7 +97,7 @@ impl AsyncContext {
     // This is different from cpp impl.
     pub fn new(
         callback: core::option::Option<
-            &service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback,
+            &IFabricAsyncOperationCallback,
         >,
     ) -> AsyncContext {
         info!("AsyncContext::new");
@@ -119,7 +121,7 @@ impl IFabricAsyncOperationContext_Impl for AsyncContext {
 
     fn Callback(
         &self,
-    ) -> windows::core::Result<service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback> {
+    ) -> windows::core::Result<IFabricAsyncOperationCallback> {
         info!("AsyncContext::Callback");
         // get a view of the callback
         let callback_copy: IFabricAsyncOperationCallback = self.callback_.clone();

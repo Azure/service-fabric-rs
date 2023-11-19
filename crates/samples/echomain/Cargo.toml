@@ -16,8 +16,8 @@ features = [
     "implement"
 ]
 
-[dependencies.service-fabric-rs]
-path = "../../../"
+[dependencies.fabric_base]
+path = "../../fabric/base"
 features = [
     "implement",
     "ServiceFabric",

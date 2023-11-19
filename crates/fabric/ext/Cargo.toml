@@ -18,8 +18,8 @@ features = [
     "Win32_Foundation"
 ]
 
-[dependencies.service-fabric-rs]
-path = "../../../"
+[dependencies.fabric_base]
+path = "../base"
 features = [
     "implement",
     "Win32_Foundation",

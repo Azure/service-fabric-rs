@@ -34,8 +34,8 @@ find_program (
     REQUIRED
 )
 
-set(_runtime_file ${CMAKE_CURRENT_SOURCE_DIR}/src/Microsoft/ServiceFabric/FabricCommon/FabricRuntime/mod.rs)
-set(_client_file ${CMAKE_CURRENT_SOURCE_DIR}/src/Microsoft/ServiceFabric/FabricCommon/FabricClient/mod.rs)
+set(_runtime_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/fabric/base/src/Microsoft/ServiceFabric/FabricCommon/FabricRuntime/mod.rs)
+set(_client_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/fabric/base/src/Microsoft/ServiceFabric/FabricCommon/FabricClient/mod.rs)
 add_custom_target(generate_rust
     #DEPENDS generate_winmd
     COMMAND ${cargo_exe} run -p tools_api

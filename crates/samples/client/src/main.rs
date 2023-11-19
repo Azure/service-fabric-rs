@@ -5,8 +5,8 @@
 // ------------------------------------------------------------
 
 use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
-use service_fabric_rs::FabricCommon::{FabricClient::*, IFabricAsyncOperationCallback};
-use service_fabric_rs::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
+use fabric_base::FabricCommon::{FabricClient::*, IFabricAsyncOperationCallback};
+use fabric_base::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
 use windows_core::{ComInterface, Interface};
 
 fn main() -> windows::core::Result<()> {

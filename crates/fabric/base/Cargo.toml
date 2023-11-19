@@ -1,0 +1,33 @@
+[package]
+name = "fabric_base"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Rust for Azure Service Fabric"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package.metadata.docs.rs]
+# default-target = "x86_64-pc-windows-msvc"
+targets = []
+
+[dependencies]
+fabric-metadata = { git = "https://github.com/youyuanwu/fabric-metadata.git", rev = "2e6a471c7752148c4dc8d0968c0f1161c2a6c76a"}
+pal = { path = "../../../crates/fabric/pal" }
+windows-core = "0.51"
+
+[dependencies.windows]
+version = "0.51"
+features = [
+    "Win32_Foundation",
+    "implement"
+]
+
+[features]
+implement = []
+Win32_Foundation = []
+ServiceFabric = []
+ServiceFabric_FabricCommon = ["ServiceFabric"]
+ServiceFabric_FabricCommon_FabricClient = ["ServiceFabric_FabricCommon"]
+ServiceFabric_FabricCommon_FabricRuntime = ["ServiceFabric_FabricCommon"]
+ServiceFabric_FabricCommon_FabricTransport = ["ServiceFabric_FabricCommon"]

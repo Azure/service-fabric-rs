@@ -16,7 +16,7 @@ use std::{
     task::{Context, Poll, Waker},
 };
 
-use service_fabric_rs::{
+use fabric_base::{
     FabricCommon::{
         FabricClient::{FabricCreateLocalClient, IFabricGetNodeListResult, IFabricQueryClient},
         IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
@@ -131,7 +131,7 @@ macro_rules! beginmyclient {
     ($name: ident) => {
         paste::item! {
         pub struct $name {
-            c_: SBox<service_fabric_rs::FabricCommon::FabricClient::[<I $name>]>,
+            c_: SBox<fabric_base::FabricCommon::FabricClient::[<I $name>]>,
         }
         }
 
@@ -144,8 +144,8 @@ macro_rules! beginmyclient {
                 return $name {
                     c_: SBox::new(unsafe {
                         paste::item! {
-                            service_fabric_rs::FabricCommon::FabricClient::[<I $name>]::from_raw(
-                            FabricCreateLocalClient(&service_fabric_rs::FabricCommon::FabricClient::[<I $name>]::IID)
+                            fabric_base::FabricCommon::FabricClient::[<I $name>]::from_raw(
+                            FabricCreateLocalClient(&fabric_base::FabricCommon::FabricClient::[<I $name>]::IID)
                                 .expect("cannot get localclient"),
                         )
                         }
@@ -225,30 +225,30 @@ impl FabricHealthClient {
     myasyncfunc!(
         get_cluster_health,
         GetClusterHealth,
-        service_fabric_rs::FABRIC_CLUSTER_HEALTH_POLICY,
-        service_fabric_rs::FabricCommon::FabricClient::IFabricClusterHealthResult,
+        fabric_base::FABRIC_CLUSTER_HEALTH_POLICY,
+        fabric_base::FabricCommon::FabricClient::IFabricClusterHealthResult,
     );
     // get node health does not work because it requires node id as additional argument
     myasyncfunc!(
         get_node_health,
         GetNodeHealth,
-        service_fabric_rs::FABRIC_CLUSTER_HEALTH_POLICY,
-        service_fabric_rs::FabricCommon::FabricClient::IFabricNodeHealthResult,
+        fabric_base::FABRIC_CLUSTER_HEALTH_POLICY,
+        fabric_base::FabricCommon::FabricClient::IFabricNodeHealthResult,
         HSTRING
     );
     // the u16 is likely wrong. Maybe need to write a url type and convert to const ptr.
     myasyncfunc!(
         get_application_health,
         GetApplicationHealth,
-        service_fabric_rs::FABRIC_APPLICATION_HEALTH_POLICY,
-        service_fabric_rs::FabricCommon::FabricClient::IFabricApplicationHealthResult,
+        fabric_base::FABRIC_APPLICATION_HEALTH_POLICY,
+        fabric_base::FabricCommon::FabricClient::IFabricApplicationHealthResult,
         u16 // applicationName
     );
     myasyncfunc!(
         get_service_health,
         GetServiceHealth,
-        service_fabric_rs::FABRIC_APPLICATION_HEALTH_POLICY,
-        service_fabric_rs::FabricCommon::FabricClient::IFabricServiceHealthResult,
+        fabric_base::FABRIC_APPLICATION_HEALTH_POLICY,
+        fabric_base::FabricCommon::FabricClient::IFabricServiceHealthResult,
         u16 // serviceName
     );
 }
@@ -283,15 +283,15 @@ impl FabricQueryClient {
     myasyncfunc!(
         get_application_type_list,
         GetApplicationTypeList,
-        service_fabric_rs::FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION,
-        service_fabric_rs::FabricCommon::FabricClient::IFabricGetApplicationTypeListResult,
+        fabric_base::FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION,
+        fabric_base::FabricCommon::FabricClient::IFabricGetApplicationTypeListResult,
     );
 
     myasyncfunc!(
         get_service_type_list,
         GetServiceTypeList,
-        service_fabric_rs::FABRIC_SERVICE_TYPE_QUERY_DESCRIPTION,
-        service_fabric_rs::FabricCommon::FabricClient::IFabricGetServiceTypeListResult,
+        fabric_base::FABRIC_SERVICE_TYPE_QUERY_DESCRIPTION,
+        fabric_base::FabricCommon::FabricClient::IFabricGetServiceTypeListResult,
     );
     // example of not using macro.
     // param is SBox because it crosses await boundary.
@@ -329,7 +329,7 @@ impl FabricQueryClient {
 #[cfg(test)]
 mod tests {
 
-    use service_fabric_rs::{
+    use fabric_base::{
         FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION, FABRIC_CLUSTER_HEALTH_POLICY,
         FABRIC_HEALTH_STATE_OK, FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM,
     };

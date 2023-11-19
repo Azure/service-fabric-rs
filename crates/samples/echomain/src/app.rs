@@ -1,20 +1,22 @@
-use std::cell::Cell;
-use std::io::Error;
-use std::thread::JoinHandle;
-use std::{convert::TryInto, ptr::null};
 // ------------------------------------------------------------
 // Copyright 2022 Youyuan Wu
 // Licensed under the MIT License (MIT). See License.txt in the repo root for
 // license information.
 // ------------------------------------------------------------
+#![allow(non_snake_case)]
+
+use std::cell::Cell;
+use std::io::Error;
+use std::thread::JoinHandle;
+use std::{convert::TryInto, ptr::null};
 
 use fabric_ext::{AsyncContext, StringResult};
 use log::info;
-use service_fabric_rs::FabricCommon::FabricRuntime::{
+use fabric_base::FabricCommon::FabricRuntime::{
     IFabricRuntime, IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
-    IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
+    IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl, IFabricStatelessServicePartition,
 };
-use service_fabric_rs::FabricCommon::{IFabricAsyncOperationContext, IFabricStringResult};
+use fabric_base::FabricCommon::{IFabricAsyncOperationContext, IFabricStringResult, IFabricAsyncOperationCallback};
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
 use windows::core::w;
@@ -106,12 +108,12 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
     fn BeginOpen(
         &self,
         partition: core::option::Option<
-            &service_fabric_rs::FabricCommon::FabricRuntime::IFabricStatelessServicePartition,
+            &IFabricStatelessServicePartition,
         >,
         callback: core::option::Option<
-            &service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback,
+            &IFabricAsyncOperationCallback,
         >,
-    ) -> windows::core::Result<service_fabric_rs::FabricCommon::IFabricAsyncOperationContext> {
+    ) -> windows::core::Result<IFabricAsyncOperationContext> {
         let p = partition.as_ref().expect("get partition failed");
         let info = unsafe { p.GetPartitionInfo() }.expect("getpartition info failed");
         info!("AppInstance::BeginOpen partition kind {:#?}", info);
@@ -138,9 +140,9 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
     fn EndOpen(
         &self,
         context: core::option::Option<
-            &service_fabric_rs::FabricCommon::IFabricAsyncOperationContext,
+            &IFabricAsyncOperationContext,
         >,
-    ) -> windows::core::Result<service_fabric_rs::FabricCommon::IFabricStringResult> {
+    ) -> windows::core::Result<IFabricStringResult> {
         info!("AppInstance::EndOpen");
         let completed = unsafe {
             context
@@ -162,9 +164,9 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
     fn BeginClose(
         &self,
         callback: core::option::Option<
-            &service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback,
+            &IFabricAsyncOperationCallback,
         >,
-    ) -> windows::core::Result<service_fabric_rs::FabricCommon::IFabricAsyncOperationContext> {
+    ) -> windows::core::Result<IFabricAsyncOperationContext> {
         info!("AppInstance::BeginClose");
 
         // triggers shutdown to tokio
@@ -202,7 +204,7 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
     fn EndClose(
         &self,
         context: core::option::Option<
-            &service_fabric_rs::FabricCommon::IFabricAsyncOperationContext,
+            &IFabricAsyncOperationContext,
         >,
     ) -> windows::core::Result<()> {
         info!("AppInstance::EndClose");

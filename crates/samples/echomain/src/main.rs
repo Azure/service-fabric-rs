@@ -7,12 +7,12 @@
 use ctrlc;
 use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
 use log::info;
-use service_fabric_rs::FabricCommon::FabricRuntime::{
+use fabric_base::FabricCommon::FabricRuntime::{
     FabricBeginGetNodeContext, FabricCreateRuntime, FabricEndGetNodeContext,
     FabricGetActivationContext, IFabricCodePackageActivationContext, IFabricNodeContextResult,
     IFabricRuntime,
 };
-use service_fabric_rs::FabricCommon::IFabricAsyncOperationCallback;
+use fabric_base::FabricCommon::IFabricAsyncOperationCallback;
 use std::sync::mpsc::channel;
 use windows::core::w;
 use windows::core::{Interface, HSTRING};

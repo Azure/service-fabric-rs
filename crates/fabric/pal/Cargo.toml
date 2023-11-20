@@ -17,3 +17,6 @@ version = "0.51"
 features = [
     "Win32_Foundation"
 ]
+
+[dependencies]
+libc = "0.2"

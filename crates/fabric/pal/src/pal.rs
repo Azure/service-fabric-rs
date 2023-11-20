@@ -1,30 +1,61 @@
 #[allow(non_camel_case_types, non_snake_case, dead_code)]
 use std::ffi::c_void;
 
+use libc::{__errno_location, malloc};
 use windows::core::imp::LOAD_LIBRARY_FLAGS;
+use windows::Win32::Foundation::{ERROR_NOT_ENOUGH_MEMORY, STATUS_HEAP_CORRUPTION};
 use windows::{
     core::{HRESULT, PCSTR, PWSTR},
     Win32::Foundation::{HANDLE, HMODULE},
 };
 
+static DUMMY_HEAP: isize = 0x01020304;
+
 #[no_mangle]
 pub unsafe extern "system" fn GetLastError() -> u32 {
-    0
+    let pe = __errno_location();
+    if !pe.is_null() {
+        *pe as u32
+    } else {
+        0
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "system" fn SetLastError(dwerrcode: u32) {
+    let pe = __errno_location();
+    if !pe.is_null() {
+        *pe = dwerrcode as i32
+    }
 }
 
 #[no_mangle]
 pub unsafe extern "system" fn GetProcessHeap() -> isize {
-    0
+    return DUMMY_HEAP;
 }
 
 #[no_mangle]
-pub unsafe extern "system" fn HeapAlloc(_heap: isize, _flags: u32, _len: usize) -> *mut c_void {
-    std::ptr::null_mut()
+pub unsafe extern "system" fn HeapAlloc(heap: isize, _flags: u32, len: usize) -> *mut c_void {
+    if heap != DUMMY_HEAP {
+        return std::ptr::null_mut();
+    }
+
+    let p = malloc(len);
+    if p.is_null() {
+        SetLastError(ERROR_NOT_ENOUGH_MEMORY.0)
+    }
+    p
 }
 
 #[no_mangle]
-pub unsafe extern "system" fn HeapFree(_heap: isize, _flags: u32, _ptr: *const c_void) -> i32 {
-    0
+pub unsafe extern "system" fn HeapFree(heap: isize, _flags: u32, ptr: *const c_void) -> i32 {
+    if heap != DUMMY_HEAP {
+        SetLastError(STATUS_HEAP_CORRUPTION.0 as u32);
+        return 0; // fail to free
+    }
+
+    libc::free(ptr as *mut c_void);
+    1 // success
 }
 
 #[no_mangle]

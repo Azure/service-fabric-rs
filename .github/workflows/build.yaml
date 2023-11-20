@@ -85,13 +85,44 @@ jobs:
     - name: run build
       run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
 
+    - name: install sfctl
+      run: |
+        pip3 install -I sfctl==11.1.0
+        echo "~/.local/bin" >> $GITHUB_PATH
+    
+    - name: test sfctl
+      run: sfctl --version
 
-    # - uses: actions/checkout@v2
+    - name: start sf
+      run: sudo /opt/microsoft/sdk/servicefabric/common/clustersetup/devclustersetup.sh
 
-    # - name: apt-get
-    #   run: sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils -y
+    - name: test cluster health
+      run: |
+        set +e # do not exit on error
+        counter=0
+        COMMAND_STATUS=1
+        until [ $COMMAND_STATUS -eq 0 ]; do
+          echo "attempt #${counter}"
+          sfctl cluster select
+          COMMAND_STATUS=$?
+          sleep 1
+          let counter=counter+1
+          if [[ $counter -eq 10 ]] ;
+          then
+            echo "Retry max reached" && exit 1
+          fi
+        done
+        sfctl cluster health
 
-    # - name: Install rust stable
-    #   uses: actions-rs/toolchain@v1
-    #   with:
-    #     toolchain: stable
+    - name: run echo app
+      run: |
+        sleep 120 # wait for cluster to be up
+        sfctl application upload --path build/echoapp_root
+        sfctl application provision --application-type-build-path echoapp_root
+        sfctl application create --app-name fabric:/EchoApp --app-type EchoApp --app-version 0.0.1
+
+    # TODO: this fails in CI    
+    # - name: resolve service
+    #   run: |
+    #     sleep 120 # wait for app to be up
+    #     sfctl service resolve --service-id EchoApp/EchoAppService

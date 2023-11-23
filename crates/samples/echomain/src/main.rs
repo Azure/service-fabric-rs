@@ -10,7 +10,7 @@ use fabric_base::FabricCommon::FabricRuntime::{
     IFabricRuntime,
 };
 use fabric_base::FabricCommon::IFabricAsyncOperationCallback;
-use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
+use fabric_ext::WaitableCallback;
 use log::info;
 use std::sync::mpsc::channel;
 use windows::core::w;
@@ -68,15 +68,14 @@ fn get_port(activation_ctx: &IFabricCodePackageActivationContext) -> u32 {
 }
 
 fn get_hostname() -> HSTRING {
-    // let result = String::from_utf16_lossy(std::slice::from_raw_parts(
-    let callback: IFabricWaitableCallback = WaitableCallback::new().into();
+    let (token, callback) = WaitableCallback::channel();
 
     let callback_arg = callback
         .cast::<IFabricAsyncOperationCallback>()
         .expect("castfailed");
     let ctx = unsafe { FabricBeginGetNodeContext(1000, &callback_arg).expect("getctx failed") };
 
-    unsafe { callback.wait() };
+    token.wait();
 
     let result_raw = unsafe { FabricEndGetNodeContext(&ctx).expect("end failed") };
 

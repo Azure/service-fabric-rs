@@ -48,6 +48,9 @@ jobs:
     - name: run echo example app
       run: Powershell.exe -File .\tests\echo_script_test.ps1
 
+    - name: run all unittests
+      run: cargo test --all
+
   build-linux:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -69,7 +72,8 @@ jobs:
         sudo apt-get update;
         echo "servicefabric servicefabric/accepted-eula-ga select true" | sudo debconf-set-selections ;
         echo "servicefabricsdkcommon servicefabricsdkcommon/accepted-eula-ga select true" | sudo debconf-set-selections ;
-        sudo apt-get install servicefabricsdkcommon -y
+        sudo apt-get install servicefabricsdkcommon -y;
+        echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/microsoft/servicefabric/bin/Fabric/Fabric.Code" >> $GITHUB_ENV
 
     - name: Get specific version CMake, v3.21.2
       uses: lukka/get-cmake@v3.21.2
@@ -126,3 +130,6 @@ jobs:
     #   run: |
     #     sleep 120 # wait for app to be up
     #     sfctl service resolve --service-id EchoApp/EchoAppService
+
+    - name: run all unittests
+      run: cargo test --all

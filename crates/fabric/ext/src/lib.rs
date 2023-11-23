@@ -15,23 +15,20 @@ use std::sync::{Arc, Condvar, Mutex};
 
 use fabric_base::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
-    IFabricAsyncOperationCallback_Vtbl, IFabricAsyncOperationContext,
-    IFabricAsyncOperationContext_Impl, IFabricStringResult, IFabricStringResult_Impl,
+    IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
+    IFabricStringResult_Impl,
 };
 use log::info;
 use windows::core::implement;
 use windows_core::{HSTRING, PCWSTR};
 
-// Interface for waitable async callback.
-// This is a common use case to combine fabric Begin* and End* apis.
-#[windows::core::interface("ce5d1e03-90f0-44a3-9d87-849973970761")]
-pub unsafe trait IFabricWaitableCallback: IFabricAsyncOperationCallback {
-    pub unsafe fn wait(&self);
+#[derive(Debug)]
+#[implement(IFabricAsyncOperationCallback)]
+pub struct WaitableCallback {
+    pair_: Arc<(Mutex<bool>, Condvar)>,
 }
 
-#[derive(Debug)]
-#[implement(IFabricWaitableCallback, IFabricAsyncOperationCallback)]
-pub struct WaitableCallback {
+pub struct WaitableToken {
     pair_: Arc<(Mutex<bool>, Condvar)>,
 }
 
@@ -42,6 +39,15 @@ impl Default for WaitableCallback {
 }
 
 impl WaitableCallback {
+    pub fn channel() -> (WaitableToken, IFabricAsyncOperationCallback) {
+        let callback = WaitableCallback::new();
+        let token = WaitableToken {
+            pair_: callback.pair_.clone(),
+        };
+        let i_callbaack = callback.into();
+        (token, i_callbaack)
+    }
+
     pub fn new() -> WaitableCallback {
         WaitableCallback {
             pair_: Arc::new((Mutex::new(false), Condvar::new())),
@@ -61,8 +67,8 @@ impl IFabricAsyncOperationCallback_Impl for WaitableCallback {
     }
 }
 
-impl IFabricWaitableCallback_Impl for WaitableCallback {
-    unsafe fn wait(&self) {
+impl WaitableToken {
+    pub fn wait(&self) {
         //println!("WaitableCallback wait.");
         // Wait for callback to be invoked
         let (lock, cvar) = &*self.pair_;

@@ -6,7 +6,7 @@
 
 use fabric_base::FabricCommon::{FabricClient::*, IFabricAsyncOperationCallback};
 use fabric_base::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
-use fabric_ext::{IFabricWaitableCallback, WaitableCallback};
+use fabric_ext::WaitableCallback;
 use windows_core::{ComInterface, Interface};
 
 fn main() -> windows::core::Result<()> {
@@ -18,7 +18,7 @@ fn main() -> windows::core::Result<()> {
     // todo: figure out owner ship
     let c: IFabricQueryClient = unsafe { IFabricQueryClient::from_raw(rawclient) };
 
-    let callback: IFabricWaitableCallback = WaitableCallback::new().into();
+    let (token, callback) = WaitableCallback::channel();
 
     let callback_arg: IFabricAsyncOperationCallback = callback.cast().expect("castfailed");
 
@@ -30,7 +30,7 @@ fn main() -> windows::core::Result<()> {
     };
 
     // wait callback to be triggered
-    unsafe { callback.wait() };
+    token.wait();
 
     // note: there must be a variable to hold COM object, ortherwise it is released.
     // result.expect().get_NodeList() will give a released/garbage node description pointer.

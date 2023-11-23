@@ -6,7 +6,7 @@ message(STATUS "fetching fabric_metadata")
 include(FetchContent)
 FetchContent_Declare(fabric_metadata
     GIT_REPOSITORY https://github.com/youyuanwu/fabric-metadata.git
-    GIT_TAG d6104333941a14898d01b8403f707a6cf154198a
+    GIT_TAG 639f45f0d585baca269e4cfe08dd10f408fe5456
 )
 FetchContent_GetProperties(fabric_metadata)
 if(NOT fabric_metadata_POPULATED)
@@ -62,7 +62,7 @@ add_custom_target(run_rust_sample_client
 
 # clean generated code
 add_custom_target(force_clean
-    COMMAND ${CMAKE_COMMAND} -E rm -rf src/Microsoft
+    COMMAND ${CMAKE_COMMAND} -E rm -rf crates/fabric/base/src/Microsoft
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

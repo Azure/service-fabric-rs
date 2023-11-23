@@ -32,6 +32,8 @@ impl ::core::fmt::Debug for IFabricAsyncOperationCallback {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricAsyncOperationCallback {}
+unsafe impl ::core::marker::Sync for IFabricAsyncOperationCallback {}
 unsafe impl ::windows_core::Interface for IFabricAsyncOperationCallback {
     type Vtable = IFabricAsyncOperationCallback_Vtbl;
 }
@@ -98,6 +100,8 @@ impl ::core::fmt::Debug for IFabricAsyncOperationContext {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricAsyncOperationContext {}
+unsafe impl ::core::marker::Sync for IFabricAsyncOperationContext {}
 unsafe impl ::windows_core::Interface for IFabricAsyncOperationContext {
     type Vtable = IFabricAsyncOperationContext_Vtbl;
 }
@@ -161,6 +165,8 @@ impl ::core::fmt::Debug for IFabricGetReplicatorStatusResult {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricGetReplicatorStatusResult {}
+unsafe impl ::core::marker::Sync for IFabricGetReplicatorStatusResult {}
 unsafe impl ::windows_core::Interface for IFabricGetReplicatorStatusResult {
     type Vtable = IFabricGetReplicatorStatusResult_Vtbl;
 }
@@ -213,6 +219,8 @@ impl ::core::fmt::Debug for IFabricStringListResult {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStringListResult {}
+unsafe impl ::core::marker::Sync for IFabricStringListResult {}
 unsafe impl ::windows_core::Interface for IFabricStringListResult {
     type Vtable = IFabricStringListResult_Vtbl;
 }
@@ -257,6 +265,8 @@ impl ::core::fmt::Debug for IFabricStringResult {
         f.debug_tuple("IFabricStringResult").field(&self.0).finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStringResult {}
+unsafe impl ::core::marker::Sync for IFabricStringResult {}
 unsafe impl ::windows_core::Interface for IFabricStringResult {
     type Vtable = IFabricStringResult_Vtbl;
 }

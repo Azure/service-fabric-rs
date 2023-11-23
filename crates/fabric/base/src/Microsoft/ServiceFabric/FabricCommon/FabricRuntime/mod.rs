@@ -696,6 +696,8 @@ impl ::core::fmt::Debug for IFabricAtomicGroupStateProvider {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricAtomicGroupStateProvider {}
+unsafe impl ::core::marker::Sync for IFabricAtomicGroupStateProvider {}
 unsafe impl ::windows_core::Interface for IFabricAtomicGroupStateProvider {
     type Vtable = IFabricAtomicGroupStateProvider_Vtbl;
 }
@@ -880,6 +882,8 @@ impl ::core::fmt::Debug for IFabricAtomicGroupStateReplicator {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricAtomicGroupStateReplicator {}
+unsafe impl ::core::marker::Sync for IFabricAtomicGroupStateReplicator {}
 unsafe impl ::windows_core::Interface for IFabricAtomicGroupStateReplicator {
     type Vtable = IFabricAtomicGroupStateReplicator_Vtbl;
 }
@@ -967,6 +971,8 @@ impl ::core::fmt::Debug for IFabricCodePackage {
         f.debug_tuple("IFabricCodePackage").field(&self.0).finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackage {}
+unsafe impl ::core::marker::Sync for IFabricCodePackage {}
 unsafe impl ::windows_core::Interface for IFabricCodePackage {
     type Vtable = IFabricCodePackage_Vtbl;
 }
@@ -1040,6 +1046,8 @@ impl ::core::fmt::Debug for IFabricCodePackage2 {
         f.debug_tuple("IFabricCodePackage2").field(&self.0).finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackage2 {}
+unsafe impl ::core::marker::Sync for IFabricCodePackage2 {}
 unsafe impl ::windows_core::Interface for IFabricCodePackage2 {
     type Vtable = IFabricCodePackage2_Vtbl;
 }
@@ -1312,6 +1320,8 @@ impl ::core::fmt::Debug for IFabricCodePackageActivationContext {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackageActivationContext {}
+unsafe impl ::core::marker::Sync for IFabricCodePackageActivationContext {}
 unsafe impl ::windows_core::Interface for IFabricCodePackageActivationContext {
     type Vtable = IFabricCodePackageActivationContext_Vtbl;
 }
@@ -1724,6 +1734,8 @@ impl ::core::fmt::Debug for IFabricCodePackageActivationContext2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackageActivationContext2 {}
+unsafe impl ::core::marker::Sync for IFabricCodePackageActivationContext2 {}
 unsafe impl ::windows_core::Interface for IFabricCodePackageActivationContext2 {
     type Vtable = IFabricCodePackageActivationContext2_Vtbl;
 }
@@ -2109,6 +2121,8 @@ impl ::core::fmt::Debug for IFabricCodePackageActivationContext3 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackageActivationContext3 {}
+unsafe impl ::core::marker::Sync for IFabricCodePackageActivationContext3 {}
 unsafe impl ::windows_core::Interface for IFabricCodePackageActivationContext3 {
     type Vtable = IFabricCodePackageActivationContext3_Vtbl;
 }
@@ -2577,6 +2591,8 @@ impl ::core::fmt::Debug for IFabricCodePackageActivationContext4 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackageActivationContext4 {}
+unsafe impl ::core::marker::Sync for IFabricCodePackageActivationContext4 {}
 unsafe impl ::windows_core::Interface for IFabricCodePackageActivationContext4 {
     type Vtable = IFabricCodePackageActivationContext4_Vtbl;
 }
@@ -3095,6 +3111,8 @@ impl ::core::fmt::Debug for IFabricCodePackageActivationContext5 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackageActivationContext5 {}
+unsafe impl ::core::marker::Sync for IFabricCodePackageActivationContext5 {}
 unsafe impl ::windows_core::Interface for IFabricCodePackageActivationContext5 {
     type Vtable = IFabricCodePackageActivationContext5_Vtbl;
 }
@@ -3641,6 +3659,8 @@ impl ::core::fmt::Debug for IFabricCodePackageActivationContext6 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackageActivationContext6 {}
+unsafe impl ::core::marker::Sync for IFabricCodePackageActivationContext6 {}
 unsafe impl ::windows_core::Interface for IFabricCodePackageActivationContext6 {
     type Vtable = IFabricCodePackageActivationContext6_Vtbl;
 }
@@ -3777,6 +3797,8 @@ impl ::core::fmt::Debug for IFabricCodePackageActivator {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackageActivator {}
+unsafe impl ::core::marker::Sync for IFabricCodePackageActivator {}
 unsafe impl ::windows_core::Interface for IFabricCodePackageActivator {
     type Vtable = IFabricCodePackageActivator_Vtbl;
 }
@@ -3892,6 +3914,8 @@ impl ::core::fmt::Debug for IFabricCodePackageChangeHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackageChangeHandler {}
+unsafe impl ::core::marker::Sync for IFabricCodePackageChangeHandler {}
 unsafe impl ::windows_core::Interface for IFabricCodePackageChangeHandler {
     type Vtable = IFabricCodePackageChangeHandler_Vtbl;
 }
@@ -3959,6 +3983,8 @@ impl ::core::fmt::Debug for IFabricCodePackageEventHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricCodePackageEventHandler {}
+unsafe impl ::core::marker::Sync for IFabricCodePackageEventHandler {}
 unsafe impl ::windows_core::Interface for IFabricCodePackageEventHandler {
     type Vtable = IFabricCodePackageEventHandler_Vtbl;
 }
@@ -4072,6 +4098,8 @@ impl ::core::fmt::Debug for IFabricConfigurationPackage {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricConfigurationPackage {}
+unsafe impl ::core::marker::Sync for IFabricConfigurationPackage {}
 unsafe impl ::windows_core::Interface for IFabricConfigurationPackage {
     type Vtable = IFabricConfigurationPackage_Vtbl;
 }
@@ -4237,6 +4265,8 @@ impl ::core::fmt::Debug for IFabricConfigurationPackage2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricConfigurationPackage2 {}
+unsafe impl ::core::marker::Sync for IFabricConfigurationPackage2 {}
 unsafe impl ::windows_core::Interface for IFabricConfigurationPackage2 {
     type Vtable = IFabricConfigurationPackage2_Vtbl;
 }
@@ -4324,6 +4354,8 @@ impl ::core::fmt::Debug for IFabricConfigurationPackageChangeHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricConfigurationPackageChangeHandler {}
+unsafe impl ::core::marker::Sync for IFabricConfigurationPackageChangeHandler {}
 unsafe impl ::windows_core::Interface for IFabricConfigurationPackageChangeHandler {
     type Vtable = IFabricConfigurationPackageChangeHandler_Vtbl;
 }
@@ -4382,6 +4414,8 @@ impl ::core::fmt::Debug for IFabricDataPackage {
         f.debug_tuple("IFabricDataPackage").field(&self.0).finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricDataPackage {}
+unsafe impl ::core::marker::Sync for IFabricDataPackage {}
 unsafe impl ::windows_core::Interface for IFabricDataPackage {
     type Vtable = IFabricDataPackage_Vtbl;
 }
@@ -4466,6 +4500,8 @@ impl ::core::fmt::Debug for IFabricDataPackageChangeHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricDataPackageChangeHandler {}
+unsafe impl ::core::marker::Sync for IFabricDataPackageChangeHandler {}
 unsafe impl ::windows_core::Interface for IFabricDataPackageChangeHandler {
     type Vtable = IFabricDataPackageChangeHandler_Vtbl;
 }
@@ -4526,6 +4562,8 @@ impl ::core::fmt::Debug for IFabricEseLocalStoreSettingsResult {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricEseLocalStoreSettingsResult {}
+unsafe impl ::core::marker::Sync for IFabricEseLocalStoreSettingsResult {}
 unsafe impl ::windows_core::Interface for IFabricEseLocalStoreSettingsResult {
     type Vtable = IFabricEseLocalStoreSettingsResult_Vtbl;
 }
@@ -4596,6 +4634,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreEnumerator {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreEnumerator {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreEnumerator {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreEnumerator {
     type Vtable = IFabricKeyValueStoreEnumerator_Vtbl;
 }
@@ -4720,6 +4760,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreEnumerator2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreEnumerator2 {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreEnumerator2 {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreEnumerator2 {
     type Vtable = IFabricKeyValueStoreEnumerator2_Vtbl;
 }
@@ -4786,6 +4828,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreItemEnumerator {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreItemEnumerator {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreItemEnumerator {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreItemEnumerator {
     type Vtable = IFabricKeyValueStoreItemEnumerator_Vtbl;
 }
@@ -4852,6 +4896,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreItemEnumerator2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreItemEnumerator2 {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreItemEnumerator2 {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreItemEnumerator2 {
     type Vtable = IFabricKeyValueStoreItemEnumerator2_Vtbl;
 }
@@ -4906,6 +4952,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreItemMetadataEnumerator {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreItemMetadataEnumerator {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreItemMetadataEnumerator {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreItemMetadataEnumerator {
     type Vtable = IFabricKeyValueStoreItemMetadataEnumerator_Vtbl;
 }
@@ -4974,6 +5022,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreItemMetadataEnumerator2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreItemMetadataEnumerator2 {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreItemMetadataEnumerator2 {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreItemMetadataEnumerator2 {
     type Vtable = IFabricKeyValueStoreItemMetadataEnumerator2_Vtbl;
 }
@@ -5024,6 +5074,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreItemMetadataResult {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreItemMetadataResult {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreItemMetadataResult {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreItemMetadataResult {
     type Vtable = IFabricKeyValueStoreItemMetadataResult_Vtbl;
 }
@@ -5073,6 +5125,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreItemResult {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreItemResult {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreItemResult {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreItemResult {
     type Vtable = IFabricKeyValueStoreItemResult_Vtbl;
 }
@@ -5131,6 +5185,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreNotification {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreNotification {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreNotification {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreNotification {
     type Vtable = IFabricKeyValueStoreNotification_Vtbl;
 }
@@ -5188,6 +5244,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreNotificationEnumerator {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreNotificationEnumerator {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreNotificationEnumerator {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreNotificationEnumerator {
     type Vtable = IFabricKeyValueStoreNotificationEnumerator_Vtbl;
 }
@@ -5260,6 +5318,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreNotificationEnumerator2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreNotificationEnumerator2 {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreNotificationEnumerator2 {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreNotificationEnumerator2 {
     type Vtable = IFabricKeyValueStoreNotificationEnumerator2_Vtbl;
 }
@@ -5604,6 +5664,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreReplica {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreReplica {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreReplica {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreReplica {
     type Vtable = IFabricKeyValueStoreReplica_Vtbl;
 }
@@ -6074,6 +6136,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreReplica2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreReplica2 {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreReplica2 {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreReplica2 {
     type Vtable = IFabricKeyValueStoreReplica2_Vtbl;
 }
@@ -6540,6 +6604,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreReplica3 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreReplica3 {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreReplica3 {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreReplica3 {
     type Vtable = IFabricKeyValueStoreReplica3_Vtbl;
 }
@@ -7070,6 +7136,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreReplica4 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreReplica4 {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreReplica4 {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreReplica4 {
     type Vtable = IFabricKeyValueStoreReplica4_Vtbl;
 }
@@ -7777,6 +7845,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreReplica5 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreReplica5 {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreReplica5 {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreReplica5 {
     type Vtable = IFabricKeyValueStoreReplica5_Vtbl;
 }
@@ -8590,6 +8660,8 @@ impl ::core::fmt::Debug for IFabricKeyValueStoreReplica6 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricKeyValueStoreReplica6 {}
+unsafe impl ::core::marker::Sync for IFabricKeyValueStoreReplica6 {}
 unsafe impl ::windows_core::Interface for IFabricKeyValueStoreReplica6 {
     type Vtable = IFabricKeyValueStoreReplica6_Vtbl;
 }
@@ -8641,6 +8713,8 @@ impl ::core::fmt::Debug for IFabricNodeContextResult {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricNodeContextResult {}
+unsafe impl ::core::marker::Sync for IFabricNodeContextResult {}
 unsafe impl ::windows_core::Interface for IFabricNodeContextResult {
     type Vtable = IFabricNodeContextResult_Vtbl;
 }
@@ -8704,6 +8778,8 @@ impl ::core::fmt::Debug for IFabricNodeContextResult2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricNodeContextResult2 {}
+unsafe impl ::core::marker::Sync for IFabricNodeContextResult2 {}
 unsafe impl ::windows_core::Interface for IFabricNodeContextResult2 {
     type Vtable = IFabricNodeContextResult2_Vtbl;
 }
@@ -8766,6 +8842,8 @@ impl ::core::fmt::Debug for IFabricOperation {
         f.debug_tuple("IFabricOperation").field(&self.0).finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricOperation {}
+unsafe impl ::core::marker::Sync for IFabricOperation {}
 unsafe impl ::windows_core::Interface for IFabricOperation {
     type Vtable = IFabricOperation_Vtbl;
 }
@@ -8825,6 +8903,8 @@ impl ::core::fmt::Debug for IFabricOperationData {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricOperationData {}
+unsafe impl ::core::marker::Sync for IFabricOperationData {}
 unsafe impl ::windows_core::Interface for IFabricOperationData {
     type Vtable = IFabricOperationData_Vtbl;
 }
@@ -8893,6 +8973,8 @@ impl ::core::fmt::Debug for IFabricOperationDataStream {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricOperationDataStream {}
+unsafe impl ::core::marker::Sync for IFabricOperationDataStream {}
 unsafe impl ::windows_core::Interface for IFabricOperationDataStream {
     type Vtable = IFabricOperationDataStream_Vtbl;
 }
@@ -8969,6 +9051,8 @@ impl ::core::fmt::Debug for IFabricOperationStream {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricOperationStream {}
+unsafe impl ::core::marker::Sync for IFabricOperationStream {}
 unsafe impl ::windows_core::Interface for IFabricOperationStream {
     type Vtable = IFabricOperationStream_Vtbl;
 }
@@ -9063,6 +9147,8 @@ impl ::core::fmt::Debug for IFabricOperationStream2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricOperationStream2 {}
+unsafe impl ::core::marker::Sync for IFabricOperationStream2 {}
 unsafe impl ::windows_core::Interface for IFabricOperationStream2 {
     type Vtable = IFabricOperationStream2_Vtbl;
 }
@@ -9353,6 +9439,8 @@ impl ::core::fmt::Debug for IFabricPrimaryReplicator {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricPrimaryReplicator {}
+unsafe impl ::core::marker::Sync for IFabricPrimaryReplicator {}
 unsafe impl ::windows_core::Interface for IFabricPrimaryReplicator {
     type Vtable = IFabricPrimaryReplicator_Vtbl;
 }
@@ -9439,6 +9527,8 @@ impl ::core::fmt::Debug for IFabricProcessExitHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricProcessExitHandler {}
+unsafe impl ::core::marker::Sync for IFabricProcessExitHandler {}
 unsafe impl ::windows_core::Interface for IFabricProcessExitHandler {
     type Vtable = IFabricProcessExitHandler_Vtbl;
 }
@@ -9604,6 +9694,8 @@ impl ::core::fmt::Debug for IFabricReplicator {
         f.debug_tuple("IFabricReplicator").field(&self.0).finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricReplicator {}
+unsafe impl ::core::marker::Sync for IFabricReplicator {}
 unsafe impl ::windows_core::Interface for IFabricReplicator {
     type Vtable = IFabricReplicator_Vtbl;
 }
@@ -9691,6 +9783,8 @@ impl ::core::fmt::Debug for IFabricReplicatorCatchupSpecificQuorum {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricReplicatorCatchupSpecificQuorum {}
+unsafe impl ::core::marker::Sync for IFabricReplicatorCatchupSpecificQuorum {}
 unsafe impl ::windows_core::Interface for IFabricReplicatorCatchupSpecificQuorum {
     type Vtable = IFabricReplicatorCatchupSpecificQuorum_Vtbl;
 }
@@ -9737,6 +9831,8 @@ impl ::core::fmt::Debug for IFabricReplicatorSettingsResult {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricReplicatorSettingsResult {}
+unsafe impl ::core::marker::Sync for IFabricReplicatorSettingsResult {}
 unsafe impl ::windows_core::Interface for IFabricReplicatorSettingsResult {
     type Vtable = IFabricReplicatorSettingsResult_Vtbl;
 }
@@ -9944,6 +10040,8 @@ impl ::core::fmt::Debug for IFabricRuntime {
         f.debug_tuple("IFabricRuntime").field(&self.0).finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricRuntime {}
+unsafe impl ::core::marker::Sync for IFabricRuntime {}
 unsafe impl ::windows_core::Interface for IFabricRuntime {
     type Vtable = IFabricRuntime_Vtbl;
 }
@@ -10059,6 +10157,8 @@ impl ::core::fmt::Debug for IFabricSecondaryEventHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricSecondaryEventHandler {}
+unsafe impl ::core::marker::Sync for IFabricSecondaryEventHandler {}
 unsafe impl ::windows_core::Interface for IFabricSecondaryEventHandler {
     type Vtable = IFabricSecondaryEventHandler_Vtbl;
 }
@@ -10111,6 +10211,8 @@ impl ::core::fmt::Debug for IFabricSecurityCredentialsResult {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricSecurityCredentialsResult {}
+unsafe impl ::core::marker::Sync for IFabricSecurityCredentialsResult {}
 unsafe impl ::windows_core::Interface for IFabricSecurityCredentialsResult {
     type Vtable = IFabricSecurityCredentialsResult_Vtbl;
 }
@@ -10150,6 +10252,8 @@ impl ::core::fmt::Debug for IFabricServiceGroupFactory {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricServiceGroupFactory {}
+unsafe impl ::core::marker::Sync for IFabricServiceGroupFactory {}
 unsafe impl ::windows_core::Interface for IFabricServiceGroupFactory {
     type Vtable = IFabricServiceGroupFactory_Vtbl;
 }
@@ -10244,6 +10348,8 @@ impl ::core::fmt::Debug for IFabricServiceGroupFactoryBuilder {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricServiceGroupFactoryBuilder {}
+unsafe impl ::core::marker::Sync for IFabricServiceGroupFactoryBuilder {}
 unsafe impl ::windows_core::Interface for IFabricServiceGroupFactoryBuilder {
     type Vtable = IFabricServiceGroupFactoryBuilder_Vtbl;
 }
@@ -10312,6 +10418,8 @@ impl ::core::fmt::Debug for IFabricServiceGroupPartition {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricServiceGroupPartition {}
+unsafe impl ::core::marker::Sync for IFabricServiceGroupPartition {}
 unsafe impl ::windows_core::Interface for IFabricServiceGroupPartition {
     type Vtable = IFabricServiceGroupPartition_Vtbl;
 }
@@ -10443,6 +10551,8 @@ impl ::core::fmt::Debug for IFabricStateProvider {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStateProvider {}
+unsafe impl ::core::marker::Sync for IFabricStateProvider {}
 unsafe impl ::windows_core::Interface for IFabricStateProvider {
     type Vtable = IFabricStateProvider_Vtbl;
 }
@@ -10574,6 +10684,8 @@ impl ::core::fmt::Debug for IFabricStateReplicator {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStateReplicator {}
+unsafe impl ::core::marker::Sync for IFabricStateReplicator {}
 unsafe impl ::windows_core::Interface for IFabricStateReplicator {
     type Vtable = IFabricStateReplicator_Vtbl;
 }
@@ -10713,6 +10825,8 @@ impl ::core::fmt::Debug for IFabricStateReplicator2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStateReplicator2 {}
+unsafe impl ::core::marker::Sync for IFabricStateReplicator2 {}
 unsafe impl ::windows_core::Interface for IFabricStateReplicator2 {
     type Vtable = IFabricStateReplicator2_Vtbl;
 }
@@ -10777,6 +10891,8 @@ impl ::core::fmt::Debug for IFabricStatefulServiceFactory {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatefulServiceFactory {}
+unsafe impl ::core::marker::Sync for IFabricStatefulServiceFactory {}
 unsafe impl ::windows_core::Interface for IFabricStatefulServiceFactory {
     type Vtable = IFabricStatefulServiceFactory_Vtbl;
 }
@@ -10898,6 +11014,8 @@ impl ::core::fmt::Debug for IFabricStatefulServicePartition {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatefulServicePartition {}
+unsafe impl ::core::marker::Sync for IFabricStatefulServicePartition {}
 unsafe impl ::windows_core::Interface for IFabricStatefulServicePartition {
     type Vtable = IFabricStatefulServicePartition_Vtbl;
 }
@@ -11051,6 +11169,8 @@ impl ::core::fmt::Debug for IFabricStatefulServicePartition1 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatefulServicePartition1 {}
+unsafe impl ::core::marker::Sync for IFabricStatefulServicePartition1 {}
 unsafe impl ::windows_core::Interface for IFabricStatefulServicePartition1 {
     type Vtable = IFabricStatefulServicePartition1_Vtbl;
 }
@@ -11207,6 +11327,8 @@ impl ::core::fmt::Debug for IFabricStatefulServicePartition2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatefulServicePartition2 {}
+unsafe impl ::core::marker::Sync for IFabricStatefulServicePartition2 {}
 unsafe impl ::windows_core::Interface for IFabricStatefulServicePartition2 {
     type Vtable = IFabricStatefulServicePartition2_Vtbl;
 }
@@ -11407,6 +11529,8 @@ impl ::core::fmt::Debug for IFabricStatefulServicePartition3 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatefulServicePartition3 {}
+unsafe impl ::core::marker::Sync for IFabricStatefulServicePartition3 {}
 unsafe impl ::windows_core::Interface for IFabricStatefulServicePartition3 {
     type Vtable = IFabricStatefulServicePartition3_Vtbl;
 }
@@ -11551,6 +11675,8 @@ impl ::core::fmt::Debug for IFabricStatefulServiceReplica {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatefulServiceReplica {}
+unsafe impl ::core::marker::Sync for IFabricStatefulServiceReplica {}
 unsafe impl ::windows_core::Interface for IFabricStatefulServiceReplica {
     type Vtable = IFabricStatefulServiceReplica_Vtbl;
 }
@@ -11644,6 +11770,8 @@ impl ::core::fmt::Debug for IFabricStatelessServiceFactory {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatelessServiceFactory {}
+unsafe impl ::core::marker::Sync for IFabricStatelessServiceFactory {}
 unsafe impl ::windows_core::Interface for IFabricStatelessServiceFactory {
     type Vtable = IFabricStatelessServiceFactory_Vtbl;
 }
@@ -11754,6 +11882,8 @@ impl ::core::fmt::Debug for IFabricStatelessServiceInstance {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatelessServiceInstance {}
+unsafe impl ::core::marker::Sync for IFabricStatelessServiceInstance {}
 unsafe impl ::windows_core::Interface for IFabricStatelessServiceInstance {
     type Vtable = IFabricStatelessServiceInstance_Vtbl;
 }
@@ -11845,6 +11975,8 @@ impl ::core::fmt::Debug for IFabricStatelessServicePartition {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatelessServicePartition {}
+unsafe impl ::core::marker::Sync for IFabricStatelessServicePartition {}
 unsafe impl ::windows_core::Interface for IFabricStatelessServicePartition {
     type Vtable = IFabricStatelessServicePartition_Vtbl;
 }
@@ -11938,6 +12070,8 @@ impl ::core::fmt::Debug for IFabricStatelessServicePartition1 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatelessServicePartition1 {}
+unsafe impl ::core::marker::Sync for IFabricStatelessServicePartition1 {}
 unsafe impl ::windows_core::Interface for IFabricStatelessServicePartition1 {
     type Vtable = IFabricStatelessServicePartition1_Vtbl;
 }
@@ -12050,6 +12184,8 @@ impl ::core::fmt::Debug for IFabricStatelessServicePartition2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatelessServicePartition2 {}
+unsafe impl ::core::marker::Sync for IFabricStatelessServicePartition2 {}
 unsafe impl ::windows_core::Interface for IFabricStatelessServicePartition2 {
     type Vtable = IFabricStatelessServicePartition2_Vtbl;
 }
@@ -12203,6 +12339,8 @@ impl ::core::fmt::Debug for IFabricStatelessServicePartition3 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStatelessServicePartition3 {}
+unsafe impl ::core::marker::Sync for IFabricStatelessServicePartition3 {}
 unsafe impl ::windows_core::Interface for IFabricStatelessServicePartition3 {
     type Vtable = IFabricStatelessServicePartition3_Vtbl;
 }
@@ -12260,6 +12398,8 @@ impl ::core::fmt::Debug for IFabricStoreEventHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStoreEventHandler {}
+unsafe impl ::core::marker::Sync for IFabricStoreEventHandler {}
 unsafe impl ::windows_core::Interface for IFabricStoreEventHandler {
     type Vtable = IFabricStoreEventHandler_Vtbl;
 }
@@ -12333,6 +12473,8 @@ impl ::core::fmt::Debug for IFabricStoreEventHandler2 {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStoreEventHandler2 {}
+unsafe impl ::core::marker::Sync for IFabricStoreEventHandler2 {}
 unsafe impl ::windows_core::Interface for IFabricStoreEventHandler2 {
     type Vtable = IFabricStoreEventHandler2_Vtbl;
 }
@@ -12408,6 +12550,8 @@ impl ::core::fmt::Debug for IFabricStorePostBackupHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricStorePostBackupHandler {}
+unsafe impl ::core::marker::Sync for IFabricStorePostBackupHandler {}
 unsafe impl ::windows_core::Interface for IFabricStorePostBackupHandler {
     type Vtable = IFabricStorePostBackupHandler_Vtbl;
 }
@@ -12499,6 +12643,8 @@ impl ::core::fmt::Debug for IFabricTransaction {
         f.debug_tuple("IFabricTransaction").field(&self.0).finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransaction {}
+unsafe impl ::core::marker::Sync for IFabricTransaction {}
 unsafe impl ::windows_core::Interface for IFabricTransaction {
     type Vtable = IFabricTransaction_Vtbl;
 }
@@ -12555,6 +12701,8 @@ impl ::core::fmt::Debug for IFabricTransactionBase {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransactionBase {}
+unsafe impl ::core::marker::Sync for IFabricTransactionBase {}
 unsafe impl ::windows_core::Interface for IFabricTransactionBase {
     type Vtable = IFabricTransactionBase_Vtbl;
 }

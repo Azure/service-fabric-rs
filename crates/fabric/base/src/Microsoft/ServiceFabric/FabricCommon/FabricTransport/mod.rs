@@ -109,6 +109,8 @@ impl ::core::fmt::Debug for IFabricTransportCallbackMessageHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransportCallbackMessageHandler {}
+unsafe impl ::core::marker::Sync for IFabricTransportCallbackMessageHandler {}
 unsafe impl ::windows_core::Interface for IFabricTransportCallbackMessageHandler {
     type Vtable = IFabricTransportCallbackMessageHandler_Vtbl;
 }
@@ -251,6 +253,8 @@ impl ::core::fmt::Debug for IFabricTransportClient {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransportClient {}
+unsafe impl ::core::marker::Sync for IFabricTransportClient {}
 unsafe impl ::windows_core::Interface for IFabricTransportClient {
     type Vtable = IFabricTransportClient_Vtbl;
 }
@@ -342,6 +346,8 @@ impl ::core::fmt::Debug for IFabricTransportClientConnection {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransportClientConnection {}
+unsafe impl ::core::marker::Sync for IFabricTransportClientConnection {}
 unsafe impl ::windows_core::Interface for IFabricTransportClientConnection {
     type Vtable = IFabricTransportClientConnection_Vtbl;
 }
@@ -411,6 +417,8 @@ impl ::core::fmt::Debug for IFabricTransportClientEventHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransportClientEventHandler {}
+unsafe impl ::core::marker::Sync for IFabricTransportClientEventHandler {}
 unsafe impl ::windows_core::Interface for IFabricTransportClientEventHandler {
     type Vtable = IFabricTransportClientEventHandler_Vtbl;
 }
@@ -518,6 +526,8 @@ impl ::core::fmt::Debug for IFabricTransportConnectionHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransportConnectionHandler {}
+unsafe impl ::core::marker::Sync for IFabricTransportConnectionHandler {}
 unsafe impl ::windows_core::Interface for IFabricTransportConnectionHandler {
     type Vtable = IFabricTransportConnectionHandler_Vtbl;
 }
@@ -634,6 +644,8 @@ impl ::core::fmt::Debug for IFabricTransportListener {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransportListener {}
+unsafe impl ::core::marker::Sync for IFabricTransportListener {}
 unsafe impl ::windows_core::Interface for IFabricTransportListener {
     type Vtable = IFabricTransportListener_Vtbl;
 }
@@ -706,6 +718,8 @@ impl ::core::fmt::Debug for IFabricTransportMessage {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransportMessage {}
+unsafe impl ::core::marker::Sync for IFabricTransportMessage {}
 unsafe impl ::windows_core::Interface for IFabricTransportMessage {
     type Vtable = IFabricTransportMessage_Vtbl;
 }
@@ -759,6 +773,8 @@ impl ::core::fmt::Debug for IFabricTransportMessageDisposer {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransportMessageDisposer {}
+unsafe impl ::core::marker::Sync for IFabricTransportMessageDisposer {}
 unsafe impl ::windows_core::Interface for IFabricTransportMessageDisposer {
     type Vtable = IFabricTransportMessageDisposer_Vtbl;
 }
@@ -852,6 +868,8 @@ impl ::core::fmt::Debug for IFabricTransportMessageHandler {
             .finish()
     }
 }
+unsafe impl ::core::marker::Send for IFabricTransportMessageHandler {}
+unsafe impl ::core::marker::Sync for IFabricTransportMessageHandler {}
 unsafe impl ::windows_core::Interface for IFabricTransportMessageHandler {
     type Vtable = IFabricTransportMessageHandler_Vtbl;
 }

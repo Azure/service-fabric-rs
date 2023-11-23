@@ -20,7 +20,7 @@ use fabric_base::FabricCommon::{
 };
 use log::info;
 use windows::core::implement;
-use windows_core::{HSTRING, PCWSTR};
+use windows_core::HSTRING;
 
 #[derive(Debug)]
 #[implement(IFabricAsyncOperationCallback)]
@@ -77,23 +77,6 @@ impl WaitableToken {
             started = cvar.wait(started).unwrap();
         }
     }
-}
-
-pub fn pwstr_to_string(p: PCWSTR) -> String {
-    if p.0.is_null() {
-        return String::new();
-    }
-
-    let mut end = p.0;
-    unsafe {
-        while *end != 0 {
-            end = end.add(1);
-        }
-    }
-    let ret: String = unsafe {
-        String::from_utf16_lossy(std::slice::from_raw_parts(p.0, end.offset_from(p.0) as _))
-    };
-    ret
 }
 
 // The basic implementation of async context

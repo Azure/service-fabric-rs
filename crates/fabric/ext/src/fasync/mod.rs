@@ -8,10 +8,10 @@
 #![allow(non_snake_case)]
 
 use std::{
+    cell::Cell,
     future::Future,
     pin::Pin,
-    sync::{Arc, Mutex},
-    task::{Context, Poll, Waker},
+    task::{Context, Poll},
 };
 
 use fabric_base::{
@@ -22,54 +22,32 @@ use fabric_base::{
     },
     FABRIC_NODE_QUERY_DESCRIPTION,
 };
+use tokio::sync::oneshot::{error::RecvError, Receiver, Sender};
 use windows::core::{implement, Interface};
 //use windows_core::com_interface::ComInterface;
 use windows::core::HSTRING;
 use windows_core::ComInterface;
 
-/// Shared state between the future and the waiting thread
-#[derive(Debug)]
-#[allow(improper_ctypes_definitions)]
-pub struct SharedState {
-    /// Whether or not the sleep time has elapsed
-    completed: bool,
-
-    /// The waker for the task that `TimerFuture` is running on.
-    /// The thread can use this after setting `completed = true` to tell
-    /// `TimerFuture`'s task to wake up, see that `completed = true`, and
-    /// move forward.
-    waker: Option<Waker>,
-}
-
 // fabric code begins here
 
 // This is implement a call back the supports rust .await syntax
-#[derive(Debug)]
 #[implement(IFabricAsyncOperationCallback)]
 pub struct AwaitableCallback {
-    shared_state: Arc<Mutex<SharedState>>,
-}
-
-impl Default for AwaitableCallback {
-    fn default() -> Self {
-        Self::new()
-    }
+    tx: Cell<Option<Sender<()>>>,
 }
 
 impl AwaitableCallback {
     pub fn channel() -> (AwaitableToken, IFabricAsyncOperationCallback) {
-        let callback: AwaitableCallback = AwaitableCallback::new();
-        let token = unsafe { callback.get_token() };
+        let (tx, rx) = tokio::sync::oneshot::channel::<()>();
+        let callback: AwaitableCallback = AwaitableCallback::new(tx);
+        let token = AwaitableToken::new(rx);
         let i_callback: IFabricAsyncOperationCallback = callback.into();
         (token, i_callback)
     }
 
-    pub fn new() -> AwaitableCallback {
+    fn new(tx: tokio::sync::oneshot::Sender<()>) -> AwaitableCallback {
         AwaitableCallback {
-            shared_state: Arc::new(Mutex::new(SharedState {
-                completed: false,
-                waker: None,
-            })),
+            tx: Cell::new(Some(tx)),
         }
     }
 }
@@ -77,58 +55,28 @@ impl AwaitableCallback {
 impl IFabricAsyncOperationCallback_Impl for AwaitableCallback {
     // notify the function has been invoked.
     fn Invoke(&self, _context: ::core::option::Option<&IFabricAsyncOperationContext>) {
-        let mut shared_state = self.shared_state.lock().unwrap();
-        // Signal that the timer has completed and wake up the last
-        // task on which the future was polled, if one exists.
-        shared_state.completed = true;
-        if let Some(waker) = shared_state.waker.take() {
-            waker.wake()
-        }
-    }
-}
-
-impl AwaitableCallback {
-    unsafe fn get_token(&self) -> AwaitableToken {
-        AwaitableToken::new(self.shared_state.clone())
+        let tx = self.tx.take();
+        let txx = tx.expect("tx is empty"); // This means invoke is called twice.
+        txx.send(()).expect("fail to send");
     }
 }
 
 #[repr(C)]
 pub struct AwaitableToken {
-    shared_state: Arc<Mutex<SharedState>>,
+    rx: tokio::sync::oneshot::Receiver<()>,
 }
 
 impl AwaitableToken {
-    pub fn new(state: Arc<Mutex<SharedState>>) -> AwaitableToken {
-        AwaitableToken {
-            shared_state: state,
-        }
+    fn new(rx: tokio::sync::oneshot::Receiver<()>) -> AwaitableToken {
+        AwaitableToken { rx }
     }
 }
 
 impl Future for AwaitableToken {
-    type Output = ();
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        // Look at the shared state to see if the timer has already completed.
-        let mut shared_state = self.shared_state.lock().unwrap();
-        if shared_state.completed {
-            Poll::Ready(())
-        } else {
-            // Set waker so that the thread can wake up the current task
-            // when the timer has completed, ensuring that the future is polled
-            // again and sees that `completed = true`.
-            //
-            // It's tempting to do this once rather than repeatedly cloning
-            // the waker each time. However, the `TimerFuture` can move between
-            // tasks on the executor, which could cause a stale waker pointing
-            // to the wrong task, preventing `TimerFuture` from waking up
-            // correctly.
-            //
-            // N.B. it's possible to check for this using the `Waker::will_wake`
-            // function, but we omit that here to keep things simple.
-            shared_state.waker = Some(cx.waker().clone());
-            Poll::Pending
-        }
+    type Output = Result<(), RecvError>;
+    fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
+        // Try to receive the value from the sender
+        <Receiver<()> as Future>::poll(Pin::new(&mut self.rx), _cx)
     }
 }
 
@@ -205,7 +153,7 @@ macro_rules! myasyncfunc {
             }
 
             // await for async operation.
-            token.await;
+            token.await.expect("wait failed");
 
             paste::item! {
             unsafe { self.c_.b.[<End $inner_name>](&(*ctx.b)) }
@@ -331,7 +279,7 @@ impl FabricQueryClient {
             }
         }
         // await for async operation.
-        token.await;
+        token.await.expect("wait failed");
         unsafe { self.c_.b.EndGetNodeList(&(*ctx.b)) }
     }
 }

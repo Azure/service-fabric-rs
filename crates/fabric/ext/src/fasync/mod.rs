@@ -352,6 +352,14 @@ mod tests {
                 rx
             }
         }
+
+        pub fn get_node_list_sync_example(
+            &self,
+            querydescription: &FABRIC_NODE_QUERY_DESCRIPTION,
+        ) -> ::windows::core::Result<IFabricGetNodeListResult> {
+            let rx = self.get_node_list_example2(querydescription);
+            rx.blocking_recv().expect("channel error")
+        }
     }
 
     async fn get_node(id: i32) {
@@ -412,6 +420,14 @@ mod tests {
         }
     }
 
+    fn sync_get_node() {
+        // check sync api is ok.
+        let c = FabricQueryClient::new();
+        let querydescription = FABRIC_NODE_QUERY_DESCRIPTION::default();
+        let _nodes2 = c.get_node_list_sync_example(&querydescription);
+        println!("sync_get_node finished");
+    }
+
     async fn get_stuff() {
         // do get applicationtype
         let c = FabricQueryClient::new();
@@ -452,6 +468,8 @@ mod tests {
             handle2.await.expect("handle2 wait");
 
             get_stuff().await;
-        })
+        });
+
+        sync_get_node();
     }
 }

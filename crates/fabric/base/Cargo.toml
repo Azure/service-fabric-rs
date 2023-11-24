@@ -3,12 +3,13 @@ name = "fabric_base"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Rust for Azure Service Fabric"
+description = "Rust for Azure Service Fabric. The COM base layer."
+authors = ["youyuanwu@outlook.com"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [package.metadata.docs.rs]
-# default-target = "x86_64-pc-windows-msvc"
+default-target = "x86_64-pc-windows-msvc"
 targets = []
 
 [dependencies]

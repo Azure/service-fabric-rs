@@ -25,5 +25,5 @@ features = [
     "ServiceFabric_FabricCommon_FabricRuntime"
 ]
 
-[dependencies.fabric_ext]
-path = "../../../crates/fabric/ext"
+[dependencies.fabric_rs]
+path = "../../fabric/rs"

@@ -10,7 +10,7 @@ use fabric_base::FabricCommon::FabricRuntime::{
     IFabricRuntime,
 };
 use fabric_base::FabricCommon::IFabricAsyncOperationCallback;
-use fabric_ext::WaitableCallback;
+use fabric_rs::WaitableCallback;
 use log::info;
 use std::sync::mpsc::channel;
 use windows::core::w;

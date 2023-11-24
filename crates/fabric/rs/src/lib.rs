@@ -8,9 +8,8 @@
 
 // lib that contains all common extensions for the raw fabric apis.
 
-pub mod fasync;
+pub mod sync;
 
-//use std::os::windows::prelude::OsStrExt;
 use std::sync::{Arc, Condvar, Mutex};
 
 use fabric_base::FabricCommon::{

@@ -15,8 +15,8 @@ features = [
     "implement"
 ]
 
-[dependencies.fabric_ext]
-path = "../../../crates/fabric/ext"
+[dependencies.fabric_rs]
+path = "../../fabric/rs"
 
 [dependencies]
 windows-core = "0.51"

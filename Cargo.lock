@@ -168,7 +168,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "fabric_ext"
+name = "fabric_rs"
 version = "0.0.2"
 dependencies = [
  "env_logger",
@@ -445,7 +445,7 @@ name = "samples_client"
 version = "0.0.1"
 dependencies = [
  "fabric_base",
- "fabric_ext",
+ "fabric_rs",
  "windows",
  "windows-core",
 ]
@@ -457,7 +457,7 @@ dependencies = [
  "ctrlc",
  "env_logger",
  "fabric_base",
- "fabric_ext",
+ "fabric_rs",
  "log",
  "tokio",
  "windows",

@@ -79,7 +79,7 @@ add_custom_target(build_fabric_rust_pal ALL
 
 # only format not generated code
 add_custom_target(format
-    COMMAND ${cargo_exe} fmt -p fabric_ext
+    COMMAND ${cargo_exe} fmt -p fabric_rs
     COMMAND ${cargo_exe} fmt -p pal
     COMMAND ${cargo_exe} fmt -p samples_client
     COMMAND ${cargo_exe} fmt -p samples_echomain

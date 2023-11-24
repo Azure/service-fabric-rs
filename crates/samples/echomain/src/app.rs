@@ -18,7 +18,7 @@ use fabric_base::FabricCommon::FabricRuntime::{
 use fabric_base::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricStringResult,
 };
-use fabric_ext::{AsyncContext, StringResult};
+use fabric_rs::{AsyncContext, StringResult};
 use log::info;
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;

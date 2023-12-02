@@ -10,11 +10,18 @@
 use std::cell::Cell;
 
 use fabric_base::FabricCommon::{
-    IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl, IFabricAsyncOperationContext,
+    FabricClient::FabricCreateLocalClient, IFabricAsyncOperationCallback,
+    IFabricAsyncOperationCallback_Impl, IFabricAsyncOperationContext,
 };
 use windows::core::implement;
+use windows_core::ComInterface;
 
 // fabric code begins here
+
+// Creates the local client
+pub fn CreateLocalClient<T: ComInterface>() -> T {
+    unsafe { T::from_raw(FabricCreateLocalClient(&T::IID).expect("cannot get localclient")) }
+}
 
 pub trait Callback: FnOnce(::core::option::Option<&IFabricAsyncOperationContext>) {}
 impl<T: FnOnce(::core::option::Option<&IFabricAsyncOperationContext>)> Callback for T {}
@@ -79,7 +86,10 @@ mod tests {
 
     use fabric_base::{
         FabricCommon::{
-            FabricClient::{FabricCreateLocalClient, IFabricGetNodeListResult, IFabricQueryClient},
+            FabricClient::{
+                FabricCreateLocalClient, IFabricClusterManagementClient3, IFabricGetNodeListResult,
+                IFabricQueryClient,
+            },
             IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
             IFabricAsyncOperationContext,
         },
@@ -91,7 +101,7 @@ mod tests {
     use windows::core::implement;
     use windows_core::{ComInterface, Interface, HSTRING};
 
-    use super::SBox;
+    use super::{CreateLocalClient, SBox};
 
     use super::AwaitableCallback2;
 
@@ -471,5 +481,10 @@ mod tests {
         });
 
         sync_get_node();
+    }
+
+    #[test]
+    fn local_client_create() {
+        let _mgmt = CreateLocalClient::<IFabricClusterManagementClient3>();
     }
 }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationManifest ApplicationTypeName="StatefulEchoApp" ApplicationTypeVersion="0.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Description>
+  Experiment echo app
+  </Description>
+  <Parameters>
+    <Parameter Name="SF_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="SF_PartitionCount" DefaultValue="1" />
+    <Parameter Name="SF_TargetReplicaSetSize" DefaultValue="3" />
+  </Parameters>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="EchoAppStatefulServicePackage" ServiceManifestVersion="1.0" />
+  </ServiceManifestImport>
+  <DefaultServices>
+    <Service Name="StatefulEchoAppService">
+        <StatefulService ServiceTypeName="StatefulEchoAppService" TargetReplicaSetSize="[SF_TargetReplicaSetSize]" MinReplicaSetSize="[SF_MinReplicaSetSize]">
+          <UniformInt64Partition PartitionCount="[SF_PartitionCount]" LowKey="0" HighKey="25" />
+        </StatefulService>
+    </Service>
+  </DefaultServices>
+</ApplicationManifest>

@@ -7,12 +7,18 @@
 // this contains some experiments for async
 #![allow(non_snake_case)]
 
-use std::cell::Cell;
+use std::{
+    cell::Cell,
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 use fabric_base::FabricCommon::{
     FabricClient::FabricCreateLocalClient, IFabricAsyncOperationCallback,
     IFabricAsyncOperationCallback_Impl, IFabricAsyncOperationContext,
 };
+use tokio::sync::oneshot::Receiver;
 use windows::core::implement;
 use windows_core::ComInterface;
 
@@ -26,6 +32,9 @@ pub fn CreateLocalClient<T: ComInterface>() -> T {
 pub trait Callback: FnOnce(::core::option::Option<&IFabricAsyncOperationContext>) {}
 impl<T: FnOnce(::core::option::Option<&IFabricAsyncOperationContext>)> Callback for T {}
 
+// TODO: rename.
+// Fabric Callback that wraps an arbitrary Fn closure.
+// Used primarily for bridging Begin and End fabric functions.
 #[implement(IFabricAsyncOperationCallback)]
 pub struct AwaitableCallback2<F>
 where
@@ -58,6 +67,40 @@ impl<F: Callback> AwaitableCallback2<F> {
     }
 }
 
+// Token that wraps oneshot receiver.
+// The future recieve does not have error.
+pub struct FabricReceiver<T> {
+    rx: tokio::sync::oneshot::Receiver<T>,
+}
+
+impl<T> FabricReceiver<T> {
+    pub fn new(rx: tokio::sync::oneshot::Receiver<T>) -> FabricReceiver<T> {
+        FabricReceiver { rx }
+    }
+
+    pub fn blocking_recv(self) -> T {
+        // sender must send stuff so that there is not error.
+        self.rx.blocking_recv().unwrap()
+    }
+}
+
+// The future differs from tokio oneshot that it will not error when awaited.
+impl<T> Future for FabricReceiver<T> {
+    type Output = T;
+    fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
+        // Try to receive the value from the sender
+        let innner = <Receiver<T> as Future>::poll(Pin::new(&mut self.rx), _cx);
+        match innner {
+            Poll::Ready(x) => {
+                // error only happens when sender is dropped without sending.
+                // we ignore this error since in sf-rs use this will never happen.
+                Poll::Ready(x.unwrap())
+            }
+            Poll::Pending => Poll::Pending,
+        }
+    }
+}
+
 // Send Box. Wrap a type and implement send.
 // c pointers are not send in rust, so this forces it.
 #[derive(Debug)]
@@ -77,18 +120,12 @@ impl<T> SBox<T> {
 #[cfg(test)]
 mod tests {
 
-    use std::{
-        cell::Cell,
-        future::Future,
-        pin::Pin,
-        task::{Context, Poll},
-    };
+    use std::cell::Cell;
 
     use fabric_base::{
         FabricCommon::{
             FabricClient::{
-                FabricCreateLocalClient, IFabricClusterManagementClient3, IFabricGetNodeListResult,
-                IFabricQueryClient,
+                IFabricClusterManagementClient3, IFabricGetNodeListResult, IFabricQueryClient,
             },
             IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
             IFabricAsyncOperationContext,
@@ -97,11 +134,11 @@ mod tests {
         FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM,
     };
 
-    use tokio::sync::oneshot::{self, error::RecvError, Receiver, Sender};
+    use tokio::sync::oneshot::{self, Sender};
     use windows::core::implement;
-    use windows_core::{ComInterface, Interface, HSTRING};
+    use windows_core::{ComInterface, HSTRING};
 
-    use super::{CreateLocalClient, SBox};
+    use super::{CreateLocalClient, FabricReceiver, SBox};
 
     use super::AwaitableCallback2;
 
@@ -136,30 +173,13 @@ mod tests {
         }
     }
 
-    #[repr(C)]
-    pub struct AwaitableToken {
-        rx: tokio::sync::oneshot::Receiver<()>,
-    }
-
-    impl AwaitableToken {
-        fn new(rx: tokio::sync::oneshot::Receiver<()>) -> AwaitableToken {
-            AwaitableToken { rx }
-        }
-    }
-
-    impl Future for AwaitableToken {
-        type Output = Result<(), RecvError>;
-        fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
-            // Try to receive the value from the sender
-            <Receiver<()> as Future>::poll(Pin::new(&mut self.rx), _cx)
-        }
-    }
+    type AwaitableToken = super::FabricReceiver<()>;
 
     macro_rules! beginmyclient {
     ($name: ident) => {
         paste::item! {
         pub struct $name {
-            c_: fabric_base::FabricCommon::FabricClient::[<I $name>],
+            com: fabric_base::FabricCommon::FabricClient::[<I $name>],
         }
         }
 
@@ -176,14 +196,9 @@ mod tests {
         impl $name {
             pub fn new() -> $name {
                 return $name {
-                    c_: unsafe{
-                        paste::item! {
-                            fabric_base::FabricCommon::FabricClient::[<I $name>]::from_raw(
-                            FabricCreateLocalClient(&fabric_base::FabricCommon::FabricClient::[<I $name>]::IID)
-                                .expect("cannot get localclient"),
-                        )
+                    com: paste::item! {
+                            crate::sync::CreateLocalClient::<fabric_base::FabricCommon::FabricClient::[<I $name>]>()
                         }
-                    }
                 };
             }
         } // impl
@@ -216,7 +231,7 @@ mod tests {
 
                     paste::item! {
                     ctx = SBox::new(unsafe {
-                        self.c_
+                        self.com
                         .[<Begin $inner_name>](
                             $(
                                 [<$param_opt _name>].b.as_ref(),
@@ -228,10 +243,10 @@ mod tests {
             }
 
             // await for async operation.
-            token.await.expect("wait failed");
+            token.await;
 
             paste::item! {
-            unsafe { self.c_.[<End $inner_name>](&(*ctx.b)) }
+            unsafe { self.com.[<End $inner_name>](&(*ctx.b)) }
             }
         }
     }
@@ -273,12 +288,8 @@ mod tests {
     }
 
     pub struct FabricQueryClient {
-        c_: IFabricQueryClient,
+        com: IFabricQueryClient,
     }
-
-    // both are needed. But should be safe because COM ptr always lives on heap.
-    unsafe impl Send for FabricQueryClient {}
-    unsafe impl Sync for FabricQueryClient {}
 
     impl Default for FabricQueryClient {
         fn default() -> Self {
@@ -289,12 +300,7 @@ mod tests {
     impl FabricQueryClient {
         pub fn new() -> FabricQueryClient {
             FabricQueryClient {
-                c_: unsafe {
-                    IFabricQueryClient::from_raw(
-                        FabricCreateLocalClient(&IFabricQueryClient::IID)
-                            .expect("cannot get localclient"),
-                    )
-                },
+                com: CreateLocalClient::<IFabricQueryClient>(),
             }
         }
 
@@ -334,32 +340,36 @@ mod tests {
 
                 {
                     ctx = SBox::new(unsafe {
-                        self.c_.BeginGetNodeList(p.b.as_ref(), 1000, &callback)?
+                        self.com.BeginGetNodeList(p.b.as_ref(), 1000, &callback)?
                     });
                 }
             }
             // await for async operation.
-            token.await.expect("wait failed");
-            unsafe { self.c_.EndGetNodeList(&(*ctx.b)) }
+            token.await;
+            unsafe { self.com.EndGetNodeList(&(*ctx.b)) }
         }
 
         pub fn get_node_list_example2(
             &self,
             querydescription: &FABRIC_NODE_QUERY_DESCRIPTION,
-        ) -> Receiver<::windows::core::Result<IFabricGetNodeListResult>> {
+        ) -> FabricReceiver<::windows::core::Result<IFabricGetNodeListResult>> {
             let (tx, rx) = oneshot::channel();
 
             let callback = AwaitableCallback2::i_new(move |ctx| {
-                let res = unsafe { self.c_.EndGetNodeList(ctx) };
-                tx.send(res).expect("fail to send"); // This fails if caller closes rx already
+                let res = unsafe { self.com.EndGetNodeList(ctx) };
+                if tx.send(res).is_err() {
+                    // This can happen if user on the receiver end use cancel or select.
+                    // Ideally user should always wait for result.
+                    debug_assert!(false, "Receiver is dropped.");
+                }
             });
-            let ctx = unsafe { self.c_.BeginGetNodeList(querydescription, 1000, &callback) };
+            let ctx = unsafe { self.com.BeginGetNodeList(querydescription, 1000, &callback) };
             if ctx.is_err() {
                 let (tx2, rx2) = oneshot::channel();
                 tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2"); // This should never fail since rx2 is available
-                rx2
+                FabricReceiver::new(rx2)
             } else {
-                rx
+                FabricReceiver::new(rx)
             }
         }
 
@@ -368,7 +378,7 @@ mod tests {
             querydescription: &FABRIC_NODE_QUERY_DESCRIPTION,
         ) -> ::windows::core::Result<IFabricGetNodeListResult> {
             let rx = self.get_node_list_example2(querydescription);
-            rx.blocking_recv().expect("channel error")
+            rx.blocking_recv()
         }
     }
 
@@ -412,9 +422,7 @@ mod tests {
         }
 
         let send_result = result.await;
-        let channel_result = send_result.expect("channel should work");
-
-        let result_node_list = channel_result.expect("fabric call failed");
+        let result_node_list = send_result.expect("fabric failure");
 
         let nodes = unsafe { result_node_list.get_NodeList() };
         let node_count = unsafe { (*nodes).Count };

@@ -1,15 +1,24 @@
 pub struct IFabricHealthClient4Wrap {
-    c: ::fabric_base::Microsoft::ServiceFabric::FabricCommon::FabricClient::IFabricHealthClient4,
+    com: ::fabric_base::Microsoft::ServiceFabric::FabricCommon::FabricClient::IFabricHealthClient4,
+}
+impl Default for IFabricHealthClient4Wrap {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 impl IFabricHealthClient4Wrap {
-    pub fn GetApplicationHealth (& self , applicationName : & u16 , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationHealthResult >>{
+    pub fn new() -> IFabricHealthClient4Wrap {
+        IFabricHealthClient4Wrap { com : crate :: sync :: CreateLocalClient :: < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricHealthClient4 > () , }
+    }    pub fn GetApplicationHealth (& self , applicationName : & u16 , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetApplicationHealth(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetApplicationHealth(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetApplicationHealth(
+            self.com.BeginGetApplicationHealth(
                 applicationName,
                 healthPolicy,
                 timeoutMilliseconds,
@@ -19,86 +28,96 @@ impl IFabricHealthClient4Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetApplicationHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationHealthResult >>{
+    }    pub fn GetApplicationHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetApplicationHealth2(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetApplicationHealth2(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetApplicationHealth2(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetClusterHealth (& self , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_CLUSTER_HEALTH_POLICY , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricClusterHealthResult >>{
+    }    pub fn GetClusterHealth (& self , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_CLUSTER_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricClusterHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetClusterHealth(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetClusterHealth(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetClusterHealth(healthPolicy, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetClusterHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricClusterHealthResult >>{
+    }    pub fn GetClusterHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricClusterHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetClusterHealth2(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetClusterHealth2(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetClusterHealth2(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetClusterHealthChunk (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_CLUSTER_HEALTH_CHUNK_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetClusterHealthChunkResult >>{
+    }    pub fn GetClusterHealthChunk (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_CLUSTER_HEALTH_CHUNK_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetClusterHealthChunkResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetClusterHealthChunk(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetClusterHealthChunk(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetClusterHealthChunk(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetDeployedApplicationHealth (& self , applicationName : & u16 , nodeName : :: windows_core :: PCWSTR , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedApplicationHealthResult >>{
+    }    pub fn GetDeployedApplicationHealth (& self , applicationName : & u16 , nodeName : :: windows_core :: PCWSTR , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedApplicationHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedApplicationHealth(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetDeployedApplicationHealth(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetDeployedApplicationHealth(
+            self.com.BeginGetDeployedApplicationHealth(
                 applicationName,
                 nodeName,
                 healthPolicy,
@@ -109,18 +128,20 @@ impl IFabricHealthClient4Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetDeployedApplicationHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedApplicationHealthResult >>{
+    }    pub fn GetDeployedApplicationHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedApplicationHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedApplicationHealth2(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetDeployedApplicationHealth2(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetDeployedApplicationHealth2(
+            self.com.BeginGetDeployedApplicationHealth2(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -129,18 +150,20 @@ impl IFabricHealthClient4Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetDeployedServicePackageHealth (& self , applicationName : & u16 , serviceManifestName : :: windows_core :: PCWSTR , nodeName : :: windows_core :: PCWSTR , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedServicePackageHealthResult >>{
+    }    pub fn GetDeployedServicePackageHealth (& self , applicationName : & u16 , serviceManifestName : :: windows_core :: PCWSTR , nodeName : :: windows_core :: PCWSTR , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedServicePackageHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedServicePackageHealth(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetDeployedServicePackageHealth(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetDeployedServicePackageHealth(
+            self.com.BeginGetDeployedServicePackageHealth(
                 applicationName,
                 serviceManifestName,
                 nodeName,
@@ -152,18 +175,20 @@ impl IFabricHealthClient4Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetDeployedServicePackageHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedServicePackageHealthResult >>{
+    }    pub fn GetDeployedServicePackageHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedServicePackageHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedServicePackageHealth2(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetDeployedServicePackageHealth2(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetDeployedServicePackageHealth2(
+            self.com.BeginGetDeployedServicePackageHealth2(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -172,52 +197,58 @@ impl IFabricHealthClient4Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetNodeHealth (& self , nodeName : :: windows_core :: PCWSTR , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_CLUSTER_HEALTH_POLICY , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricNodeHealthResult >>{
+    }    pub fn GetNodeHealth (& self , nodeName : :: windows_core :: PCWSTR , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_CLUSTER_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricNodeHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetNodeHealth(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetNodeHealth(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetNodeHealth(nodeName, healthPolicy, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetNodeHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_NODE_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricNodeHealthResult >>{
+    }    pub fn GetNodeHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_NODE_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricNodeHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetNodeHealth2(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetNodeHealth2(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetNodeHealth2(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetPartitionHealth (& self , partitionId : :: windows_core :: GUID , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricPartitionHealthResult >>{
+    }    pub fn GetPartitionHealth (& self , partitionId : :: windows_core :: GUID , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricPartitionHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetPartitionHealth(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetPartitionHealth(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetPartitionHealth(
+            self.com.BeginGetPartitionHealth(
                 partitionId,
                 healthPolicy,
                 timeoutMilliseconds,
@@ -227,35 +258,39 @@ impl IFabricHealthClient4Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetPartitionHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricPartitionHealthResult >>{
+    }    pub fn GetPartitionHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricPartitionHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetPartitionHealth2(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetPartitionHealth2(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetPartitionHealth2(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetReplicaHealth (& self , partitionId : :: windows_core :: GUID , replicaId : i64 , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricReplicaHealthResult >>{
+    }    pub fn GetReplicaHealth (& self , partitionId : :: windows_core :: GUID , replicaId : i64 , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricReplicaHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetReplicaHealth(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetReplicaHealth(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetReplicaHealth(
+            self.com.BeginGetReplicaHealth(
                 partitionId,
                 replicaId,
                 healthPolicy,
@@ -266,60 +301,70 @@ impl IFabricHealthClient4Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetReplicaHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricReplicaHealthResult >>{
+    }    pub fn GetReplicaHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricReplicaHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetReplicaHealth2(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetReplicaHealth2(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetReplicaHealth2(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetServiceHealth (& self , serviceName : & u16 , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceHealthResult >>{
+    }    pub fn GetServiceHealth (& self , serviceName : & u16 , healthPolicy : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetServiceHealth(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetServiceHealth(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
-                .BeginGetServiceHealth(serviceName, healthPolicy, timeoutMilliseconds, &callback)
+            self.com.BeginGetServiceHealth(
+                serviceName,
+                healthPolicy,
+                timeoutMilliseconds,
+                &callback,
+            )
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetServiceHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceHealthResult >>{
+    }    pub fn GetServiceHealth2 (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceHealthResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetServiceHealth2(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetServiceHealth2(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetServiceHealth2(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
     }
 }

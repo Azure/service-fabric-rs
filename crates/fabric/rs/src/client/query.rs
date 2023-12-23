@@ -1,32 +1,43 @@
 pub struct IFabricQueryClient10Wrap {
-    c: ::fabric_base::Microsoft::ServiceFabric::FabricCommon::FabricClient::IFabricQueryClient10,
+    com: ::fabric_base::Microsoft::ServiceFabric::FabricCommon::FabricClient::IFabricQueryClient10,
+}
+impl Default for IFabricQueryClient10Wrap {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 impl IFabricQueryClient10Wrap {
-    pub fn GetApplicationList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationListResult >>{
+    pub fn new() -> IFabricQueryClient10Wrap {
+        IFabricQueryClient10Wrap { com : crate :: sync :: CreateLocalClient :: < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricQueryClient10 > () , }
+    }    pub fn GetApplicationList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetApplicationList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetApplicationList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetApplicationList(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetApplicationLoadInformation (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_LOAD_INFORMATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationLoadInformationResult >>{
+    }    pub fn GetApplicationLoadInformation (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_LOAD_INFORMATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationLoadInformationResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetApplicationLoadInformation(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetApplicationLoadInformation(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetApplicationLoadInformation(
+            self.com.BeginGetApplicationLoadInformation(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -35,52 +46,58 @@ impl IFabricQueryClient10Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetApplicationName (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_NAME_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationNameResult >>{
+    }    pub fn GetApplicationName (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_NAME_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationNameResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetApplicationName(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetApplicationName(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetApplicationName(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetApplicationTypeList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationTypeListResult >>{
+    }    pub fn GetApplicationTypeList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationTypeListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetApplicationTypeList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetApplicationTypeList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetApplicationTypeList(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetApplicationTypePagedList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: PAGED_FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationTypePagedListResult >>{
+    }    pub fn GetApplicationTypePagedList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: PAGED_FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationTypePagedListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetApplicationTypePagedList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetApplicationTypePagedList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetApplicationTypePagedList(
+            self.com.BeginGetApplicationTypePagedList(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -89,52 +106,39 @@ impl IFabricQueryClient10Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetClusterLoadInformation (& self , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetClusterLoadInformationResult >>{
+    }    pub fn GetClusterLoadInformation (& self , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetClusterLoadInformationResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetClusterLoadInformation(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetClusterLoadInformation(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetClusterLoadInformation(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetDeployedApplicationList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedApplicationListResult >>{
+    }    pub fn GetDeployedApplicationList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedApplicationListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedApplicationList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetDeployedApplicationList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
-                .BeginGetDeployedApplicationList(queryDescription, timeoutMilliseconds, &callback)
-        };
-        if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
-        } else {
-            rx
-        }
-    }    pub fn GetDeployedApplicationPagedList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_PAGED_DEPLOYED_APPLICATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedApplicationPagedListResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
-        let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedApplicationPagedList(ctx) };
-            tx.send(res).expect("fail to send");
-        });
-        let ctx = unsafe {
-            self.c.BeginGetDeployedApplicationPagedList(
+            self.com.BeginGetDeployedApplicationList(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -143,69 +147,102 @@ impl IFabricQueryClient10Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetDeployedCodePackageList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedCodePackageListResult >>{
+    }    pub fn GetDeployedApplicationPagedList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_PAGED_DEPLOYED_APPLICATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedApplicationPagedListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedCodePackageList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetDeployedApplicationPagedList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
-                .BeginGetDeployedCodePackageList(queryDescription, timeoutMilliseconds, &callback)
+            self.com.BeginGetDeployedApplicationPagedList(
+                queryDescription,
+                timeoutMilliseconds,
+                &callback,
+            )
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetDeployedReplicaDetail (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedServiceReplicaDetailResult >>{
+    }    pub fn GetDeployedCodePackageList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedCodePackageListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedReplicaDetail(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetDeployedCodePackageList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com.BeginGetDeployedCodePackageList(
+                queryDescription,
+                timeoutMilliseconds,
+                &callback,
+            )
+        };
+        if ctx.is_err() {
+            let (tx2, rx2) = tokio::sync::oneshot::channel();
+            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
+            crate::sync::FabricReceiver::new(rx2)
+        } else {
+            crate::sync::FabricReceiver::new(rx)
+        }
+    }    pub fn GetDeployedReplicaDetail (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedServiceReplicaDetailResult >>{
+        let (tx, rx) = tokio::sync::oneshot::channel();
+        let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
+            let res = unsafe { self.com.EndGetDeployedReplicaDetail(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
+        });
+        let ctx = unsafe {
+            self.com
                 .BeginGetDeployedReplicaDetail(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetDeployedReplicaList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_SERVICE_REPLICA_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedReplicaListResult >>{
+    }    pub fn GetDeployedReplicaList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_SERVICE_REPLICA_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedReplicaListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedReplicaList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetDeployedReplicaList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetDeployedReplicaList(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetDeployedServicePackageList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedServicePackageListResult >>{
+    }    pub fn GetDeployedServicePackageList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedServicePackageListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedServicePackageList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetDeployedServicePackageList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetDeployedServicePackageList(
+            self.com.BeginGetDeployedServicePackageList(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -214,86 +251,99 @@ impl IFabricQueryClient10Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetDeployedServiceTypeList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_SERVICE_TYPE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedServiceTypeListResult >>{
+    }    pub fn GetDeployedServiceTypeList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_DEPLOYED_SERVICE_TYPE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetDeployedServiceTypeListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetDeployedServiceTypeList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetDeployedServiceTypeList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
-                .BeginGetDeployedServiceTypeList(queryDescription, timeoutMilliseconds, &callback)
+            self.com.BeginGetDeployedServiceTypeList(
+                queryDescription,
+                timeoutMilliseconds,
+                &callback,
+            )
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetNodeList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_NODE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetNodeListResult >>{
+    }    pub fn GetNodeList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_NODE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetNodeListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetNodeList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetNodeList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetNodeList(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetNodeLoadInformation (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_NODE_LOAD_INFORMATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetNodeLoadInformationResult >>{
+    }    pub fn GetNodeLoadInformation (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_NODE_LOAD_INFORMATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetNodeLoadInformationResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetNodeLoadInformation(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetNodeLoadInformation(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetNodeLoadInformation(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetPartitionList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetPartitionListResult >>{
+    }    pub fn GetPartitionList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetPartitionListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetPartitionList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetPartitionList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetPartitionList(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetPartitionLoadInformation (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetPartitionLoadInformationResult >>{
+    }    pub fn GetPartitionLoadInformation (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetPartitionLoadInformationResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetPartitionLoadInformation(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetPartitionLoadInformation(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetPartitionLoadInformation(
+            self.com.BeginGetPartitionLoadInformation(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -302,18 +352,20 @@ impl IFabricQueryClient10Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetProvisionedFabricCodeVersionList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_PROVISIONED_CODE_VERSION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetProvisionedCodeVersionListResult >>{
+    }    pub fn GetProvisionedFabricCodeVersionList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_PROVISIONED_CODE_VERSION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetProvisionedCodeVersionListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetProvisionedFabricCodeVersionList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetProvisionedFabricCodeVersionList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetProvisionedFabricCodeVersionList(
+            self.com.BeginGetProvisionedFabricCodeVersionList(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -322,18 +374,20 @@ impl IFabricQueryClient10Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetProvisionedFabricConfigVersionList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_PROVISIONED_CONFIG_VERSION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetProvisionedConfigVersionListResult >>{
+    }    pub fn GetProvisionedFabricConfigVersionList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_PROVISIONED_CONFIG_VERSION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetProvisionedConfigVersionListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetProvisionedFabricConfigVersionList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetProvisionedFabricConfigVersionList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetProvisionedFabricConfigVersionList(
+            self.com.BeginGetProvisionedFabricConfigVersionList(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -342,69 +396,39 @@ impl IFabricQueryClient10Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetReplicaList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetReplicaListResult >>{
+    }    pub fn GetReplicaList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetReplicaListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetReplicaList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetReplicaList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetReplicaList(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetReplicaLoadInformation (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_REPLICA_LOAD_INFORMATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetReplicaLoadInformationResult >>{
+    }    pub fn GetReplicaLoadInformation (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_REPLICA_LOAD_INFORMATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetReplicaLoadInformationResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetReplicaLoadInformation(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetReplicaLoadInformation(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
-                .BeginGetReplicaLoadInformation(queryDescription, timeoutMilliseconds, &callback)
-        };
-        if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
-        } else {
-            rx
-        }
-    }    pub fn GetServiceGroupMemberList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_GROUP_MEMBER_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetServiceGroupMemberListResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
-        let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetServiceGroupMemberList(ctx) };
-            tx.send(res).expect("fail to send");
-        });
-        let ctx = unsafe {
-            self.c
-                .BeginGetServiceGroupMemberList(queryDescription, timeoutMilliseconds, &callback)
-        };
-        if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
-        } else {
-            rx
-        }
-    }    pub fn GetServiceGroupMemberTypeList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_GROUP_MEMBER_TYPE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetServiceGroupMemberTypeListResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
-        let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetServiceGroupMemberTypeList(ctx) };
-            tx.send(res).expect("fail to send");
-        });
-        let ctx = unsafe {
-            self.c.BeginGetServiceGroupMemberTypeList(
+            self.com.BeginGetReplicaLoadInformation(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -413,69 +437,121 @@ impl IFabricQueryClient10Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetServiceList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetServiceListResult >>{
+    }    pub fn GetServiceGroupMemberList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_GROUP_MEMBER_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetServiceGroupMemberListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetServiceList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetServiceGroupMemberList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com.BeginGetServiceGroupMemberList(
+                queryDescription,
+                timeoutMilliseconds,
+                &callback,
+            )
+        };
+        if ctx.is_err() {
+            let (tx2, rx2) = tokio::sync::oneshot::channel();
+            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
+            crate::sync::FabricReceiver::new(rx2)
+        } else {
+            crate::sync::FabricReceiver::new(rx)
+        }
+    }    pub fn GetServiceGroupMemberTypeList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_GROUP_MEMBER_TYPE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetServiceGroupMemberTypeListResult >>{
+        let (tx, rx) = tokio::sync::oneshot::channel();
+        let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
+            let res = unsafe { self.com.EndGetServiceGroupMemberTypeList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
+        });
+        let ctx = unsafe {
+            self.com.BeginGetServiceGroupMemberTypeList(
+                queryDescription,
+                timeoutMilliseconds,
+                &callback,
+            )
+        };
+        if ctx.is_err() {
+            let (tx2, rx2) = tokio::sync::oneshot::channel();
+            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
+            crate::sync::FabricReceiver::new(rx2)
+        } else {
+            crate::sync::FabricReceiver::new(rx)
+        }
+    }    pub fn GetServiceList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetServiceListResult >>{
+        let (tx, rx) = tokio::sync::oneshot::channel();
+        let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
+            let res = unsafe { self.com.EndGetServiceList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
+        });
+        let ctx = unsafe {
+            self.com
                 .BeginGetServiceList(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetServiceName (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_NAME_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetServiceNameResult >>{
+    }    pub fn GetServiceName (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_NAME_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetServiceNameResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetServiceName(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetServiceName(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetServiceName(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetServiceTypeList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_TYPE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetServiceTypeListResult >>{
+    }    pub fn GetServiceTypeList (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_TYPE_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetServiceTypeListResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetServiceTypeList(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetServiceTypeList(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c
+            self.com
                 .BeginGetServiceTypeList(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
-    }    pub fn GetUnplacedReplicaInformation (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_UNPLACED_REPLICA_INFORMATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> tokio :: sync :: oneshot :: Receiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetUnplacedReplicaInformationResult >>{
+    }    pub fn GetUnplacedReplicaInformation (& self , queryDescription : & :: fabric_base :: Microsoft :: ServiceFabric :: FABRIC_UNPLACED_REPLICA_INFORMATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: fabric_base :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetUnplacedReplicaInformationResult >>{
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.c.EndGetUnplacedReplicaInformation(ctx) };
-            tx.send(res).expect("fail to send");
+            let res = unsafe { self.com.EndGetUnplacedReplicaInformation(ctx) };
+            if tx.send(res).is_err() {
+                debug_assert!(false, "Receiver is dropped.");
+            }
         });
         let ctx = unsafe {
-            self.c.BeginGetUnplacedReplicaInformation(
+            self.com.BeginGetUnplacedReplicaInformation(
                 queryDescription,
                 timeoutMilliseconds,
                 &callback,
@@ -484,9 +560,9 @@ impl IFabricQueryClient10Wrap {
         if ctx.is_err() {
             let (tx2, rx2) = tokio::sync::oneshot::channel();
             tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            rx2
+            crate::sync::FabricReceiver::new(rx2)
         } else {
-            rx
+            crate::sync::FabricReceiver::new(rx)
         }
     }
 }

@@ -108,3 +108,7 @@ add_custom_command(TARGET build_rust_sample_echomain POST_BUILD
     COMMAND ${CMAKE_COMMAND} 
         -E copy_if_different ${_pkg_exe} ${_pkg_root}/EchoAppServicePackage/Code/echomain.exe # note the rename
 )
+
+if(WIN32) #linux is not tested
+    add_subdirectory(crates/samples/echo2)
+endif(WIN32)

@@ -27,6 +27,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-trait"
+version = "0.1.75"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fdf6721fb0140e4f897002dd086c06f6c27775df19cfe1fccb21181a48fd2c98"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -180,6 +191,7 @@ dependencies = [
 name = "fabric_rs"
 version = "0.0.2"
 dependencies = [
+ "async-trait",
  "env_logger",
  "fabric_base",
  "log",
@@ -464,6 +476,21 @@ version = "0.0.1"
 dependencies = [
  "fabric_base",
  "fabric_rs",
+ "windows",
+ "windows-core",
+]
+
+[[package]]
+name = "samples_echo2"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "ctrlc",
+ "env_logger",
+ "fabric_base",
+ "fabric_rs",
+ "log",
+ "tokio",
  "windows",
  "windows-core",
 ]

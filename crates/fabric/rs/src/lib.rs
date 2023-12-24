@@ -9,6 +9,7 @@
 // lib that contains all common extensions for the raw fabric apis.
 
 pub mod client;
+pub mod runtime;
 pub mod sync;
 
 use std::sync::{Arc, Condvar, Mutex};

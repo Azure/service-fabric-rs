@@ -240,6 +240,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "kvstore"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "ctrlc",
+ "env_logger",
+ "fabric_base",
+ "fabric_rs",
+ "log",
+ "tokio",
+ "windows",
+ "windows-core",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.150"
 source = "registry+https://github.com/rust-lang/crates.io-index"

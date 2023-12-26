@@ -9,6 +9,7 @@
 // lib that contains all common extensions for the raw fabric apis.
 
 pub mod client;
+pub mod debug;
 pub mod runtime;
 pub mod sync;
 
@@ -146,4 +147,9 @@ impl IFabricStringResult_Impl for StringResult {
         let ptr: *mut u16 = self.vec_.as_ptr() as *mut u16;
         windows::core::PCWSTR::from_raw(ptr)
     }
+}
+
+pub fn IFabricStringResultToHString(s: &IFabricStringResult) -> HSTRING {
+    let content = unsafe { s.get_String() };
+    HSTRING::from_wide(unsafe { content.as_wide() }).unwrap()
 }

@@ -1,21 +1,28 @@
-use std::{cell::Cell, sync::Arc};
-
-use async_trait::async_trait;
-use fabric_base::FabricCommon::{
-    FabricRuntime::{
-        FabricCreateRuntime, FabricGetActivationContext, IFabricCodePackageActivationContext,
-        IFabricRuntime, IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
-        IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
-        IFabricStatelessServicePartition,
+use fabric_base::{
+    FabricCommon::{
+        FabricRuntime::{
+            FabricCreateRuntime, FabricGetActivationContext, IFabricCodePackageActivationContext,
+            IFabricRuntime, IFabricStatefulServiceFactory, IFabricStatelessServiceFactory,
+        },
+        IFabricAsyncOperationCallback, IFabricAsyncOperationContext,
+        IFabricAsyncOperationContext_Impl,
     },
-    IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl,
+    FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
 };
-use log::info;
-use tokio::{runtime::Handle, sync::Mutex};
+use std::cell::Cell;
+use tokio::runtime::Handle;
 use windows::core::implement;
-use windows_core::{AsImpl, ComInterface, Error, Interface, HSTRING};
+use windows_core::{ComInterface, Error, Interface, HSTRING, PCWSTR};
 
-use crate::StringResult;
+use self::{
+    stateful::{StatefulServiceFactory, StatefulServiceFactoryBridge},
+    stateless::{StatelessServiceFactory, StatelessServiceFactoryBridge},
+};
+
+pub mod proxy;
+pub mod stateful;
+pub mod stateless;
+pub mod store;
 
 // creates fabric runtime
 pub fn create_com_runtime() -> ::windows_core::Result<IFabricRuntime> {
@@ -58,12 +65,74 @@ impl Runtime {
                 .RegisterStatelessServiceFactory(servicetypename, &bridge)
         }
     }
+
+    pub fn register_stateful_service_factory(
+        &self,
+        servicetypename: &HSTRING,
+        factory: Box<dyn StatefulServiceFactory>,
+    ) -> windows_core::Result<()> {
+        let rt_cp = self.rt.clone();
+        let bridge: IFabricStatefulServiceFactory =
+            StatefulServiceFactoryBridge::create(factory, rt_cp).into();
+        unsafe {
+            self.comImpl
+                .RegisterStatefulServiceFactory(servicetypename, &bridge)
+        }
+    }
 }
+
+pub struct EndpointResourceDesc {
+    pub Name: ::windows_core::HSTRING,
+    pub Protocol: ::windows_core::HSTRING,
+    pub Type: ::windows_core::HSTRING,
+    pub Port: u32,
+    pub CertificateName: ::windows_core::HSTRING,
+    //pub Reserved: *mut ::core::ffi::c_void,
+}
+
+impl From<&FABRIC_ENDPOINT_RESOURCE_DESCRIPTION> for EndpointResourceDesc {
+    fn from(e: &FABRIC_ENDPOINT_RESOURCE_DESCRIPTION) -> Self {
+        EndpointResourceDesc {
+            Name: HSTRING::from_wide(unsafe { e.Name.as_wide() }).unwrap(),
+            Protocol: HSTRING::from_wide(unsafe { e.Protocol.as_wide() }).unwrap(),
+            Type: HSTRING::from_wide(unsafe { e.Type.as_wide() }).unwrap(),
+            Port: e.Port,
+            CertificateName: HSTRING::from_wide(unsafe { e.CertificateName.as_wide() }).unwrap(),
+        }
+    }
+}
+
+pub struct ActivationContext {
+    comImpl: IFabricCodePackageActivationContext,
+}
+
+impl ActivationContext {
+    pub fn create() -> Result<ActivationContext, Error> {
+        let com = get_com_activation_context()?;
+        Ok(ActivationContext { comImpl: com })
+    }
+
+    pub fn get_endpoint_resource(
+        &self,
+        serviceendpointresourcename: &HSTRING,
+    ) -> Result<EndpointResourceDesc, Error> {
+        let rs = unsafe {
+            self.comImpl.GetServiceEndpointResource(PCWSTR::from_raw(
+                serviceendpointresourcename.as_ptr(),
+            ))?
+        };
+        let res_ref = unsafe { rs.as_ref().unwrap() };
+        let desc = EndpointResourceDesc::from(res_ref);
+        Ok(desc)
+    }
+}
+
+pub struct NodeContext {}
 
 #[implement(IFabricAsyncOperationContext)]
 struct BridgeContext<T> {
     content: Cell<Option<T>>,
-    is_completed: bool,
+    is_completed: Cell<bool>,
     is_completed_synchronously: bool,
     callback: IFabricAsyncOperationCallback,
 }
@@ -72,7 +141,7 @@ impl<T> BridgeContext<T> {
     fn new(callback: IFabricAsyncOperationCallback) -> BridgeContext<T> {
         BridgeContext {
             content: Cell::new(None),
-            is_completed: false,
+            is_completed: Cell::new(false),
             is_completed_synchronously: false,
             callback,
         }
@@ -91,6 +160,10 @@ impl<T> BridgeContext<T> {
         self.content.take().unwrap()
     }
 
+    fn set_complete(&self) {
+        self.is_completed.swap(&Cell::new(true));
+    }
+
     // This as access violation. The com layout is not safe
     // fn invoke(&mut self, ctx: &IFabricAsyncOperationContext) {
     //     assert!(!self.is_completed);
@@ -102,7 +175,7 @@ impl<T> BridgeContext<T> {
 
 impl<T> IFabricAsyncOperationContext_Impl for BridgeContext<T> {
     fn IsCompleted(&self) -> ::windows::Win32::Foundation::BOOLEAN {
-        self.is_completed.into()
+        self.is_completed.get().into()
     }
 
     fn CompletedSynchronously(&self) -> ::windows::Win32::Foundation::BOOLEAN {
@@ -116,169 +189,5 @@ impl<T> IFabricAsyncOperationContext_Impl for BridgeContext<T> {
 
     fn Cancel(&self) -> ::windows_core::Result<()> {
         Ok(())
-    }
-}
-
-pub struct StatelessServicePartition {}
-
-// safe factory
-pub trait StatelessServiceFactory {
-    fn create_instance(
-        &self,
-        servicetypename: &HSTRING,
-        servicename: &HSTRING,
-        initializationdata: &[u8],
-        partitionid: &::windows::core::GUID,
-        instanceid: i64,
-    ) -> Box<dyn StatelessServiceInstance + Send>;
-}
-
-#[implement(IFabricStatelessServiceFactory)]
-pub struct StatelessServiceFactoryBridge {
-    inner: Box<dyn StatelessServiceFactory>,
-    rt: Handle,
-}
-
-impl StatelessServiceFactoryBridge {
-    pub fn create(
-        factory: Box<dyn StatelessServiceFactory>,
-        rt: Handle,
-    ) -> StatelessServiceFactoryBridge {
-        StatelessServiceFactoryBridge { inner: factory, rt }
-    }
-}
-
-impl IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge {
-    #[allow(clippy::not_unsafe_ptr_arg_deref)]
-    fn CreateInstance(
-        &self,
-        servicetypename: &::windows_core::PCWSTR,
-        servicename: *const u16,
-        initializationdatalength: u32,
-        initializationdata: *const u8,
-        partitionid: &::windows_core::GUID,
-        instanceid: i64,
-    ) -> ::windows_core::Result<IFabricStatelessServiceInstance> {
-        info!("StatelessServiceFactoryBridge::CreateInstance");
-        let p_servicename = ::windows_core::PCWSTR::from_raw(servicename);
-        let h_servicename = HSTRING::from_wide(unsafe { p_servicename.as_wide() }).unwrap();
-        let h_servicetypename = HSTRING::from_wide(unsafe { servicetypename.as_wide() }).unwrap();
-        let data = unsafe {
-            std::slice::from_raw_parts(initializationdata, initializationdatalength as usize)
-        };
-
-        let instance = self.inner.create_instance(
-            &h_servicetypename,
-            &h_servicename,
-            data,
-            partitionid,
-            instanceid,
-        );
-        let rt = self.rt.clone();
-        let instance_bridge = IFabricStatelessServiceInstanceBridge::create(instance, rt);
-
-        Ok(instance_bridge.into())
-    }
-}
-// safe service instance
-#[async_trait]
-pub trait StatelessServiceInstance {
-    async fn open(&self, partition: &StatelessServicePartition) -> windows::core::Result<HSTRING>;
-    async fn close(&self) -> windows::core::Result<()>;
-    fn abort(&self);
-}
-
-// bridge from safe service instance to com
-#[implement(IFabricStatelessServiceInstance)]
-
-struct IFabricStatelessServiceInstanceBridge {
-    inner: Arc<Mutex<Box<dyn StatelessServiceInstance + Send>>>,
-    rt: Handle,
-}
-
-impl IFabricStatelessServiceInstanceBridge {
-    pub fn create(
-        instance: Box<dyn StatelessServiceInstance + Send>,
-        rt: Handle,
-    ) -> IFabricStatelessServiceInstanceBridge {
-        IFabricStatelessServiceInstanceBridge {
-            inner: Arc::new(Mutex::new(instance)),
-            rt,
-        }
-    }
-}
-
-impl IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge {
-    fn BeginOpen(
-        &self,
-        _partition: ::core::option::Option<&IFabricStatelessServicePartition>,
-        callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
-        info!("IFabricStatelessServiceInstanceBridge::BeginOpen");
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<HSTRING, Error>>::new(callback_cp).into();
-
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            info!("IFabricStatelessServiceInstanceBridge::BeginOpen spawn");
-            let partition_bridge = StatelessServicePartition {};
-            let ok = inner_cp.lock().await.open(&partition_bridge).await;
-            let ctx_bridge: &BridgeContext<Result<HSTRING, Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
-    }
-
-    fn EndOpen(
-        &self,
-        context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<super::IFabricStringResult> {
-        info!("IFabricStatelessServiceInstanceBridge::EndOpen");
-        let ctx_bridge: &BridgeContext<Result<HSTRING, Error>> =
-            unsafe { context.unwrap().as_impl() };
-
-        let content = ctx_bridge.consume_content()?;
-        Ok(StringResult::new(content).into())
-    }
-
-    fn BeginClose(
-        &self,
-        callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
-        info!("IFabricStatelessServiceInstanceBridge::BeginClose");
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<(), Error>>::new(callback_cp).into();
-
-        let ctx_cpy: IFabricAsyncOperationContext = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.lock().await.close().await;
-            let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
-    }
-
-    fn EndClose(
-        &self,
-        context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
-        info!("IFabricStatelessServiceInstanceBridge::EndClose");
-        let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { context.unwrap().as_impl() };
-        ctx_bridge.consume_content()?;
-        Ok(())
-    }
-
-    fn Abort(&self) {
-        info!("IFabricStatelessServiceInstanceBridge::Abort")
     }
 }

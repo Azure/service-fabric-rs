@@ -111,4 +111,5 @@ add_custom_command(TARGET build_rust_sample_echomain POST_BUILD
 
 if(WIN32) #linux is not tested
     add_subdirectory(crates/samples/echo2)
+    add_subdirectory(crates/samples/kvstore)
 endif(WIN32)

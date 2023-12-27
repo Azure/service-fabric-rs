@@ -5,12 +5,13 @@ use fabric_base::{
         FabricCreateKeyValueStoreReplica, IFabricKeyValueStoreReplica2, IFabricStoreEventHandler,
         IFabricStoreEventHandler_Impl,
     },
-    FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND, FABRIC_LOCAL_STORE_KIND_ESE,
-    FABRIC_LOCAL_STORE_KIND_INVALID, FABRIC_REPLICATOR_SETTINGS,
+    FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND,
 };
 use log::info;
 use windows::core::implement;
 use windows_core::{ComInterface, Error, Interface, HSTRING, PCWSTR};
+
+use super::store_types::{EseLocalStoreSettings, LocalStoreKind, ReplicatorSettings};
 
 #[implement(IFabricStoreEventHandler)]
 pub struct DummyStoreEventHandler {}
@@ -18,78 +19,6 @@ pub struct DummyStoreEventHandler {}
 impl IFabricStoreEventHandler_Impl for DummyStoreEventHandler {
     fn OnDataLoss(&self) {
         info!("DummyStoreEventHandler::OnDataLoss");
-    }
-}
-
-#[derive(Default)]
-pub struct ReplicatorSettings {
-    pub Flags: u32,
-    pub RetryIntervalMilliseconds: u32,
-    pub BatchAcknowledgementIntervalMilliseconds: u32,
-    pub ReplicatorAddress: ::windows_core::HSTRING,
-    pub RequireServiceAck: bool,
-    pub InitialReplicationQueueSize: u32,
-    pub MaxReplicationQueueSize: u32,
-    pub InitialCopyQueueSize: u32,
-    pub MaxCopyQueueSize: u32,
-    //pub SecurityCredentials: *const FABRIC_SECURITY_CREDENTIALS,
-    //pub Reserved: *mut ::core::ffi::c_void,
-}
-
-impl ReplicatorSettings {
-    pub fn get_raw(&self) -> FABRIC_REPLICATOR_SETTINGS {
-        FABRIC_REPLICATOR_SETTINGS {
-            Flags: self.Flags,
-            RetryIntervalMilliseconds: self.RetryIntervalMilliseconds,
-            BatchAcknowledgementIntervalMilliseconds: self.BatchAcknowledgementIntervalMilliseconds,
-            ReplicatorAddress: PCWSTR::from_raw(self.ReplicatorAddress.as_ptr()),
-            RequireServiceAck: self.RequireServiceAck.into(),
-            InitialReplicationQueueSize: self.InitialReplicationQueueSize,
-            MaxReplicationQueueSize: self.MaxReplicationQueueSize,
-            InitialCopyQueueSize: self.InitialCopyQueueSize,
-            MaxCopyQueueSize: self.MaxCopyQueueSize,
-            SecurityCredentials: std::ptr::null(),
-            Reserved: std::ptr::null_mut(),
-        }
-    }
-}
-
-pub enum LocalStoreKind {
-    Ese,
-    Invalid,
-}
-
-impl From<LocalStoreKind> for FABRIC_LOCAL_STORE_KIND {
-    fn from(val: LocalStoreKind) -> Self {
-        match val {
-            LocalStoreKind::Ese => FABRIC_LOCAL_STORE_KIND_ESE,
-            LocalStoreKind::Invalid => FABRIC_LOCAL_STORE_KIND_INVALID,
-        }
-    }
-}
-
-pub struct EseLocalStoreSettings {
-    // FABRIC_ESE_LOCAL_STORE_SETTINGS
-    pub DbFolderPath: ::windows_core::HSTRING,
-    pub LogFileSizeInKB: i32,
-    pub LogBufferSizeInKB: i32,
-    pub MaxCursors: i32,
-    pub MaxVerPages: i32,
-    pub MaxAsyncCommitDelayInMilliseconds: i32,
-    // pub Reserved: *mut ::core::ffi::c_void,
-}
-
-impl EseLocalStoreSettings {
-    pub fn get_raw(&self) -> FABRIC_ESE_LOCAL_STORE_SETTINGS {
-        FABRIC_ESE_LOCAL_STORE_SETTINGS {
-            DbFolderPath: windows_core::PCWSTR::from_raw(self.DbFolderPath.as_ptr()),
-            LogFileSizeInKB: self.LogFileSizeInKB,
-            LogBufferSizeInKB: self.LogBufferSizeInKB,
-            MaxCursors: self.MaxCursors,
-            MaxVerPages: self.MaxVerPages,
-            MaxAsyncCommitDelayInMilliseconds: self.MaxAsyncCommitDelayInMilliseconds,
-            Reserved: std::ptr::null_mut(),
-        }
     }
 }
 
@@ -126,3 +55,65 @@ pub fn create_com_key_value_store_replica(
     };
     Ok(unsafe { IFabricKeyValueStoreReplica2::from_raw(raw) })
 }
+
+// This requires intensive mocking.
+// #[cfg(test)]
+// mod test {
+//     use fabric_base::FabricCommon::FabricRuntime::{
+//         IFabricStatefulServiceReplica, IFabricStoreEventHandler,
+//     };
+//     use windows_core::{ComInterface, GUID, HSTRING};
+
+//     use crate::runtime::{
+//         proxy::{KVStoreProxy, StatefulServiceReplicaProxy},
+//         store::EseLocalStoreSettings,
+//     };
+
+//     use super::{create_com_key_value_store_replica, DummyStoreEventHandler, ReplicatorSettings};
+
+//     // mock the partition
+
+//     #[tokio::test]
+//     async fn test_kvstore_local() {
+//         let mut db_dir = std::env::temp_dir();
+//         db_dir.push("sfkvtest");
+//         // create db dir
+//         std::fs::create_dir_all(&db_dir).unwrap();
+
+//         let name = HSTRING::from("mykvstore");
+//         let guid = GUID::new().unwrap();
+//         let settings = ReplicatorSettings::default();
+//         let local_settings = EseLocalStoreSettings {
+//             DbFolderPath: HSTRING::from(db_dir.to_str().unwrap()),
+//             ..Default::default()
+//         };
+//         let evHander: IFabricStoreEventHandler = DummyStoreEventHandler {}.into();
+//         let kv = create_com_key_value_store_replica(
+//             &name,
+//             guid,
+//             123,
+//             &settings,
+//             super::LocalStoreKind::Ese,
+//             Some(&local_settings),
+//             &evHander,
+//         )
+//         .unwrap();
+
+//         let kv_replica: IFabricStatefulServiceReplica = kv.clone().cast().unwrap();
+//         let _proxy = StatefulServiceReplicaProxy::new(kv_replica);
+
+//         //proxy.open(OpenMode::New, partition);
+
+//         let kv_proxy = KVStoreProxy::new(kv);
+//         let tx = kv_proxy.create_transaction().unwrap();
+//         kv_proxy
+//             .add(
+//                 &tx,
+//                 HSTRING::from("mykey").as_wide(),
+//                 String::from("myval").as_bytes(),
+//             )
+//             .unwrap();
+//         // clean up
+//         std::fs::remove_dir_all(&db_dir).unwrap()
+//     }
+// }

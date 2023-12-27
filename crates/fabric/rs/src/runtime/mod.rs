@@ -1,3 +1,5 @@
+// #![deny(non_snake_case)] // this file is safe rust
+
 use fabric_base::{
     FabricCommon::{
         FabricRuntime::{
@@ -15,14 +17,19 @@ use windows::core::implement;
 use windows_core::{ComInterface, Error, Interface, HSTRING, PCWSTR};
 
 use self::{
-    stateful::{StatefulServiceFactory, StatefulServiceFactoryBridge},
-    stateless::{StatelessServiceFactory, StatelessServiceFactoryBridge},
+    stateful::StatefulServiceFactory, stateful_bridge::StatefulServiceFactoryBridge,
+    stateless::StatelessServiceFactory, stateless_bridge::StatelessServiceFactoryBridge,
 };
 
-pub mod proxy;
 pub mod stateful;
+pub mod stateful_bridge;
+pub mod stateful_proxy;
+pub mod stateful_types;
 pub mod stateless;
+pub mod stateless_bridge;
 pub mod store;
+pub mod store_proxy;
+pub mod store_types;
 
 // creates fabric runtime
 pub fn create_com_runtime() -> ::windows_core::Result<IFabricRuntime> {
@@ -42,14 +49,14 @@ pub fn get_com_activation_context() -> ::windows_core::Result<IFabricCodePackage
 
 // safe wrapping for runtime
 pub struct Runtime {
-    comImpl: IFabricRuntime,
+    com_impl: IFabricRuntime,
     rt: Handle,
 }
 
 impl Runtime {
     pub fn create(rt: Handle) -> ::windows_core::Result<Runtime> {
         let com = create_com_runtime()?;
-        Ok(Runtime { comImpl: com, rt })
+        Ok(Runtime { com_impl: com, rt })
     }
 
     pub fn register_stateless_service_factory(
@@ -61,7 +68,7 @@ impl Runtime {
         let bridge: IFabricStatelessServiceFactory =
             StatelessServiceFactoryBridge::create(factory, rt_cp).into();
         unsafe {
-            self.comImpl
+            self.com_impl
                 .RegisterStatelessServiceFactory(servicetypename, &bridge)
         }
     }
@@ -75,7 +82,7 @@ impl Runtime {
         let bridge: IFabricStatefulServiceFactory =
             StatefulServiceFactoryBridge::create(factory, rt_cp).into();
         unsafe {
-            self.comImpl
+            self.com_impl
                 .RegisterStatefulServiceFactory(servicetypename, &bridge)
         }
     }
@@ -103,13 +110,13 @@ impl From<&FABRIC_ENDPOINT_RESOURCE_DESCRIPTION> for EndpointResourceDesc {
 }
 
 pub struct ActivationContext {
-    comImpl: IFabricCodePackageActivationContext,
+    com_impl: IFabricCodePackageActivationContext,
 }
 
 impl ActivationContext {
     pub fn create() -> Result<ActivationContext, Error> {
         let com = get_com_activation_context()?;
-        Ok(ActivationContext { comImpl: com })
+        Ok(ActivationContext { com_impl: com })
     }
 
     pub fn get_endpoint_resource(
@@ -117,7 +124,7 @@ impl ActivationContext {
         serviceendpointresourcename: &HSTRING,
     ) -> Result<EndpointResourceDesc, Error> {
         let rs = unsafe {
-            self.comImpl.GetServiceEndpointResource(PCWSTR::from_raw(
+            self.com_impl.GetServiceEndpointResource(PCWSTR::from_raw(
                 serviceendpointresourcename.as_ptr(),
             ))?
         };

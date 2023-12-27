@@ -1,3 +1,6 @@
+// stateful_proxy is a wrapper layer around com api,
+// making manipulating com simple.
+
 use async_trait::async_trait;
 use fabric_base::{
     FabricCommon::FabricRuntime::{
@@ -10,13 +13,10 @@ use windows_core::{ComInterface, HSTRING};
 
 use crate::IFabricStringResultToHString;
 
-use super::stateful::{
-    Epoch, OpenMode, PrimaryReplicator, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode,
-    Replicator, Role, StatefulServicePartition, StatefulServiceReplica,
+use super::{
+    stateful::{PrimaryReplicator, Replicator, StatefulServicePartition, StatefulServiceReplica},
+    stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode, Role},
 };
-
-// wrapp for kv store
-pub struct KVStoreProxy {}
 
 pub struct StatefulServiceReplicaProxy {
     com_impl: IFabricStatefulServiceReplica,
@@ -34,8 +34,8 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
-    ) -> windows::core::Result<Box<dyn PrimaryReplicator + Send>> {
-        info!("StatefulServiceReplicaProxy::open");
+    ) -> windows::core::Result<Box<dyn PrimaryReplicator>> {
+        info!("StatefulServiceReplicaProxy::open with mode {:?}", openmode);
         // replicator address
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
@@ -58,7 +58,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
     }
     async fn change_role(&self, newrole: Role) -> ::windows_core::Result<HSTRING> {
         // replica address
-        info!("StatefulServiceReplicaProxy::change_role");
+        info!("StatefulServiceReplicaProxy::change_role {:?}", newrole);
         let (tx, rx) = tokio::sync::oneshot::channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com_impl.EndChangeRole(ctx) };

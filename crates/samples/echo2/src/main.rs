@@ -17,9 +17,6 @@ fn main() -> windows::core::Result<()> {
     ctrlc::set_handler(handler).expect("Error setting Ctrl-C handler");
 
     info!("echomain start");
-    // hack to wait for debugger
-    // std::thread::sleep(std::time::Duration::from_secs(90));
-    // info!("sleep ended");
 
     let rt = tokio::runtime::Runtime::new().unwrap();
 
@@ -28,10 +25,6 @@ fn main() -> windows::core::Result<()> {
     runtime
         .register_stateless_service_factory(&HSTRING::from("EchoAppService2"), factory)
         .unwrap();
-
-    // let activation_ctx = get_com_activation_context().expect("Cannot get activation ctx");
-
-    //run_app(&runtime, &activation_ctx);
 
     // wait for ctrl-c signal.
     rt.block_on(async move {

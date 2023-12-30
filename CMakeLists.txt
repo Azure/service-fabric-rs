@@ -6,7 +6,7 @@ message(STATUS "fetching fabric_metadata")
 include(FetchContent)
 FetchContent_Declare(fabric_metadata
     GIT_REPOSITORY https://github.com/youyuanwu/fabric-metadata.git
-    GIT_TAG 639f45f0d585baca269e4cfe08dd10f408fe5456
+    GIT_TAG 87041e9790edb7f87dbf6ca8c1ca0f40db8c82dd
 )
 FetchContent_GetProperties(fabric_metadata)
 if(NOT fabric_metadata_POPULATED)
@@ -36,11 +36,13 @@ find_program (
 
 set(_runtime_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/fabric/base/src/Microsoft/ServiceFabric/FabricCommon/FabricRuntime/mod.rs)
 set(_client_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/fabric/base/src/Microsoft/ServiceFabric/FabricCommon/FabricClient/mod.rs)
+set(_common_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/fabric/base/src/Microsoft/ServiceFabric/FabricCommon/mod.rs)
 add_custom_target(generate_rust
     #DEPENDS generate_winmd
     COMMAND ${cargo_exe} run -p tools_api
     COMMAND powershell -Command "\"(Get-Content ${_runtime_file}).Replace('\\\"fabricruntime\\\"','\\\"FabricRuntime\\\"') | Set-Content ${_runtime_file}\""
     COMMAND powershell -Command "\"(Get-Content ${_client_file}).Replace('\\\"fabricclient\\\"','\\\"FabricClient\\\"') | Set-Content ${_client_file}\""
+    COMMAND powershell -Command "\"(Get-Content ${_common_file}).Replace('\\\"fabriccommon\\\"','\\\"FabricCommon\\\"') | Set-Content ${_common_file}\""
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

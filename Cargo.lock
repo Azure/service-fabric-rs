@@ -175,7 +175,7 @@ dependencies = [
 [[package]]
 name = "fabric-metadata"
 version = "0.1.0"
-source = "git+https://github.com/youyuanwu/fabric-metadata.git?rev=2e6a471c7752148c4dc8d0968c0f1161c2a6c76a#2e6a471c7752148c4dc8d0968c0f1161c2a6c76a"
+source = "git+https://github.com/youyuanwu/fabric-metadata.git?rev=87041e9790edb7f87dbf6ca8c1ca0f40db8c82dd#87041e9790edb7f87dbf6ca8c1ca0f40db8c82dd"
 
 [[package]]
 name = "fabric_base"

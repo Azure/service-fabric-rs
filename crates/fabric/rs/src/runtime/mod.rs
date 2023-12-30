@@ -21,6 +21,8 @@ use self::{
     stateless::StatelessServiceFactory, stateless_bridge::StatelessServiceFactoryBridge,
 };
 
+pub mod error;
+pub mod executor;
 pub mod stateful;
 pub mod stateful_bridge;
 pub mod stateful_proxy;

@@ -8,7 +8,7 @@ use windows_core::HSTRING;
 #[derive(Default)]
 pub struct Factory {}
 
-impl StatelessServiceFactory for Factory {
+impl StatelessServiceFactory<Instance> for Factory {
     fn create_instance(
         &self,
         servicetypename: &windows_core::HSTRING,
@@ -16,7 +16,7 @@ impl StatelessServiceFactory for Factory {
         initializationdata: &[u8],
         partitionid: &windows::core::GUID,
         instanceid: i64,
-    ) -> Box<dyn StatelessServiceInstance + Send> {
+    ) -> Instance {
         info!(
             "Factory::create_instance, servicetype {}, service {}, init len {}, ptid {:?}, iid {}",
             servicetypename,
@@ -25,7 +25,7 @@ impl StatelessServiceFactory for Factory {
             partitionid,
             instanceid
         );
-        Box::<Instance>::default()
+        Instance::default()
     }
 }
 

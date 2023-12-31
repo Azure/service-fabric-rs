@@ -8,7 +8,10 @@ use super::stateful_types::{
     Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode, Role,
 };
 
-pub trait StatefulServiceFactory {
+pub trait StatefulServiceFactory<R>
+where
+    R: StatefulServiceReplica,
+{
     fn create_replica(
         &self,
         servicetypename: &HSTRING,
@@ -16,7 +19,7 @@ pub trait StatefulServiceFactory {
         initializationdata: &[u8],
         partitionid: &::windows::core::GUID,
         replicaid: i64,
-    ) -> Result<Box<dyn StatefulServiceReplica>, Error>;
+    ) -> Result<R, Error>;
 }
 
 // safe service instance

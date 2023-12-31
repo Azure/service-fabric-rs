@@ -21,7 +21,7 @@ fn main() -> windows::core::Result<()> {
     let rt = tokio::runtime::Runtime::new().unwrap();
 
     let runtime = Runtime::create(rt.handle().clone()).unwrap();
-    let factory = Box::<echo::Factory>::default();
+    let factory = echo::Factory::default();
     runtime
         .register_stateless_service_factory(&HSTRING::from("EchoAppService2"), factory)
         .unwrap();

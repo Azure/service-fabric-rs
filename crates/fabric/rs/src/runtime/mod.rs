@@ -17,8 +17,10 @@ use windows::core::implement;
 use windows_core::{ComInterface, Error, Interface, HSTRING, PCWSTR};
 
 use self::{
-    stateful::StatefulServiceFactory, stateful_bridge::StatefulServiceFactoryBridge,
-    stateless::StatelessServiceFactory, stateless_bridge::StatelessServiceFactoryBridge,
+    stateful::{StatefulServiceFactory, StatefulServiceReplica},
+    stateful_bridge::StatefulServiceFactoryBridge,
+    stateless::{StatelessServiceFactory, StatelessServiceInstance},
+    stateless_bridge::StatelessServiceFactoryBridge,
 };
 
 pub mod error;
@@ -61,11 +63,15 @@ impl Runtime {
         Ok(Runtime { com_impl: com, rt })
     }
 
-    pub fn register_stateless_service_factory(
+    pub fn register_stateless_service_factory<F, S>(
         &self,
         servicetypename: &HSTRING,
-        factory: Box<dyn StatelessServiceFactory>,
-    ) -> windows_core::Result<()> {
+        factory: F,
+    ) -> windows_core::Result<()>
+    where
+        F: StatelessServiceFactory<S>,
+        S: StatelessServiceInstance + 'static,
+    {
         let rt_cp = self.rt.clone();
         let bridge: IFabricStatelessServiceFactory =
             StatelessServiceFactoryBridge::create(factory, rt_cp).into();
@@ -75,11 +81,15 @@ impl Runtime {
         }
     }
 
-    pub fn register_stateful_service_factory(
+    pub fn register_stateful_service_factory<F, R>(
         &self,
         servicetypename: &HSTRING,
-        factory: Box<dyn StatefulServiceFactory>,
-    ) -> windows_core::Result<()> {
+        factory: F,
+    ) -> windows_core::Result<()>
+    where
+        F: StatefulServiceFactory<R>,
+        R: StatefulServiceReplica + 'static,
+    {
         let rt_cp = self.rt.clone();
         let bridge: IFabricStatefulServiceFactory =
             StatefulServiceFactoryBridge::create(factory, rt_cp).into();

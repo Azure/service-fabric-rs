@@ -40,7 +40,7 @@ fn main() -> windows::core::Result<()> {
         .get_endpoint_resource(&HSTRING::from("KvReplicatorEndpoint"))
         .unwrap();
 
-    let factory = Box::new(Factory::create(endpoint.Port, rt.handle().clone()));
+    let factory = Factory::create(endpoint.Port, rt.handle().clone());
     runtime
         .register_stateful_service_factory(&HSTRING::from("KvStoreService"), factory)
         .unwrap();

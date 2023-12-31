@@ -1,6 +1,6 @@
 #![deny(non_snake_case)] // this file is safe rust
 
-use std::sync::Arc;
+use std::{marker::PhantomData, sync::Arc};
 
 use crate::{
     runtime::{stateless::StatelessServicePartition, BridgeContext},
@@ -22,21 +22,35 @@ use windows_core::{AsImpl, Error, HSTRING};
 use super::stateless::{StatelessServiceFactory, StatelessServiceInstance};
 
 #[implement(IFabricStatelessServiceFactory)]
-pub struct StatelessServiceFactoryBridge {
-    inner: Box<dyn StatelessServiceFactory>,
+pub struct StatelessServiceFactoryBridge<F, S>
+where
+    F: StatelessServiceFactory<S>,
+    S: StatelessServiceInstance + 'static,
+{
+    inner: F,
     rt: Handle,
+    phantom: PhantomData<S>,
 }
 
-impl StatelessServiceFactoryBridge {
-    pub fn create(
-        factory: Box<dyn StatelessServiceFactory>,
-        rt: Handle,
-    ) -> StatelessServiceFactoryBridge {
-        StatelessServiceFactoryBridge { inner: factory, rt }
+impl<F, S> StatelessServiceFactoryBridge<F, S>
+where
+    F: StatelessServiceFactory<S>,
+    S: StatelessServiceInstance,
+{
+    pub fn create(factory: F, rt: Handle) -> StatelessServiceFactoryBridge<F, S> {
+        StatelessServiceFactoryBridge::<F, S> {
+            inner: factory,
+            rt,
+            phantom: PhantomData,
+        }
     }
 }
 
-impl IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge {
+impl<F, S> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge<F, S>
+where
+    F: StatelessServiceFactory<S>,
+    S: StatelessServiceInstance + 'static,
+{
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn CreateInstance(
         &self,
@@ -72,16 +86,22 @@ impl IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge {
 // bridge from safe service instance to com
 #[implement(IFabricStatelessServiceInstance)]
 
-struct IFabricStatelessServiceInstanceBridge {
-    inner: Arc<Box<dyn StatelessServiceInstance>>,
+struct IFabricStatelessServiceInstanceBridge<S>
+where
+    S: StatelessServiceInstance + 'static,
+{
+    inner: Arc<S>,
     rt: Handle,
 }
 
-impl IFabricStatelessServiceInstanceBridge {
-    pub fn create(
-        instance: Box<dyn StatelessServiceInstance + Send>,
-        rt: Handle,
-    ) -> IFabricStatelessServiceInstanceBridge {
+impl<S> IFabricStatelessServiceInstanceBridge<S>
+where
+    S: StatelessServiceInstance,
+{
+    pub fn create(instance: S, rt: Handle) -> IFabricStatelessServiceInstanceBridge<S>
+    where
+        S: StatelessServiceInstance,
+    {
         IFabricStatelessServiceInstanceBridge {
             inner: Arc::new(instance),
             rt,
@@ -89,7 +109,10 @@ impl IFabricStatelessServiceInstanceBridge {
     }
 }
 
-impl IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge {
+impl<S> IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge<S>
+where
+    S: StatelessServiceInstance + 'static,
+{
     fn BeginOpen(
         &self,
         partition: ::core::option::Option<&IFabricStatelessServicePartition>,

@@ -85,7 +85,10 @@ impl StatelessServicePartition {
 }
 
 // safe factory
-pub trait StatelessServiceFactory {
+pub trait StatelessServiceFactory<T>
+where
+    T: StatelessServiceInstance,
+{
     fn create_instance(
         &self,
         servicetypename: &HSTRING,
@@ -93,7 +96,7 @@ pub trait StatelessServiceFactory {
         initializationdata: &[u8],
         partitionid: &::windows::core::GUID,
         instanceid: i64,
-    ) -> Box<dyn StatelessServiceInstance + Send>;
+    ) -> T;
 }
 
 // safe service instance

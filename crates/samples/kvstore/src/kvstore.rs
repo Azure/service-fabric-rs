@@ -47,7 +47,7 @@ fn get_addr(port: u32, hostname: HSTRING) -> String {
     addr
 }
 
-impl StatefulServiceFactory for Factory {
+impl StatefulServiceFactory<Replica> for Factory {
     fn create_replica(
         &self,
         servicetypename: &windows_core::HSTRING,
@@ -55,7 +55,7 @@ impl StatefulServiceFactory for Factory {
         initializationdata: &[u8],
         partitionid: &windows::core::GUID,
         replicaid: i64,
-    ) -> Result<Box<dyn fabric_rs::runtime::stateful::StatefulServiceReplica>, Error> {
+    ) -> Result<Replica, Error> {
         info!(
             "Factory::create_replica type {}, service {}, init data size {}",
             servicetypename,
@@ -89,7 +89,7 @@ impl StatefulServiceFactory for Factory {
         let svc = Service::new(kv, self.rt.clone());
 
         let replica = Replica::new(proxy, svc);
-        Ok(Box::new(replica))
+        Ok(replica)
     }
 }
 

@@ -1,6 +1,6 @@
 // stateful bridge is to wrap rs types into com to expose to SF
 
-use std::sync::Arc;
+use std::{marker::PhantomData, sync::Arc};
 
 use log::info;
 use tokio::runtime::Handle;
@@ -35,21 +35,35 @@ use super::stateful::{
 };
 
 #[implement(IFabricStatefulServiceFactory)]
-pub struct StatefulServiceFactoryBridge {
-    inner: Box<dyn StatefulServiceFactory>,
+pub struct StatefulServiceFactoryBridge<F, R>
+where
+    F: StatefulServiceFactory<R>,
+    R: StatefulServiceReplica + 'static,
+{
+    inner: F,
     rt: Handle,
+    phantom: PhantomData<R>,
 }
 
-impl StatefulServiceFactoryBridge {
-    pub fn create(
-        factory: Box<dyn StatefulServiceFactory>,
-        rt: Handle,
-    ) -> StatefulServiceFactoryBridge {
-        StatefulServiceFactoryBridge { inner: factory, rt }
+impl<F, R> StatefulServiceFactoryBridge<F, R>
+where
+    F: StatefulServiceFactory<R>,
+    R: StatefulServiceReplica,
+{
+    pub fn create(factory: F, rt: Handle) -> StatefulServiceFactoryBridge<F, R> {
+        StatefulServiceFactoryBridge::<F, R> {
+            inner: factory,
+            rt,
+            phantom: PhantomData,
+        }
     }
 }
 
-impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactoryBridge {
+impl<F, R> IFabricStatefulServiceFactory_Impl for StatefulServiceFactoryBridge<F, R>
+where
+    F: StatefulServiceFactory<R>,
+    R: StatefulServiceReplica + 'static,
+{
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn CreateReplica(
         &self,
@@ -524,16 +538,19 @@ impl IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorBridge {
 // bridge from safe service instance to com
 #[implement(IFabricStatefulServiceReplica)]
 
-pub struct IFabricStatefulServiceReplicaBridge {
-    inner: Arc<Box<dyn StatefulServiceReplica>>,
+pub struct IFabricStatefulServiceReplicaBridge<R>
+where
+    R: StatefulServiceReplica + 'static,
+{
+    inner: Arc<R>,
     rt: Handle,
 }
 
-impl IFabricStatefulServiceReplicaBridge {
-    pub fn create(
-        rplctr: Box<dyn StatefulServiceReplica>,
-        rt: Handle,
-    ) -> IFabricStatefulServiceReplicaBridge {
+impl<R> IFabricStatefulServiceReplicaBridge<R>
+where
+    R: StatefulServiceReplica,
+{
+    pub fn create(rplctr: R, rt: Handle) -> IFabricStatefulServiceReplicaBridge<R> {
         IFabricStatefulServiceReplicaBridge {
             inner: Arc::new(rplctr),
             rt,
@@ -541,7 +558,10 @@ impl IFabricStatefulServiceReplicaBridge {
     }
 }
 
-impl IFabricStatefulServiceReplica_Impl for IFabricStatefulServiceReplicaBridge {
+impl<R> IFabricStatefulServiceReplica_Impl for IFabricStatefulServiceReplicaBridge<R>
+where
+    R: StatefulServiceReplica + 'static,
+{
     fn BeginOpen(
         &self,
         openmode: FABRIC_REPLICA_OPEN_MODE,

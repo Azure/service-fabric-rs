@@ -3,7 +3,6 @@
 use std::{marker::PhantomData, sync::Arc};
 
 use log::info;
-use tokio::runtime::Handle;
 use windows::core::implement;
 use windows_core::{AsImpl, ComInterface, Error, HSTRING};
 
@@ -30,28 +29,31 @@ use crate::{
     StringResult,
 };
 
-use super::stateful::{
-    PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServiceReplica,
+use super::{
+    executor::Executor,
+    stateful::{PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServiceReplica},
 };
 
 #[implement(IFabricStatefulServiceFactory)]
-pub struct StatefulServiceFactoryBridge<F, R>
+pub struct StatefulServiceFactoryBridge<E, F, R>
 where
+    E: Executor,
     F: StatefulServiceFactory<R>,
     R: StatefulServiceReplica + 'static,
 {
     inner: F,
-    rt: Handle,
+    rt: E,
     phantom: PhantomData<R>,
 }
 
-impl<F, R> StatefulServiceFactoryBridge<F, R>
+impl<E, F, R> StatefulServiceFactoryBridge<E, F, R>
 where
+    E: Executor,
     F: StatefulServiceFactory<R>,
     R: StatefulServiceReplica,
 {
-    pub fn create(factory: F, rt: Handle) -> StatefulServiceFactoryBridge<F, R> {
-        StatefulServiceFactoryBridge::<F, R> {
+    pub fn create(factory: F, rt: E) -> StatefulServiceFactoryBridge<E, F, R> {
+        StatefulServiceFactoryBridge::<E, F, R> {
             inner: factory,
             rt,
             phantom: PhantomData,
@@ -59,8 +61,9 @@ where
     }
 }
 
-impl<F, R> IFabricStatefulServiceFactory_Impl for StatefulServiceFactoryBridge<F, R>
+impl<E, F, R> IFabricStatefulServiceFactory_Impl for StatefulServiceFactoryBridge<E, F, R>
 where
+    E: Executor,
     F: StatefulServiceFactory<R>,
     R: StatefulServiceReplica + 'static,
 {
@@ -100,13 +103,19 @@ where
 // bridge from safe service instance to com
 #[implement(IFabricReplicator)]
 
-pub struct IFabricReplicatorBridge {
+pub struct IFabricReplicatorBridge<E>
+where
+    E: Executor,
+{
     inner: Arc<Box<dyn Replicator>>,
-    rt: Handle,
+    rt: E,
 }
 
-impl IFabricReplicatorBridge {
-    pub fn create(rplctr: Box<dyn Replicator>, rt: Handle) -> IFabricReplicatorBridge {
+impl<E> IFabricReplicatorBridge<E>
+where
+    E: Executor,
+{
+    pub fn create(rplctr: Box<dyn Replicator>, rt: E) -> IFabricReplicatorBridge<E> {
         IFabricReplicatorBridge {
             inner: Arc::new(rplctr),
             rt,
@@ -115,8 +124,8 @@ impl IFabricReplicatorBridge {
 
     fn create_from_primary_replicator(
         replicator: Arc<Box<dyn Replicator>>,
-        rt: Handle,
-    ) -> IFabricReplicatorBridge {
+        rt: E,
+    ) -> IFabricReplicatorBridge<E> {
         IFabricReplicatorBridge {
             inner: replicator,
             rt,
@@ -124,7 +133,10 @@ impl IFabricReplicatorBridge {
     }
 }
 
-impl IFabricReplicator_Impl for IFabricReplicatorBridge {
+impl<E> IFabricReplicator_Impl for IFabricReplicatorBridge<E>
+where
+    E: Executor,
+{
     fn BeginOpen(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
@@ -292,17 +304,20 @@ impl IFabricReplicator_Impl for IFabricReplicatorBridge {
 
 // primary replicator bridge
 #[implement(IFabricPrimaryReplicator)]
-pub struct IFabricPrimaryReplicatorBridge {
+pub struct IFabricPrimaryReplicatorBridge<E>
+where
+    E: Executor,
+{
     inner: Arc<Box<dyn PrimaryReplicator>>,
-    rt: Handle,
-    rplctr: IFabricReplicatorBridge,
+    rt: E,
+    rplctr: IFabricReplicatorBridge<E>,
 }
 
-impl IFabricPrimaryReplicatorBridge {
-    pub fn create(
-        rplctr: Box<dyn PrimaryReplicator>,
-        rt: Handle,
-    ) -> IFabricPrimaryReplicatorBridge {
+impl<E> IFabricPrimaryReplicatorBridge<E>
+where
+    E: Executor,
+{
+    pub fn create(rplctr: Box<dyn PrimaryReplicator>, rt: E) -> IFabricPrimaryReplicatorBridge<E> {
         let inner = Arc::new(rplctr);
 
         // hack to construct a replicator bridge.
@@ -326,7 +341,10 @@ impl IFabricPrimaryReplicatorBridge {
 }
 
 // TODO: this impl has duplicate code with replicator bridge
-impl IFabricReplicator_Impl for IFabricPrimaryReplicatorBridge {
+impl<E> IFabricReplicator_Impl for IFabricPrimaryReplicatorBridge<E>
+where
+    E: Executor,
+{
     fn BeginOpen(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
@@ -399,7 +417,10 @@ impl IFabricReplicator_Impl for IFabricPrimaryReplicatorBridge {
     }
 }
 
-impl IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorBridge {
+impl<E> IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorBridge<E>
+where
+    E: Executor,
+{
     fn BeginOnDataLoss(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
@@ -538,19 +559,21 @@ impl IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorBridge {
 // bridge from safe service instance to com
 #[implement(IFabricStatefulServiceReplica)]
 
-pub struct IFabricStatefulServiceReplicaBridge<R>
+pub struct IFabricStatefulServiceReplicaBridge<E, R>
 where
+    E: Executor,
     R: StatefulServiceReplica + 'static,
 {
     inner: Arc<R>,
-    rt: Handle,
+    rt: E,
 }
 
-impl<R> IFabricStatefulServiceReplicaBridge<R>
+impl<E, R> IFabricStatefulServiceReplicaBridge<E, R>
 where
+    E: Executor,
     R: StatefulServiceReplica,
 {
-    pub fn create(rplctr: R, rt: Handle) -> IFabricStatefulServiceReplicaBridge<R> {
+    pub fn create(rplctr: R, rt: E) -> IFabricStatefulServiceReplicaBridge<E, R> {
         IFabricStatefulServiceReplicaBridge {
             inner: Arc::new(rplctr),
             rt,
@@ -558,8 +581,9 @@ where
     }
 }
 
-impl<R> IFabricStatefulServiceReplica_Impl for IFabricStatefulServiceReplicaBridge<R>
+impl<E, R> IFabricStatefulServiceReplica_Impl for IFabricStatefulServiceReplicaBridge<E, R>
 where
+    E: Executor,
     R: StatefulServiceReplica + 'static,
 {
     fn BeginOpen(

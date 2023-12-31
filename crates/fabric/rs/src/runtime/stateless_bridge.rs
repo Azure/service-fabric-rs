@@ -15,30 +15,34 @@ use fabric_base::FabricCommon::{
     IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
 };
 use log::info;
-use tokio::runtime::Handle;
 use windows::core::implement;
 use windows_core::{AsImpl, Error, HSTRING};
 
-use super::stateless::{StatelessServiceFactory, StatelessServiceInstance};
+use super::{
+    executor::Executor,
+    stateless::{StatelessServiceFactory, StatelessServiceInstance},
+};
 
 #[implement(IFabricStatelessServiceFactory)]
-pub struct StatelessServiceFactoryBridge<F, S>
+pub struct StatelessServiceFactoryBridge<E, F, S>
 where
+    E: Executor,
     F: StatelessServiceFactory<S>,
     S: StatelessServiceInstance + 'static,
 {
     inner: F,
-    rt: Handle,
+    rt: E,
     phantom: PhantomData<S>,
 }
 
-impl<F, S> StatelessServiceFactoryBridge<F, S>
+impl<E, F, S> StatelessServiceFactoryBridge<E, F, S>
 where
+    E: Executor,
     F: StatelessServiceFactory<S>,
     S: StatelessServiceInstance,
 {
-    pub fn create(factory: F, rt: Handle) -> StatelessServiceFactoryBridge<F, S> {
-        StatelessServiceFactoryBridge::<F, S> {
+    pub fn create(factory: F, rt: E) -> StatelessServiceFactoryBridge<E, F, S> {
+        StatelessServiceFactoryBridge::<E, F, S> {
             inner: factory,
             rt,
             phantom: PhantomData,
@@ -46,8 +50,9 @@ where
     }
 }
 
-impl<F, S> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge<F, S>
+impl<E, F, S> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge<E, F, S>
 where
+    E: Executor,
     F: StatelessServiceFactory<S>,
     S: StatelessServiceInstance + 'static,
 {
@@ -86,19 +91,21 @@ where
 // bridge from safe service instance to com
 #[implement(IFabricStatelessServiceInstance)]
 
-struct IFabricStatelessServiceInstanceBridge<S>
+struct IFabricStatelessServiceInstanceBridge<E, S>
 where
+    E: Executor,
     S: StatelessServiceInstance + 'static,
 {
     inner: Arc<S>,
-    rt: Handle,
+    rt: E,
 }
 
-impl<S> IFabricStatelessServiceInstanceBridge<S>
+impl<E, S> IFabricStatelessServiceInstanceBridge<E, S>
 where
+    E: Executor,
     S: StatelessServiceInstance,
 {
-    pub fn create(instance: S, rt: Handle) -> IFabricStatelessServiceInstanceBridge<S>
+    pub fn create(instance: S, rt: E) -> IFabricStatelessServiceInstanceBridge<E, S>
     where
         S: StatelessServiceInstance,
     {
@@ -109,8 +116,9 @@ where
     }
 }
 
-impl<S> IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge<S>
+impl<E, S> IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge<E, S>
 where
+    E: Executor,
     S: StatelessServiceInstance + 'static,
 {
     fn BeginOpen(

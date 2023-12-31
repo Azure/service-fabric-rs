@@ -1,13 +1,17 @@
-use tokio::runtime::Handle;
+use std::future::Future;
 
-// TODO/WIP: The intension here is to be able to plug in the backend runner for
-// SF bridges to execute async functions.
-// Executor as this cannot be dyn passed due to generic args cannot form vtable.
-// To enable this feature the bridges needs to be generic.
+use log::info;
+use tokio::{runtime::Handle, sync::mpsc::channel};
 
 // Executor is used by rs to post jobs to execute in the background
-pub trait Executor {
-    fn spawn(&self, future: impl FnOnce() + std::marker::Send + 'static);
+pub trait Executor: Clone {
+    // spawns the task to run in background
+    fn spawn<F>(&self, future: F)
+    where
+        F: Future + Send + 'static;
+
+    // run the executor until the ctrl-c os signal
+    fn run_until_ctrl_c(&self);
 }
 
 #[derive(Clone)]
@@ -21,9 +25,42 @@ impl DefaultExecutor {
     }
 }
 
+// TODO: rt obj needs to be hold somewhere outside of handle
+// impl Default for DefaultExecutor {
+//     fn default() -> Self {
+//         let rt = tokio::runtime::Runtime::new().unwrap();
+//         Self {
+//             rt: rt.handle().clone(),
+//         }
+//     }
+// }
+
 impl Executor for DefaultExecutor {
-    fn spawn(&self, future: impl FnOnce() + std::marker::Send + 'static) {
-        self.rt.spawn(async move { future() });
+    fn spawn<F>(&self, future: F)
+    where
+        F: Future + Send + 'static,
+    {
+        self.rt.spawn(async move {
+            future.await;
+        });
+    }
+
+    fn run_until_ctrl_c(&self) {
+        info!("DefaultExecutor: setting up ctrl-c event.");
+        // set ctrc event
+        let (tx, mut rx) = channel(1);
+        let handler = move || {
+            tx.blocking_send(())
+                .expect("Could not send signal on channel.")
+        };
+        ctrlc::set_handler(handler).expect("Error setting Ctrl-C handler");
+
+        // wait for ctrl-c signal.
+        self.rt.block_on(async move {
+            info!("DefaultExecutor: Waiting for Ctrl-C...");
+            rx.recv().await.expect("Could not receive from channel.");
+            info!("DefaultExecutor: Got Ctrl-C! Exiting...");
+        });
     }
 }
 

@@ -12,11 +12,11 @@ use fabric_base::{
     FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
 };
 use std::cell::Cell;
-use tokio::runtime::Handle;
 use windows::core::implement;
 use windows_core::{ComInterface, Error, Interface, HSTRING, PCWSTR};
 
 use self::{
+    executor::Executor,
     stateful::{StatefulServiceFactory, StatefulServiceReplica},
     stateful_bridge::StatefulServiceFactoryBridge,
     stateless::{StatelessServiceFactory, StatelessServiceInstance},
@@ -52,13 +52,19 @@ pub fn get_com_activation_context() -> ::windows_core::Result<IFabricCodePackage
 }
 
 // safe wrapping for runtime
-pub struct Runtime {
+pub struct Runtime<E>
+where
+    E: Executor,
+{
     com_impl: IFabricRuntime,
-    rt: Handle,
+    rt: E,
 }
 
-impl Runtime {
-    pub fn create(rt: Handle) -> ::windows_core::Result<Runtime> {
+impl<E> Runtime<E>
+where
+    E: Executor,
+{
+    pub fn create(rt: E) -> ::windows_core::Result<Runtime<E>> {
         let com = create_com_runtime()?;
         Ok(Runtime { com_impl: com, rt })
     }

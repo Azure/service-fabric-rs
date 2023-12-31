@@ -8,6 +8,7 @@ use fabric_base::{
     FABRIC_REPLICATOR_ADDRESS,
 };
 use fabric_rs::runtime::{
+    executor::{DefaultExecutor, Executor},
     stateful::{
         PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition, StatefulServiceReplica,
     },
@@ -19,7 +20,6 @@ use fabric_rs::runtime::{
 };
 use log::info;
 use tokio::{
-    runtime::Handle,
     select,
     sync::oneshot::{self, Sender},
 };
@@ -27,11 +27,11 @@ use windows_core::{ComInterface, Error, HSTRING};
 
 pub struct Factory {
     replication_port: u32,
-    rt: Handle,
+    rt: DefaultExecutor,
 }
 
 impl Factory {
-    pub fn create(replication_port: u32, rt: Handle) -> Factory {
+    pub fn create(replication_port: u32, rt: DefaultExecutor) -> Factory {
         Factory {
             replication_port,
             rt,
@@ -107,12 +107,12 @@ impl Replica {
 // The serving of the database.
 pub struct Service {
     kvproxy: KVStoreProxy,
-    rt: Handle,
+    rt: DefaultExecutor,
     tx: Mutex<Cell<Option<Sender<()>>>>,
 }
 
 impl Service {
-    pub fn new(com: IFabricKeyValueStoreReplica2, rt: Handle) -> Service {
+    pub fn new(com: IFabricKeyValueStoreReplica2, rt: DefaultExecutor) -> Service {
         Service {
             kvproxy: KVStoreProxy::new(com),
             rt,

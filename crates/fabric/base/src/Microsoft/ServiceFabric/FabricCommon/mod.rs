@@ -5,6 +5,158 @@ pub mod FabricRuntime;
 #[cfg(feature = "ServiceFabric_FabricCommon_FabricTransport")]
 pub mod FabricTransport;
 #[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`*"]
+#[inline]
+pub unsafe fn FabricDecryptText<P0>(
+    encryptedtext: P0,
+    certstorelocation: super::FABRIC_X509_STORE_LOCATION,
+) -> ::windows_core::Result<IFabricStringResult>
+where
+    P0: ::windows_core::IntoParam<::windows_core::PCWSTR>,
+{
+    #[link(name = "FabricCommon")]
+    extern "system" {
+        pub fn FabricDecryptText(
+            encryptedtext: ::windows_core::PCWSTR,
+            certstorelocation: super::FABRIC_X509_STORE_LOCATION,
+            decryptedtext: *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT;
+    }
+    let mut result__ = ::std::mem::zeroed();
+    FabricDecryptText(
+        encryptedtext.into_param().abi(),
+        certstorelocation,
+        &mut result__,
+    )
+    .from_abi(result__)
+}
+#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`*"]
+#[inline]
+pub unsafe fn FabricDecryptValue<P0>(
+    encryptedvalue: P0,
+) -> ::windows_core::Result<IFabricStringResult>
+where
+    P0: ::windows_core::IntoParam<::windows_core::PCWSTR>,
+{
+    #[link(name = "FabricCommon")]
+    extern "system" {
+        pub fn FabricDecryptValue(
+            encryptedvalue: ::windows_core::PCWSTR,
+            decryptedvalue: *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT;
+    }
+    let mut result__ = ::std::mem::zeroed();
+    FabricDecryptValue(encryptedvalue.into_param().abi(), &mut result__).from_abi(result__)
+}
+#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`*"]
+#[inline]
+pub unsafe fn FabricEncryptText<P0, P1, P2, P3>(
+    text: P0,
+    certthumbprint: P1,
+    certstorename: P2,
+    certstorelocation: super::FABRIC_X509_STORE_LOCATION,
+    algorithmoid: P3,
+) -> ::windows_core::Result<IFabricStringResult>
+where
+    P0: ::windows_core::IntoParam<::windows_core::PCWSTR>,
+    P1: ::windows_core::IntoParam<::windows_core::PCWSTR>,
+    P2: ::windows_core::IntoParam<::windows_core::PCWSTR>,
+    P3: ::windows_core::IntoParam<::windows_core::PCSTR>,
+{
+    #[link(name = "FabricCommon")]
+    extern "system" {
+        pub fn FabricEncryptText(
+            text: ::windows_core::PCWSTR,
+            certthumbprint: ::windows_core::PCWSTR,
+            certstorename: ::windows_core::PCWSTR,
+            certstorelocation: super::FABRIC_X509_STORE_LOCATION,
+            algorithmoid: ::windows_core::PCSTR,
+            encryptedvalue: *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT;
+    }
+    let mut result__ = ::std::mem::zeroed();
+    FabricEncryptText(
+        text.into_param().abi(),
+        certthumbprint.into_param().abi(),
+        certstorename.into_param().abi(),
+        certstorelocation,
+        algorithmoid.into_param().abi(),
+        &mut result__,
+    )
+    .from_abi(result__)
+}
+#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`*"]
+#[inline]
+pub unsafe fn FabricEncryptText2<P0, P1, P2>(
+    text: P0,
+    certfilepath: P1,
+    algorithmoid: P2,
+) -> ::windows_core::Result<IFabricStringResult>
+where
+    P0: ::windows_core::IntoParam<::windows_core::PCWSTR>,
+    P1: ::windows_core::IntoParam<::windows_core::PCWSTR>,
+    P2: ::windows_core::IntoParam<::windows_core::PCSTR>,
+{
+    #[link(name = "FabricCommon")]
+    extern "system" {
+        pub fn FabricEncryptText2(
+            text: ::windows_core::PCWSTR,
+            certfilepath: ::windows_core::PCWSTR,
+            algorithmoid: ::windows_core::PCSTR,
+            encryptedvalue: *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT;
+    }
+    let mut result__ = ::std::mem::zeroed();
+    FabricEncryptText2(
+        text.into_param().abi(),
+        certfilepath.into_param().abi(),
+        algorithmoid.into_param().abi(),
+        &mut result__,
+    )
+    .from_abi(result__)
+}
+#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`*"]
+#[inline]
+pub unsafe fn FabricEncryptValue<P0, P1, P2>(
+    certthumbprint: P0,
+    certstorename: P1,
+    text: P2,
+) -> ::windows_core::Result<IFabricStringResult>
+where
+    P0: ::windows_core::IntoParam<::windows_core::PCWSTR>,
+    P1: ::windows_core::IntoParam<::windows_core::PCWSTR>,
+    P2: ::windows_core::IntoParam<::windows_core::PCWSTR>,
+{
+    #[link(name = "FabricCommon")]
+    extern "system" {
+        pub fn FabricEncryptValue(
+            certthumbprint: ::windows_core::PCWSTR,
+            certstorename: ::windows_core::PCWSTR,
+            text: ::windows_core::PCWSTR,
+            encryptedvalue: *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT;
+    }
+    let mut result__ = ::std::mem::zeroed();
+    FabricEncryptValue(
+        certthumbprint.into_param().abi(),
+        certstorename.into_param().abi(),
+        text.into_param().abi(),
+        &mut result__,
+    )
+    .from_abi(result__)
+}
+#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`*"]
+#[inline]
+pub unsafe fn FabricGetLastErrorMessage() -> ::windows_core::Result<IFabricStringResult> {
+    #[link(name = "FabricCommon")]
+    extern "system" {
+        pub fn FabricGetLastErrorMessage(
+            message: *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT;
+    }
+    let mut result__ = ::std::mem::zeroed();
+    FabricGetLastErrorMessage(&mut result__).from_abi(result__)
+}
+#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`*"]
 #[repr(transparent)]
 pub struct IFabricAsyncOperationCallback(::windows_core::IUnknown);
 impl IFabricAsyncOperationCallback {

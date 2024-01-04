@@ -502,10 +502,22 @@ pub mod code {
             quote! {
                 pub struct #wrap_ident
                 {
-                    c: #itf_full_type
+                    com: #itf_full_type
+                }
+
+                impl Default for #wrap_ident {
+                    fn default() -> Self {
+                        Self::new()
+                    }
                 }
 
                 impl #wrap_ident{
+                    pub fn new() -> #wrap_ident {
+                        #wrap_ident {
+                            com: crate::sync::CreateLocalClient::<#itf_full_type>(),
+                        }
+                    }
+
                     #method_stream
                 }
             }
@@ -525,16 +537,21 @@ pub mod code {
                     let (tx, rx) = tokio::sync::oneshot::channel();
 
                     let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-                        let res = unsafe { self.c.#end_f_ident(ctx) };
-                        tx.send(res).expect("fail to send"); // This fails if caller closes rx already
+                        let res = unsafe { self.com.#end_f_ident(ctx) };
+                        if tx.send(res).is_err()
+                        {
+                            // This can happen if user on the receiver end use cancel or select.
+                            // Ideally user should always wait for result.
+                            debug_assert!(false, "Receiver is dropped.");
+                        }
                     });
-                    let ctx = unsafe { self.c.#begin_f_ident(#begin_params_call_args &callback) };
+                    let ctx = unsafe { self.com.#begin_f_ident(#begin_params_call_args &callback) };
                     if ctx.is_err() {
                         let (tx2, rx2) = tokio::sync::oneshot::channel();
                         tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2"); // This should never fail since rx2 is available
-                        rx2
+                        crate::sync::FabricReceiver::new(rx2)
                     } else {
-                        rx
+                        crate::sync::FabricReceiver::new(rx)
                     }
                 }
             }
@@ -590,7 +607,7 @@ pub mod code {
         fn gen_return_type(&self, params: &Vec<ParamEntry>) -> TokenStream {
             if params.is_empty() {
                 quote! {
-                    tokio::sync::oneshot::Receiver<::windows_core::Result<()>>
+                    crate::sync::FabricReceiver<::windows_core::Result<()>>
                 }
             } else {
                 let pe = &params[0];
@@ -603,7 +620,7 @@ pub mod code {
                     syn::parse_str(format!("{}::{}", te.ns, te.name).as_str()).unwrap()
                 };
                 quote! {
-                    tokio::sync::oneshot::Receiver<::windows_core::Result<#t>>
+                    crate::sync::FabricReceiver<::windows_core::Result<#t>>
                 }
             }
         }

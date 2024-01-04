@@ -4,12 +4,15 @@
 // license information.
 // ------------------------------------------------------------
 
+// This example app shows how to use SF com API (unsafe)
+// to create a SF stateless application.
+
 use fabric_base::FabricCommon::FabricRuntime::{
-    FabricBeginGetNodeContext, FabricCreateRuntime, FabricEndGetNodeContext,
-    FabricGetActivationContext, IFabricCodePackageActivationContext, IFabricNodeContextResult,
-    IFabricRuntime,
+    FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricCodePackageActivationContext,
+    IFabricNodeContextResult, IFabricRuntime,
 };
 use fabric_base::FabricCommon::IFabricAsyncOperationCallback;
+use fabric_rs::runtime::{create_com_runtime, get_com_activation_context};
 use fabric_rs::WaitableCallback;
 use log::info;
 use std::sync::mpsc::channel;
@@ -30,17 +33,9 @@ fn main() -> windows::core::Result<()> {
     // std::thread::sleep(std::time::Duration::from_secs(90));
     // info!("sleep ended");
 
-    let rawruntime =
-        unsafe { FabricCreateRuntime(&IFabricRuntime::IID).expect("cannot create runtime") };
-    let runtime = unsafe { IFabricRuntime::from_raw(rawruntime) };
+    let runtime = create_com_runtime().expect("cannot create runtime");
 
-    let raw_activation_ctx = unsafe {
-        FabricGetActivationContext(&IFabricCodePackageActivationContext::IID)
-            .expect("Cannot get activation ctx")
-    };
-
-    let activation_ctx =
-        unsafe { IFabricCodePackageActivationContext::from_raw(raw_activation_ctx) };
+    let activation_ctx = get_com_activation_context().expect("Cannot get activation ctx");
 
     run_app(&runtime, &activation_ctx);
 

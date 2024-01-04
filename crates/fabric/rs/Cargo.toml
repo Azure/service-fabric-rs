@@ -9,13 +9,17 @@ env_logger = "*"
 tokio = { version = "1", features = ["full"] }
 paste = "1.0"
 windows-core = "0.51"
+async-trait = "0.1"
+ctrlc = { version = "3.0", features = ["termination"] }
 
 [dependencies.windows]
 version = "0.51"
 features = [
     "implement",
     "Win32_System_Com",
-    "Win32_Foundation"
+    "Win32_Foundation",
+    "Win32_System_Kernel", # for debug api
+    "Win32_System_Diagnostics_Debug_Extensions"
 ]
 
 [dependencies.fabric_base]
@@ -25,5 +29,6 @@ features = [
     "Win32_Foundation",
     "ServiceFabric",
     "ServiceFabric_FabricCommon",
-    "ServiceFabric_FabricCommon_FabricClient"
+    "ServiceFabric_FabricCommon_FabricClient",
+    "ServiceFabric_FabricCommon_FabricRuntime"
 ]

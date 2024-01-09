@@ -1,41 +1,35 @@
 use std::{cell::Cell, sync::Mutex};
-use std::thread::JoinHandle;
 use async_trait::async_trait;
 use fabric_base::{
-    FabricCommon::FabricRuntime::{
-        IFabricKeyValueStoreReplica2, IFabricStatefulServiceReplica, IFabricStoreEventHandler,
-    },
+    FabricCommon::FabricRuntime::IFabricStatefulServiceReplica,
     FABRIC_REPLICATOR_ADDRESS,
 };
 use fabric_rs::runtime::{
-    executor::{DefaultExecutor, Executor},
+    executor::DefaultExecutor,
     stateful::{
         PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition, StatefulServiceReplica,
     },
     stateful_proxy::StatefulServiceReplicaProxy,
     stateful_types::{OpenMode, Role},
-    store::{create_com_key_value_store_replica, DummyStoreEventHandler},
-    store_proxy::KVStoreProxy,
     store_types::ReplicatorSettings,
 };
 use log::info;
-use tokio::{
-    select,
-    sync::oneshot::{self, Sender},
-};
-use windows_core::{ComInterface, Error, HSTRING};
+use tokio::sync::oneshot::{self, Sender};
+use windows_core::{Error, HSTRING};
 mod app;
 mod echo;
 
 pub struct Factory {
     replication_port: u32,
+    hostname: HSTRING,
     rt: DefaultExecutor,
 }
 
 impl Factory {
-    pub fn create(replication_port: u32, rt: DefaultExecutor) -> Factory {
+    pub fn create(replication_port: u32, hostname: HSTRING, rt: DefaultExecutor) -> Factory {
         Factory {
             replication_port,
+            hostname,
             rt,
         }
     }
@@ -105,14 +99,16 @@ impl StatefulServiceFactory<Replica> for Factory {
         replicaid: i64,
     ) -> Result<Replica, Error> {
         info!(
-            "Factory::create_replica type {}, service {}, init data size {}",
+            "Factory::create_replica type {}, service {}, init data size {}, partition {:?}, replica {}",
             servicetypename,
             servicename,
-            initializationdata.len()
+            initializationdata.len(), 
+            partitionid,
+            replicaid
         );
         let settings = ReplicatorSettings {
             Flags: FABRIC_REPLICATOR_ADDRESS.0 as u32,
-            ReplicatorAddress: HSTRING::from(get_addr(self.replication_port, "localhost".into())),
+            ReplicatorAddress: HSTRING::from(get_addr(self.replication_port, self.hostname.clone())),
             ..Default::default()
         };
 
@@ -121,33 +117,10 @@ impl StatefulServiceFactory<Replica> for Factory {
             settings.ReplicatorAddress
         );
 
-        let handler: IFabricStoreEventHandler = DummyStoreEventHandler {}.into();
-        /*let kv = create_com_key_value_store_replica(
-            &HSTRING::from("mystorename"),
-            *partitionid,
-            replicaid,
-            &settings,
-            fabric_rs::runtime::store_types::LocalStoreKind::Ese,
-            None,
-            &handler,
-        )?;
-        let kv_replica: IFabricStatefulServiceReplica = kv.clone().cast().unwrap();*/
-        let port_copy = self.replication_port;
-        let hostname_copy = "localhost".into();
-        let instance = app::AppInstance::new(port_copy, hostname_copy);
+        let instance = app::AppInstance::new(self.replication_port, self.hostname.clone());
         let kv_replica : IFabricStatefulServiceReplica = instance.into();
-        /*let port_copy = self.replication_port;
-        let hostname_copy = "localhost".into();
-        let instance = AppInstance::new(port_copy, hostname_copy);
-        // case AppInstance to IFabricStatefulServiceReplica
-        let kv_replica: IFabricStatefulServiceReplica =  AppInstance::new(port_copy, hostname_copy);
-        //let kv_replica : IFabricStatefulServiceReplica = instance;
-
-        //let kv_replica: IFabricStatefulServiceReplica = AppInstance::new(port_copy, hostname_copy);*/
         let proxy: StatefulServiceReplicaProxy = StatefulServiceReplicaProxy::new(kv_replica);
-
-        let hostname_copy_2 = "localhost".into();
-        let svc = Service::new(port_copy, hostname_copy_2);
+        let svc = Service::new(self.replication_port, self.hostname.clone());
 
         let replica = Replica::new(proxy, svc);
         Ok(replica)
@@ -214,6 +187,7 @@ impl StatefulServiceReplica for Replica {
     ) -> windows::core::Result<Box<dyn PrimaryReplicator>> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
+        self.svc.start_loop();
         self.kv.open(openmode, partition).await
     }
     async fn change_role(&self, newrole: Role) -> ::windows_core::Result<HSTRING> {

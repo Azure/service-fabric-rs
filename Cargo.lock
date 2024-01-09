@@ -540,6 +540,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "samples_echomain_stateful2"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "ctrlc",
+ "env_logger",
+ "fabric_base",
+ "fabric_rs",
+ "log",
+ "tokio",
+ "windows",
+ "windows-core",
+]
+
+[[package]]
 name = "scopeguard"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

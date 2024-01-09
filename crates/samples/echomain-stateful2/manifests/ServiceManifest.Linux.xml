@@ -7,8 +7,9 @@
   <CodePackage Name="Code" Version="1.0">
     <EntryPoint>
         <ExeHost>
-            <Program>echomainstateful.exe</Program>
-            <Arguments>-WaitForDebugger</Arguments>
+            <Program>ld_entrypoint.sh</Program>
+            <Arguments>-e echomainstateful2.exe</Arguments>
+            <!-- <Arguments>-WaitForDebugger</Arguments> -->
             <!-- <RunFrequency IntervalInSeconds="2" /> -->
             <ConsoleRedirection FileRetentionCount="5" FileMaxSizeInKb="2048"/>
         </ExeHost>
@@ -24,7 +25,8 @@
       <!-- This endpoint is used by the communication listener to obtain the port number on which to
            listen. Note that if your service is partitioned, this port is shared with
            replicas of different partitions that are placed in your code. -->
-      <Endpoint Name="ServiceEndpoint1"/>
+      <Endpoint Name="KvReplicatorEndpoint"/>
+      <!-- <Endpoint Name="KvTransportEndpoint"/> -->
     </Endpoints>
   </Resources>
   

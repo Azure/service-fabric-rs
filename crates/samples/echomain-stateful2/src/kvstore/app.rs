@@ -27,74 +27,13 @@ use windows::core::w;
 use windows_core::HSTRING;
 //use windows_core::Error as WError;
 
-mod echo;
-
-pub fn run(runtime: &IFabricRuntime, port: u32, hostname: HSTRING) {
-    info!("port: {}, host: {:?}", port, hostname);
-
-    /*let factory: IFabricStatelessServiceFactory = ServiceFactory::new(port, hostname).into();
-    let service_type_name = w!("StatefulEchoAppService");
-    unsafe { runtime.RegisterStatelessServiceFactory(service_type_name, &factory) }
-        .expect("register failed");*/
-
-    let factory: IFabricStatefulServiceFactory = StatefulServiceFactory::new(port, hostname).into();
-    let service_type_name = w!("StatefulEchoAppService");
-    unsafe { runtime.RegisterStatefulServiceFactory(service_type_name, &factory) }
-        .expect("register failed");
+fn get_addr(port: u32, hostname: HSTRING) -> String {
+    let mut addr = String::new();
+    addr.push_str(&hostname.to_string());
+    addr.push(':');
+    addr.push_str(&port.to_string());
+    addr
 }
-
-#[derive(Debug)]
-#[implement(IFabricStatefulServiceFactory)]
-pub struct StatefulServiceFactory {
-    port_: u32,
-    hostname_: HSTRING,
-}
-
-impl StatefulServiceFactory {
-    pub fn new(port: u32, hostname: HSTRING) -> StatefulServiceFactory {
-        StatefulServiceFactory {
-            port_: port,
-            hostname_: hostname,
-        }
-    }
-}
-
-impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory {
-    #[allow(clippy::not_unsafe_ptr_arg_deref)]
-    fn CreateReplica(
-        &self,
-        servicetypename: &::windows::core::PCWSTR,
-        servicename: *const u16,
-        initializationdatalength: u32,
-        initializationdata: *const u8,
-        partitionid: &::windows::core::GUID,
-        instanceid: i64,
-    ) -> ::windows::core::Result<IFabricStatefulServiceReplica> {
-        let mut init_data: String = "".to_string();
-        if initializationdata.is_null() && initializationdatalength != 0 {
-            init_data = unsafe {
-                String::from_utf8_lossy(std::slice::from_raw_parts(
-                    initializationdata,
-                    initializationdatalength.try_into().unwrap(),
-                ))
-                .to_string()
-            };
-        }
-        info!(
-            "servicetypename: {}, servicename: {:?}, initdata: {}, partitionid: {:?}, instanceid {}",
-            unsafe { servicetypename.display() },
-            servicename,
-            init_data,
-            partitionid,
-            instanceid
-        );
-        let port_copy = self.port_;
-        let hostname_copy = self.hostname_.clone();
-        let instance = AppInstance::new(port_copy, hostname_copy);
-        Ok(instance.into())
-    }
-}
-
 
 #[implement(IFabricReplicator, IFabricPrimaryReplicator)]
 pub struct AppFabricReplicator {
@@ -129,7 +68,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
     ) -> windows_core::Result<IFabricStringResult> {
         info!("AppFabricReplicator::EndOpen");
         //let str_res: IFabricStringResult = StringResult::new(HSTRING::from("")).into();
-        let addr = echo::get_addr(self.port_, self.hostname_.clone());
+        let addr = get_addr(self.port_, self.hostname_.clone());
         info!("AppFabricReplicator::EndOpen {}", addr);
         let str_res: IFabricStringResult = StringResult::new(HSTRING::from(addr)).into();
         Ok(str_res)
@@ -167,6 +106,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
+    
     fn EndUpdateEpoch(
         &self,
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
@@ -174,6 +114,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
         info!("AppFabricReplicator::EndUpdateEpoch");
         Ok(())
     }
+    
     fn BeginClose(
         &self,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
@@ -184,6 +125,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
+    
     fn EndClose(
         &self,
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
@@ -191,14 +133,17 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
         info!("AppFabricReplicator::EndClose");
         Ok(())
     }
+    
     fn Abort(&self) {
         info!("AppFabricReplicator::Abort");
     }
+    
     fn GetCurrentProgress(&self) -> ::windows_core::Result<i64>{
         info!("AppFabricReplicator::GetCurrentProgress");
         let v  = 0;
         Ok(v)
     }
+    
     fn GetCatchUpCapability(&self) -> ::windows_core::Result<i64>{
         info!("AppFabricReplicator::GetCatchUpCapability");
         let v  = 0;
@@ -217,6 +162,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
+    
     fn EndOnDataLoss(
         &self,
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
@@ -225,6 +171,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
         let v  = 0;
         Ok(v)
     }
+    
     fn UpdateCatchUpReplicaSetConfiguration(
         &self,
         currentconfiguration: *const fabric_base::FABRIC_REPLICA_SET_CONFIGURATION,
@@ -233,6 +180,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
         info!("AppFabricReplicator::UpdateCatchUpReplicaSetConfiguration");
         Ok(())
     }
+    
     fn BeginWaitForCatchUpQuorum(
         &self,
         catchupmode: fabric_base::FABRIC_REPLICA_SET_QUORUM_MODE,
@@ -244,6 +192,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
+    
     fn EndWaitForCatchUpQuorum(
         &self,
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
@@ -251,6 +200,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
         info!("AppFabricReplicator::EndWaitForCatchUpQuorum");
         Ok(())
     }
+    
     fn UpdateCurrentReplicaSetConfiguration(
         &self,
         currentconfiguration: *const fabric_base::FABRIC_REPLICA_SET_CONFIGURATION,
@@ -258,6 +208,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
         info!("AppFabricReplicator::UpdateCurrentReplicaSetConfiguration");
         Ok(())
     }
+    
     fn BeginBuildReplica(
         &self,
         replica: *const fabric_base::FABRIC_REPLICA_INFORMATION,
@@ -269,6 +220,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
+    
     fn EndBuildReplica(
         &self,
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
@@ -276,12 +228,12 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
         info!("AppFabricReplicator::EndBuildReplica");
         Ok(())
     }
+    
     fn RemoveReplica(&self, replicaid: i64) -> ::windows_core::Result<()>{
         info!("AppFabricReplicator::UpdateCurrentReplicaSetConfiguration {} ", replicaid);
         Ok(())
     }
 }
-
 
 //#[derive(Debug)]
 #[implement(IFabricStatefulServiceReplica)]
@@ -336,7 +288,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
 
         // TODO: emplement stop thread.
 
-        let port_copy = self.port_;
+        /*let port_copy = self.port_;
         let hostname_copy = self.hostname_.clone();
 
         let (tx, rx) = oneshot::channel::<()>();
@@ -344,14 +296,8 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         // owns tx which is to be used when shutdown.
         self.tx_.set(Some(tx));
         let th = std::thread::spawn(move || echo::start_echo(rx, port_copy, hostname_copy));
-        self.th_.set(Some(th));
+        self.th_.set(Some(th));*/
 
-        /*FABRIC_REPLICATOR_SETTINGS replicatorSettings = {0};
-        replicatorSettings.ReplicatorAddress = replicatorAddress.c_str();
-        replicatorSettings.Flags = FABRIC_REPLICATOR_ADDRESS;
-        replicatorSettings.Reserved = NULL;*/
-
-        //replicator_ = partition.CreateReplicator(self, )
         Ok(ctx)
     }
 
@@ -370,12 +316,6 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         if !completed {
             info!("AppInstance::EndOpen callback not completed");
         }
-
-        //let addr = echo::get_addr(self.port_, self.hostname_.clone());
-        //let str_res: IFabricStringResult = StringResult::new(HSTRING::from(addr)).into();
-        //let replicator2_: Cell<Option<IFabricReplicator>> = Cell::new(None);
-        //let res = AppFabricReplicator::new(self.port_, self.hostname_);
-        //replicator2_.set(Some(res));
 
         Ok(AppFabricReplicator::new(self.port_, self.hostname_.clone()).into())
     }
@@ -489,7 +429,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         if !completed {
             info!("AppInstance::EndChangeRole callback not completed");
         }*/
-        let addr = echo::get_addr(self.port_, self.hostname_.clone());
+        let addr = get_addr(self.port_, self.hostname_.clone());
         info!("AppInstance::EndChangeRole {}", addr);
         let str_res: IFabricStringResult = StringResult::new(HSTRING::from(addr)).into();
         Ok(str_res)

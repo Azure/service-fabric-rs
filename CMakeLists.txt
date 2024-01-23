@@ -68,49 +68,12 @@ add_custom_target(force_clean
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_custom_target(build_rust_sample_echomain ALL
-    COMMAND ${cargo_exe} build -p samples_echomain
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS build_fabric_rust_pal
-)
-
 add_custom_target(build_fabric_rust_pal ALL
     COMMAND ${cargo_exe} build -p pal
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-set(_pkg_root ${CMAKE_BINARY_DIR}/echoapp_root)
-set(_pkg_src  ${CMAKE_CURRENT_SOURCE_DIR}/crates/samples/echomain)
-if(WIN32)
-    set(_pkg_exe  ${CMAKE_CURRENT_SOURCE_DIR}/target/debug/samples_echomain.exe)
-    add_custom_command(TARGET build_rust_sample_echomain POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root}
-        COMMAND ${CMAKE_COMMAND} 
-        -E copy_if_different ${_pkg_src}/manifests/ServiceManifest.xml ${_pkg_root}/EchoAppServicePackage/ServiceManifest.xml
-    )
-else()
-    set(_pkg_exe  ${CMAKE_CURRENT_SOURCE_DIR}/target/debug/samples_echomain)
-    set(_pal_so ${CMAKE_CURRENT_SOURCE_DIR}/target/debug/libfabric_rust_pal.so)
-    add_custom_command(TARGET build_rust_sample_echomain POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root}
-        COMMAND ${CMAKE_COMMAND} 
-            -E copy_if_different ${_pal_so} ${_pkg_root}/EchoAppServicePackage/Code/libfabric_rust_pal.so
-        COMMAND ${CMAKE_COMMAND} 
-            -E copy_if_different ${_pkg_src}/manifests/ServiceManifest.Linux.xml ${_pkg_root}/EchoAppServicePackage/ServiceManifest.xml
-        COMMAND ${CMAKE_COMMAND} 
-            -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ld_entrypoint.sh 
-            ${_pkg_root}/EchoAppServicePackage/Code/ld_entrypoint.sh
-    )
-endif(WIN32)
-# shared files
-add_custom_command(TARGET build_rust_sample_echomain POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root}
-    COMMAND ${CMAKE_COMMAND} 
-        -E copy_if_different ${_pkg_src}/manifests/ApplicationManifest.xml ${_pkg_root}
-    COMMAND ${CMAKE_COMMAND} 
-        -E copy_if_different ${_pkg_exe} ${_pkg_root}/EchoAppServicePackage/Code/echomain.exe # note the rename
-)
-
+add_subdirectory(crates/samples/echomain)
 if(WIN32) #linux is not tested
     add_subdirectory(crates/samples/echo2)
     add_subdirectory(crates/samples/kvstore)

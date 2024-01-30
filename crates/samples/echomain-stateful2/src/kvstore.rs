@@ -1,16 +1,12 @@
-use std::{cell::Cell, sync::Mutex};
+use std::{cell::Cell, sync::Mutex, thread::JoinHandle};
 use async_trait::async_trait;
-use fabric_base::{
-    FabricCommon::FabricRuntime::IFabricStatefulServiceReplica,
-    FABRIC_REPLICATOR_ADDRESS,
-};
+use fabric_base::FABRIC_REPLICATOR_ADDRESS;
 use fabric_rs::runtime::{
     executor::DefaultExecutor,
     stateful::{
-        PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition, StatefulServiceReplica,
+        PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition, StatefulServiceReplica, Replicator,
     },
-    stateful_proxy::StatefulServiceReplicaProxy,
-    stateful_types::{OpenMode, Role},
+    stateful_types::{OpenMode, Role, Epoch, ReplicaSetConfig, ReplicaSetQuarumMode, ReplicaInfo},
     store_types::ReplicatorSettings,
 };
 use log::info;
@@ -43,51 +39,97 @@ fn get_addr(port: u32, hostname: HSTRING) -> String {
     addr
 }
 
-//#[derive(Debug)]
-//#[implement(StatefulServiceReplica)]
-/*pub struct AppInstance {
+pub struct AppFabricReplicator {
     port_: u32,
     hostname_: HSTRING,
-    //role_ : Cell<fabric_base::FABRIC_REPLICA_ROLE>,
-    //replicator_ : Cell<Option<Box<dyn PrimaryReplicator>>>,
 }
 
-impl AppInstance {
-    pub fn new(port: u32, hostname: HSTRING) -> AppInstance {
-        AppInstance {
+impl AppFabricReplicator {
+    pub fn new(port: u32, hostname: HSTRING) -> AppFabricReplicator {
+        AppFabricReplicator {
             port_: port,
             hostname_: hostname,
-            //role_ : Cell::from(fabric_base::FABRIC_REPLICA_ROLE_UNKNOWN),
-            //replicator_ : Cell::from(None),
         }
     }
 }
 
-impl StatefulServiceReplica for AppInstance {
-    #[must_use]
-#[allow(clippy::type_complexity,clippy::type_repetition_in_bounds)]
-fn open<'life0,'life1,'async_trait>(&'life0 self,openmode:OpenMode,partition: &'life1 StatefulServicePartition,) ->  ::core::pin::Pin<Box<dyn ::core::future::Future<Output = windows::core::Result<Box<dyn PrimaryReplicator> > > + ::core::marker::Send+'async_trait> >where 'life0:'async_trait,'life1:'async_trait,Self:'async_trait {
-        todo!()
+#[async_trait]
+impl Replicator for AppFabricReplicator {
+    async fn open(&self) -> windows::core::Result<HSTRING> {
+        info!("AppFabricReplicator2::Replicator::Open");
+        //let str_res: IFabricStringResult = StringResult::new(HSTRING::from("")).into();
+        // return the address
+        let addr = get_addr(self.port_, self.hostname_.clone());
+        let str_res = HSTRING::from(addr).into();
+        Ok(str_res)
     }
 
-    #[must_use]
-#[allow(clippy::type_complexity,clippy::type_repetition_in_bounds)]
-fn change_role<'life0,'async_trait>(&'life0 self,newrole:Role) ->  ::core::pin::Pin<Box<dyn ::core::future::Future<Output =  ::windows_core::Result<HSTRING> > + ::core::marker::Send+'async_trait> >where 'life0:'async_trait,Self:'async_trait {
-        todo!()
+    async fn close(&self) -> windows::core::Result<()> {
+        info!("AppFabricReplicator2::Replicator::close");
+        Ok(())
     }
 
-    #[must_use]
-#[allow(clippy::type_complexity,clippy::type_repetition_in_bounds)]
-fn close<'life0,'async_trait>(&'life0 self) ->  ::core::pin::Pin<Box<dyn ::core::future::Future<Output = windows::core::Result<()> > + ::core::marker::Send+'async_trait> >where 'life0:'async_trait,Self:'async_trait {
-        todo!()
+    async fn change_role(&self, epoch: &Epoch, role: &Role) -> windows::core::Result<()> {
+        info!("AppFabricReplicator2::Replicator::change_role");
+        Ok(())
+    }
+
+    async fn update_epoch(&self, epoch: &Epoch) -> windows::core::Result<()> {
+        info!("AppFabricReplicator2::Replicator::update_epoch");
+        Ok(())
+    }
+
+    fn get_current_progress(&self) -> windows::core::Result<i64> {
+        info!("AppFabricReplicator2::Replicator::get_current_progress");
+        Ok(0)
+    }
+
+    fn get_catch_up_capability(&self) -> windows::core::Result<i64> {
+        info!("AppFabricReplicator2::Replicator::get_catch_up_capability");
+        Ok(0)
     }
 
     fn abort(&self) {
-        todo!()
+        info!("AppFabricReplicator2::Replicator::abort");
     }
-}*/
+}
 
-//use struct AppInstance from mod echo
+#[async_trait]
+impl PrimaryReplicator for AppFabricReplicator {
+    async fn on_data_loss(&self) -> windows::core::Result<u8> {
+        info!("AppFabricReplicator2::PrimaryReplicator::on_data_loss");
+        Ok(0)
+    }
+
+    fn update_catch_up_replica_set_configuration(
+        &self,
+        currentconfiguration: &ReplicaSetConfig,
+        previousconfiguration: &ReplicaSetConfig,
+    ) -> windows::core::Result<()> {
+        info!("AppFabricReplicator2::PrimaryReplicator::update_catch_up_replica_set_configuration");
+        Ok(())
+    }
+
+    async fn wait_for_catch_up_quorum(&self, catchupmode: ReplicaSetQuarumMode) -> windows::core::Result<()> {
+        info!("AppFabricReplicator2::PrimaryReplicator::wait_for_catch_up_quorum");
+        Ok(())
+    }
+
+    fn update_current_replica_set_configuration(&self, currentconfiguration: &ReplicaSetConfig) -> windows::core::Result<()> {
+        info!("AppFabricReplicator2::PrimaryReplicator::update_current_replica_set_configuration");
+        Ok(())
+    }
+
+    async fn build_replica(&self, replica: &ReplicaInfo) -> windows::core::Result<()> {
+        info!("AppFabricReplicator2::PrimaryReplicator::build_replica");
+        Ok(())
+    }
+
+    fn remove_replica(&self, replicaid: i64) -> windows::core::Result<()> {
+        info!("AppFabricReplicator2::PrimaryReplicator::remove_replica");
+        Ok(())
+    }
+}
 
 impl StatefulServiceFactory<Replica> for Factory {
     fn create_replica(
@@ -117,25 +159,25 @@ impl StatefulServiceFactory<Replica> for Factory {
             settings.ReplicatorAddress
         );
 
-        let instance = app::AppInstance::new(self.replication_port, self.hostname.clone());
-        let kv_replica : IFabricStatefulServiceReplica = instance.into();
-        let proxy: StatefulServiceReplicaProxy = StatefulServiceReplicaProxy::new(kv_replica);
         let svc = Service::new(self.replication_port, self.hostname.clone());
-
-        let replica = Replica::new(proxy, svc);
+        let replica = Replica::new(self.replication_port, self.hostname.clone(), svc);
         Ok(replica)
     }
 }
 
-
 pub struct Replica {
-    kv: StatefulServiceReplicaProxy,
+    port_: u32,
+    hostname_: HSTRING,
     svc: Service,
 }
 
 impl Replica {
-    pub fn new(kv: StatefulServiceReplicaProxy, svc: Service) -> Replica {
-        Replica { kv, svc }
+    pub fn new( port: u32, hostname: HSTRING, svc: Service) -> Replica {
+        Replica { 
+            port_: port,
+            hostname_: hostname,
+            svc
+        }
     }
 }
 
@@ -188,24 +230,27 @@ impl StatefulServiceReplica for Replica {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
         self.svc.start_loop();
-        self.kv.open(openmode, partition).await
+        Ok(Box::new(AppFabricReplicator::new(self.port_, self.hostname_.clone())))
     }
     async fn change_role(&self, newrole: Role) -> ::windows_core::Result<HSTRING> {
         info!("Replica::change_role {:?}", newrole);
-        let addr = self.kv.change_role(newrole.clone()).await?;
         if newrole == Role::Primary {
             info!("primary {:?}", self.svc.port_);
         }
-        Ok(addr)
+        // return the address
+        let addr = get_addr(self.port_, self.hostname_.clone());
+        let str_res = HSTRING::from(addr).into();
+        Ok(str_res)
     }
     async fn close(&self) -> windows::core::Result<()> {
         info!("Replica::close");
         self.svc.stop();
-        self.kv.close().await
+        Ok(())
     }
     fn abort(&self) {
         info!("Replica::abort");
         self.svc.stop();
-        self.kv.abort();
     }
 }
+
+// Implement PrimaryReplicator

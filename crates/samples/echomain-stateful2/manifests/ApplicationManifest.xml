@@ -4,8 +4,9 @@
   Experiment echo app
   </Description>
   <Parameters>
-    <!-- dummy constraint-->
-    <!-- <Parameter Name="MyConstraint" DefaultValue="" /> -->
+    <Parameter Name="SF_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="SF_PartitionCount" DefaultValue="1" />
+    <Parameter Name="SF_TargetReplicaSetSize" DefaultValue="3" />
   </Parameters>
   <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="EchoAppStatefulServicePackage" ServiceManifestVersion="1.0" />

@@ -18,3 +18,7 @@ pub mod Microsoft;
 pub use Microsoft::ServiceFabric::*;
 
 pub use fabric_metadata;
+
+// In linux force to pull in pal lib for linking
+#[cfg(target_os = "linux")]
+extern crate fabric_rust_pal;

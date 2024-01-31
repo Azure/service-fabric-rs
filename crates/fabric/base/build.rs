@@ -1,3 +1,5 @@
+// use std::{env, path::{Path, PathBuf}};
+
 use std::path::Path;
 
 fn main() {
@@ -8,6 +10,9 @@ fn main() {
 
         // On linux, for windows-rs to work we need have a pal shared lib.
         // No need to have search dir since it is in the target dir
-        println!("cargo:rustc-link-lib=dylib=fabric_rust_pal");
+        // let outdir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+
+        // println!("cargo:rustc-link-search={}", outdir.as_path().display());
+        // println!("cargo:rustc-link-lib=static=fabric_rust_pal");
     }
 }

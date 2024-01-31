@@ -11,28 +11,14 @@ set(_pkg_src  ${CMAKE_SOURCE_DIR}/crates/samples/echomain-stateful)
 
 if(WIN32)
     set(_pkg_exe  ${CMAKE_SOURCE_DIR}/target/debug/samples_echomain_stateful.exe)
-    add_custom_command(TARGET build_rust_sample_echomain_stateful POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root_stateful}
-        COMMAND ${CMAKE_COMMAND} 
-        -E copy_if_different ${_pkg_src}/manifests/ServiceManifest.xml ${_pkg_root_stateful}/EchoAppStatefulServicePackage/ServiceManifest.xml
-    )
 else()
     set(_pkg_exe  ${CMAKE_SOURCE_DIR}/target/debug/samples_echomain_stateful)
-    set(_pal_so ${CMAKE_SOURCE_DIR}/target/debug/libfabric_rust_pal.so)
-    add_custom_command(TARGET build_rust_sample_echomain_stateful POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root_stateful}
-        COMMAND ${CMAKE_COMMAND} 
-            -E copy_if_different ${_pal_so} ${_pkg_root_stateful}/EchoAppStatefulServicePackage/Code/libfabric_rust_pal.so
-        COMMAND ${CMAKE_COMMAND} 
-            -E copy_if_different ${_pkg_src}/manifests/ServiceManifest.Linux.xml ${_pkg_root_stateful}/EchoAppStatefulServicePackage/ServiceManifest.xml
-        COMMAND ${CMAKE_COMMAND} 
-            -E copy_if_different ${CMAKE_SOURCE_DIR}/scripts/ld_entrypoint.sh 
-            ${_pkg_root_stateful}/EchoAppStatefulServicePackage/Code/ld_entrypoint.sh
-    )
 endif(WIN32)
 
 add_custom_command(TARGET build_rust_sample_echomain_stateful POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root_stateful}
+    COMMAND ${CMAKE_COMMAND} 
+        -E copy_if_different ${_pkg_src}/manifests/ServiceManifest.xml ${_pkg_root_stateful}/EchoAppStatefulServicePackage/ServiceManifest.xml
     COMMAND ${CMAKE_COMMAND} 
         -E copy_if_different ${_pkg_src}/manifests/ApplicationManifest.xml ${_pkg_root_stateful}
     COMMAND ${CMAKE_COMMAND} 

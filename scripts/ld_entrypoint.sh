@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 
 # entry point to set up ld path to be the current dir and then launch the exe.
+# this was used to make *.so libs available to load in the code package.
+# currently this is not used.
+
+# use it in service manifest:
+#     <EntryPoint>
+#        <ExeHost>
+#            <Program>ld_entrypoint.sh</Program>
+#            <Arguments>-e echomain.exe</Arguments>
+#            <ConsoleRedirection FileRetentionCount="5" FileMaxSizeInKb="2048"/>
+#        </ExeHost>
+#    </EntryPoint>
 
 SCRIPT=$(realpath -s "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")

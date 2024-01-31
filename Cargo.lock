@@ -245,7 +245,6 @@ name = "kvstore"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "ctrlc",
  "env_logger",
  "fabric_base",
  "fabric_rs",
@@ -501,7 +500,6 @@ name = "samples_echo2"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "ctrlc",
  "env_logger",
  "fabric_base",
  "fabric_rs",

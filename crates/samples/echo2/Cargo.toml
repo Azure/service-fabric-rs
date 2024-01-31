@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 log = "0.4"
 env_logger = "*"
-ctrlc = { version = "3.0", features = ["termination"] }
 tokio = { version = "1", features = ["full"] }
 windows-core = "0.51"
 async-trait = "0.1"

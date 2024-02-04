@@ -4,7 +4,8 @@ use log::info;
 use tokio::{runtime::Handle, sync::mpsc::channel};
 
 // Executor is used by rs to post jobs to execute in the background
-pub trait Executor: Clone {
+// Sync is needed due to we use the executor across await boundary.
+pub trait Executor: Clone + Sync + Send + 'static {
     // spawns the task to run in background
     fn spawn<F>(&self, future: F)
     where

@@ -1,7 +1,6 @@
 // stateful_proxy is a wrapper layer around com api,
 // making manipulating com simple.
 
-use async_trait::async_trait;
 use fabric_base::{
     FabricCommon::FabricRuntime::{
         IFabricPrimaryReplicator, IFabricReplicator, IFabricStatefulServiceReplica,
@@ -28,13 +27,12 @@ impl StatefulServiceReplicaProxy {
     }
 }
 
-#[async_trait]
 impl StatefulServiceReplica for StatefulServiceReplicaProxy {
     async fn open(
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
-    ) -> windows::core::Result<Box<dyn PrimaryReplicator>> {
+    ) -> windows::core::Result<impl PrimaryReplicator> {
         info!("StatefulServiceReplicaProxy::open with mode {:?}", openmode);
         // replicator address
         let (tx, rx) = tokio::sync::oneshot::channel();
@@ -53,7 +51,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         // TODO: cast without clone will cause access violation on AddRef in SF runtime.
         let p_rplctr: IFabricPrimaryReplicator = rplctr.clone().cast().unwrap(); // must work
                                                                                  // Replicator must impl primary replicator as well.
-        let res = Box::new(PrimaryReplicatorProxy::new(p_rplctr));
+        let res = PrimaryReplicatorProxy::new(p_rplctr);
         Ok(res)
     }
     async fn change_role(&self, newrole: Role) -> ::windows_core::Result<HSTRING> {
@@ -101,7 +99,6 @@ impl ReplicatorProxy {
     }
 }
 
-#[async_trait]
 impl Replicator for ReplicatorProxy {
     async fn open(&self) -> ::windows_core::Result<HSTRING> {
         info!("ReplicatorProxy::open");
@@ -188,7 +185,6 @@ impl PrimaryReplicatorProxy {
     }
 }
 
-#[async_trait]
 impl Replicator for PrimaryReplicatorProxy {
     async fn open(&self) -> ::windows_core::Result<HSTRING> {
         self.parent.open().await
@@ -213,7 +209,6 @@ impl Replicator for PrimaryReplicatorProxy {
     }
 }
 
-#[async_trait]
 impl PrimaryReplicator for PrimaryReplicatorProxy {
     async fn on_data_loss(&self) -> ::windows_core::Result<u8> {
         info!("PrimaryReplicatorProxy::on_data_loss");

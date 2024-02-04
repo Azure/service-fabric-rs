@@ -1,6 +1,6 @@
 #![deny(non_snake_case)] // this file is safe rust
 
-use std::{marker::PhantomData, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     runtime::{stateless::StatelessServicePartition, BridgeContext},
@@ -24,37 +24,29 @@ use super::{
 };
 
 #[implement(IFabricStatelessServiceFactory)]
-pub struct StatelessServiceFactoryBridge<E, F, S>
+pub struct StatelessServiceFactoryBridge<E, F>
 where
     E: Executor,
-    F: StatelessServiceFactory<S>,
-    S: StatelessServiceInstance + 'static,
+    F: StatelessServiceFactory,
 {
     inner: F,
     rt: E,
-    phantom: PhantomData<S>,
 }
 
-impl<E, F, S> StatelessServiceFactoryBridge<E, F, S>
+impl<E, F> StatelessServiceFactoryBridge<E, F>
 where
     E: Executor,
-    F: StatelessServiceFactory<S>,
-    S: StatelessServiceInstance,
+    F: StatelessServiceFactory,
 {
-    pub fn create(factory: F, rt: E) -> StatelessServiceFactoryBridge<E, F, S> {
-        StatelessServiceFactoryBridge::<E, F, S> {
-            inner: factory,
-            rt,
-            phantom: PhantomData,
-        }
+    pub fn create(factory: F, rt: E) -> StatelessServiceFactoryBridge<E, F> {
+        StatelessServiceFactoryBridge::<E, F> { inner: factory, rt }
     }
 }
 
-impl<E, F, S> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge<E, F, S>
+impl<E, F> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge<E, F>
 where
     E: Executor,
-    F: StatelessServiceFactory<S>,
-    S: StatelessServiceInstance + 'static,
+    F: StatelessServiceFactory,
 {
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn CreateInstance(
@@ -80,7 +72,7 @@ where
             data,
             partitionid,
             instanceid,
-        );
+        )?;
         let rt = self.rt.clone();
         let instance_bridge = IFabricStatelessServiceInstanceBridge::create(instance, rt);
 

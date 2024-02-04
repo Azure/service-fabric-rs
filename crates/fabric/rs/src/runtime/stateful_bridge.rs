@@ -95,29 +95,28 @@ where
 // bridge from safe service instance to com
 #[implement(IFabricReplicator)]
 
-pub struct IFabricReplicatorBridge<E>
+pub struct IFabricReplicatorBridge<E, R>
 where
     E: Executor,
+    R: Replicator,
 {
-    inner: Arc<Box<dyn Replicator>>,
+    inner: Arc<R>,
     rt: E,
 }
 
-impl<E> IFabricReplicatorBridge<E>
+impl<E, R> IFabricReplicatorBridge<E, R>
 where
     E: Executor,
+    R: Replicator,
 {
-    pub fn create(rplctr: Box<dyn Replicator>, rt: E) -> IFabricReplicatorBridge<E> {
+    pub fn create(rplctr: R, rt: E) -> IFabricReplicatorBridge<E, R> {
         IFabricReplicatorBridge {
             inner: Arc::new(rplctr),
             rt,
         }
     }
 
-    fn create_from_primary_replicator(
-        replicator: Arc<Box<dyn Replicator>>,
-        rt: E,
-    ) -> IFabricReplicatorBridge<E> {
+    fn create_from_primary_replicator(replicator: Arc<R>, rt: E) -> IFabricReplicatorBridge<E, R> {
         IFabricReplicatorBridge {
             inner: replicator,
             rt,
@@ -125,9 +124,10 @@ where
     }
 }
 
-impl<E> IFabricReplicator_Impl for IFabricReplicatorBridge<E>
+impl<E, R> IFabricReplicator_Impl for IFabricReplicatorBridge<E, R>
 where
     E: Executor,
+    R: Replicator,
 {
     fn BeginOpen(
         &self,
@@ -296,33 +296,35 @@ where
 
 // primary replicator bridge
 #[implement(IFabricPrimaryReplicator)]
-pub struct IFabricPrimaryReplicatorBridge<E>
+pub struct IFabricPrimaryReplicatorBridge<E, P>
 where
     E: Executor,
+    P: PrimaryReplicator,
 {
-    inner: Arc<Box<dyn PrimaryReplicator>>,
+    inner: Arc<P>,
     rt: E,
-    rplctr: IFabricReplicatorBridge<E>,
+    rplctr: IFabricReplicatorBridge<E, P>,
 }
 
-impl<E> IFabricPrimaryReplicatorBridge<E>
+impl<E, P> IFabricPrimaryReplicatorBridge<E, P>
 where
     E: Executor,
+    P: PrimaryReplicator,
 {
-    pub fn create(rplctr: Box<dyn PrimaryReplicator>, rt: E) -> IFabricPrimaryReplicatorBridge<E> {
+    pub fn create(rplctr: P, rt: E) -> IFabricPrimaryReplicatorBridge<E, P> {
         let inner = Arc::new(rplctr);
 
         // hack to construct a replicator bridge.
-        let raw: *const Box<dyn PrimaryReplicator> = Arc::into_raw(inner.clone());
-        let raw: *const Box<dyn Replicator> = raw.cast();
+        // let raw: *const Box<dyn PrimaryReplicator> = Arc::into_raw(inner.clone());
+        // let raw: *const Box<dyn Replicator> = raw.cast();
 
-        let rpl_cast = unsafe { Arc::from_raw(raw) };
+        // let rpl_cast = unsafe { Arc::from_raw(raw) };
         // SAFETY: This is safe because the pointer orignally came from an Arc
         // with the same size and alignment since we've checked (via Any) that
         // the object within is the type being casted to.
 
         let replicator_bridge =
-            IFabricReplicatorBridge::create_from_primary_replicator(rpl_cast, rt.clone());
+            IFabricReplicatorBridge::create_from_primary_replicator(inner.clone(), rt.clone());
 
         IFabricPrimaryReplicatorBridge {
             inner,
@@ -333,9 +335,10 @@ where
 }
 
 // TODO: this impl has duplicate code with replicator bridge
-impl<E> IFabricReplicator_Impl for IFabricPrimaryReplicatorBridge<E>
+impl<E, P> IFabricReplicator_Impl for IFabricPrimaryReplicatorBridge<E, P>
 where
     E: Executor,
+    P: PrimaryReplicator,
 {
     fn BeginOpen(
         &self,
@@ -409,9 +412,10 @@ where
     }
 }
 
-impl<E> IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorBridge<E>
+impl<E, P> IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorBridge<E, P>
 where
     E: Executor,
+    P: PrimaryReplicator,
 {
     fn BeginOnDataLoss(
         &self,
@@ -595,13 +599,24 @@ where
         );
 
         let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<Box<dyn PrimaryReplicator>, Error>>::new(callback_cp).into();
+            BridgeContext::<Result<IFabricPrimaryReplicator, Error>>::new(callback_cp).into();
         let ctx_cpy = ctx.clone();
+        let rt_cpy = self.rt.clone();
         self.rt.spawn(async move {
             let ok = inner_cp.open(openmode2, &partition2).await;
-            let ctx_bridge: &BridgeContext<Result<Box<dyn PrimaryReplicator>, Error>> =
+
+            let com = match ok {
+                Ok(rplctr) => {
+                    let bridge: IFabricPrimaryReplicator =
+                        IFabricPrimaryReplicatorBridge::create(rplctr, rt_cpy).into();
+                    Ok(bridge)
+                }
+                Err(e) => Err(e),
+            };
+
+            let ctx_bridge: &BridgeContext<Result<IFabricPrimaryReplicator, Error>> =
                 unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
+            ctx_bridge.set_content(com);
             ctx_bridge.set_complete();
             let cb = ctx_bridge.Callback().unwrap();
             unsafe { cb.Invoke(&ctx_cpy) };
@@ -614,14 +629,10 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<IFabricReplicator> {
         info!("IFabricStatefulReplicaBridge::EndOpen");
-        let ctx_bridge: &BridgeContext<Result<Box<dyn PrimaryReplicator>, Error>> =
+        let ctx_bridge: &BridgeContext<Result<IFabricPrimaryReplicator, Error>> =
             unsafe { context.unwrap().as_impl() };
         let rplctr = ctx_bridge.consume_content()?;
-
-        // Replicator must impl primary replicator as well.
-        let bridge: IFabricPrimaryReplicator =
-            IFabricPrimaryReplicatorBridge::create(rplctr, self.rt.clone()).into();
-        Ok(bridge.clone().cast::<IFabricReplicator>().unwrap())
+        Ok(rplctr.clone().cast::<IFabricReplicator>().unwrap())
     }
 
     fn BeginChangeRole(

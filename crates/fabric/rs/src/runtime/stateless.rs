@@ -1,6 +1,5 @@
 #![deny(non_snake_case)] // this file is safe rust
 
-use async_trait::async_trait;
 use fabric_base::{
     FabricCommon::FabricRuntime::IFabricStatelessServicePartition,
     FABRIC_INT64_RANGE_PARTITION_INFORMATION, FABRIC_NAMED_PARTITION_INFORMATION,
@@ -85,10 +84,7 @@ impl StatelessServicePartition {
 }
 
 // safe factory
-pub trait StatelessServiceFactory<T>
-where
-    T: StatelessServiceInstance,
-{
+pub trait StatelessServiceFactory {
     fn create_instance(
         &self,
         servicetypename: &HSTRING,
@@ -96,12 +92,12 @@ where
         initializationdata: &[u8],
         partitionid: &::windows::core::GUID,
         instanceid: i64,
-    ) -> T;
+    ) -> windows_core::Result<impl StatelessServiceInstance>;
 }
 
 // safe service instance
-#[async_trait]
-pub trait StatelessServiceInstance: Send + Sync {
+#[trait_variant::make(StatelessServiceInstance: Send)]
+pub trait LocalStatelessServiceInstance: Send + Sync + 'static {
     async fn open(&self, partition: &StatelessServicePartition) -> windows::core::Result<HSTRING>;
     async fn close(&self) -> windows::core::Result<()>;
     fn abort(&self);

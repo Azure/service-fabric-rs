@@ -40,8 +40,23 @@ impl Executor for DefaultExecutor {
     where
         F: Future + Send + 'static,
     {
-        self.rt.spawn(async move {
+        let h = self.rt.spawn(async move {
             future.await;
+        });
+
+        // Monitor user future.
+        // If user task has panic, exit the process.
+        // TODO: expose a config to control this behavior.
+        // It is observed that if user task panics, sf operation are stuck.
+        self.rt.spawn(async move {
+            let ok = h.await;
+            if ok.is_err() {
+                info!(
+                    "DefaultExecutor: User spawned future paniced {}",
+                    ok.unwrap_err()
+                );
+                std::process::exit(1);
+            }
         });
     }
 

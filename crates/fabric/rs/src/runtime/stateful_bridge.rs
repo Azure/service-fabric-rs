@@ -1,6 +1,6 @@
 // stateful bridge is to wrap rs types into com to expose to SF
 
-use std::{marker::PhantomData, sync::Arc};
+use std::sync::Arc;
 
 use log::info;
 use windows::core::implement;
@@ -35,37 +35,29 @@ use super::{
 };
 
 #[implement(IFabricStatefulServiceFactory)]
-pub struct StatefulServiceFactoryBridge<E, F, R>
+pub struct StatefulServiceFactoryBridge<E, F>
 where
     E: Executor,
-    F: StatefulServiceFactory<R>,
-    R: StatefulServiceReplica + 'static,
+    F: StatefulServiceFactory,
 {
     inner: F,
     rt: E,
-    phantom: PhantomData<R>,
 }
 
-impl<E, F, R> StatefulServiceFactoryBridge<E, F, R>
+impl<E, F> StatefulServiceFactoryBridge<E, F>
 where
     E: Executor,
-    F: StatefulServiceFactory<R>,
-    R: StatefulServiceReplica,
+    F: StatefulServiceFactory,
 {
-    pub fn create(factory: F, rt: E) -> StatefulServiceFactoryBridge<E, F, R> {
-        StatefulServiceFactoryBridge::<E, F, R> {
-            inner: factory,
-            rt,
-            phantom: PhantomData,
-        }
+    pub fn create(factory: F, rt: E) -> StatefulServiceFactoryBridge<E, F> {
+        StatefulServiceFactoryBridge::<E, F> { inner: factory, rt }
     }
 }
 
-impl<E, F, R> IFabricStatefulServiceFactory_Impl for StatefulServiceFactoryBridge<E, F, R>
+impl<E, F> IFabricStatefulServiceFactory_Impl for StatefulServiceFactoryBridge<E, F>
 where
     E: Executor,
-    F: StatefulServiceFactory<R>,
-    R: StatefulServiceReplica + 'static,
+    F: StatefulServiceFactory,
 {
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn CreateReplica(
@@ -584,7 +576,7 @@ where
 impl<E, R> IFabricStatefulServiceReplica_Impl for IFabricStatefulServiceReplicaBridge<E, R>
 where
     E: Executor,
-    R: StatefulServiceReplica + 'static,
+    R: StatefulServiceReplica,
 {
     fn BeginOpen(
         &self,

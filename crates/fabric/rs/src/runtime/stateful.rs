@@ -8,10 +8,7 @@ use super::stateful_types::{
     Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode, Role,
 };
 
-pub trait StatefulServiceFactory<R>
-where
-    R: StatefulServiceReplica,
-{
+pub trait StatefulServiceFactory {
     fn create_replica(
         &self,
         servicetypename: &HSTRING,
@@ -19,14 +16,24 @@ where
         initializationdata: &[u8],
         partitionid: &::windows::core::GUID,
         replicaid: i64,
-    ) -> Result<R, Error>;
+    ) -> Result<impl StatefulServiceReplica, Error>;
 }
 
 // safe service instance
+// The trait style is modeled by tonic server trait where send, sync and static are all required.
+// This makes sure that bridge/proxy layer can work with rust async await easier.
+//
+// TODO: rust plain async trait has "Send" issues. Might be related to dynamic dispatch not supported yet.
+// async_trait crate may have some special anotation to get around this.
+// PrimaryReplicator needs to be bridged and hold as a member in the bridge. "impl PrimaryReplicator" cannot
+// be hold as a member yet in the language.
 #[async_trait]
-pub trait StatefulServiceReplica: Send + Sync {
+pub trait StatefulServiceReplica: Send + Sync + 'static {
     // Note that open returns PrimaryReplicator instead of Replicator.
     // The replicator that gives to SF has to implement primary replicator all the time.
+    // Ideally the return type should be Result<impl PrimaryReplicator>, but in bridge impl
+    // primary replicator needs to be stored in a ctx, but impl trait cannot be a variable type and anonymous.
+    // We cannot use rust async trait because dynamic dispatch is not yet supported.
     async fn open(
         &self,
         openmode: OpenMode,
@@ -56,7 +63,7 @@ impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
 }
 
 #[async_trait]
-pub trait Replicator: Send + Sync {
+pub trait Replicator: Send + Sync + 'static {
     async fn open(&self) -> ::windows_core::Result<HSTRING>; // replicator address
     async fn close(&self) -> ::windows_core::Result<()>;
     async fn change_role(&self, epoch: &Epoch, role: &Role) -> ::windows_core::Result<()>;

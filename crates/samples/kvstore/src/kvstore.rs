@@ -1,6 +1,5 @@
 use std::{cell::Cell, sync::Mutex};
 
-use async_trait::async_trait;
 use fabric_base::{
     FabricCommon::FabricRuntime::{
         IFabricKeyValueStoreReplica2, IFabricStatefulServiceReplica, IFabricStoreEventHandler,
@@ -47,7 +46,7 @@ fn get_addr(port: u32, hostname: HSTRING) -> String {
     addr
 }
 
-impl StatefulServiceFactory<Replica> for Factory {
+impl StatefulServiceFactory for Factory {
     fn create_replica(
         &self,
         servicetypename: &windows_core::HSTRING,
@@ -55,7 +54,7 @@ impl StatefulServiceFactory<Replica> for Factory {
         initializationdata: &[u8],
         partitionid: &windows::core::GUID,
         replicaid: i64,
-    ) -> Result<Replica, Error> {
+    ) -> Result<impl StatefulServiceReplica, Error> {
         info!(
             "Factory::create_replica type {}, service {}, init data size {}",
             servicetypename,
@@ -178,13 +177,12 @@ impl Service {
     }
 }
 
-#[async_trait]
 impl StatefulServiceReplica for Replica {
     async fn open(
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
-    ) -> windows::core::Result<Box<dyn PrimaryReplicator>> {
+    ) -> windows::core::Result<impl PrimaryReplicator> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
         self.kv.open(openmode, partition).await

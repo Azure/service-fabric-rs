@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use fabric_rs::runtime::stateless::{
     PartitionKind, StatelessServiceFactory, StatelessServiceInstance, StatelessServicePartition,
 };
@@ -8,7 +7,7 @@ use windows_core::HSTRING;
 #[derive(Default)]
 pub struct Factory {}
 
-impl StatelessServiceFactory<Instance> for Factory {
+impl StatelessServiceFactory for Factory {
     fn create_instance(
         &self,
         servicetypename: &windows_core::HSTRING,
@@ -16,7 +15,7 @@ impl StatelessServiceFactory<Instance> for Factory {
         initializationdata: &[u8],
         partitionid: &windows::core::GUID,
         instanceid: i64,
-    ) -> Instance {
+    ) -> windows_core::Result<impl StatelessServiceInstance> {
         info!(
             "Factory::create_instance, servicetype {}, service {}, init len {}, ptid {:?}, iid {}",
             servicetypename,
@@ -25,14 +24,13 @@ impl StatelessServiceFactory<Instance> for Factory {
             partitionid,
             instanceid
         );
-        Instance::default()
+        Ok(Instance::default())
     }
 }
 
 #[derive(Default)]
 pub struct Instance {}
 
-#[async_trait]
 impl StatelessServiceInstance for Instance {
     async fn open(&self, partition: &StatelessServicePartition) -> windows::core::Result<HSTRING> {
         info!("Instance::open");

@@ -1,6 +1,5 @@
 // stateful contains rs definition of stateful traits that user needs to implement
 
-use async_trait::async_trait;
 use fabric_base::FabricCommon::FabricRuntime::IFabricStatefulServicePartition;
 use windows_core::{Error, HSTRING};
 
@@ -8,10 +7,7 @@ use super::stateful_types::{
     Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode, Role,
 };
 
-pub trait StatefulServiceFactory<R>
-where
-    R: StatefulServiceReplica,
-{
+pub trait StatefulServiceFactory {
     fn create_replica(
         &self,
         servicetypename: &HSTRING,
@@ -19,19 +15,24 @@ where
         initializationdata: &[u8],
         partitionid: &::windows::core::GUID,
         replicaid: i64,
-    ) -> Result<R, Error>;
+    ) -> Result<impl StatefulServiceReplica, Error>;
 }
 
 // safe service instance
-#[async_trait]
-pub trait StatefulServiceReplica: Send + Sync {
+// The trait style is modeled by tonic server trait where send, sync and static are all required.
+// This makes sure that bridge/proxy layer can work with rust async await easier.
+#[trait_variant::make(StatefulServiceReplica: Send)]
+pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
     // Note that open returns PrimaryReplicator instead of Replicator.
     // The replicator that gives to SF has to implement primary replicator all the time.
+    // Ideally the return type should be Result<impl PrimaryReplicator>, but in bridge impl
+    // primary replicator needs to be stored in a ctx, but impl trait cannot be a variable type and anonymous.
+    // We cannot use rust async trait because dynamic dispatch is not yet supported.
     async fn open(
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
-    ) -> windows::core::Result<Box<dyn PrimaryReplicator>>;
+    ) -> windows::core::Result<impl PrimaryReplicator>;
     async fn change_role(&self, newrole: Role) -> ::windows_core::Result<HSTRING>; // replica address
     async fn close(&self) -> windows::core::Result<()>;
     fn abort(&self);
@@ -55,8 +56,8 @@ impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
     }
 }
 
-#[async_trait]
-pub trait Replicator: Send + Sync {
+#[trait_variant::make(Replicator: Send)]
+pub trait LocalReplicator: Send + Sync + 'static {
     async fn open(&self) -> ::windows_core::Result<HSTRING>; // replicator address
     async fn close(&self) -> ::windows_core::Result<()>;
     async fn change_role(&self, epoch: &Epoch, role: &Role) -> ::windows_core::Result<()>;
@@ -66,8 +67,8 @@ pub trait Replicator: Send + Sync {
     fn abort(&self);
 }
 
-#[async_trait]
-pub trait PrimaryReplicator: Replicator {
+#[trait_variant::make(PrimaryReplicator: Send)]
+pub trait LocalPrimaryReplicator: Replicator {
     // SF calls this to indicate that possible data loss has occurred (write quorum loss),
     // returns is isStateChanged. If true, SF will re-create other secondaries.
     // The default SF impl might be a pass through to the state provider.

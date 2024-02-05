@@ -9,8 +9,8 @@ env_logger = "*"
 tokio = { version = "1", features = ["full"] }
 paste = "1.0"
 windows-core = "0.51"
-async-trait = "0.1"
 ctrlc = { version = "3.0", features = ["termination"] }
+trait-variant = "0.1.1"
 
 [dependencies.windows]
 version = "0.51"
@@ -32,3 +32,7 @@ features = [
     "ServiceFabric_FabricCommon_FabricClient",
     "ServiceFabric_FabricCommon_FabricRuntime"
 ]
+
+# requires return impl trait feature
+[package.metadata]
+rust-version = "1.75"

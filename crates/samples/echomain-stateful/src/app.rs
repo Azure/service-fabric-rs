@@ -32,11 +32,6 @@ mod echo;
 pub fn run(runtime: &IFabricRuntime, port: u32, hostname: HSTRING) {
     info!("port: {}, host: {:?}", port, hostname);
 
-    /*let factory: IFabricStatelessServiceFactory = ServiceFactory::new(port, hostname).into();
-    let service_type_name = w!("StatefulEchoAppService");
-    unsafe { runtime.RegisterStatelessServiceFactory(service_type_name, &factory) }
-        .expect("register failed");*/
-
     let factory: IFabricStatefulServiceFactory = StatefulServiceFactory::new(port, hostname).into();
     let service_type_name = w!("StatefulEchoAppService");
     unsafe { runtime.RegisterStatefulServiceFactory(service_type_name, &factory) }
@@ -111,6 +106,7 @@ impl AppFabricReplicator {
     }
 }
 
+// This is basic implementation of Replicator
 impl IFabricReplicator_Impl for AppFabricReplicator {
     fn BeginOpen(
         &self,
@@ -128,7 +124,6 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> windows_core::Result<IFabricStringResult> {
         info!("AppFabricReplicator::EndOpen");
-        //let str_res: IFabricStringResult = StringResult::new(HSTRING::from("")).into();
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
         info!("AppFabricReplicator::EndOpen {}", addr);
         let str_res: IFabricStringResult = StringResult::new(HSTRING::from(addr)).into();
@@ -206,6 +201,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
     }
 }
 
+// This is basic implementation of PrimaryReplicator
 impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
     fn BeginOnDataLoss(
         &self,
@@ -318,10 +314,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         info!("echo_replica::BeginOpen");
 
         if openmode == fabric_base::FABRIC_REPLICA_OPEN_MODE_INVALID {
-            //::core::result::Result::Err(err) => err.into()
-            // return error
-            //return Err("invalid open mode".into());
-            //Err(WError::new(),"invalid open mode")
+            //TODO: return error
         }
 
         info!("open mode: {:?}", openmode);
@@ -345,13 +338,6 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         self.tx_.set(Some(tx));
         let th = std::thread::spawn(move || echo::start_echo(rx, port_copy, hostname_copy));
         self.th_.set(Some(th));
-
-        /*FABRIC_REPLICATOR_SETTINGS replicatorSettings = {0};
-        replicatorSettings.ReplicatorAddress = replicatorAddress.c_str();
-        replicatorSettings.Flags = FABRIC_REPLICATOR_ADDRESS;
-        replicatorSettings.Reserved = NULL;*/
-
-        //replicator_ = partition.CreateReplicator(self, )
         Ok(ctx)
     }
 
@@ -370,12 +356,6 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         if !completed {
             info!("AppInstance::EndOpen callback not completed");
         }
-
-        //let addr = echo::get_addr(self.port_, self.hostname_.clone());
-        //let str_res: IFabricStringResult = StringResult::new(HSTRING::from(addr)).into();
-        //let replicator2_: Cell<Option<IFabricReplicator>> = Cell::new(None);
-        //let res = AppFabricReplicator::new(self.port_, self.hostname_);
-        //replicator2_.set(Some(res));
 
         Ok(AppFabricReplicator::new(self.port_, self.hostname_.clone()).into())
     }
@@ -446,18 +426,6 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppInstance::BeginChangeRole");
-        
-        /*if (newRole == FABRIC_REPLICA_ROLE_PRIMARY) {
-            info!("AppInstance::BeginChangeRole new role is primary");
-        } else if (newRole == FABRIC_REPLICA_ROLE_IDLE_SECONDARY) {
-            info!("AppInstance::BeginChangeRole new role is idle secondary");
-        } else if (newRole == FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY) {
-            info!("AppInstance::BeginChangeRole new role is active secondary");
-        } else {
-            info!("AppInstance::BeginChangeRole new role is invalid");
-            return Err(::windows_core::Error::E_ABORT);
-        }*/
-        
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
@@ -469,26 +437,6 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<IFabricStringResult> {
         info!("AppInstance::EndChangeRole");
-        /*if (_role == FABRIC_REPLICA_ROLE_PRIMARY) {
-            info!("AppInstance::EndChangeRole new role is primary");
-        } else if (_role == FABRIC_REPLICA_ROLE_IDLE_SECONDARY) {
-            info!("AppInstance::EndChangeRole new role is idle secondary");
-        } else if (_role == FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY) {
-            info!("AppInstance::EndChangeRole new role is active secondary");
-        } else {
-            info!("AppInstance::EndChangeRole new role is invalid");
-            return Err(::windows_core::Error::E_ABORT);
-        }*/
-        /*let completed = unsafe {
-            context
-                .as_ref()
-                .expect("not ctx")
-                .CompletedSynchronously()
-                .as_bool()
-        };
-        if !completed {
-            info!("AppInstance::EndChangeRole callback not completed");
-        }*/
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
         info!("AppInstance::EndChangeRole {}", addr);
         let str_res: IFabricStringResult = StringResult::new(HSTRING::from(addr)).into();

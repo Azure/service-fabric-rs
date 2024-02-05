@@ -6,10 +6,10 @@ use fabric_rs::{runtime::{
 use log::info;
 use windows_core::{HSTRING, w};
 use windows_core::ComInterface;
-use crate::kvstore::Factory;
+use crate::statefulstore::Factory;
 use windows::core::Interface;
 
-mod kvstore;
+mod statefulstore;
 
 fn main() -> windows::core::Result<()> {
     env_logger::init();

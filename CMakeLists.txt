@@ -73,7 +73,21 @@ add_custom_target(build_fabric_rust_pal ALL
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# only format not generated code
+add_custom_target(format
+    COMMAND ${cargo_exe} fmt -p fabric_rs
+    COMMAND ${cargo_exe} fmt -p pal
+    COMMAND ${cargo_exe} fmt -p samples_client
+    COMMAND ${cargo_exe} fmt -p samples_echomain
+    COMMAND ${cargo_exe} fmt -p samples_echomain_stateful
+    COMMAND ${cargo_exe} fmt -p samples_echomain_stateful2
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 add_subdirectory(crates/samples/echomain)
+add_subdirectory(crates/samples/echomain-stateful2)
+add_subdirectory(crates/samples/echomain-stateful)
+
 if(WIN32) #linux is not tested
     add_subdirectory(crates/samples/echo2)
     add_subdirectory(crates/samples/kvstore)

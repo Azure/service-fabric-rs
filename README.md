@@ -55,6 +55,8 @@ You can use cargo to do rust only targets.
     * Add app to cluster `.\scripts\echomain_ctl.ps1 -Action Add`
     * Run echo powershell to talk to the app `.\scripts\echomain_ctl.ps1 -Action Echo`
     * Remove app from cluster `.\scripts\echomain_ctl.ps1 -Action Remove`
+* Build tcp echo stateful service fabric single partition application (part of default build).
+    * `cmake --build build --target build_rust_sample_echomain_stateful`    
 
 ## Rust code generation
 If you are a user of this lib you can ignore this section.

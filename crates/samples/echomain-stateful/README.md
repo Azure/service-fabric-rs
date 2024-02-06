@@ -1,0 +1,1 @@
+This sample shows how can you create stateful Service Fabric application using IFabric COM interfaces

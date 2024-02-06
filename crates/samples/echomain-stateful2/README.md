@@ -1,0 +1,1 @@
+This sample shows how can you create stateful Service Fabric application using bridges and proxies instead of using IFabric interfaces directly.

@@ -1,4 +1,7 @@
-// #![deny(non_snake_case)] // this file is safe rust
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
 
 use fabric_base::{
     FabricCommon::{

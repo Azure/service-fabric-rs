@@ -1,8 +1,8 @@
 // ------------------------------------------------------------
-// Copyright 2022 Youyuan Wu
-// Licensed under the MIT License (MIT). See License.txt in the repo root for
-// license information.
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
+
 #![allow(non_snake_case)]
 
 use std::cell::Cell;
@@ -11,10 +11,10 @@ use std::io::Error;
 use std::thread::JoinHandle;
 
 use fabric_base::FabricCommon::FabricRuntime::{
-    IFabricRuntime,
-    IFabricStatefulServiceFactory, IFabricStatefulServiceFactory_Impl, IFabricStatefulServicePartition,
+    IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl, IFabricReplicator,
+    IFabricReplicator_Impl, IFabricRuntime, IFabricStatefulServiceFactory,
+    IFabricStatefulServiceFactory_Impl, IFabricStatefulServicePartition,
     IFabricStatefulServiceReplica, IFabricStatefulServiceReplica_Impl,
-    IFabricReplicator, IFabricReplicator_Impl, IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl,
 };
 use fabric_base::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricStringResult,
@@ -90,7 +90,6 @@ impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory {
     }
 }
 
-
 #[implement(IFabricReplicator, IFabricPrimaryReplicator)]
 pub struct AppFabricReplicator {
     port_: u32,
@@ -142,7 +141,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
-    
+
     fn EndChangeRole(
         &self,
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
@@ -150,7 +149,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
         info!("AppFabricReplicator::EndChangeRole");
         Ok(())
     }
-    
+
     fn BeginUpdateEpoch(
         &self,
         epoch: *const fabric_base::FABRIC_EPOCH,
@@ -165,14 +164,14 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
     fn EndUpdateEpoch(
         &self,
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()>{
+    ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::EndUpdateEpoch");
         Ok(())
     }
     fn BeginClose(
         &self,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<IFabricAsyncOperationContext>{
+    ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginClose");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
         // invoke callback right away
@@ -182,21 +181,21 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
     fn EndClose(
         &self,
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()>{
+    ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::EndClose");
         Ok(())
     }
     fn Abort(&self) {
         info!("AppFabricReplicator::Abort");
     }
-    fn GetCurrentProgress(&self) -> ::windows_core::Result<i64>{
+    fn GetCurrentProgress(&self) -> ::windows_core::Result<i64> {
         info!("AppFabricReplicator::GetCurrentProgress");
-        let v  = 0;
+        let v = 0;
         Ok(v)
     }
-    fn GetCatchUpCapability(&self) -> ::windows_core::Result<i64>{
+    fn GetCatchUpCapability(&self) -> ::windows_core::Result<i64> {
         info!("AppFabricReplicator::GetCatchUpCapability");
-        let v  = 0;
+        let v = 0;
         Ok(v)
     }
 }
@@ -218,7 +217,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<u8> {
         info!("AppFabricReplicator::EndOnDataLoss");
-        let v  = 0;
+        let v = 0;
         Ok(v)
     }
     fn UpdateCatchUpReplicaSetConfiguration(
@@ -258,7 +257,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
         &self,
         replica: *const fabric_base::FABRIC_REPLICA_INFORMATION,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<IFabricAsyncOperationContext>{
+    ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginBuildReplica");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
         // invoke callback right away
@@ -268,16 +267,18 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
     fn EndBuildReplica(
         &self,
         context: ::core::option::Option<&IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()>{
+    ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::EndBuildReplica");
         Ok(())
     }
-    fn RemoveReplica(&self, replicaid: i64) -> ::windows_core::Result<()>{
-        info!("AppFabricReplicator::UpdateCurrentReplicaSetConfiguration {} ", replicaid);
+    fn RemoveReplica(&self, replicaid: i64) -> ::windows_core::Result<()> {
+        info!(
+            "AppFabricReplicator::UpdateCurrentReplicaSetConfiguration {} ",
+            replicaid
+        );
         Ok(())
     }
 }
-
 
 //#[derive(Debug)]
 #[implement(IFabricStatefulServiceReplica)]
@@ -286,8 +287,8 @@ pub struct AppInstance {
     hostname_: HSTRING,
     tx_: Cell<Option<Sender<()>>>, // hack to use this mutably
     th_: Cell<Option<JoinHandle<Result<(), Error>>>>,
-    role_ : Cell<fabric_base::FABRIC_REPLICA_ROLE>,
-    replicator_ : Cell<Option<IFabricReplicator>>,
+    role_: Cell<fabric_base::FABRIC_REPLICA_ROLE>,
+    replicator_: Cell<Option<IFabricReplicator>>,
 }
 
 impl AppInstance {
@@ -297,8 +298,8 @@ impl AppInstance {
             hostname_: hostname,
             tx_: Cell::from(None),
             th_: Cell::from(None),
-            role_ : Cell::from(fabric_base::FABRIC_REPLICA_ROLE_UNKNOWN),
-            replicator_ : Cell::from(None),
+            role_: Cell::from(fabric_base::FABRIC_REPLICA_ROLE_UNKNOWN),
+            replicator_: Cell::from(None),
         }
     }
 }
@@ -310,7 +311,6 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         partition: ::core::option::Option<&IFabricStatefulServicePartition>,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
-
         info!("echo_replica::BeginOpen");
 
         if openmode == fabric_base::FABRIC_REPLICA_OPEN_MODE_INVALID {

@@ -1,13 +1,27 @@
-use fabric_base::FabricCommon::{IFabricAsyncOperationCallback, FabricRuntime::{FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricNodeContextResult, IFabricCodePackageActivationContext}};
-use fabric_rs::{runtime::{
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
+use crate::statefulstore::Factory;
+use fabric_base::FabricCommon::{
+    FabricRuntime::{
+        FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricCodePackageActivationContext,
+        IFabricNodeContextResult,
+    },
+    IFabricAsyncOperationCallback,
+};
+use fabric_rs::{
+    runtime::{
         executor::{DefaultExecutor, Executor},
         ActivationContext,
-    }, WaitableCallback};
+    },
+    WaitableCallback,
+};
 use log::info;
-use windows_core::{HSTRING, w};
-use windows_core::ComInterface;
-use crate::statefulstore::Factory;
 use windows::core::Interface;
+use windows_core::ComInterface;
+use windows_core::{w, HSTRING};
 
 mod statefulstore;
 
@@ -51,4 +65,3 @@ fn get_hostname() -> HSTRING {
     info!("got hostname: {:?}", ret);
     ret
 }
-

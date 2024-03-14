@@ -1,3 +1,8 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 use fabric_base::{
     FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND, FABRIC_LOCAL_STORE_KIND_ESE,
     FABRIC_LOCAL_STORE_KIND_INVALID, FABRIC_REPLICATOR_SETTINGS,

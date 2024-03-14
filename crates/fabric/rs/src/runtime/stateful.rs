@@ -1,3 +1,8 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 // stateful contains rs definition of stateful traits that user needs to implement
 
 use fabric_base::FabricCommon::FabricRuntime::IFabricStatefulServicePartition;

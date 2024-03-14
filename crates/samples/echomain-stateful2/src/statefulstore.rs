@@ -1,14 +1,20 @@
-use std::{cell::Cell, sync::Mutex, thread::JoinHandle};
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 use fabric_base::FABRIC_REPLICATOR_ADDRESS;
 use fabric_rs::runtime::{
     executor::DefaultExecutor,
     stateful::{
-        PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition, StatefulServiceReplica, Replicator,
+        PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServicePartition,
+        StatefulServiceReplica,
     },
-    stateful_types::{OpenMode, Role, Epoch, ReplicaSetConfig, ReplicaSetQuarumMode, ReplicaInfo},
+    stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode, Role},
     store_types::ReplicatorSettings,
 };
 use log::info;
+use std::{cell::Cell, sync::Mutex, thread::JoinHandle};
 use tokio::sync::oneshot::{self, Sender};
 use windows_core::{Error, HSTRING};
 mod echo;
@@ -70,7 +76,7 @@ impl Replicator for AppFabricReplicator {
         Ok(())
     }
 
-    async fn update_epoch(&self, epoch: &Epoch) -> windows::core::Result<()>  {
+    async fn update_epoch(&self, epoch: &Epoch) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::Replicator::update_epoch");
         Ok(())
     }
@@ -106,12 +112,18 @@ impl PrimaryReplicator for AppFabricReplicator {
         Ok(())
     }
 
-    async fn wait_for_catch_up_quorum(&self, catchupmode: ReplicaSetQuarumMode) -> windows::core::Result<()> {
+    async fn wait_for_catch_up_quorum(
+        &self,
+        catchupmode: ReplicaSetQuarumMode,
+    ) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::wait_for_catch_up_quorum");
         Ok(())
     }
 
-    fn update_current_replica_set_configuration(&self, currentconfiguration: &ReplicaSetConfig) -> windows::core::Result<()> {
+    fn update_current_replica_set_configuration(
+        &self,
+        currentconfiguration: &ReplicaSetConfig,
+    ) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::update_current_replica_set_configuration");
         Ok(())
     }
@@ -140,13 +152,16 @@ impl StatefulServiceFactory for Factory {
             "Factory::create_replica type {}, service {}, init data size {}, partition {:?}, replica {}",
             servicetypename,
             servicename,
-            initializationdata.len(), 
+            initializationdata.len(),
             partitionid,
             replicaid
         );
         let settings = ReplicatorSettings {
             Flags: FABRIC_REPLICATOR_ADDRESS.0 as u32,
-            ReplicatorAddress: HSTRING::from(get_addr(self.replication_port, self.hostname.clone())),
+            ReplicatorAddress: HSTRING::from(get_addr(
+                self.replication_port,
+                self.hostname.clone(),
+            )),
             ..Default::default()
         };
 
@@ -168,11 +183,11 @@ pub struct Replica {
 }
 
 impl Replica {
-    pub fn new( port: u32, hostname: HSTRING, svc: Service) -> Replica {
-        Replica { 
+    pub fn new(port: u32, hostname: HSTRING, svc: Service) -> Replica {
+        Replica {
             port_: port,
             hostname_: hostname,
-            svc
+            svc,
         }
     }
 }
@@ -197,8 +212,7 @@ impl Service {
         let (tx, mut rx) = oneshot::channel::<()>();
         self.stop();
         self.tx_.lock().unwrap().set(Some(tx));
-        
-        
+
         let port_copy = self.port_;
         let hostname_copy = self.hostname_.clone();
 
@@ -213,7 +227,6 @@ impl Service {
         }
     }
 }
-
 
 impl StatefulServiceReplica for Replica {
     async fn open(

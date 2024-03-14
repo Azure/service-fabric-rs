@@ -128,14 +128,12 @@ impl IFabricAsyncOperationContext_Impl for AsyncContext {
 #[derive(Debug)]
 #[implement(IFabricStringResult)]
 pub struct StringResult {
-    vec_: Vec<u16>,
+    data: HSTRING,
 }
 
 impl StringResult {
     pub fn new(data: HSTRING) -> StringResult {
-        let ret = StringResult {
-            vec_: data.as_wide().to_vec(),
-        };
+        let ret = StringResult { data };
         ret
     }
 }
@@ -143,12 +141,39 @@ impl StringResult {
 impl IFabricStringResult_Impl for StringResult {
     fn get_String(&self) -> windows::core::PCWSTR {
         // This is some hack to get the raw pointer out.
-        let ptr: *mut u16 = self.vec_.as_ptr() as *mut u16;
-        windows::core::PCWSTR::from_raw(ptr)
+        windows::core::PCWSTR::from_raw(self.data.as_ptr())
     }
 }
 
 pub fn IFabricStringResultToHString(s: &IFabricStringResult) -> HSTRING {
     let content = unsafe { s.get_String() };
     HSTRING::from_wide(unsafe { content.as_wide() }).unwrap()
+}
+
+#[cfg(test)]
+mod test {
+    use super::{IFabricStringResultToHString, StringResult};
+    use fabric_base::FabricCommon::IFabricStringResult;
+    use windows_core::HSTRING;
+
+    #[test]
+    fn test_str_addr() {
+        // Test the addr returned to SF is right.
+        let addr = "1.2.3.4:1234";
+
+        // Check hstring len.
+        let haddr = HSTRING::from(addr);
+        let haddr_slice = haddr.as_wide();
+        assert_eq!(haddr_slice.len(), 12);
+
+        // check StringResult len.
+        let com_addr: IFabricStringResult = StringResult::new(haddr.clone()).into();
+        let raw = unsafe { com_addr.get_String() };
+        let slice = unsafe { raw.as_wide() };
+        assert_eq!(slice.len(), 12);
+
+        // check StringResult conversion is right
+        let haddr2 = IFabricStringResultToHString(&com_addr);
+        assert_eq!(haddr, haddr2);
+    }
 }

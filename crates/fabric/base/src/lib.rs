@@ -22,6 +22,7 @@ pub mod Microsoft;
 #[cfg(feature = "ServiceFabric")]
 pub use Microsoft::ServiceFabric::*;
 
+#[cfg(target_os = "windows")]
 pub use fabric_metadata;
 
 // In linux force to pull in pal lib for linking

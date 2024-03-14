@@ -12,10 +12,14 @@ authors = ["youyuanwu@outlook.com"]
 default-target = "x86_64-pc-windows-msvc"
 targets = []
 
-[dependencies]
+[target.'cfg(windows)'.dependencies]
 # this dep is required on windows to have the support libs.
-fabric-metadata = { git = "https://github.com/youyuanwu/fabric-metadata.git", rev = "87041e9790edb7f87dbf6ca8c1ca0f40db8c82dd"}
+fabric-metadata = { git = "https://github.com/Azure/service-fabric-metadata.git", rev = "b070db62d2323d85d402ca3f6dc387f0ce0be37b"}
+
+[target.'cfg(unix)'.dependencies]
 pal = { path = "../../../crates/fabric/pal" }
+
+[dependencies]
 windows-core = "0.51"
 
 [dependencies.windows]

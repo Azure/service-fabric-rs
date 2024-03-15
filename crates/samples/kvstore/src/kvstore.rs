@@ -1,12 +1,13 @@
 use std::{cell::Cell, sync::Mutex};
 
-use fabric_base::{
+use log::info;
+use mssf_com::{
     FabricCommon::FabricRuntime::{
         IFabricKeyValueStoreReplica2, IFabricStatefulServiceReplica, IFabricStoreEventHandler,
     },
     FABRIC_REPLICATOR_ADDRESS,
 };
-use fabric_rs::runtime::{
+use mssf_core::runtime::{
     executor::{DefaultExecutor, Executor},
     stateful::{
         PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition, StatefulServiceReplica,
@@ -17,7 +18,6 @@ use fabric_rs::runtime::{
     store_proxy::KVStoreProxy,
     store_types::ReplicatorSettings,
 };
-use log::info;
 use tokio::{
     select,
     sync::oneshot::{self, Sender},
@@ -78,7 +78,7 @@ impl StatefulServiceFactory for Factory {
             *partitionid,
             replicaid,
             &settings,
-            fabric_rs::runtime::store_types::LocalStoreKind::Ese,
+            mssf_core::runtime::store_types::LocalStoreKind::Ese,
             None,
             &handler,
         )?;

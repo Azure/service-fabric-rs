@@ -34,9 +34,9 @@ find_program (
     REQUIRED
 )
 
-set(_runtime_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/fabric/base/src/Microsoft/ServiceFabric/FabricCommon/FabricRuntime/mod.rs)
-set(_client_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/fabric/base/src/Microsoft/ServiceFabric/FabricCommon/FabricClient/mod.rs)
-set(_common_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/fabric/base/src/Microsoft/ServiceFabric/FabricCommon/mod.rs)
+set(_runtime_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/libs/com/src/Microsoft/ServiceFabric/FabricCommon/FabricRuntime/mod.rs)
+set(_client_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/libs/com/src/Microsoft/ServiceFabric/FabricCommon/FabricClient/mod.rs)
+set(_common_file ${CMAKE_CURRENT_SOURCE_DIR}/crates/libs/com/src/Microsoft/ServiceFabric/FabricCommon/mod.rs)
 add_custom_target(generate_rust
     #DEPENDS generate_winmd
     COMMAND ${cargo_exe} run -p tools_api
@@ -64,12 +64,12 @@ add_custom_target(run_rust_sample_client
 
 # clean generated code
 add_custom_target(force_clean
-    COMMAND ${CMAKE_COMMAND} -E rm -rf crates/fabric/base/src/Microsoft
+    COMMAND ${CMAKE_COMMAND} -E rm -rf crates/libs/com/src/Microsoft
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_custom_target(build_fabric_rust_pal ALL
-    COMMAND ${cargo_exe} build -p pal
+    COMMAND ${cargo_exe} build -p mssf-pal
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

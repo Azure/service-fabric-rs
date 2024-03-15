@@ -3,10 +3,10 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use fabric_rs::runtime::stateless::{
+use log::info;
+use mssf_core::runtime::stateless::{
     PartitionKind, StatelessServiceFactory, StatelessServiceInstance, StatelessServicePartition,
 };
-use log::info;
 use windows_core::HSTRING;
 
 #[derive(Default)]

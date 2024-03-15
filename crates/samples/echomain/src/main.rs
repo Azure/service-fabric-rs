@@ -6,14 +6,16 @@
 // This example app shows how to use SF com API (unsafe)
 // to create a SF stateless application.
 
-use fabric_base::FabricCommon::FabricRuntime::{
+use log::info;
+use mssf_com::FabricCommon::FabricRuntime::{
     FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricCodePackageActivationContext,
     IFabricNodeContextResult, IFabricRuntime,
 };
-use fabric_base::FabricCommon::IFabricAsyncOperationCallback;
-use fabric_rs::runtime::{create_com_runtime, get_com_activation_context};
-use fabric_rs::WaitableCallback;
-use log::info;
+use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
+use mssf_core::{
+    runtime::{create_com_runtime, get_com_activation_context},
+    WaitableCallback,
+};
 use std::sync::mpsc::channel;
 use windows::core::w;
 use windows::core::{Interface, HSTRING};

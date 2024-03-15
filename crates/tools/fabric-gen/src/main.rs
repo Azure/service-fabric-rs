@@ -72,7 +72,7 @@ fn gen_class(ns: &str, name: &str, file_path: &Path, exclude: &Vec<&str>) {
 }
 
 fn main() {
-    let gen_folder = Path::new("crates/fabric/rs/src/client");
+    let gen_folder = Path::new("crates/libs/rs/src/client");
 
     // property client
     gen_class(

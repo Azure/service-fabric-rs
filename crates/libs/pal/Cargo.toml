@@ -1,0 +1,27 @@
+[package]
+name = "mssf-pal"
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+description = "mssf-pal enables service fabric rust to run on linux"
+documentation = "https://learn.microsoft.com/en-us/azure/service-fabric/"
+repository = "https://github.com/Azure/service-fabric-rs"
+readme = "README.md"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
+
+[lib]
+path = "src/lib.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.windows]
+version = "0.51"
+features = [
+    "Win32_Foundation"
+]
+
+[dependencies]
+libc = "0.2"

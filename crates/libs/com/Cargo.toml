@@ -1,0 +1,46 @@
+[package]
+name = "mssf-com"
+version = "0.0.2"
+edition = "2021"
+license = "MIT"
+description = "Rust for Azure Service Fabric. The COM base layer."
+documentation = "https://learn.microsoft.com/en-us/azure/service-fabric/"
+repository = "https://github.com/Azure/service-fabric-rs"
+readme = "README.md"
+authors = ["youyuanwu@outlook.com"]
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package.metadata.docs.rs]
+default-target = "x86_64-pc-windows-msvc"
+targets = []
+
+[target.'cfg(windows)'.dependencies]
+# this dep is required on windows to have the support libs.
+mssf-metadata = "0.0.1"
+
+[target.'cfg(unix)'.dependencies]
+mssf-pal = { path = "../pal" , version = "0.0.1"}
+
+[dependencies]
+windows-core = "0.51"
+
+[dependencies.windows]
+version = "0.51"
+features = [
+    "Win32_Foundation",
+    "implement"
+]
+
+[features]
+implement = []
+Win32_Foundation = []
+ServiceFabric = []
+ServiceFabric_FabricCommon = ["ServiceFabric"]
+ServiceFabric_FabricCommon_FabricClient = ["ServiceFabric_FabricCommon"]
+ServiceFabric_FabricCommon_FabricRuntime = ["ServiceFabric_FabricCommon"]
+ServiceFabric_FabricCommon_FabricTransport = ["ServiceFabric_FabricCommon"]

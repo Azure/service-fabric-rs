@@ -108,7 +108,7 @@ impl TypeEntry {
         let ns = r.type_def_namespace(*t);
         let ns_str = TypeEntry::normalize_namespace(ns);
         TypeEntry {
-            ns: format!("::fabric_base::{}", ns_str),
+            ns: format!("::mssf_com::{}", ns_str),
             name: name.to_string(),
             prefix: "".to_string(),
         }
@@ -403,7 +403,7 @@ mod tests {
         assert_eq!(itf_layout.type_entry.name, "IFabricAsyncOperationCallback");
         assert_eq!(
             itf_layout.type_entry.ns,
-            "::fabric_base::Microsoft::ServiceFabric::FabricCommon"
+            "::mssf_com::Microsoft::ServiceFabric::FabricCommon"
         );
 
         let func_pairs = &itf_layout.func_pairs;
@@ -421,7 +421,7 @@ mod tests {
 
         assert_eq!(
             itf_layout.type_entry.ns,
-            "::fabric_base::Microsoft::ServiceFabric::FabricCommon::FabricClient"
+            "::mssf_com::Microsoft::ServiceFabric::FabricCommon::FabricClient"
         );
         assert_eq!(itf_layout.type_entry.name, "IFabricClusterManagementClient");
 

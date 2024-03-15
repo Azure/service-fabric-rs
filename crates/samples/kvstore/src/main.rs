@@ -1,11 +1,11 @@
-use fabric_rs::{
+use log::info;
+use mssf_core::{
     debug::wait_for_debugger,
     runtime::{
         executor::{DefaultExecutor, Executor},
         ActivationContext,
     },
 };
-use log::info;
 use windows_core::HSTRING;
 
 use crate::kvstore::Factory;
@@ -31,7 +31,7 @@ fn main() -> windows::core::Result<()> {
 
     let rt = tokio::runtime::Runtime::new().unwrap();
     let e = DefaultExecutor::new(rt.handle().clone());
-    let runtime = fabric_rs::runtime::Runtime::create(e.clone()).unwrap();
+    let runtime = mssf_core::runtime::Runtime::create(e.clone()).unwrap();
     let actctx = ActivationContext::create().unwrap();
     let endpoint = actctx
         .get_endpoint_resource(&HSTRING::from("KvReplicatorEndpoint"))

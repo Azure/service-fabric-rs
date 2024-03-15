@@ -10,16 +10,16 @@ use std::convert::TryInto;
 use std::io::Error;
 use std::thread::JoinHandle;
 
-use fabric_base::FabricCommon::FabricRuntime::{
+use log::info;
+use mssf_com::FabricCommon::FabricRuntime::{
     IFabricRuntime, IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
     IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
     IFabricStatelessServicePartition,
 };
-use fabric_base::FabricCommon::{
+use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricStringResult,
 };
-use fabric_rs::{AsyncContext, StringResult};
-use log::info;
+use mssf_core::{AsyncContext, StringResult};
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
 use windows::core::w;

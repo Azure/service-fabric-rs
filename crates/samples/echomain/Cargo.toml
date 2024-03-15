@@ -16,8 +16,8 @@ features = [
     "implement"
 ]
 
-[dependencies.fabric_base]
-path = "../../fabric/base"
+[dependencies.mssf-com]
+path = "../../libs/com"
 features = [
     "implement",
     "ServiceFabric",
@@ -25,5 +25,5 @@ features = [
     "ServiceFabric_FabricCommon_FabricRuntime"
 ]
 
-[dependencies.fabric_rs]
-path = "../../fabric/rs"
+[dependencies.mssf-core]
+path = "../../libs/core"

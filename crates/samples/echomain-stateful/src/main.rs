@@ -14,7 +14,6 @@ use mssf_core::WaitableCallback;
 use std::sync::mpsc::channel;
 use windows::core::w;
 use windows::core::{Interface, HSTRING};
-use windows_core::ComInterface;
 pub mod app;
 
 fn main() -> windows::core::Result<()> {

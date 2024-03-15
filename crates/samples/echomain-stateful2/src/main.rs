@@ -6,10 +6,7 @@
 use crate::statefulstore::Factory;
 use log::info;
 use mssf_com::FabricCommon::{
-    FabricRuntime::{
-        FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricCodePackageActivationContext,
-        IFabricNodeContextResult,
-    },
+    FabricRuntime::{FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricNodeContextResult},
     IFabricAsyncOperationCallback,
 };
 use mssf_core::{
@@ -20,7 +17,6 @@ use mssf_core::{
     WaitableCallback,
 };
 use windows::core::Interface;
-use windows_core::ComInterface;
 use windows_core::{w, HSTRING};
 
 mod statefulstore;

@@ -6,7 +6,7 @@
 use mssf_com::FabricCommon::{FabricClient::*, IFabricAsyncOperationCallback};
 use mssf_com::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
 use mssf_core::WaitableCallback;
-use windows_core::{ComInterface, Interface};
+use windows_core::Interface;
 
 fn main() -> windows::core::Result<()> {
     println!("GetNodeCli");

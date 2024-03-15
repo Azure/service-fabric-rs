@@ -16,7 +16,7 @@ use mssf_com::{
 };
 use std::cell::Cell;
 use windows::core::implement;
-use windows_core::{ComInterface, Error, Interface, HSTRING, PCWSTR};
+use windows_core::{Error, Interface, HSTRING, PCWSTR};
 
 use self::{
     executor::Executor, stateful::StatefulServiceFactory,

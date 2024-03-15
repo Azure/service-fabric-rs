@@ -4,7 +4,7 @@ version = "0.0.1"
 edition = "2018"
 
 [dependencies.windows]
-version = "0.51"
+version = "0.54"
 features = [
     "implement"
 ]
@@ -19,4 +19,4 @@ features = [
 path = "../../libs/core"
 
 [dependencies]
-windows-core = "0.51"
+windows-core = "0.54"

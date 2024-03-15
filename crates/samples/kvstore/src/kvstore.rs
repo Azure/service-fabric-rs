@@ -22,7 +22,7 @@ use tokio::{
     select,
     sync::oneshot::{self, Sender},
 };
-use windows_core::{ComInterface, Error, HSTRING};
+use windows_core::{Error, Interface, HSTRING};
 
 pub struct Factory {
     replication_port: u32,

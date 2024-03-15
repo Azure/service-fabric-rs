@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 
 use windows_metadata::{
-    InterfaceImpl, ParamAttributes, Reader, RowReader, Type, TypeDef, TypeKind, TypeName, TypeRef,
+    InterfaceImpl, ParamAttributes, Reader, Type, TypeDef, TypeKind, TypeName,
 };
 
 #[derive(Default, Clone)]
@@ -34,8 +34,8 @@ impl TypeEntry {
         let empty_str = "".to_string();
         let (name, ns, qualifer) = match t {
             Type::TypeDef(x, _) => {
-                let te = TypeEntry::from_typedef_reader(x, r);
-                let tk = r.type_def_kind(*x);
+                let te: TypeEntry = TypeEntry::from_typedef_reader(x, r);
+                let tk = x.kind();
                 // itf param should be ref
                 let prefix = match tk {
                     TypeKind::Interface => "&",
@@ -70,18 +70,9 @@ impl TypeEntry {
                 empty_str,
             ),
             Type::GUID => ("GUID".to_string(), "::windows_core".to_string(), empty_str),
-            Type::TypeRef(x) => match x {
-                windows_metadata::TypeDefOrRef::TypeDef(x) => {
-                    let te = TypeEntry::from_typedef_reader(x, r);
-                    (te.name, te.ns, te.prefix)
-                }
-                windows_metadata::TypeDefOrRef::TypeRef(x) => {
-                    let te = TypeEntry::from_typeref(x, r);
-                    (te.name, te.ns, te.prefix)
-                }
-                windows_metadata::TypeDefOrRef::TypeSpec(_) => {
-                    panic!("TypeSpec not implemented")
-                }
+            Type::TypeRef(x) => {
+                let te = TypeEntry::from_typeref(x, r);
+                (te.name, te.ns, te.prefix)
             },
             Type::Void => ("c_void".to_string(), "::core::ffi".to_string(), empty_str),
             _ => {
@@ -103,9 +94,9 @@ impl TypeEntry {
     }
 
     // fabric types
-    fn from_typedef_reader(t: &TypeDef, r: &Reader) -> TypeEntry {
-        let name = r.type_def_name(*t);
-        let ns = r.type_def_namespace(*t);
+    fn from_typedef_reader(t: &TypeDef, _r: &Reader) -> TypeEntry {
+        let name = t.name();
+        let ns = t.namespace();
         let ns_str = TypeEntry::normalize_namespace(ns);
         TypeEntry {
             ns: format!("::mssf_com::{}", ns_str),
@@ -114,9 +105,9 @@ impl TypeEntry {
         }
     }
 
-    fn from_typeref(t: &TypeRef, r: &Reader) -> TypeEntry {
-        let name = r.type_ref_name(*t);
-        let ns = r.type_ref_namespace(*t);
+    fn from_typeref(t: &TypeName, _r: &Reader) -> TypeEntry {
+        let name = t.name;
+        let ns = t.namespace;
         let ns_str = TypeEntry::normalize_namespace(ns);
         TypeEntry {
             ns: ns_str,
@@ -223,7 +214,7 @@ impl InterfaceLayout {
 }
 
 pub struct Parser<'a> {
-    r: &'a Reader<'a>,
+    r: &'a Reader,
 }
 
 // return is begin and the trimmed val.
@@ -240,20 +231,19 @@ fn trim_begin_end_function_name(name: &str) -> Option<(bool, String)> {
 }
 
 impl Parser<'_> {
-    pub fn new<'a>(r: &'a Reader<'a>) -> Parser<'a> {
+    pub fn new<'a>(r: &'a Reader) -> Parser<'a> {
         Parser { r }
     }
 
     pub fn get_type_def(&self, tn: &TypeName) -> TypeDef {
-        let mut type_def = self.r.get_type_def(*tn).peekable();
+        let mut type_def = self.r.get_type_def(tn.namespace, tn.name).peekable();
         assert!(type_def.peek().is_some());
 
         // find the type def for this interface.
         let mut x_td: Option<TypeDef> = None;
 
         for td in type_def {
-            let ttn = self.r.type_def_type_name(td);
-            if ttn.name != tn.name {
+            if td.name() != tn.name {
                 continue;
             }
             x_td = Some(td);
@@ -264,14 +254,13 @@ impl Parser<'_> {
     }
 
     fn get_parent_type(&self, td: &TypeDef) -> Option<TypeDef> {
-        let parents: Vec<InterfaceImpl> = self.r.type_def_interface_impls(*td).collect();
+        let parents: Vec<InterfaceImpl> = td.interface_impls().collect();
         if parents.is_empty() {
             return None;
         }
         // get the first one
         let p = parents[0];
-        let t = self.r.interface_impl_type(p, &[]);
-        match t {
+        match p.ty(&[]) {
             Type::TypeDef(x, _) => Some(x),
             _ => None,
         }
@@ -280,17 +269,17 @@ impl Parser<'_> {
     pub fn get_interface_layout(&self, td: TypeDef) -> InterfaceLayout {
         let r = self.r;
 
-        let tk = r.type_def_kind(td);
+        let tk = td.kind();
         assert_eq!(tk, TypeKind::Interface);
 
         // find all methods
-        let mut tmds = r.type_def_methods(td).peekable();
+        let mut tmds = td.methods().peekable();
         assert!(tmds.peek().is_some());
 
         let mut func_pairs = HashMap::<String, FuncPair>::new();
 
         for tmd in tmds {
-            let tmdn = r.method_def_name(tmd);
+            let tmdn = tmd.name();
             let trimmed_name = trim_begin_end_function_name(tmdn);
             if trimmed_name.is_none() {
                 continue;
@@ -311,11 +300,11 @@ impl Parser<'_> {
             (if is_begin { &mut fp.begin } else { &mut fp.end }).push_str(tmdn); // should be append empty str
 
             // fill method info
-            let mut tmdps = r.method_def_params(tmd).peekable();
+            let mut tmdps = tmd.params().peekable();
             assert!(tmdps.peek().is_some());
             for p in tmdps {
-                let pn = r.param_name(p);
-                let flag = r.param_flags(p);
+                let pn = p.name();
+                let flag = p.flags();
 
                 if pn.is_empty() {
                     // This might be self ptr
@@ -334,7 +323,7 @@ impl Parser<'_> {
                 .push(pe);
             }
 
-            let sig = r.method_def_signature(tmd, &[]);
+            let sig = tmd.signature(&[]);
             for (i, p) in sig.params.iter().enumerate() {
                 let pev = if is_begin {
                     &mut fp.begin_param

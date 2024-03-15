@@ -4,21 +4,21 @@
 // ------------------------------------------------------------
 
 use crate::statefulstore::Factory;
-use fabric_base::FabricCommon::{
+use log::info;
+use mssf_com::FabricCommon::{
     FabricRuntime::{
         FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricCodePackageActivationContext,
         IFabricNodeContextResult,
     },
     IFabricAsyncOperationCallback,
 };
-use fabric_rs::{
+use mssf_core::{
     runtime::{
         executor::{DefaultExecutor, Executor},
         ActivationContext,
     },
     WaitableCallback,
 };
-use log::info;
 use windows::core::Interface;
 use windows_core::ComInterface;
 use windows_core::{w, HSTRING};
@@ -31,7 +31,7 @@ fn main() -> windows::core::Result<()> {
 
     let rt = tokio::runtime::Runtime::new().unwrap();
     let e = DefaultExecutor::new(rt.handle().clone());
-    let runtime = fabric_rs::runtime::Runtime::create(e.clone()).unwrap();
+    let runtime = mssf_core::runtime::Runtime::create(e.clone()).unwrap();
     let actctx = ActivationContext::create().unwrap();
     let endpoint = actctx
         .get_endpoint_resource(&HSTRING::from("KvReplicatorEndpoint"))

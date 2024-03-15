@@ -10,17 +10,17 @@ use std::convert::TryInto;
 use std::io::Error;
 use std::thread::JoinHandle;
 
-use fabric_base::FabricCommon::FabricRuntime::{
+use log::info;
+use mssf_com::FabricCommon::FabricRuntime::{
     IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl, IFabricReplicator,
     IFabricReplicator_Impl, IFabricRuntime, IFabricStatefulServiceFactory,
     IFabricStatefulServiceFactory_Impl, IFabricStatefulServicePartition,
     IFabricStatefulServiceReplica, IFabricStatefulServiceReplica_Impl,
 };
-use fabric_base::FabricCommon::{
+use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricStringResult,
 };
-use fabric_rs::{AsyncContext, StringResult};
-use log::info;
+use mssf_core::{AsyncContext, StringResult};
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
 use windows::core::w;
@@ -131,8 +131,8 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
 
     fn BeginChangeRole(
         &self,
-        epoch: *const fabric_base::FABRIC_EPOCH,
-        role: fabric_base::FABRIC_REPLICA_ROLE,
+        epoch: *const mssf_com::FABRIC_EPOCH,
+        role: mssf_com::FABRIC_REPLICA_ROLE,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginChangeRole");
@@ -152,7 +152,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
 
     fn BeginUpdateEpoch(
         &self,
-        epoch: *const fabric_base::FABRIC_EPOCH,
+        epoch: *const mssf_com::FABRIC_EPOCH,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginUpdateEpoch");
@@ -222,15 +222,15 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
     }
     fn UpdateCatchUpReplicaSetConfiguration(
         &self,
-        currentconfiguration: *const fabric_base::FABRIC_REPLICA_SET_CONFIGURATION,
-        previousconfiguration: *const fabric_base::FABRIC_REPLICA_SET_CONFIGURATION,
+        currentconfiguration: *const mssf_com::FABRIC_REPLICA_SET_CONFIGURATION,
+        previousconfiguration: *const mssf_com::FABRIC_REPLICA_SET_CONFIGURATION,
     ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::UpdateCatchUpReplicaSetConfiguration");
         Ok(())
     }
     fn BeginWaitForCatchUpQuorum(
         &self,
-        catchupmode: fabric_base::FABRIC_REPLICA_SET_QUORUM_MODE,
+        catchupmode: mssf_com::FABRIC_REPLICA_SET_QUORUM_MODE,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginWaitForCatchUpQuorum");
@@ -248,14 +248,14 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
     }
     fn UpdateCurrentReplicaSetConfiguration(
         &self,
-        currentconfiguration: *const fabric_base::FABRIC_REPLICA_SET_CONFIGURATION,
+        currentconfiguration: *const mssf_com::FABRIC_REPLICA_SET_CONFIGURATION,
     ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::UpdateCurrentReplicaSetConfiguration");
         Ok(())
     }
     fn BeginBuildReplica(
         &self,
-        replica: *const fabric_base::FABRIC_REPLICA_INFORMATION,
+        replica: *const mssf_com::FABRIC_REPLICA_INFORMATION,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginBuildReplica");
@@ -287,7 +287,7 @@ pub struct AppInstance {
     hostname_: HSTRING,
     tx_: Cell<Option<Sender<()>>>, // hack to use this mutably
     th_: Cell<Option<JoinHandle<Result<(), Error>>>>,
-    role_: Cell<fabric_base::FABRIC_REPLICA_ROLE>,
+    role_: Cell<mssf_com::FABRIC_REPLICA_ROLE>,
     replicator_: Cell<Option<IFabricReplicator>>,
 }
 
@@ -298,7 +298,7 @@ impl AppInstance {
             hostname_: hostname,
             tx_: Cell::from(None),
             th_: Cell::from(None),
-            role_: Cell::from(fabric_base::FABRIC_REPLICA_ROLE_UNKNOWN),
+            role_: Cell::from(mssf_com::FABRIC_REPLICA_ROLE_UNKNOWN),
             replicator_: Cell::from(None),
         }
     }
@@ -307,13 +307,13 @@ impl AppInstance {
 impl IFabricStatefulServiceReplica_Impl for AppInstance {
     fn BeginOpen(
         &self,
-        openmode: fabric_base::FABRIC_REPLICA_OPEN_MODE,
+        openmode: mssf_com::FABRIC_REPLICA_OPEN_MODE,
         partition: ::core::option::Option<&IFabricStatefulServicePartition>,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
         info!("echo_replica::BeginOpen");
 
-        if openmode == fabric_base::FABRIC_REPLICA_OPEN_MODE_INVALID {
+        if openmode == mssf_com::FABRIC_REPLICA_OPEN_MODE_INVALID {
             //TODO: return error
         }
 
@@ -422,7 +422,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
 
     fn BeginChangeRole(
         &self,
-        newrole: fabric_base::FABRIC_REPLICA_ROLE,
+        newrole: mssf_com::FABRIC_REPLICA_ROLE,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppInstance::BeginChangeRole");

@@ -1,5 +1,5 @@
 --in  ./build/_deps/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd
---out crates/fabric/base/src/Microsoft.rs
+--out crates/libs/com/src/Microsoft.rs
 
 --filter
     Microsoft

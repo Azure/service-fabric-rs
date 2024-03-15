@@ -162,36 +162,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fabric-metadata"
-version = "0.1.0"
-source = "git+https://github.com/Azure/service-fabric-metadata.git?rev=b070db62d2323d85d402ca3f6dc387f0ce0be37b#b070db62d2323d85d402ca3f6dc387f0ce0be37b"
-
-[[package]]
-name = "fabric_base"
-version = "0.1.0"
-dependencies = [
- "fabric-metadata",
- "pal",
- "windows",
- "windows-core",
-]
-
-[[package]]
-name = "fabric_rs"
-version = "0.0.2"
-dependencies = [
- "ctrlc",
- "env_logger",
- "fabric_base",
- "log",
- "paste",
- "tokio",
- "trait-variant",
- "windows",
- "windows-core",
-]
-
-[[package]]
 name = "gimli"
 version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -234,9 +204,9 @@ name = "kvstore"
 version = "0.1.0"
 dependencies = [
  "env_logger",
- "fabric_base",
- "fabric_rs",
  "log",
+ "mssf-com",
+ "mssf-core",
  "tokio",
  "windows",
  "windows-core",
@@ -306,6 +276,45 @@ dependencies = [
 ]
 
 [[package]]
+name = "mssf-com"
+version = "0.0.2"
+dependencies = [
+ "mssf-metadata",
+ "mssf-pal",
+ "windows",
+ "windows-core",
+]
+
+[[package]]
+name = "mssf-core"
+version = "0.0.2"
+dependencies = [
+ "ctrlc",
+ "env_logger",
+ "log",
+ "mssf-com",
+ "paste",
+ "tokio",
+ "trait-variant",
+ "windows",
+ "windows-core",
+]
+
+[[package]]
+name = "mssf-metadata"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39323a0ee935ad85894e31a9f42f2f41f5db403b7d2312d85e77b5a99eb8552d"
+
+[[package]]
+name = "mssf-pal"
+version = "0.0.1"
+dependencies = [
+ "libc",
+ "windows",
+]
+
+[[package]]
 name = "nix"
 version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -333,14 +342,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9cf5f9dd3933bd50a9e1f149ec995f39ae2c496d31fd772c1fd45ebc27e902b0"
 dependencies = [
  "memchr",
-]
-
-[[package]]
-name = "pal"
-version = "0.1.0"
-dependencies = [
- "libc",
- "windows",
 ]
 
 [[package]]
@@ -477,8 +478,8 @@ dependencies = [
 name = "samples_client"
 version = "0.0.1"
 dependencies = [
- "fabric_base",
- "fabric_rs",
+ "mssf-com",
+ "mssf-core",
  "windows",
  "windows-core",
 ]
@@ -488,9 +489,9 @@ name = "samples_echo2"
 version = "0.1.0"
 dependencies = [
  "env_logger",
- "fabric_base",
- "fabric_rs",
  "log",
+ "mssf-com",
+ "mssf-core",
  "tokio",
  "windows",
  "windows-core",
@@ -502,9 +503,9 @@ version = "0.0.1"
 dependencies = [
  "ctrlc",
  "env_logger",
- "fabric_base",
- "fabric_rs",
  "log",
+ "mssf-com",
+ "mssf-core",
  "tokio",
  "windows",
  "windows-core",
@@ -516,9 +517,9 @@ version = "0.0.1"
 dependencies = [
  "ctrlc",
  "env_logger",
- "fabric_base",
- "fabric_rs",
  "log",
+ "mssf-com",
+ "mssf-core",
  "tokio",
  "windows",
  "windows-core",
@@ -530,9 +531,9 @@ version = "0.1.0"
 dependencies = [
  "ctrlc",
  "env_logger",
- "fabric_base",
- "fabric_rs",
  "log",
+ "mssf-com",
+ "mssf-core",
  "tokio",
  "trait-variant",
  "windows",

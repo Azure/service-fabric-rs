@@ -3,5 +3,5 @@ resolver = "2"
 members = [
     "crates/tools/*",
     "crates/samples/*",
-    "crates/fabric/*"
+    "crates/libs/*"
 ]

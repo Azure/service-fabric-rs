@@ -3,8 +3,9 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use fabric_base::FABRIC_REPLICATOR_ADDRESS;
-use fabric_rs::runtime::{
+use log::info;
+use mssf_com::FABRIC_REPLICATOR_ADDRESS;
+use mssf_core::runtime::{
     executor::DefaultExecutor,
     stateful::{
         PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServicePartition,
@@ -13,7 +14,6 @@ use fabric_rs::runtime::{
     stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode, Role},
     store_types::ReplicatorSettings,
 };
-use log::info;
 use std::{cell::Cell, sync::Mutex, thread::JoinHandle};
 use tokio::sync::oneshot::{self, Sender};
 use windows_core::{Error, HSTRING};

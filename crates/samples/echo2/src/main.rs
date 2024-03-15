@@ -3,11 +3,11 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use fabric_rs::runtime::{
+use log::info;
+use mssf_core::runtime::{
     executor::{DefaultExecutor, Executor},
     Runtime,
 };
-use log::info;
 use windows_core::HSTRING;
 
 mod echo;

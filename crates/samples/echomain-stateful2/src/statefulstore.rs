@@ -14,7 +14,7 @@ use mssf_core::runtime::{
     stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode, Role},
     store_types::ReplicatorSettings,
 };
-use std::{cell::Cell, sync::Mutex, thread::JoinHandle};
+use std::{cell::Cell, sync::Mutex};
 use tokio::sync::oneshot::{self, Sender};
 use windows_core::{Error, HSTRING};
 mod echo;

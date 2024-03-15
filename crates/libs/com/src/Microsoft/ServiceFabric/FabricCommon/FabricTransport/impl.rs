@@ -1,4 +1,3 @@
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricTransport\"`, `\"implement\"`*"]
 pub trait IFabricTransportCallbackMessageHandler_Impl: Sized {
     fn HandleOneWay(
         &self,
@@ -31,10 +30,9 @@ impl IFabricTransportCallbackMessageHandler_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTransportCallbackMessageHandler as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTransportCallbackMessageHandler as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricTransport\"`, `\"implement\"`*"]
 pub trait IFabricTransportClient_Impl: Sized {
     fn BeginRequest(
         &self,
@@ -230,10 +228,9 @@ impl IFabricTransportClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTransportClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTransportClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricTransport\"`, `\"implement\"`*"]
 pub trait IFabricTransportClientConnection_Impl: Sized {
     fn Send(
         &self,
@@ -279,10 +276,9 @@ impl IFabricTransportClientConnection_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTransportClientConnection as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTransportClientConnection as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricTransport\"`, `\"implement\"`*"]
 pub trait IFabricTransportClientEventHandler_Impl: Sized {
     fn OnConnected(&self, connectionaddress: &::windows_core::PCWSTR)
         -> ::windows_core::Result<()>;
@@ -336,10 +332,9 @@ impl IFabricTransportClientEventHandler_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTransportClientEventHandler as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTransportClientEventHandler as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricTransport\"`, `\"implement\"`*"]
 pub trait IFabricTransportConnectionHandler_Impl: Sized {
     fn BeginProcessConnect(
         &self,
@@ -454,10 +449,9 @@ impl IFabricTransportConnectionHandler_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTransportConnectionHandler as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTransportConnectionHandler as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricTransport\"`, `\"implement\"`*"]
 pub trait IFabricTransportListener_Impl: Sized {
     fn BeginOpen(
         &self,
@@ -575,10 +569,9 @@ impl IFabricTransportListener_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTransportListener as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTransportListener as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricTransport\"`, `\"implement\"`*"]
 pub trait IFabricTransportMessage_Impl: Sized {
     fn GetHeaderAndBodyBuffer(
         &self,
@@ -631,10 +624,9 @@ impl IFabricTransportMessage_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTransportMessage as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTransportMessage as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricTransport\"`, `\"implement\"`*"]
 pub trait IFabricTransportMessageDisposer_Impl: Sized {
     fn Dispose(&self, count: u32, messages: *const ::core::option::Option<IFabricTransportMessage>);
 }
@@ -667,10 +659,9 @@ impl IFabricTransportMessageDisposer_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTransportMessageDisposer as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTransportMessageDisposer as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricTransport\"`, `\"implement\"`*"]
 pub trait IFabricTransportMessageHandler_Impl: Sized {
     fn BeginProcessRequest(
         &self,
@@ -767,6 +758,6 @@ impl IFabricTransportMessageHandler_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTransportMessageHandler as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTransportMessageHandler as ::windows_core::Interface>::IID
     }
 }

@@ -18,8 +18,8 @@ use windows_metadata::{File, Reader, TypeName};
 static FILE_PATH: &str =
     r#"build/_deps/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd"#;
 static INIT: Once = Once::new();
-static mut SF_FILE: Vec<File> = vec![];
-static mut SF_READER: Option<Reader> = None;
+// static mut SF_FILE: Vec<File> = vec![];
+static mut SF_READER: Option<&Reader> = None;
 
 // init the global reader
 pub fn initialize() {
@@ -36,18 +36,18 @@ pub fn initialize() {
 
         let binding = vec![file];
         //let reader = Reader::new(&binding);
-        unsafe { SF_FILE = binding };
-        unsafe { SF_READER = Some(Reader::new(&SF_FILE)) };
+        // unsafe { SF_FILE = binding };
+        unsafe { SF_READER = Some(Reader::new(binding)) };
     });
 }
 
 // retrieves the global reader
-pub fn get_reader() -> &'static Reader<'static> {
+pub fn get_reader() -> &'static  Reader {
     initialize();
     unsafe { SF_READER.as_ref().unwrap() }
 }
 
-fn gen_class(ns: &str, name: &str, file_path: &Path, exclude: &Vec<&str>) {
+fn gen_class(ns: &'static str, name: &'static str, file_path: &Path, exclude: &Vec<&str>) {
     let reader = get_reader();
     let p = Parser::new(reader);
     let mut itf = p.get_interface_layout_recursive(&TypeName {
@@ -72,7 +72,7 @@ fn gen_class(ns: &str, name: &str, file_path: &Path, exclude: &Vec<&str>) {
 }
 
 fn main() {
-    let gen_folder = Path::new("crates/libs/rs/src/client");
+    let gen_folder = Path::new("crates/libs/core/src/client");
 
     // property client
     gen_class(

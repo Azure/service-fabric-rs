@@ -16,8 +16,8 @@ include = [
 [dependencies]
 log = "0.4"
 env_logger = "0.10.1"
-tokio = { version = "1", features = ["sync" , "rt"] }
-windows-core = "0.51"
+tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros"] }
+windows-core = "0.54"
 ctrlc = { version = "3.0", features = ["termination"] }
 trait-variant = "0.1.1"
 
@@ -25,7 +25,7 @@ trait-variant = "0.1.1"
 paste = "1.0"
 
 [dependencies.windows]
-version = "0.51"
+version = "0.54"
 features = [
     "implement",
     "Win32_System_Com",
@@ -39,6 +39,7 @@ path = "../com"
 version = "0.0.2" 
 features = [
     "implement",
+    "Foundation",
     "Win32_Foundation",
     "ServiceFabric",
     "ServiceFabric_FabricCommon",

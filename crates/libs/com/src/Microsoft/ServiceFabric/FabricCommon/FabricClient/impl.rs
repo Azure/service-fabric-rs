@@ -1,4 +1,3 @@
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricApplicationHealthResult_Impl: Sized {
     fn get_ApplicationHealth(&self) -> *mut super::super::FABRIC_APPLICATION_HEALTH;
@@ -29,10 +28,9 @@ impl IFabricApplicationHealthResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationHealthResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationHealthResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricApplicationManagementClient_Impl: Sized {
     fn BeginProvisionApplicationType(
         &self,
@@ -427,10 +425,9 @@ impl IFabricApplicationManagementClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricApplicationManagementClient10_Impl:
     Sized + IFabricApplicationManagementClient9_Impl
@@ -500,19 +497,18 @@ impl IFabricApplicationManagementClient10_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationManagementClient10 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient7 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient8 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient9 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationManagementClient10 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient7 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient8 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient9 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricApplicationManagementClient2_Impl:
     Sized + IFabricApplicationManagementClient_Impl
 {
@@ -649,11 +645,10 @@ impl IFabricApplicationManagementClient2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricApplicationManagementClient3_Impl:
     Sized + IFabricApplicationManagementClient2_Impl
 {
@@ -823,12 +818,11 @@ impl IFabricApplicationManagementClient3_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricApplicationManagementClient4_Impl:
     Sized + IFabricApplicationManagementClient3_Impl
 {
@@ -911,13 +905,12 @@ impl IFabricApplicationManagementClient4_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricApplicationManagementClient5_Impl:
     Sized + IFabricApplicationManagementClient4_Impl
 {
@@ -988,14 +981,13 @@ impl IFabricApplicationManagementClient5_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricApplicationManagementClient6_Impl:
     Sized + IFabricApplicationManagementClient5_Impl
@@ -1065,15 +1057,14 @@ impl IFabricApplicationManagementClient6_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationManagementClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient5 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationManagementClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient5 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricApplicationManagementClient7_Impl:
     Sized + IFabricApplicationManagementClient6_Impl
@@ -1143,16 +1134,15 @@ impl IFabricApplicationManagementClient7_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationManagementClient7 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient6 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationManagementClient7 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient6 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricApplicationManagementClient8_Impl:
     Sized + IFabricApplicationManagementClient7_Impl
@@ -1222,17 +1212,16 @@ impl IFabricApplicationManagementClient8_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationManagementClient8 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient7 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationManagementClient8 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient7 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricApplicationManagementClient9_Impl:
     Sized + IFabricApplicationManagementClient8_Impl
@@ -1306,18 +1295,17 @@ impl IFabricApplicationManagementClient9_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationManagementClient9 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient7 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricApplicationManagementClient8 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationManagementClient9 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient7 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationManagementClient8 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricApplicationUpgradeProgressResult_Impl: Sized {
     fn get_ApplicationName(&self) -> *mut u16;
     fn get_ApplicationTypeName(&self) -> ::windows_core::PCWSTR;
@@ -1326,14 +1314,12 @@ pub trait IFabricApplicationUpgradeProgressResult_Impl: Sized {
     fn GetUpgradeDomains(
         &self,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()>;
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION>;
     fn GetChangedUpgradeDomains(
         &self,
         previousprogress: ::core::option::Option<&IFabricApplicationUpgradeProgressResult>,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()>;
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION>;
 }
 impl ::windows_core::RuntimeName for IFabricApplicationUpgradeProgressResult {}
 impl IFabricApplicationUpgradeProgressResult_Vtbl {
@@ -1397,11 +1383,13 @@ impl IFabricApplicationUpgradeProgressResult_Vtbl {
         ) -> ::windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
-            this.GetUpgradeDomains(
-                ::core::mem::transmute_copy(&itemcount),
-                ::core::mem::transmute_copy(&buffereditems),
-            )
-            .into()
+            match this.GetUpgradeDomains(::core::mem::transmute_copy(&itemcount)) {
+                ::core::result::Result::Ok(ok__) => {
+                    ::core::ptr::write(buffereditems, ::core::mem::transmute(ok__));
+                    ::windows_core::HRESULT(0)
+                }
+                ::core::result::Result::Err(err) => err.into(),
+            }
         }
         unsafe extern "system" fn GetChangedUpgradeDomains<
             Identity: ::windows_core::IUnknownImpl<Impl = Impl>,
@@ -1415,12 +1403,16 @@ impl IFabricApplicationUpgradeProgressResult_Vtbl {
         ) -> ::windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
-            this.GetChangedUpgradeDomains(
+            match this.GetChangedUpgradeDomains(
                 ::windows_core::from_raw_borrowed(&previousprogress),
                 ::core::mem::transmute_copy(&itemcount),
-                ::core::mem::transmute_copy(&buffereditems),
-            )
-            .into()
+            ) {
+                ::core::result::Result::Ok(ok__) => {
+                    ::core::ptr::write(buffereditems, ::core::mem::transmute(ok__));
+                    ::windows_core::HRESULT(0)
+                }
+                ::core::result::Result::Err(err) => err.into(),
+            }
         }
         Self {
             base__: ::windows_core::IUnknown_Vtbl::new::<Identity, OFFSET>(),
@@ -1437,10 +1429,9 @@ impl IFabricApplicationUpgradeProgressResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationUpgradeProgressResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationUpgradeProgressResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricApplicationUpgradeProgressResult2_Impl:
     Sized + IFabricApplicationUpgradeProgressResult_Impl
 {
@@ -1483,12 +1474,10 @@ impl IFabricApplicationUpgradeProgressResult2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationUpgradeProgressResult2 as ::windows_core::ComInterface>::IID
-            || iid
-                == &<IFabricApplicationUpgradeProgressResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationUpgradeProgressResult2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationUpgradeProgressResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricApplicationUpgradeProgressResult3_Impl:
     Sized + IFabricApplicationUpgradeProgressResult2_Impl
 {
@@ -1518,14 +1507,11 @@ impl IFabricApplicationUpgradeProgressResult3_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricApplicationUpgradeProgressResult3 as ::windows_core::ComInterface>::IID
-            || iid
-                == &<IFabricApplicationUpgradeProgressResult as ::windows_core::ComInterface>::IID
-            || iid
-                == &<IFabricApplicationUpgradeProgressResult2 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricApplicationUpgradeProgressResult3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationUpgradeProgressResult as ::windows_core::Interface>::IID
+            || iid == &<IFabricApplicationUpgradeProgressResult2 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricChaosDescriptionResult_Impl: Sized {
     fn get_ChaosDescriptionResult(&self) -> *mut super::super::FABRIC_CHAOS_DESCRIPTION;
@@ -1556,10 +1542,9 @@ impl IFabricChaosDescriptionResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricChaosDescriptionResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricChaosDescriptionResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricChaosEventsSegmentResult_Impl: Sized {
     fn get_ChaosEventsSegmentResult(&self) -> *mut super::super::FABRIC_CHAOS_EVENTS_SEGMENT;
 }
@@ -1587,10 +1572,9 @@ impl IFabricChaosEventsSegmentResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricChaosEventsSegmentResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricChaosEventsSegmentResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricChaosReportResult_Impl: Sized {
     fn get_ChaosReportResult(&self) -> *mut super::super::FABRIC_CHAOS_REPORT;
@@ -1621,10 +1605,9 @@ impl IFabricChaosReportResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricChaosReportResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricChaosReportResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricChaosScheduleDescriptionResult_Impl: Sized {
     fn get_ChaosScheduleDescriptionResult(
@@ -1661,10 +1644,9 @@ impl IFabricChaosScheduleDescriptionResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricChaosScheduleDescriptionResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricChaosScheduleDescriptionResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClientConnectionEventHandler_Impl: Sized {
     fn OnConnected(
         &self,
@@ -1723,10 +1705,9 @@ impl IFabricClientConnectionEventHandler_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClientConnectionEventHandler as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClientConnectionEventHandler as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClientConnectionEventHandler2_Impl:
     Sized + IFabricClientConnectionEventHandler_Impl
 {
@@ -1767,11 +1748,10 @@ impl IFabricClientConnectionEventHandler2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClientConnectionEventHandler2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClientConnectionEventHandler as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClientConnectionEventHandler2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClientConnectionEventHandler as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClientSettings_Impl: Sized {
     fn SetSecurityCredentials(
         &self,
@@ -1819,10 +1799,9 @@ impl IFabricClientSettings_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClientSettings as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClientSettings as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClientSettings2_Impl: Sized + IFabricClientSettings_Impl {
     fn GetSettings(&self) -> ::windows_core::Result<IFabricClientSettingsResult>;
     fn SetSettings(
@@ -1875,11 +1854,10 @@ impl IFabricClientSettings2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClientSettings2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClientSettings as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClientSettings2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClientSettings as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClientSettingsResult_Impl: Sized {
     fn get_Settings(&self) -> *mut super::super::FABRIC_CLIENT_SETTINGS;
 }
@@ -1907,10 +1885,9 @@ impl IFabricClientSettingsResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClientSettingsResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClientSettingsResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClusterHealthResult_Impl: Sized {
     fn get_ClusterHealth(&self) -> *mut super::super::FABRIC_CLUSTER_HEALTH;
 }
@@ -1938,10 +1915,9 @@ impl IFabricClusterHealthResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterHealthResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterHealthResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClusterManagementClient_Impl: Sized {
     fn BeginNodeStateRemoved(
         &self,
@@ -2053,10 +2029,9 @@ impl IFabricClusterManagementClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricClusterManagementClient10_Impl:
     Sized + IFabricClusterManagementClient9_Impl
@@ -2132,19 +2107,18 @@ impl IFabricClusterManagementClient10_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterManagementClient10 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient7 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient8 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient9 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterManagementClient10 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient7 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient8 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient9 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClusterManagementClient2_Impl:
     Sized + IFabricClusterManagementClient_Impl
 {
@@ -2785,11 +2759,10 @@ impl IFabricClusterManagementClient2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClusterManagementClient3_Impl:
     Sized + IFabricClusterManagementClient2_Impl
 {
@@ -3064,12 +3037,11 @@ impl IFabricClusterManagementClient3_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient2 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient2 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClusterManagementClient4_Impl:
     Sized + IFabricClusterManagementClient3_Impl
 {
@@ -3133,13 +3105,12 @@ impl IFabricClusterManagementClient4_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient3 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient3 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricClusterManagementClient5_Impl:
     Sized + IFabricClusterManagementClient4_Impl
 {
@@ -3206,14 +3177,13 @@ impl IFabricClusterManagementClient5_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient4 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient4 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricClusterManagementClient6_Impl:
     Sized + IFabricClusterManagementClient5_Impl
@@ -3287,15 +3257,14 @@ impl IFabricClusterManagementClient6_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterManagementClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient5 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterManagementClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient5 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricClusterManagementClient7_Impl:
     Sized + IFabricClusterManagementClient6_Impl
@@ -3579,16 +3548,15 @@ impl IFabricClusterManagementClient7_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterManagementClient7 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient6 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterManagementClient7 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient6 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricClusterManagementClient8_Impl:
     Sized + IFabricClusterManagementClient7_Impl
@@ -3664,17 +3632,16 @@ impl IFabricClusterManagementClient8_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterManagementClient8 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient7 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterManagementClient8 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient7 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricClusterManagementClient9_Impl:
     Sized + IFabricClusterManagementClient8_Impl
@@ -3823,18 +3790,17 @@ impl IFabricClusterManagementClient9_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricClusterManagementClient9 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient7 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricClusterManagementClient8 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricClusterManagementClient9 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient7 as ::windows_core::Interface>::IID
+            || iid == &<IFabricClusterManagementClient8 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricDeployedApplicationHealthResult_Impl: Sized {
     fn get_DeployedApplicationHealth(
@@ -3867,10 +3833,9 @@ impl IFabricDeployedApplicationHealthResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricDeployedApplicationHealthResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricDeployedApplicationHealthResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricDeployedServicePackageHealthResult_Impl: Sized {
     fn get_DeployedServicePackageHealth(
@@ -3907,10 +3872,9 @@ impl IFabricDeployedServicePackageHealthResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricDeployedServicePackageHealthResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricDeployedServicePackageHealthResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricFaultManagementClient_Impl: Sized {
     fn BeginRestartNode(
         &self,
@@ -4265,10 +4229,9 @@ impl IFabricFaultManagementClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricFaultManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricFaultManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGatewayInformationResult_Impl: Sized {
     fn get_GatewayInformation(&self) -> *mut super::super::FABRIC_GATEWAY_INFORMATION;
 }
@@ -4296,10 +4259,9 @@ impl IFabricGatewayInformationResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGatewayInformationResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGatewayInformationResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetApplicationListResult_Impl: Sized {
     fn get_ApplicationList(&self) -> *mut super::super::FABRIC_APPLICATION_QUERY_RESULT_LIST;
 }
@@ -4327,10 +4289,9 @@ impl IFabricGetApplicationListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetApplicationListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetApplicationListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetApplicationListResult2_Impl:
     Sized + IFabricGetApplicationListResult_Impl
 {
@@ -4360,11 +4321,10 @@ impl IFabricGetApplicationListResult2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetApplicationListResult2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricGetApplicationListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetApplicationListResult2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricGetApplicationListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetApplicationLoadInformationResult_Impl: Sized {
     fn get_ApplicationLoadInformation(
         &self,
@@ -4394,10 +4354,9 @@ impl IFabricGetApplicationLoadInformationResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetApplicationLoadInformationResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetApplicationLoadInformationResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetApplicationNameResult_Impl: Sized {
     fn get_ApplicationName(&self) -> *mut super::super::FABRIC_APPLICATION_NAME_QUERY_RESULT;
 }
@@ -4425,10 +4384,9 @@ impl IFabricGetApplicationNameResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetApplicationNameResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetApplicationNameResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetApplicationNetworkListResult_Impl: Sized {
     fn get_ApplicationNetworkList(
         &self,
@@ -4471,10 +4429,9 @@ impl IFabricGetApplicationNetworkListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetApplicationNetworkListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetApplicationNetworkListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetApplicationTypeListResult_Impl: Sized {
     fn get_ApplicationTypeList(
         &self,
@@ -4504,10 +4461,9 @@ impl IFabricGetApplicationTypeListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetApplicationTypeListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetApplicationTypeListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetApplicationTypePagedListResult_Impl: Sized {
     fn get_ApplicationTypePagedList(
         &self,
@@ -4550,10 +4506,9 @@ impl IFabricGetApplicationTypePagedListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetApplicationTypePagedListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetApplicationTypePagedListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetClusterHealthChunkResult_Impl: Sized {
     fn get_ClusterHealthChunk(&self) -> *mut super::super::FABRIC_CLUSTER_HEALTH_CHUNK;
 }
@@ -4581,10 +4536,9 @@ impl IFabricGetClusterHealthChunkResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetClusterHealthChunkResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetClusterHealthChunkResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricGetClusterLoadInformationResult_Impl: Sized {
     fn get_ClusterLoadInformation(&self) -> *mut super::super::FABRIC_CLUSTER_LOAD_INFORMATION;
@@ -4615,10 +4569,9 @@ impl IFabricGetClusterLoadInformationResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetClusterLoadInformationResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetClusterLoadInformationResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetDeployedApplicationListResult_Impl: Sized {
     fn get_DeployedApplicationList(
         &self,
@@ -4648,10 +4601,9 @@ impl IFabricGetDeployedApplicationListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetDeployedApplicationListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetDeployedApplicationListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetDeployedApplicationPagedListResult_Impl: Sized {
     fn get_DeployedApplicationPagedList(
         &self,
@@ -4698,10 +4650,9 @@ impl IFabricGetDeployedApplicationPagedListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetDeployedApplicationPagedListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetDeployedApplicationPagedListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricGetDeployedCodePackageListResult_Impl: Sized {
     fn get_DeployedCodePackageList(
@@ -4734,10 +4685,9 @@ impl IFabricGetDeployedCodePackageListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetDeployedCodePackageListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetDeployedCodePackageListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetDeployedNetworkCodePackageListResult_Impl: Sized {
     fn get_DeployedNetworkCodePackageList(
         &self,
@@ -4784,10 +4734,9 @@ impl IFabricGetDeployedNetworkCodePackageListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == & < IFabricGetDeployedNetworkCodePackageListResult < > as::windows_core::ComInterface >::IID
+        iid == &<IFabricGetDeployedNetworkCodePackageListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetDeployedNetworkListResult_Impl: Sized {
     fn get_DeployedNetworkList(
         &self,
@@ -4830,10 +4779,9 @@ impl IFabricGetDeployedNetworkListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetDeployedNetworkListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetDeployedNetworkListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetDeployedReplicaListResult_Impl: Sized {
     fn get_DeployedReplicaList(
         &self,
@@ -4863,10 +4811,9 @@ impl IFabricGetDeployedReplicaListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetDeployedReplicaListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetDeployedReplicaListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetDeployedServicePackageListResult_Impl: Sized {
     fn get_DeployedServicePackageList(
         &self,
@@ -4896,10 +4843,9 @@ impl IFabricGetDeployedServicePackageListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetDeployedServicePackageListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetDeployedServicePackageListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetDeployedServiceReplicaDetailResult_Impl: Sized {
     fn get_ReplicaDetail(
         &self,
@@ -4929,10 +4875,9 @@ impl IFabricGetDeployedServiceReplicaDetailResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetDeployedServiceReplicaDetailResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetDeployedServiceReplicaDetailResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetDeployedServiceTypeListResult_Impl: Sized {
     fn get_DeployedServiceTypeList(
         &self,
@@ -4962,10 +4907,9 @@ impl IFabricGetDeployedServiceTypeListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetDeployedServiceTypeListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetDeployedServiceTypeListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetNetworkApplicationListResult_Impl: Sized {
     fn get_NetworkApplicationList(
         &self,
@@ -5008,10 +4952,9 @@ impl IFabricGetNetworkApplicationListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetNetworkApplicationListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetNetworkApplicationListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetNetworkListResult_Impl: Sized {
     fn get_NetworkList(&self) -> *mut super::super::FABRIC_NETWORK_QUERY_RESULT_LIST;
     fn get_PagingStatus(&self) -> *mut super::super::FABRIC_PAGING_STATUS;
@@ -5052,10 +4995,9 @@ impl IFabricGetNetworkListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetNetworkListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetNetworkListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetNetworkNodeListResult_Impl: Sized {
     fn get_NetworkNodeList(&self) -> *mut super::super::FABRIC_NETWORK_NODE_QUERY_RESULT_LIST;
     fn get_PagingStatus(&self) -> *mut super::super::FABRIC_PAGING_STATUS;
@@ -5096,10 +5038,9 @@ impl IFabricGetNetworkNodeListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetNetworkNodeListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetNetworkNodeListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricGetNodeListResult_Impl: Sized {
     fn get_NodeList(&self) -> *mut super::super::FABRIC_NODE_QUERY_RESULT_LIST;
@@ -5130,10 +5071,9 @@ impl IFabricGetNodeListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetNodeListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetNodeListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricGetNodeListResult2_Impl: Sized + IFabricGetNodeListResult_Impl {
     fn get_PagingStatus(&self) -> *mut super::super::FABRIC_PAGING_STATUS;
@@ -5164,11 +5104,10 @@ impl IFabricGetNodeListResult2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetNodeListResult2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricGetNodeListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetNodeListResult2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricGetNodeListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricGetNodeLoadInformationResult_Impl: Sized {
     fn get_NodeLoadInformation(&self) -> *mut super::super::FABRIC_NODE_LOAD_INFORMATION;
@@ -5199,10 +5138,9 @@ impl IFabricGetNodeLoadInformationResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetNodeLoadInformationResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetNodeLoadInformationResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetPartitionListResult_Impl: Sized {
     fn get_PartitionList(&self) -> *mut super::super::FABRIC_SERVICE_PARTITION_QUERY_RESULT_LIST;
 }
@@ -5230,10 +5168,9 @@ impl IFabricGetPartitionListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetPartitionListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetPartitionListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetPartitionListResult2_Impl: Sized + IFabricGetPartitionListResult_Impl {
     fn get_PagingStatus(&self) -> *mut super::super::FABRIC_PAGING_STATUS;
 }
@@ -5261,11 +5198,10 @@ impl IFabricGetPartitionListResult2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetPartitionListResult2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricGetPartitionListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetPartitionListResult2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricGetPartitionListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricGetPartitionLoadInformationResult_Impl: Sized {
     fn get_PartitionLoadInformation(&self) -> *mut super::super::FABRIC_PARTITION_LOAD_INFORMATION;
@@ -5296,10 +5232,9 @@ impl IFabricGetPartitionLoadInformationResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetPartitionLoadInformationResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetPartitionLoadInformationResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetProvisionedCodeVersionListResult_Impl: Sized {
     fn get_ProvisionedCodeVersionList(
         &self,
@@ -5329,10 +5264,9 @@ impl IFabricGetProvisionedCodeVersionListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetProvisionedCodeVersionListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetProvisionedCodeVersionListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetProvisionedConfigVersionListResult_Impl: Sized {
     fn get_ProvisionedConfigVersionList(
         &self,
@@ -5366,10 +5300,9 @@ impl IFabricGetProvisionedConfigVersionListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetProvisionedConfigVersionListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetProvisionedConfigVersionListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricGetRepairTaskListResult_Impl: Sized {
     fn get_Tasks(&self) -> *mut super::super::FABRIC_REPAIR_TASK_LIST;
@@ -5400,10 +5333,9 @@ impl IFabricGetRepairTaskListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetRepairTaskListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetRepairTaskListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetReplicaListResult_Impl: Sized {
     fn get_ReplicaList(&self) -> *mut super::super::FABRIC_SERVICE_REPLICA_QUERY_RESULT_LIST;
 }
@@ -5431,10 +5363,9 @@ impl IFabricGetReplicaListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetReplicaListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetReplicaListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetReplicaListResult2_Impl: Sized + IFabricGetReplicaListResult_Impl {
     fn get_PagingStatus(&self) -> *mut super::super::FABRIC_PAGING_STATUS;
 }
@@ -5462,11 +5393,10 @@ impl IFabricGetReplicaListResult2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetReplicaListResult2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricGetReplicaListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetReplicaListResult2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricGetReplicaListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricGetReplicaLoadInformationResult_Impl: Sized {
     fn get_ReplicaLoadInformation(&self) -> *mut super::super::FABRIC_REPLICA_LOAD_INFORMATION;
@@ -5497,10 +5427,9 @@ impl IFabricGetReplicaLoadInformationResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetReplicaLoadInformationResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetReplicaLoadInformationResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetRollingUpgradeMonitoringPolicyResult_Impl: Sized {
     fn get_Policy(&self) -> *mut super::super::FABRIC_ROLLING_UPGRADE_MONITORING_POLICY;
 }
@@ -5528,10 +5457,9 @@ impl IFabricGetRollingUpgradeMonitoringPolicyResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == & < IFabricGetRollingUpgradeMonitoringPolicyResult < > as::windows_core::ComInterface >::IID
+        iid == &<IFabricGetRollingUpgradeMonitoringPolicyResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetServiceGroupMemberListResult_Impl: Sized {
     fn get_ServiceGroupMemberList(
         &self,
@@ -5561,10 +5489,9 @@ impl IFabricGetServiceGroupMemberListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetServiceGroupMemberListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetServiceGroupMemberListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetServiceGroupMemberTypeListResult_Impl: Sized {
     fn get_ServiceGroupMemberTypeList(
         &self,
@@ -5594,10 +5521,9 @@ impl IFabricGetServiceGroupMemberTypeListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetServiceGroupMemberTypeListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetServiceGroupMemberTypeListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetServiceListResult_Impl: Sized {
     fn get_ServiceList(&self) -> *mut super::super::FABRIC_SERVICE_QUERY_RESULT_LIST;
 }
@@ -5625,10 +5551,9 @@ impl IFabricGetServiceListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetServiceListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetServiceListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetServiceListResult2_Impl: Sized + IFabricGetServiceListResult_Impl {
     fn get_PagingStatus(&self) -> *mut super::super::FABRIC_PAGING_STATUS;
 }
@@ -5656,11 +5581,10 @@ impl IFabricGetServiceListResult2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetServiceListResult2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricGetServiceListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetServiceListResult2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricGetServiceListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetServiceNameResult_Impl: Sized {
     fn get_ServiceName(&self) -> *mut super::super::FABRIC_SERVICE_NAME_QUERY_RESULT;
 }
@@ -5688,10 +5612,9 @@ impl IFabricGetServiceNameResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetServiceNameResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetServiceNameResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetServiceTypeListResult_Impl: Sized {
     fn get_ServiceTypeList(&self) -> *mut super::super::FABRIC_SERVICE_TYPE_QUERY_RESULT_LIST;
 }
@@ -5719,10 +5642,9 @@ impl IFabricGetServiceTypeListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetServiceTypeListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetServiceTypeListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricGetUnplacedReplicaInformationResult_Impl: Sized {
     fn get_UnplacedReplicaInformation(
         &self,
@@ -5752,10 +5674,9 @@ impl IFabricGetUnplacedReplicaInformationResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetUnplacedReplicaInformationResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetUnplacedReplicaInformationResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricHealthClient_Impl: Sized {
     fn ReportHealth(
@@ -6291,10 +6212,9 @@ impl IFabricHealthClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricHealthClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricHealthClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricHealthClient2_Impl: Sized + IFabricHealthClient_Impl {
     fn BeginGetClusterHealth2(
@@ -6779,11 +6699,10 @@ impl IFabricHealthClient2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricHealthClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricHealthClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricHealthClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricHealthClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricHealthClient3_Impl: Sized + IFabricHealthClient2_Impl {
     fn BeginGetClusterHealthChunk(
@@ -6857,12 +6776,11 @@ impl IFabricHealthClient3_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricHealthClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricHealthClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricHealthClient2 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricHealthClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricHealthClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricHealthClient2 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricHealthClient4_Impl: Sized + IFabricHealthClient3_Impl {
     fn ReportHealth2(
@@ -6903,13 +6821,12 @@ impl IFabricHealthClient4_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricHealthClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricHealthClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricHealthClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricHealthClient3 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricHealthClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricHealthClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricHealthClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricHealthClient3 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricInfrastructureServiceClient_Impl: Sized {
     fn BeginInvokeInfrastructureCommand(
         &self,
@@ -7046,10 +6963,9 @@ impl IFabricInfrastructureServiceClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricInfrastructureServiceClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricInfrastructureServiceClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricMovePrimaryResult_Impl: Sized {
     fn get_Result(&self) -> *mut super::super::FABRIC_MOVE_PRIMARY_RESULT;
 }
@@ -7077,10 +6993,9 @@ impl IFabricMovePrimaryResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricMovePrimaryResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricMovePrimaryResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricMoveSecondaryResult_Impl: Sized {
     fn get_Result(&self) -> *mut super::super::FABRIC_MOVE_SECONDARY_RESULT;
 }
@@ -7108,17 +7023,12 @@ impl IFabricMoveSecondaryResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricMoveSecondaryResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricMoveSecondaryResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricNameEnumerationResult_Impl: Sized {
     fn get_EnumerationStatus(&self) -> super::super::FABRIC_ENUMERATION_STATUS;
-    fn GetNames(
-        &self,
-        itemcount: *mut u32,
-        buffereditems: *mut *mut *mut u16,
-    ) -> ::windows_core::Result<()>;
+    fn GetNames(&self, itemcount: *mut u32) -> ::windows_core::Result<*mut *mut u16>;
 }
 impl ::windows_core::RuntimeName for IFabricNameEnumerationResult {}
 impl IFabricNameEnumerationResult_Vtbl {
@@ -7149,11 +7059,13 @@ impl IFabricNameEnumerationResult_Vtbl {
         ) -> ::windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
-            this.GetNames(
-                ::core::mem::transmute_copy(&itemcount),
-                ::core::mem::transmute_copy(&buffereditems),
-            )
-            .into()
+            match this.GetNames(::core::mem::transmute_copy(&itemcount)) {
+                ::core::result::Result::Ok(ok__) => {
+                    ::core::ptr::write(buffereditems, ::core::mem::transmute(ok__));
+                    ::windows_core::HRESULT(0)
+                }
+                ::core::result::Result::Err(err) => err.into(),
+            }
         }
         Self {
             base__: ::windows_core::IUnknown_Vtbl::new::<Identity, OFFSET>(),
@@ -7162,10 +7074,9 @@ impl IFabricNameEnumerationResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricNameEnumerationResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricNameEnumerationResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricNetworkManagementClient_Impl: Sized {
     fn BeginCreateNetwork(
         &self,
@@ -7629,10 +7540,9 @@ impl IFabricNetworkManagementClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricNetworkManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricNetworkManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricNodeHealthResult_Impl: Sized {
     fn get_NodeHealth(&self) -> *mut super::super::FABRIC_NODE_HEALTH;
@@ -7663,10 +7573,9 @@ impl IFabricNodeHealthResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricNodeHealthResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricNodeHealthResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricNodeTransitionProgressResult_Impl: Sized {
     fn get_Progress(&self) -> *mut super::super::FABRIC_NODE_TRANSITION_PROGRESS;
 }
@@ -7694,10 +7603,9 @@ impl IFabricNodeTransitionProgressResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricNodeTransitionProgressResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricNodeTransitionProgressResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricOrchestrationUpgradeStatusResult_Impl: Sized {
     fn get_Progress(&self) -> *mut super::super::FABRIC_ORCHESTRATION_UPGRADE_PROGRESS;
 }
@@ -7725,10 +7633,9 @@ impl IFabricOrchestrationUpgradeStatusResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricOrchestrationUpgradeStatusResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricOrchestrationUpgradeStatusResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricPartitionDataLossProgressResult_Impl: Sized {
     fn get_Progress(&self) -> *mut super::super::FABRIC_PARTITION_DATA_LOSS_PROGRESS;
 }
@@ -7756,10 +7663,9 @@ impl IFabricPartitionDataLossProgressResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricPartitionDataLossProgressResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricPartitionDataLossProgressResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricPartitionHealthResult_Impl: Sized {
     fn get_PartitionHealth(&self) -> *mut super::super::FABRIC_PARTITION_HEALTH;
@@ -7790,10 +7696,9 @@ impl IFabricPartitionHealthResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricPartitionHealthResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricPartitionHealthResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricPartitionQuorumLossProgressResult_Impl: Sized {
     fn get_Progress(&self) -> *mut super::super::FABRIC_PARTITION_QUORUM_LOSS_PROGRESS;
 }
@@ -7821,10 +7726,9 @@ impl IFabricPartitionQuorumLossProgressResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricPartitionQuorumLossProgressResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricPartitionQuorumLossProgressResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricPartitionRestartProgressResult_Impl: Sized {
     fn get_Progress(&self) -> *mut super::super::FABRIC_PARTITION_RESTART_PROGRESS;
 }
@@ -7852,10 +7756,9 @@ impl IFabricPartitionRestartProgressResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricPartitionRestartProgressResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricPartitionRestartProgressResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricPropertyBatchResult_Impl: Sized {
     fn GetProperty(
         &self,
@@ -7894,10 +7797,9 @@ impl IFabricPropertyBatchResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricPropertyBatchResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricPropertyBatchResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricPropertyEnumerationResult_Impl: Sized {
     fn get_EnumerationStatus(&self) -> super::super::FABRIC_ENUMERATION_STATUS;
     fn get_PropertyCount(&self) -> u32;
@@ -7959,10 +7861,9 @@ impl IFabricPropertyEnumerationResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricPropertyEnumerationResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricPropertyEnumerationResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricPropertyManagementClient_Impl: Sized {
     fn BeginCreateName(
@@ -8113,8 +8014,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
         failedoperationindexinrequest: *mut u32,
-        result: *mut ::core::option::Option<IFabricPropertyBatchResult>,
-    ) -> ::windows_core::Result<()>;
+    ) -> ::windows_core::Result<IFabricPropertyBatchResult>;
     fn BeginEnumerateProperties(
         &self,
         name: *const u16,
@@ -8690,12 +8590,16 @@ impl IFabricPropertyManagementClient_Vtbl {
         ) -> ::windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
-            this.EndSubmitPropertyBatch(
+            match this.EndSubmitPropertyBatch(
                 ::windows_core::from_raw_borrowed(&context),
                 ::core::mem::transmute_copy(&failedoperationindexinrequest),
-                ::core::mem::transmute_copy(&result),
-            )
-            .into()
+            ) {
+                ::core::result::Result::Ok(ok__) => {
+                    ::core::ptr::write(result, ::core::mem::transmute(ok__));
+                    ::windows_core::HRESULT(0)
+                }
+                ::core::result::Result::Err(err) => err.into(),
+            }
         }
         unsafe extern "system" fn BeginEnumerateProperties<
             Identity: ::windows_core::IUnknownImpl<Impl = Impl>,
@@ -8778,10 +8682,9 @@ impl IFabricPropertyManagementClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricPropertyManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricPropertyManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricPropertyManagementClient2_Impl:
     Sized + IFabricPropertyManagementClient_Impl
@@ -8858,11 +8761,10 @@ impl IFabricPropertyManagementClient2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricPropertyManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricPropertyManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricPropertyManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricPropertyManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricPropertyMetadataResult_Impl: Sized {
     fn get_Metadata(&self) -> *mut super::super::FABRIC_NAMED_PROPERTY_METADATA;
@@ -8893,18 +8795,13 @@ impl IFabricPropertyMetadataResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricPropertyMetadataResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricPropertyMetadataResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricPropertyValueResult_Impl: Sized {
     fn get_Property(&self) -> *mut super::super::FABRIC_NAMED_PROPERTY;
-    fn GetValueAsBinary(
-        &self,
-        bytecount: *mut u32,
-        bufferedvalue: *mut *mut u8,
-    ) -> ::windows_core::Result<()>;
+    fn GetValueAsBinary(&self, bytecount: *mut u32) -> ::windows_core::Result<*mut u8>;
     fn GetValueAsInt64(&self) -> ::windows_core::Result<i64>;
     fn GetValueAsDouble(&self) -> ::windows_core::Result<f64>;
     fn GetValueAsWString(&self) -> ::windows_core::Result<::windows_core::PCWSTR>;
@@ -8941,11 +8838,13 @@ impl IFabricPropertyValueResult_Vtbl {
         ) -> ::windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
-            this.GetValueAsBinary(
-                ::core::mem::transmute_copy(&bytecount),
-                ::core::mem::transmute_copy(&bufferedvalue),
-            )
-            .into()
+            match this.GetValueAsBinary(::core::mem::transmute_copy(&bytecount)) {
+                ::core::result::Result::Ok(ok__) => {
+                    ::core::ptr::write(bufferedvalue, ::core::mem::transmute(ok__));
+                    ::windows_core::HRESULT(0)
+                }
+                ::core::result::Result::Err(err) => err.into(),
+            }
         }
         unsafe extern "system" fn GetValueAsInt64<
             Identity: ::windows_core::IUnknownImpl<Impl = Impl>,
@@ -9030,10 +8929,9 @@ impl IFabricPropertyValueResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricPropertyValueResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricPropertyValueResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricQueryClient_Impl: Sized {
     fn BeginGetNodeList(
         &self,
@@ -9741,10 +9639,9 @@ impl IFabricQueryClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricQueryClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricQueryClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricQueryClient10_Impl: Sized + IFabricQueryClient9_Impl {
     fn BeginGetDeployedApplicationPagedList(
@@ -9828,19 +9725,18 @@ impl IFabricQueryClient10_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricQueryClient10 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient7 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient8 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient9 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricQueryClient10 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient7 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient8 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient9 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricQueryClient2_Impl: Sized + IFabricQueryClient_Impl {
     fn BeginGetDeployedReplicaDetail(
         &self,
@@ -10156,11 +10052,10 @@ impl IFabricQueryClient2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricQueryClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricQueryClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricQueryClient3_Impl: Sized + IFabricQueryClient2_Impl {
     fn BeginGetNodeLoadInformation(
         &self,
@@ -10287,12 +10182,11 @@ impl IFabricQueryClient3_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricQueryClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient2 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricQueryClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient2 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricQueryClient4_Impl: Sized + IFabricQueryClient3_Impl {
     fn BeginGetServiceGroupMemberList(
         &self,
@@ -10428,13 +10322,12 @@ impl IFabricQueryClient4_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricQueryClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient3 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricQueryClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient3 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricQueryClient5_Impl: Sized + IFabricQueryClient4_Impl {
     fn BeginGetUnplacedReplicaInformation(
@@ -10517,14 +10410,13 @@ impl IFabricQueryClient5_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricQueryClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient4 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricQueryClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient4 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricQueryClient6_Impl: Sized + IFabricQueryClient5_Impl {
     fn EndGetNodeList2(
@@ -10662,15 +10554,14 @@ impl IFabricQueryClient6_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricQueryClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient5 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricQueryClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient5 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricQueryClient7_Impl: Sized + IFabricQueryClient6_Impl {
     fn BeginGetApplicationLoadInformation(
@@ -10753,16 +10644,15 @@ impl IFabricQueryClient7_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricQueryClient7 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient6 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricQueryClient7 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient6 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricQueryClient8_Impl: Sized + IFabricQueryClient7_Impl {
     fn BeginGetServiceName(
@@ -10892,17 +10782,16 @@ impl IFabricQueryClient8_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricQueryClient8 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient7 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricQueryClient8 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient7 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricQueryClient9_Impl: Sized + IFabricQueryClient8_Impl {
     fn BeginGetApplicationTypePagedList(
@@ -10980,18 +10869,17 @@ impl IFabricQueryClient9_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricQueryClient9 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient7 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricQueryClient8 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricQueryClient9 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient7 as ::windows_core::Interface>::IID
+            || iid == &<IFabricQueryClient8 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricRepairManagementClient_Impl: Sized {
     fn BeginCreateRepairTask(
@@ -11343,10 +11231,9 @@ impl IFabricRepairManagementClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricRepairManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricRepairManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricRepairManagementClient2_Impl: Sized + IFabricRepairManagementClient_Impl {
     fn BeginUpdateRepairTaskHealthPolicy(
@@ -11429,11 +11316,10 @@ impl IFabricRepairManagementClient2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricRepairManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricRepairManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricRepairManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricRepairManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricReplicaHealthResult_Impl: Sized {
     fn get_ReplicaHealth(&self) -> *mut super::super::FABRIC_REPLICA_HEALTH;
 }
@@ -11461,10 +11347,9 @@ impl IFabricReplicaHealthResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricReplicaHealthResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricReplicaHealthResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricResolvedServicePartitionResult_Impl: Sized {
     fn get_Partition(&self) -> *mut super::super::FABRIC_RESOLVED_SERVICE_PARTITION;
     fn GetEndpoint(
@@ -11538,10 +11423,9 @@ impl IFabricResolvedServicePartitionResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricResolvedServicePartitionResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricResolvedServicePartitionResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricRestartDeployedCodePackageResult_Impl: Sized {
     fn get_Result(&self) -> *mut super::super::FABRIC_DEPLOYED_CODE_PACKAGE_RESULT;
 }
@@ -11569,10 +11453,9 @@ impl IFabricRestartDeployedCodePackageResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricRestartDeployedCodePackageResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricRestartDeployedCodePackageResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricRestartNodeResult_Impl: Sized {
     fn get_Result(&self) -> *mut super::super::FABRIC_NODE_RESULT;
 }
@@ -11600,10 +11483,9 @@ impl IFabricRestartNodeResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricRestartNodeResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricRestartNodeResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricSecretReferencesResult_Impl: Sized {
     fn get_SecretReferences(&self) -> *mut super::super::FABRIC_SECRET_REFERENCE_LIST;
 }
@@ -11631,10 +11513,9 @@ impl IFabricSecretReferencesResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricSecretReferencesResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricSecretReferencesResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricSecretStoreClient_Impl: Sized {
     fn BeginGetSecrets(
@@ -11879,10 +11760,9 @@ impl IFabricSecretStoreClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricSecretStoreClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricSecretStoreClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricSecretsResult_Impl: Sized {
     fn get_Secrets(&self) -> *mut super::super::FABRIC_SECRET_LIST;
 }
@@ -11910,10 +11790,9 @@ impl IFabricSecretsResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricSecretsResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricSecretsResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceDescriptionResult_Impl: Sized {
     fn get_Description(&self) -> *mut super::super::FABRIC_SERVICE_DESCRIPTION;
 }
@@ -11941,10 +11820,9 @@ impl IFabricServiceDescriptionResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceDescriptionResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceDescriptionResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceEndpointsVersion_Impl: Sized {
     fn Compare(
         &self,
@@ -11983,10 +11861,9 @@ impl IFabricServiceEndpointsVersion_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceEndpointsVersion as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceEndpointsVersion as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceGroupDescriptionResult_Impl: Sized {
     fn get_Description(&self) -> *mut super::super::FABRIC_SERVICE_GROUP_DESCRIPTION;
 }
@@ -12014,10 +11891,9 @@ impl IFabricServiceGroupDescriptionResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceGroupDescriptionResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceGroupDescriptionResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceGroupManagementClient_Impl: Sized {
     fn BeginCreateServiceGroup(
         &self,
@@ -12192,10 +12068,9 @@ impl IFabricServiceGroupManagementClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceGroupManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceGroupManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceGroupManagementClient2_Impl:
     Sized + IFabricServiceGroupManagementClient_Impl
 {
@@ -12265,11 +12140,10 @@ impl IFabricServiceGroupManagementClient2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceGroupManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceGroupManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceGroupManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceGroupManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceGroupManagementClient3_Impl:
     Sized + IFabricServiceGroupManagementClient2_Impl
 {
@@ -12356,12 +12230,11 @@ impl IFabricServiceGroupManagementClient3_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceGroupManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceGroupManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceGroupManagementClient2 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceGroupManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceGroupManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceGroupManagementClient2 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceGroupManagementClient4_Impl:
     Sized + IFabricServiceGroupManagementClient3_Impl
 {
@@ -12436,13 +12309,12 @@ impl IFabricServiceGroupManagementClient4_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceGroupManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceGroupManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceGroupManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceGroupManagementClient3 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceGroupManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceGroupManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceGroupManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceGroupManagementClient3 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricServiceHealthResult_Impl: Sized {
     fn get_ServiceHealth(&self) -> *mut super::super::FABRIC_SERVICE_HEALTH;
@@ -12473,10 +12345,9 @@ impl IFabricServiceHealthResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceHealthResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceHealthResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceManagementClient_Impl: Sized {
     fn BeginCreateService(
         &self,
@@ -12831,10 +12702,9 @@ impl IFabricServiceManagementClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceManagementClient2_Impl:
     Sized + IFabricServiceManagementClient_Impl
 {
@@ -12966,11 +12836,10 @@ impl IFabricServiceManagementClient2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceManagementClient3_Impl:
     Sized + IFabricServiceManagementClient2_Impl
 {
@@ -13087,12 +12956,11 @@ impl IFabricServiceManagementClient3_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient2 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient2 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceManagementClient4_Impl:
     Sized + IFabricServiceManagementClient3_Impl
 {
@@ -13233,13 +13101,12 @@ impl IFabricServiceManagementClient4_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient3 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient3 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricServiceManagementClient5_Impl:
     Sized + IFabricServiceManagementClient4_Impl
@@ -13309,14 +13176,13 @@ impl IFabricServiceManagementClient5_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceManagementClient5 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient4 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceManagementClient5 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient4 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricServiceManagementClient6_Impl:
     Sized + IFabricServiceManagementClient5_Impl
@@ -13390,15 +13256,14 @@ impl IFabricServiceManagementClient6_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceManagementClient6 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricServiceManagementClient5 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceManagementClient6 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricServiceManagementClient5 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceNotification_Impl: Sized {
     fn get_Notification(&self) -> *mut super::super::FABRIC_SERVICE_NOTIFICATION;
     fn GetVersion(&self) -> ::windows_core::Result<IFabricServiceEndpointsVersion>;
@@ -13446,10 +13311,9 @@ impl IFabricServiceNotification_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceNotification as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceNotification as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServiceNotificationEventHandler_Impl: Sized {
     fn OnNotification(
         &self,
@@ -13486,10 +13350,9 @@ impl IFabricServiceNotificationEventHandler_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricServiceNotificationEventHandler as ::windows_core::ComInterface>::IID
+        iid == &<IFabricServiceNotificationEventHandler as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricServicePartitionResolutionChangeHandler_Impl: Sized {
     fn OnChange(
         &self,
@@ -13532,10 +13395,9 @@ impl IFabricServicePartitionResolutionChangeHandler_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == & < IFabricServicePartitionResolutionChangeHandler < > as::windows_core::ComInterface >::IID
+        iid == &<IFabricServicePartitionResolutionChangeHandler as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricStartNodeResult_Impl: Sized {
     fn get_Result(&self) -> *mut super::super::FABRIC_NODE_RESULT;
 }
@@ -13563,10 +13425,9 @@ impl IFabricStartNodeResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricStartNodeResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricStartNodeResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricStopNodeResult_Impl: Sized {
     fn get_Result(&self) -> *mut super::super::FABRIC_NODE_RESULT;
 }
@@ -13594,10 +13455,9 @@ impl IFabricStopNodeResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricStopNodeResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricStopNodeResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricTestCommandStatusResult_Impl: Sized {
     fn get_Result(&self) -> *mut super::super::TEST_COMMAND_QUERY_RESULT_LIST;
 }
@@ -13625,10 +13485,9 @@ impl IFabricTestCommandStatusResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTestCommandStatusResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTestCommandStatusResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricTestManagementClient_Impl: Sized {
     fn BeginStartPartitionDataLoss(
@@ -14093,10 +13952,9 @@ impl IFabricTestManagementClient_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTestManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTestManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricTestManagementClient2_Impl: Sized + IFabricTestManagementClient_Impl {
     fn BeginStartChaos(
@@ -14267,11 +14125,10 @@ impl IFabricTestManagementClient2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTestManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricTestManagementClient as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTestManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricTestManagementClient as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricTestManagementClient3_Impl: Sized + IFabricTestManagementClient2_Impl {
     fn BeginStartNodeTransition(
@@ -14395,12 +14252,11 @@ impl IFabricTestManagementClient3_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTestManagementClient3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricTestManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricTestManagementClient2 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTestManagementClient3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricTestManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricTestManagementClient2 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricTestManagementClient4_Impl: Sized + IFabricTestManagementClient3_Impl {
     fn BeginGetChaos(
@@ -14630,13 +14486,12 @@ impl IFabricTestManagementClient4_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricTestManagementClient4 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricTestManagementClient as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricTestManagementClient2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricTestManagementClient3 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricTestManagementClient4 as ::windows_core::Interface>::IID
+            || iid == &<IFabricTestManagementClient as ::windows_core::Interface>::IID
+            || iid == &<IFabricTestManagementClient2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricTestManagementClient3 as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricUpgradeOrchestrationServiceStateResult_Impl: Sized {
     fn get_State(&self) -> *mut super::super::FABRIC_UPGRADE_ORCHESTRATION_SERVICE_STATE;
 }
@@ -14664,10 +14519,9 @@ impl IFabricUpgradeOrchestrationServiceStateResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricUpgradeOrchestrationServiceStateResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricUpgradeOrchestrationServiceStateResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricUpgradeProgressResult_Impl: Sized {
     fn get_TargetCodeVersion(&self) -> ::windows_core::PCWSTR;
     fn get_TargetConfigVersion(&self) -> ::windows_core::PCWSTR;
@@ -14675,14 +14529,12 @@ pub trait IFabricUpgradeProgressResult_Impl: Sized {
     fn GetUpgradeDomains(
         &self,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()>;
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION>;
     fn GetChangedUpgradeDomains(
         &self,
         previousprogress: ::core::option::Option<&IFabricUpgradeProgressResult>,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()>;
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION>;
 }
 impl ::windows_core::RuntimeName for IFabricUpgradeProgressResult {}
 impl IFabricUpgradeProgressResult_Vtbl {
@@ -14735,11 +14587,13 @@ impl IFabricUpgradeProgressResult_Vtbl {
         ) -> ::windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
-            this.GetUpgradeDomains(
-                ::core::mem::transmute_copy(&itemcount),
-                ::core::mem::transmute_copy(&buffereditems),
-            )
-            .into()
+            match this.GetUpgradeDomains(::core::mem::transmute_copy(&itemcount)) {
+                ::core::result::Result::Ok(ok__) => {
+                    ::core::ptr::write(buffereditems, ::core::mem::transmute(ok__));
+                    ::windows_core::HRESULT(0)
+                }
+                ::core::result::Result::Err(err) => err.into(),
+            }
         }
         unsafe extern "system" fn GetChangedUpgradeDomains<
             Identity: ::windows_core::IUnknownImpl<Impl = Impl>,
@@ -14753,12 +14607,16 @@ impl IFabricUpgradeProgressResult_Vtbl {
         ) -> ::windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
-            this.GetChangedUpgradeDomains(
+            match this.GetChangedUpgradeDomains(
                 ::windows_core::from_raw_borrowed(&previousprogress),
                 ::core::mem::transmute_copy(&itemcount),
-                ::core::mem::transmute_copy(&buffereditems),
-            )
-            .into()
+            ) {
+                ::core::result::Result::Ok(ok__) => {
+                    ::core::ptr::write(buffereditems, ::core::mem::transmute(ok__));
+                    ::windows_core::HRESULT(0)
+                }
+                ::core::result::Result::Err(err) => err.into(),
+            }
         }
         Self {
             base__: ::windows_core::IUnknown_Vtbl::new::<Identity, OFFSET>(),
@@ -14770,10 +14628,9 @@ impl IFabricUpgradeProgressResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricUpgradeProgressResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricUpgradeProgressResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricUpgradeProgressResult2_Impl: Sized + IFabricUpgradeProgressResult_Impl {
     fn get_RollingUpgradeMode(&self) -> super::super::FABRIC_ROLLING_UPGRADE_MODE;
     fn get_NextUpgradeDomain(&self) -> ::windows_core::PCWSTR;
@@ -14814,11 +14671,10 @@ impl IFabricUpgradeProgressResult2_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricUpgradeProgressResult2 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricUpgradeProgressResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricUpgradeProgressResult2 as ::windows_core::Interface>::IID
+            || iid == &<IFabricUpgradeProgressResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`, `\"implement\"`*"]
 pub trait IFabricUpgradeProgressResult3_Impl: Sized + IFabricUpgradeProgressResult2_Impl {
     fn get_UpgradeProgress(&self) -> *mut super::super::FABRIC_UPGRADE_PROGRESS;
 }
@@ -14846,8 +14702,8 @@ impl IFabricUpgradeProgressResult3_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricUpgradeProgressResult3 as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricUpgradeProgressResult as ::windows_core::ComInterface>::IID
-            || iid == &<IFabricUpgradeProgressResult2 as ::windows_core::ComInterface>::IID
+        iid == &<IFabricUpgradeProgressResult3 as ::windows_core::Interface>::IID
+            || iid == &<IFabricUpgradeProgressResult as ::windows_core::Interface>::IID
+            || iid == &<IFabricUpgradeProgressResult2 as ::windows_core::Interface>::IID
     }
 }

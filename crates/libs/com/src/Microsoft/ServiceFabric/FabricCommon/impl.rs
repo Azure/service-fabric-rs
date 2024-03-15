@@ -1,4 +1,3 @@
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`, `\"implement\"`*"]
 pub trait IFabricAsyncOperationCallback_Impl: Sized {
     fn Invoke(&self, context: ::core::option::Option<&IFabricAsyncOperationContext>);
 }
@@ -27,10 +26,9 @@ impl IFabricAsyncOperationCallback_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricAsyncOperationCallback as ::windows_core::ComInterface>::IID
+        iid == &<IFabricAsyncOperationCallback as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`, `\"Win32_Foundation\"`, `\"implement\"`*"]
 #[cfg(feature = "Win32_Foundation")]
 pub trait IFabricAsyncOperationContext_Impl: Sized {
     fn IsCompleted(&self) -> ::windows::Win32::Foundation::BOOLEAN;
@@ -107,10 +105,9 @@ impl IFabricAsyncOperationContext_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricAsyncOperationContext as ::windows_core::ComInterface>::IID
+        iid == &<IFabricAsyncOperationContext as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`, `\"implement\"`*"]
 pub trait IFabricGetReplicatorStatusResult_Impl: Sized {
     fn get_ReplicatorStatus(&self) -> *mut super::FABRIC_REPLICATOR_STATUS_QUERY_RESULT;
 }
@@ -138,16 +135,14 @@ impl IFabricGetReplicatorStatusResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricGetReplicatorStatusResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricGetReplicatorStatusResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`, `\"implement\"`*"]
 pub trait IFabricStringListResult_Impl: Sized {
     fn GetStrings(
         &self,
         itemcount: *mut u32,
-        buffereditems: *mut *mut ::windows_core::PCWSTR,
-    ) -> ::windows_core::Result<()>;
+    ) -> ::windows_core::Result<*mut ::windows_core::PCWSTR>;
 }
 impl ::windows_core::RuntimeName for IFabricStringListResult {}
 impl IFabricStringListResult_Vtbl {
@@ -167,11 +162,13 @@ impl IFabricStringListResult_Vtbl {
         ) -> ::windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
-            this.GetStrings(
-                ::core::mem::transmute_copy(&itemcount),
-                ::core::mem::transmute_copy(&buffereditems),
-            )
-            .into()
+            match this.GetStrings(::core::mem::transmute_copy(&itemcount)) {
+                ::core::result::Result::Ok(ok__) => {
+                    ::core::ptr::write(buffereditems, ::core::mem::transmute(ok__));
+                    ::windows_core::HRESULT(0)
+                }
+                ::core::result::Result::Err(err) => err.into(),
+            }
         }
         Self {
             base__: ::windows_core::IUnknown_Vtbl::new::<Identity, OFFSET>(),
@@ -179,10 +176,9 @@ impl IFabricStringListResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricStringListResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricStringListResult as ::windows_core::Interface>::IID
     }
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon\"`, `\"implement\"`*"]
 pub trait IFabricStringResult_Impl: Sized {
     fn get_String(&self) -> ::windows_core::PCWSTR;
 }
@@ -210,6 +206,6 @@ impl IFabricStringResult_Vtbl {
         }
     }
     pub fn matches(iid: &::windows_core::GUID) -> bool {
-        iid == &<IFabricStringResult as ::windows_core::ComInterface>::IID
+        iid == &<IFabricStringResult as ::windows_core::Interface>::IID
     }
 }

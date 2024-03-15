@@ -14,7 +14,7 @@ use mssf_com::{
     FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND,
 };
 use windows::core::implement;
-use windows_core::{ComInterface, Error, Interface, HSTRING, PCWSTR};
+use windows_core::{Error, Interface, HSTRING, PCWSTR};
 
 use super::store_types::{EseLocalStoreSettings, LocalStoreKind, ReplicatorSettings};
 

@@ -19,7 +19,7 @@ pub fn fill_fabric_hresult(code: HRESULT) -> Error {
         unsafe { err_str_raw.as_wide() }
     };
     println!("debug std: {}", HSTRING::from_wide(err_str).unwrap());
-    Error::new(code, HSTRING::from_wide(err_str).unwrap())
+    Error::new(code, HSTRING::from_wide(err_str).unwrap().to_string())
 }
 
 pub fn fill_fabric_error(e: Error) -> Error {
@@ -37,7 +37,7 @@ mod test {
         let s = HSTRING::from("MyError");
         let e = Error::new(
             windows_core::HRESULT(FABRIC_E_GATEWAY_NOT_REACHABLE.0),
-            s.clone(),
+            s.clone().to_string(),
         );
         assert_eq!(e.message(), s);
     }

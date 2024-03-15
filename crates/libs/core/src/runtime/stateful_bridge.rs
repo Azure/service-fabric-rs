@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use log::info;
 use windows::core::implement;
-use windows_core::{AsImpl, ComInterface, Error, HSTRING};
+use windows_core::{AsImpl, Error, Interface, HSTRING};
 
 use mssf_com::{
     FabricCommon::{

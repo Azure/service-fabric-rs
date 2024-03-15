@@ -13,7 +13,7 @@ use mssf_com::{
     },
     FABRIC_EPOCH,
 };
-use windows_core::{ComInterface, HSTRING};
+use windows_core::{Interface, HSTRING};
 
 use crate::IFabricStringResultToHString;
 

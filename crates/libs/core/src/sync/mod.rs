@@ -19,12 +19,12 @@ use mssf_com::FabricCommon::{
 };
 use tokio::sync::oneshot::Receiver;
 use windows::core::implement;
-use windows_core::ComInterface;
+use windows_core::Interface;
 
 // fabric code begins here
 
 // Creates the local client
-pub fn CreateLocalClient<T: ComInterface>() -> T {
+pub fn CreateLocalClient<T: Interface>() -> T {
     unsafe { T::from_raw(FabricCreateLocalClient(&T::IID).expect("cannot get localclient")) }
 }
 
@@ -135,7 +135,7 @@ mod tests {
 
     use tokio::sync::oneshot::{self, Sender};
     use windows::core::implement;
-    use windows_core::{ComInterface, HSTRING};
+    use windows_core::{Interface, HSTRING};
 
     use super::{CreateLocalClient, FabricReceiver, SBox};
 

@@ -1,4 +1,3 @@
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
 #[inline]
 pub unsafe fn FabricCreateClient(
     connectionstrings: &[::windows_core::PCWSTR],
@@ -15,14 +14,13 @@ pub unsafe fn FabricCreateClient(
     }
     let mut result__ = ::std::mem::zeroed();
     FabricCreateClient(
-        connectionstrings.len() as _,
+        connectionstrings.len().try_into().unwrap(),
         ::core::mem::transmute(connectionstrings.as_ptr()),
         iid,
         &mut result__,
     )
-    .from_abi(result__)
+    .map(|| result__)
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
 #[inline]
 pub unsafe fn FabricCreateClient2<P0>(
     connectionstrings: &[::windows_core::PCWSTR],
@@ -44,15 +42,14 @@ where
     }
     let mut result__ = ::std::mem::zeroed();
     FabricCreateClient2(
-        connectionstrings.len() as _,
+        connectionstrings.len().try_into().unwrap(),
         ::core::mem::transmute(connectionstrings.as_ptr()),
         __midl__fabricclientmodule0000.into_param().abi(),
         iid,
         &mut result__,
     )
-    .from_abi(result__)
+    .map(|| result__)
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
 #[inline]
 pub unsafe fn FabricCreateClient3<P0, P1>(
     connectionstrings: &[::windows_core::PCWSTR],
@@ -77,16 +74,15 @@ where
     }
     let mut result__ = ::std::mem::zeroed();
     FabricCreateClient3(
-        connectionstrings.len() as _,
+        connectionstrings.len().try_into().unwrap(),
         ::core::mem::transmute(connectionstrings.as_ptr()),
         __midl__fabricclientmodule0002.into_param().abi(),
         __midl__fabricclientmodule0003.into_param().abi(),
         iid,
         &mut result__,
     )
-    .from_abi(result__)
+    .map(|| result__)
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
 #[inline]
 pub unsafe fn FabricCreateLocalClient(
     iid: *const ::windows_core::GUID,
@@ -99,9 +95,8 @@ pub unsafe fn FabricCreateLocalClient(
         ) -> ::windows_core::HRESULT;
     }
     let mut result__ = ::std::mem::zeroed();
-    FabricCreateLocalClient(iid, &mut result__).from_abi(result__)
+    FabricCreateLocalClient(iid, &mut result__).map(|| result__)
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
 #[inline]
 pub unsafe fn FabricCreateLocalClient2<P0>(
     __midl__fabricclientmodule0001: P0,
@@ -124,9 +119,8 @@ where
         iid,
         &mut result__,
     )
-    .from_abi(result__)
+    .map(|| result__)
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
 #[inline]
 pub unsafe fn FabricCreateLocalClient3<P0, P1>(
     __midl__fabricclientmodule0004: P0,
@@ -153,9 +147,8 @@ where
         iid,
         &mut result__,
     )
-    .from_abi(result__)
+    .map(|| result__)
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
 #[inline]
 pub unsafe fn FabricCreateLocalClient4<P0, P1>(
     __midl__fabricclientmodule0006: P0,
@@ -185,9 +178,8 @@ where
         iid,
         &mut result__,
     )
-    .from_abi(result__)
+    .map(|| result__)
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
 #[inline]
 pub unsafe fn FabricGetDefaultRollingUpgradeMonitoringPolicy(
 ) -> ::windows_core::Result<IFabricGetRollingUpgradeMonitoringPolicyResult> {
@@ -198,13 +190,16 @@ pub unsafe fn FabricGetDefaultRollingUpgradeMonitoringPolicy(
         ) -> ::windows_core::HRESULT;
     }
     let mut result__ = ::std::mem::zeroed();
-    FabricGetDefaultRollingUpgradeMonitoringPolicy(&mut result__).from_abi(result__)
+    FabricGetDefaultRollingUpgradeMonitoringPolicy(&mut result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationHealthResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricApplicationHealthResult,
+    IFabricApplicationHealthResult_Vtbl,
+    0x41612fab_e615_4a48_98e7_4abcc93b6049
+);
+::windows_core::imp::interface_hierarchy!(IFabricApplicationHealthResult, ::windows_core::IUnknown);
 impl IFabricApplicationHealthResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_ApplicationHealth(&self) -> *mut super::super::FABRIC_APPLICATION_HEALTH {
         (::windows_core::Interface::vtable(self).get_ApplicationHealth)(
@@ -212,49 +207,28 @@ impl IFabricApplicationHealthResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricApplicationHealthResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricApplicationHealthResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationHealthResult {}
-impl ::core::fmt::Debug for IFabricApplicationHealthResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationHealthResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricApplicationHealthResult {}
 unsafe impl ::core::marker::Sync for IFabricApplicationHealthResult {}
-unsafe impl ::windows_core::Interface for IFabricApplicationHealthResult {
-    type Vtable = IFabricApplicationHealthResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationHealthResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationHealthResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x41612fab_e615_4a48_98e7_4abcc93b6049);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricApplicationHealthResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_ApplicationHealth:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_APPLICATION_HEALTH,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_ApplicationHealth: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationManagementClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricApplicationManagementClient,
+    IFabricApplicationManagementClient_Vtbl,
+    0x7c219ae9_e58d_431f_8b30_92a40281faac
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricApplicationManagementClient,
+    ::windows_core::IUnknown
+);
 impl IFabricApplicationManagementClient {
     pub unsafe fn BeginProvisionApplicationType<P0, P1>(
         &self,
@@ -274,7 +248,7 @@ impl IFabricApplicationManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -303,7 +277,7 @@ impl IFabricApplicationManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -332,7 +306,7 @@ impl IFabricApplicationManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -361,7 +335,7 @@ impl IFabricApplicationManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationUpgradeProgress<P0>(
         &self,
@@ -376,7 +350,7 @@ impl IFabricApplicationManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain<P0, P1>(
         &self,
@@ -396,7 +370,7 @@ impl IFabricApplicationManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain<P0>(
         &self,
@@ -428,7 +402,7 @@ impl IFabricApplicationManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -461,7 +435,7 @@ impl IFabricApplicationManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType<P0>(
         &self,
@@ -477,127 +451,112 @@ impl IFabricApplicationManagementClient {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationManagementClient,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricApplicationManagementClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationManagementClient {}
-impl ::core::fmt::Debug for IFabricApplicationManagementClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationManagementClient")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricApplicationManagementClient {}
 unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient {}
-unsafe impl ::windows_core::Interface for IFabricApplicationManagementClient {
-    type Vtable = IFabricApplicationManagementClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationManagementClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationManagementClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x7c219ae9_e58d_431f_8b30_92a40281faac);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricApplicationManagementClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub BeginProvisionApplicationType: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationbuildpath: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndProvisionApplicationType: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginCreateApplication: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_APPLICATION_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_APPLICATION_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndCreateApplication: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginUpgradeApplication: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        upgradedescription: *const super::super::FABRIC_APPLICATION_UPGRADE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_APPLICATION_UPGRADE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndUpgradeApplication: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetApplicationUpgradeProgress: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationname: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     pub EndGetApplicationUpgradeProgress: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginMoveNextApplicationUpgradeDomain: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        progress: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     pub EndMoveNextApplicationUpgradeDomain: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     pub BeginDeleteApplication: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationname: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndDeleteApplication: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginUnprovisionApplicationType: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationtypename: ::windows_core::PCWSTR,
-        applicationtypeversion: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndUnprovisionApplicationType: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationManagementClient10(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricApplicationManagementClient10,
+    IFabricApplicationManagementClient10_Vtbl,
+    0x67001225_d106_41ae_8bd4_5a0a119c5c01
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricApplicationManagementClient10,
+    ::windows_core::IUnknown,
+    IFabricApplicationManagementClient,
+    IFabricApplicationManagementClient2,
+    IFabricApplicationManagementClient3,
+    IFabricApplicationManagementClient4,
+    IFabricApplicationManagementClient5,
+    IFabricApplicationManagementClient6,
+    IFabricApplicationManagementClient7,
+    IFabricApplicationManagementClient8,
+    IFabricApplicationManagementClient9
+);
 impl IFabricApplicationManagementClient10 {
     pub unsafe fn BeginProvisionApplicationType<P0, P1>(
         &self,
@@ -627,7 +586,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -676,7 +635,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -725,7 +684,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -774,7 +733,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationUpgradeProgress<P0>(
         &self,
@@ -799,7 +758,7 @@ impl IFabricApplicationManagementClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain<P0, P1>(
         &self,
@@ -829,7 +788,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain<P0>(
         &self,
@@ -881,7 +840,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -934,7 +893,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType<P0>(
         &self,
@@ -989,7 +948,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationManifest<P0>(
         &self,
@@ -1013,7 +972,7 @@ impl IFabricApplicationManagementClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1>(
         &self,
@@ -1044,7 +1003,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain2<P0>(
         &self,
@@ -1093,7 +1052,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplicationUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -1138,7 +1097,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartDeployedCodePackage<P0>(
         &self,
@@ -1248,7 +1207,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeployServicePackageToNode<P0>(
         &self,
@@ -1293,7 +1252,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackApplicationUpgrade<P0>(
         &self,
@@ -1314,7 +1273,6 @@ impl IFabricApplicationManagementClient10 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginUpdateApplication<P0>(
         &self,
@@ -1338,7 +1296,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -1355,7 +1313,6 @@ impl IFabricApplicationManagementClient10 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginDeleteApplication2<P0>(
         &self,
@@ -1378,7 +1335,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication2<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -1394,7 +1351,6 @@ impl IFabricApplicationManagementClient10 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginProvisionApplicationType2<P0>(
         &self,
@@ -1416,7 +1372,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType2<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -1431,7 +1387,6 @@ impl IFabricApplicationManagementClient10 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginUnprovisionApplicationType2<P0>(
         &self,
@@ -1452,7 +1407,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType2<P0>(
         &self,
@@ -1486,7 +1441,7 @@ impl IFabricApplicationManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType3<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -1499,65 +1454,33 @@ impl IFabricApplicationManagementClient10 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationManagementClient10,
-    ::windows_core::IUnknown,
-    IFabricApplicationManagementClient,
-    IFabricApplicationManagementClient2,
-    IFabricApplicationManagementClient3,
-    IFabricApplicationManagementClient4,
-    IFabricApplicationManagementClient5,
-    IFabricApplicationManagementClient6,
-    IFabricApplicationManagementClient7,
-    IFabricApplicationManagementClient8,
-    IFabricApplicationManagementClient9
-);
-impl ::core::cmp::PartialEq for IFabricApplicationManagementClient10 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationManagementClient10 {}
-impl ::core::fmt::Debug for IFabricApplicationManagementClient10 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationManagementClient10")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricApplicationManagementClient10 {}
 unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient10 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationManagementClient10 {
-    type Vtable = IFabricApplicationManagementClient10_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationManagementClient10 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationManagementClient10 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x67001225_d106_41ae_8bd4_5a0a119c5c01);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricApplicationManagementClient10_Vtbl {
     pub base__: IFabricApplicationManagementClient9_Vtbl,
     pub BeginProvisionApplicationType3: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_PROVISION_APPLICATION_TYPE_DESCRIPTION_BASE,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_PROVISION_APPLICATION_TYPE_DESCRIPTION_BASE,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndProvisionApplicationType3: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationManagementClient2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricApplicationManagementClient2,
+    IFabricApplicationManagementClient2_Vtbl,
+    0xf873516f_9bfe_47e5_93b9_3667aaf19324
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricApplicationManagementClient2,
+    ::windows_core::IUnknown,
+    IFabricApplicationManagementClient
+);
 impl IFabricApplicationManagementClient2 {
     pub unsafe fn BeginProvisionApplicationType<P0, P1>(
         &self,
@@ -1579,7 +1502,7 @@ impl IFabricApplicationManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -1612,7 +1535,7 @@ impl IFabricApplicationManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -1645,7 +1568,7 @@ impl IFabricApplicationManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -1678,7 +1601,7 @@ impl IFabricApplicationManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationUpgradeProgress<P0>(
         &self,
@@ -1695,7 +1618,7 @@ impl IFabricApplicationManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain<P0, P1>(
         &self,
@@ -1717,7 +1640,7 @@ impl IFabricApplicationManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain<P0>(
         &self,
@@ -1753,7 +1676,7 @@ impl IFabricApplicationManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -1790,7 +1713,7 @@ impl IFabricApplicationManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType<P0>(
         &self,
@@ -1828,7 +1751,7 @@ impl IFabricApplicationManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationManifest<P0>(
         &self,
@@ -1843,7 +1766,7 @@ impl IFabricApplicationManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1>(
         &self,
@@ -1865,7 +1788,7 @@ impl IFabricApplicationManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain2<P0>(
         &self,
@@ -1881,73 +1804,50 @@ impl IFabricApplicationManagementClient2 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationManagementClient2,
-    ::windows_core::IUnknown,
-    IFabricApplicationManagementClient
-);
-impl ::core::cmp::PartialEq for IFabricApplicationManagementClient2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationManagementClient2 {}
-impl ::core::fmt::Debug for IFabricApplicationManagementClient2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationManagementClient2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricApplicationManagementClient2 {}
 unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient2 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationManagementClient2 {
-    type Vtable = IFabricApplicationManagementClient2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationManagementClient2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationManagementClient2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xf873516f_9bfe_47e5_93b9_3667aaf19324);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricApplicationManagementClient2_Vtbl {
     pub base__: IFabricApplicationManagementClient_Vtbl,
     pub BeginGetApplicationManifest: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationtypename: ::windows_core::PCWSTR,
-        applicationtypeversion: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetApplicationManifest: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginMoveNextApplicationUpgradeDomain2:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            applicationname: *const u16,
-            nextupgradedomain: ::windows_core::PCWSTR,
-            timeoutmilliseconds: u32,
-            callback: *mut ::core::ffi::c_void,
-            context: *mut *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *const u16,
+            ::windows_core::PCWSTR,
+            u32,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
         ) -> ::windows_core::HRESULT,
     pub EndMoveNextApplicationUpgradeDomain2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationManagementClient3(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricApplicationManagementClient3,
+    IFabricApplicationManagementClient3_Vtbl,
+    0x108c7735_97e1_4af8_8c2d_9080b1b29d33
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricApplicationManagementClient3,
+    ::windows_core::IUnknown,
+    IFabricApplicationManagementClient,
+    IFabricApplicationManagementClient2
+);
 impl IFabricApplicationManagementClient3 {
     pub unsafe fn BeginProvisionApplicationType<P0, P1>(
         &self,
@@ -1970,7 +1870,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -2005,7 +1905,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -2040,7 +1940,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -2075,7 +1975,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationUpgradeProgress<P0>(
         &self,
@@ -2093,7 +1993,7 @@ impl IFabricApplicationManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain<P0, P1>(
         &self,
@@ -2116,7 +2016,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain<P0>(
         &self,
@@ -2154,7 +2054,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -2193,7 +2093,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType<P0>(
         &self,
@@ -2234,7 +2134,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationManifest<P0>(
         &self,
@@ -2251,7 +2151,7 @@ impl IFabricApplicationManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1>(
         &self,
@@ -2275,7 +2175,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain2<P0>(
         &self,
@@ -2309,7 +2209,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplicationUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -2338,7 +2238,7 @@ impl IFabricApplicationManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartDeployedCodePackage<P0>(
         &self,
@@ -2389,45 +2289,57 @@ impl IFabricApplicationManagementClient3 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationManagementClient3,
-    ::windows_core::IUnknown,
-    IFabricApplicationManagementClient,
-    IFabricApplicationManagementClient2
-);
-impl ::core::cmp::PartialEq for IFabricApplicationManagementClient3 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationManagementClient3 {}
-impl ::core::fmt::Debug for IFabricApplicationManagementClient3 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationManagementClient3")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricApplicationManagementClient3 {}
 unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient3 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationManagementClient3 {
-    type Vtable = IFabricApplicationManagementClient3_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationManagementClient3 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationManagementClient3 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x108c7735_97e1_4af8_8c2d_9080b1b29d33);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricApplicationManagementClient3_Vtbl where { pub base__ : IFabricApplicationManagementClient2_Vtbl , pub BeginUpdateApplicationUpgrade :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , description : *const super::super:: FABRIC_APPLICATION_UPGRADE_UPDATE_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndUpdateApplicationUpgrade :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginRestartDeployedCodePackage :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , restartcodepackagedescription : *const super::super:: FABRIC_RESTART_DEPLOYED_CODE_PACKAGE_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndRestartDeployedCodePackage :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub CopyApplicationPackage :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , imagestoreconnectionstring : ::windows_core::PCWSTR , applicationpackagepath : ::windows_core::PCWSTR , applicationpackagepathinimagestore : ::windows_core::PCWSTR , ) -> ::windows_core::HRESULT , pub RemoveApplicationPackage :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , imagestoreconnectionstring : ::windows_core::PCWSTR , applicationpackagepathinimagestore : ::windows_core::PCWSTR , ) -> ::windows_core::HRESULT , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationManagementClient4(::windows_core::IUnknown);
+pub struct IFabricApplicationManagementClient3_Vtbl {
+    pub base__: IFabricApplicationManagementClient2_Vtbl,
+    pub BeginUpdateApplicationUpgrade: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_APPLICATION_UPGRADE_UPDATE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndUpdateApplicationUpgrade: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginRestartDeployedCodePackage: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_RESTART_DEPLOYED_CODE_PACKAGE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndRestartDeployedCodePackage: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub CopyApplicationPackage: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+    ) -> ::windows_core::HRESULT,
+    pub RemoveApplicationPackage: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricApplicationManagementClient4,
+    IFabricApplicationManagementClient4_Vtbl,
+    0x82c41b22_dbcb_4f7a_8d2f_f9bb94add446
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricApplicationManagementClient4,
+    ::windows_core::IUnknown,
+    IFabricApplicationManagementClient,
+    IFabricApplicationManagementClient2,
+    IFabricApplicationManagementClient3
+);
 impl IFabricApplicationManagementClient4 {
     pub unsafe fn BeginProvisionApplicationType<P0, P1>(
         &self,
@@ -2451,7 +2363,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -2488,7 +2400,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -2525,7 +2437,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -2562,7 +2474,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationUpgradeProgress<P0>(
         &self,
@@ -2581,7 +2493,7 @@ impl IFabricApplicationManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain<P0, P1>(
         &self,
@@ -2605,7 +2517,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain<P0>(
         &self,
@@ -2645,7 +2557,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -2686,7 +2598,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType<P0>(
         &self,
@@ -2729,7 +2641,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationManifest<P0>(
         &self,
@@ -2747,7 +2659,7 @@ impl IFabricApplicationManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1>(
         &self,
@@ -2772,7 +2684,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain2<P0>(
         &self,
@@ -2809,7 +2721,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplicationUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -2842,7 +2754,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartDeployedCodePackage<P0>(
         &self,
@@ -2927,7 +2839,7 @@ impl IFabricApplicationManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeployServicePackageToNode<P0>(
         &self,
@@ -2943,63 +2855,40 @@ impl IFabricApplicationManagementClient4 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationManagementClient4,
-    ::windows_core::IUnknown,
-    IFabricApplicationManagementClient,
-    IFabricApplicationManagementClient2,
-    IFabricApplicationManagementClient3
-);
-impl ::core::cmp::PartialEq for IFabricApplicationManagementClient4 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationManagementClient4 {}
-impl ::core::fmt::Debug for IFabricApplicationManagementClient4 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationManagementClient4")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricApplicationManagementClient4 {}
 unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient4 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationManagementClient4 {
-    type Vtable = IFabricApplicationManagementClient4_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationManagementClient4 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationManagementClient4 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x82c41b22_dbcb_4f7a_8d2f_f9bb94add446);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricApplicationManagementClient4_Vtbl {
     pub base__: IFabricApplicationManagementClient3_Vtbl,
     pub BeginDeployServicePackageToNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationtypename: ::windows_core::PCWSTR,
-        applicationtypeversion: ::windows_core::PCWSTR,
-        servicemanifestname: ::windows_core::PCWSTR,
-        sharingpolicy: *const super::super::FABRIC_PACKAGE_SHARING_POLICY_LIST,
-        nodename: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        *const super::super::FABRIC_PACKAGE_SHARING_POLICY_LIST,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndDeployServicePackageToNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationManagementClient5(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricApplicationManagementClient5,
+    IFabricApplicationManagementClient5_Vtbl,
+    0xd7490e43_2217_4158_93e1_9ce4dd6f724a
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricApplicationManagementClient5,
+    ::windows_core::IUnknown,
+    IFabricApplicationManagementClient,
+    IFabricApplicationManagementClient2,
+    IFabricApplicationManagementClient3,
+    IFabricApplicationManagementClient4
+);
 impl IFabricApplicationManagementClient5 {
     pub unsafe fn BeginProvisionApplicationType<P0, P1>(
         &self,
@@ -3024,7 +2913,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -3063,7 +2952,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -3102,7 +2991,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -3141,7 +3030,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationUpgradeProgress<P0>(
         &self,
@@ -3161,7 +3050,7 @@ impl IFabricApplicationManagementClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain<P0, P1>(
         &self,
@@ -3186,7 +3075,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain<P0>(
         &self,
@@ -3228,7 +3117,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -3271,7 +3160,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType<P0>(
         &self,
@@ -3316,7 +3205,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationManifest<P0>(
         &self,
@@ -3335,7 +3224,7 @@ impl IFabricApplicationManagementClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1>(
         &self,
@@ -3361,7 +3250,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain2<P0>(
         &self,
@@ -3400,7 +3289,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplicationUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -3435,7 +3324,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartDeployedCodePackage<P0>(
         &self,
@@ -3525,7 +3414,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeployServicePackageToNode<P0>(
         &self,
@@ -3559,7 +3448,7 @@ impl IFabricApplicationManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackApplicationUpgrade<P0>(
         &self,
@@ -3575,60 +3464,37 @@ impl IFabricApplicationManagementClient5 {
         .ok()
     }
 }
+unsafe impl ::core::marker::Send for IFabricApplicationManagementClient5 {}
+unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient5 {}
+#[repr(C)]
+pub struct IFabricApplicationManagementClient5_Vtbl {
+    pub base__: IFabricApplicationManagementClient4_Vtbl,
+    pub BeginRollbackApplicationUpgrade: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndRollbackApplicationUpgrade: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricApplicationManagementClient6,
+    IFabricApplicationManagementClient6_Vtbl,
+    0xb01e63ee_1ea4_4181_95c7_983b32e16848
+);
 ::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationManagementClient5,
+    IFabricApplicationManagementClient6,
     ::windows_core::IUnknown,
     IFabricApplicationManagementClient,
     IFabricApplicationManagementClient2,
     IFabricApplicationManagementClient3,
-    IFabricApplicationManagementClient4
+    IFabricApplicationManagementClient4,
+    IFabricApplicationManagementClient5
 );
-impl ::core::cmp::PartialEq for IFabricApplicationManagementClient5 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationManagementClient5 {}
-impl ::core::fmt::Debug for IFabricApplicationManagementClient5 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationManagementClient5")
-            .field(&self.0)
-            .finish()
-    }
-}
-unsafe impl ::core::marker::Send for IFabricApplicationManagementClient5 {}
-unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient5 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationManagementClient5 {
-    type Vtable = IFabricApplicationManagementClient5_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationManagementClient5 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationManagementClient5 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xd7490e43_2217_4158_93e1_9ce4dd6f724a);
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IFabricApplicationManagementClient5_Vtbl {
-    pub base__: IFabricApplicationManagementClient4_Vtbl,
-    pub BeginRollbackApplicationUpgrade: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationname: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndRollbackApplicationUpgrade: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-}
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationManagementClient6(::windows_core::IUnknown);
 impl IFabricApplicationManagementClient6 {
     pub unsafe fn BeginProvisionApplicationType<P0, P1>(
         &self,
@@ -3654,7 +3520,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -3695,7 +3561,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -3736,7 +3602,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -3777,7 +3643,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationUpgradeProgress<P0>(
         &self,
@@ -3798,7 +3664,7 @@ impl IFabricApplicationManagementClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain<P0, P1>(
         &self,
@@ -3824,7 +3690,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain<P0>(
         &self,
@@ -3868,7 +3734,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -3913,7 +3779,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType<P0>(
         &self,
@@ -3960,7 +3826,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationManifest<P0>(
         &self,
@@ -3980,7 +3846,7 @@ impl IFabricApplicationManagementClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1>(
         &self,
@@ -4007,7 +3873,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain2<P0>(
         &self,
@@ -4048,7 +3914,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplicationUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -4085,7 +3951,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartDeployedCodePackage<P0>(
         &self,
@@ -4179,7 +4045,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeployServicePackageToNode<P0>(
         &self,
@@ -4216,7 +4082,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackApplicationUpgrade<P0>(
         &self,
@@ -4233,7 +4099,6 @@ impl IFabricApplicationManagementClient6 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginUpdateApplication<P0>(
         &self,
@@ -4252,7 +4117,7 @@ impl IFabricApplicationManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -4265,64 +4130,41 @@ impl IFabricApplicationManagementClient6 {
         .ok()
     }
 }
+unsafe impl ::core::marker::Send for IFabricApplicationManagementClient6 {}
+unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient6 {}
+#[repr(C)]
+pub struct IFabricApplicationManagementClient6_Vtbl {
+    pub base__: IFabricApplicationManagementClient5_Vtbl,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginUpdateApplication: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_APPLICATION_UPDATE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginUpdateApplication: usize,
+    pub EndUpdateApplication: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricApplicationManagementClient7,
+    IFabricApplicationManagementClient7_Vtbl,
+    0x26844276_25b1_4f8c_adbe_b1b3a3083c17
+);
 ::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationManagementClient6,
+    IFabricApplicationManagementClient7,
     ::windows_core::IUnknown,
     IFabricApplicationManagementClient,
     IFabricApplicationManagementClient2,
     IFabricApplicationManagementClient3,
     IFabricApplicationManagementClient4,
-    IFabricApplicationManagementClient5
+    IFabricApplicationManagementClient5,
+    IFabricApplicationManagementClient6
 );
-impl ::core::cmp::PartialEq for IFabricApplicationManagementClient6 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationManagementClient6 {}
-impl ::core::fmt::Debug for IFabricApplicationManagementClient6 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationManagementClient6")
-            .field(&self.0)
-            .finish()
-    }
-}
-unsafe impl ::core::marker::Send for IFabricApplicationManagementClient6 {}
-unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient6 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationManagementClient6 {
-    type Vtable = IFabricApplicationManagementClient6_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationManagementClient6 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationManagementClient6 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xb01e63ee_1ea4_4181_95c7_983b32e16848);
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IFabricApplicationManagementClient6_Vtbl {
-    pub base__: IFabricApplicationManagementClient5_Vtbl,
-    #[cfg(feature = "Win32_Foundation")]
-    pub BeginUpdateApplication: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationupdatedescription: *const super::super::FABRIC_APPLICATION_UPDATE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    #[cfg(not(feature = "Win32_Foundation"))]
-    BeginUpdateApplication: usize,
-    pub EndUpdateApplication: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-}
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationManagementClient7(::windows_core::IUnknown);
 impl IFabricApplicationManagementClient7 {
     pub unsafe fn BeginProvisionApplicationType<P0, P1>(
         &self,
@@ -4349,7 +4191,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -4392,7 +4234,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -4435,7 +4277,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -4478,7 +4320,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationUpgradeProgress<P0>(
         &self,
@@ -4500,7 +4342,7 @@ impl IFabricApplicationManagementClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain<P0, P1>(
         &self,
@@ -4527,7 +4369,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain<P0>(
         &self,
@@ -4573,7 +4415,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -4620,7 +4462,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType<P0>(
         &self,
@@ -4669,7 +4511,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationManifest<P0>(
         &self,
@@ -4690,7 +4532,7 @@ impl IFabricApplicationManagementClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1>(
         &self,
@@ -4718,7 +4560,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain2<P0>(
         &self,
@@ -4761,7 +4603,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplicationUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -4800,7 +4642,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartDeployedCodePackage<P0>(
         &self,
@@ -4898,7 +4740,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeployServicePackageToNode<P0>(
         &self,
@@ -4937,7 +4779,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackApplicationUpgrade<P0>(
         &self,
@@ -4955,7 +4797,6 @@ impl IFabricApplicationManagementClient7 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginUpdateApplication<P0>(
         &self,
@@ -4976,7 +4817,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -4990,7 +4831,6 @@ impl IFabricApplicationManagementClient7 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginDeleteApplication2<P0>(
         &self,
@@ -5009,7 +4849,7 @@ impl IFabricApplicationManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication2<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -5022,65 +4862,42 @@ impl IFabricApplicationManagementClient7 {
         .ok()
     }
 }
+unsafe impl ::core::marker::Send for IFabricApplicationManagementClient7 {}
+unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient7 {}
+#[repr(C)]
+pub struct IFabricApplicationManagementClient7_Vtbl {
+    pub base__: IFabricApplicationManagementClient6_Vtbl,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginDeleteApplication2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DELETE_APPLICATION_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginDeleteApplication2: usize,
+    pub EndDeleteApplication2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricApplicationManagementClient8,
+    IFabricApplicationManagementClient8_Vtbl,
+    0x97b38e85_7329_47ff_a8d2_b7cbf1603689
+);
 ::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationManagementClient7,
+    IFabricApplicationManagementClient8,
     ::windows_core::IUnknown,
     IFabricApplicationManagementClient,
     IFabricApplicationManagementClient2,
     IFabricApplicationManagementClient3,
     IFabricApplicationManagementClient4,
     IFabricApplicationManagementClient5,
-    IFabricApplicationManagementClient6
+    IFabricApplicationManagementClient6,
+    IFabricApplicationManagementClient7
 );
-impl ::core::cmp::PartialEq for IFabricApplicationManagementClient7 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationManagementClient7 {}
-impl ::core::fmt::Debug for IFabricApplicationManagementClient7 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationManagementClient7")
-            .field(&self.0)
-            .finish()
-    }
-}
-unsafe impl ::core::marker::Send for IFabricApplicationManagementClient7 {}
-unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient7 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationManagementClient7 {
-    type Vtable = IFabricApplicationManagementClient7_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationManagementClient7 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationManagementClient7 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x26844276_25b1_4f8c_adbe_b1b3a3083c17);
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IFabricApplicationManagementClient7_Vtbl {
-    pub base__: IFabricApplicationManagementClient6_Vtbl,
-    #[cfg(feature = "Win32_Foundation")]
-    pub BeginDeleteApplication2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        deletedescription: *const super::super::FABRIC_DELETE_APPLICATION_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    #[cfg(not(feature = "Win32_Foundation"))]
-    BeginDeleteApplication2: usize,
-    pub EndDeleteApplication2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-}
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationManagementClient8(::windows_core::IUnknown);
 impl IFabricApplicationManagementClient8 {
     pub unsafe fn BeginProvisionApplicationType<P0, P1>(
         &self,
@@ -5108,7 +4925,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -5153,7 +4970,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -5198,7 +5015,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -5243,7 +5060,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationUpgradeProgress<P0>(
         &self,
@@ -5266,7 +5083,7 @@ impl IFabricApplicationManagementClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain<P0, P1>(
         &self,
@@ -5294,7 +5111,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain<P0>(
         &self,
@@ -5342,7 +5159,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -5391,7 +5208,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType<P0>(
         &self,
@@ -5442,7 +5259,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationManifest<P0>(
         &self,
@@ -5464,7 +5281,7 @@ impl IFabricApplicationManagementClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1>(
         &self,
@@ -5493,7 +5310,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain2<P0>(
         &self,
@@ -5538,7 +5355,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplicationUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -5579,7 +5396,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartDeployedCodePackage<P0>(
         &self,
@@ -5681,7 +5498,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeployServicePackageToNode<P0>(
         &self,
@@ -5722,7 +5539,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackApplicationUpgrade<P0>(
         &self,
@@ -5741,7 +5558,6 @@ impl IFabricApplicationManagementClient8 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginUpdateApplication<P0>(
         &self,
@@ -5763,7 +5579,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -5778,7 +5594,6 @@ impl IFabricApplicationManagementClient8 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginDeleteApplication2<P0>(
         &self,
@@ -5799,7 +5614,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication2<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -5813,7 +5628,6 @@ impl IFabricApplicationManagementClient8 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginProvisionApplicationType2<P0>(
         &self,
@@ -5832,7 +5646,7 @@ impl IFabricApplicationManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType2<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -5845,8 +5659,33 @@ impl IFabricApplicationManagementClient8 {
         .ok()
     }
 }
+unsafe impl ::core::marker::Send for IFabricApplicationManagementClient8 {}
+unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient8 {}
+#[repr(C)]
+pub struct IFabricApplicationManagementClient8_Vtbl {
+    pub base__: IFabricApplicationManagementClient7_Vtbl,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginProvisionApplicationType2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_PROVISION_APPLICATION_TYPE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginProvisionApplicationType2: usize,
+    pub EndProvisionApplicationType2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricApplicationManagementClient9,
+    IFabricApplicationManagementClient9_Vtbl,
+    0x26617b63_1350_4d7f_830c_2200978d31bb
+);
 ::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationManagementClient8,
+    IFabricApplicationManagementClient9,
     ::windows_core::IUnknown,
     IFabricApplicationManagementClient,
     IFabricApplicationManagementClient2,
@@ -5854,57 +5693,9 @@ impl IFabricApplicationManagementClient8 {
     IFabricApplicationManagementClient4,
     IFabricApplicationManagementClient5,
     IFabricApplicationManagementClient6,
-    IFabricApplicationManagementClient7
+    IFabricApplicationManagementClient7,
+    IFabricApplicationManagementClient8
 );
-impl ::core::cmp::PartialEq for IFabricApplicationManagementClient8 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationManagementClient8 {}
-impl ::core::fmt::Debug for IFabricApplicationManagementClient8 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationManagementClient8")
-            .field(&self.0)
-            .finish()
-    }
-}
-unsafe impl ::core::marker::Send for IFabricApplicationManagementClient8 {}
-unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient8 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationManagementClient8 {
-    type Vtable = IFabricApplicationManagementClient8_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationManagementClient8 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationManagementClient8 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x97b38e85_7329_47ff_a8d2_b7cbf1603689);
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IFabricApplicationManagementClient8_Vtbl {
-    pub base__: IFabricApplicationManagementClient7_Vtbl,
-    #[cfg(feature = "Win32_Foundation")]
-    pub BeginProvisionApplicationType2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_PROVISION_APPLICATION_TYPE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    #[cfg(not(feature = "Win32_Foundation"))]
-    BeginProvisionApplicationType2: usize,
-    pub EndProvisionApplicationType2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-}
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationManagementClient9(::windows_core::IUnknown);
 impl IFabricApplicationManagementClient9 {
     pub unsafe fn BeginProvisionApplicationType<P0, P1>(
         &self,
@@ -5933,7 +5724,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -5980,7 +5771,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -6027,7 +5818,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -6074,7 +5865,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationUpgradeProgress<P0>(
         &self,
@@ -6098,7 +5889,7 @@ impl IFabricApplicationManagementClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain<P0, P1>(
         &self,
@@ -6127,7 +5918,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain<P0>(
         &self,
@@ -6177,7 +5968,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -6228,7 +6019,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType<P0>(
         &self,
@@ -6281,7 +6072,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationManifest<P0>(
         &self,
@@ -6304,7 +6095,7 @@ impl IFabricApplicationManagementClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1>(
         &self,
@@ -6334,7 +6125,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextApplicationUpgradeDomain2<P0>(
         &self,
@@ -6381,7 +6172,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplicationUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -6424,7 +6215,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartDeployedCodePackage<P0>(
         &self,
@@ -6530,7 +6321,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeployServicePackageToNode<P0>(
         &self,
@@ -6573,7 +6364,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackApplicationUpgrade<P0>(
         &self,
@@ -6593,7 +6384,6 @@ impl IFabricApplicationManagementClient9 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginUpdateApplication<P0>(
         &self,
@@ -6616,7 +6406,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateApplication<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -6632,7 +6422,6 @@ impl IFabricApplicationManagementClient9 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginDeleteApplication2<P0>(
         &self,
@@ -6654,7 +6443,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteApplication2<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -6669,7 +6458,6 @@ impl IFabricApplicationManagementClient9 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginProvisionApplicationType2<P0>(
         &self,
@@ -6690,7 +6478,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionApplicationType2<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -6704,7 +6492,6 @@ impl IFabricApplicationManagementClient9 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginUnprovisionApplicationType2<P0>(
         &self,
@@ -6723,7 +6510,7 @@ impl IFabricApplicationManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionApplicationType2<P0>(
         &self,
@@ -6739,67 +6526,35 @@ impl IFabricApplicationManagementClient9 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationManagementClient9,
-    ::windows_core::IUnknown,
-    IFabricApplicationManagementClient,
-    IFabricApplicationManagementClient2,
-    IFabricApplicationManagementClient3,
-    IFabricApplicationManagementClient4,
-    IFabricApplicationManagementClient5,
-    IFabricApplicationManagementClient6,
-    IFabricApplicationManagementClient7,
-    IFabricApplicationManagementClient8
-);
-impl ::core::cmp::PartialEq for IFabricApplicationManagementClient9 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationManagementClient9 {}
-impl ::core::fmt::Debug for IFabricApplicationManagementClient9 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationManagementClient9")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricApplicationManagementClient9 {}
 unsafe impl ::core::marker::Sync for IFabricApplicationManagementClient9 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationManagementClient9 {
-    type Vtable = IFabricApplicationManagementClient9_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationManagementClient9 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationManagementClient9 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x26617b63_1350_4d7f_830c_2200978d31bb);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricApplicationManagementClient9_Vtbl {
     pub base__: IFabricApplicationManagementClient8_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginUnprovisionApplicationType2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_UNPROVISION_APPLICATION_TYPE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_UNPROVISION_APPLICATION_TYPE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginUnprovisionApplicationType2: usize,
     pub EndUnprovisionApplicationType2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationUpgradeProgressResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricApplicationUpgradeProgressResult,
+    IFabricApplicationUpgradeProgressResult_Vtbl,
+    0x1e4670f8_ede5_48ab_881f_c45a0f38413a
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricApplicationUpgradeProgressResult,
+    ::windows_core::IUnknown
+);
 impl IFabricApplicationUpgradeProgressResult {
     pub unsafe fn get_ApplicationName(&self) -> *mut u16 {
         (::windows_core::Interface::vtable(self).get_ApplicationName)(
@@ -6824,92 +6579,69 @@ impl IFabricApplicationUpgradeProgressResult {
     pub unsafe fn GetUpgradeDomains(
         &self,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()> {
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION> {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self).GetUpgradeDomains)(
             ::windows_core::Interface::as_raw(self),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn GetChangedUpgradeDomains<P0>(
         &self,
         previousprogress: P0,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()>
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION>
     where
         P0: ::windows_core::IntoParam<IFabricApplicationUpgradeProgressResult>,
     {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self).GetChangedUpgradeDomains)(
             ::windows_core::Interface::as_raw(self),
             previousprogress.into_param().abi(),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationUpgradeProgressResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricApplicationUpgradeProgressResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationUpgradeProgressResult {}
-impl ::core::fmt::Debug for IFabricApplicationUpgradeProgressResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationUpgradeProgressResult")
-            .field(&self.0)
-            .finish()
+        .map(|| result__)
     }
 }
 unsafe impl ::core::marker::Send for IFabricApplicationUpgradeProgressResult {}
 unsafe impl ::core::marker::Sync for IFabricApplicationUpgradeProgressResult {}
-unsafe impl ::windows_core::Interface for IFabricApplicationUpgradeProgressResult {
-    type Vtable = IFabricApplicationUpgradeProgressResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationUpgradeProgressResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationUpgradeProgressResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x1e4670f8_ede5_48ab_881f_c45a0f38413a);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricApplicationUpgradeProgressResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
-    pub get_ApplicationName: unsafe extern "system" fn(this: *mut ::core::ffi::c_void) -> *mut u16,
+    pub get_ApplicationName: unsafe extern "system" fn(*mut ::core::ffi::c_void) -> *mut u16,
     pub get_ApplicationTypeName:
-        unsafe extern "system" fn(this: *mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
+        unsafe extern "system" fn(*mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
     pub get_TargetApplicationTypeVersion:
-        unsafe extern "system" fn(this: *mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
+        unsafe extern "system" fn(*mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
     pub get_UpgradeState:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> super::super::FABRIC_APPLICATION_UPGRADE_STATE,
     pub GetUpgradeDomains: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
+        *mut ::core::ffi::c_void,
+        *mut u32,
+        *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
     ) -> ::windows_core::HRESULT,
     pub GetChangedUpgradeDomains: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        previousprogress: *mut ::core::ffi::c_void,
-        itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut u32,
+        *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationUpgradeProgressResult2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricApplicationUpgradeProgressResult2,
+    IFabricApplicationUpgradeProgressResult2_Vtbl,
+    0x62707ee5_b625_4489_aa4d_2e54b06ea248
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricApplicationUpgradeProgressResult2,
+    ::windows_core::IUnknown,
+    IFabricApplicationUpgradeProgressResult
+);
 impl IFabricApplicationUpgradeProgressResult2 {
     pub unsafe fn get_ApplicationName(&self) -> *mut u16 {
         (::windows_core::Interface::vtable(self)
@@ -6934,35 +6666,35 @@ impl IFabricApplicationUpgradeProgressResult2 {
     pub unsafe fn GetUpgradeDomains(
         &self,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()> {
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION> {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self)
             .base__
             .GetUpgradeDomains)(
             ::windows_core::Interface::as_raw(self),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn GetChangedUpgradeDomains<P0>(
         &self,
         previousprogress: P0,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()>
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION>
     where
         P0: ::windows_core::IntoParam<IFabricApplicationUpgradeProgressResult>,
     {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self)
             .base__
             .GetChangedUpgradeDomains)(
             ::windows_core::Interface::as_raw(self),
             previousprogress.into_param().abi(),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn get_RollingUpgradeMode(&self) -> super::super::FABRIC_ROLLING_UPGRADE_MODE {
         (::windows_core::Interface::vtable(self).get_RollingUpgradeMode)(
@@ -6975,52 +6707,29 @@ impl IFabricApplicationUpgradeProgressResult2 {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationUpgradeProgressResult2,
-    ::windows_core::IUnknown,
-    IFabricApplicationUpgradeProgressResult
-);
-impl ::core::cmp::PartialEq for IFabricApplicationUpgradeProgressResult2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationUpgradeProgressResult2 {}
-impl ::core::fmt::Debug for IFabricApplicationUpgradeProgressResult2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationUpgradeProgressResult2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricApplicationUpgradeProgressResult2 {}
 unsafe impl ::core::marker::Sync for IFabricApplicationUpgradeProgressResult2 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationUpgradeProgressResult2 {
-    type Vtable = IFabricApplicationUpgradeProgressResult2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationUpgradeProgressResult2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationUpgradeProgressResult2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x62707ee5_b625_4489_aa4d_2e54b06ea248);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricApplicationUpgradeProgressResult2_Vtbl {
     pub base__: IFabricApplicationUpgradeProgressResult_Vtbl,
     pub get_RollingUpgradeMode:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> super::super::FABRIC_ROLLING_UPGRADE_MODE,
     pub get_NextUpgradeDomain:
-        unsafe extern "system" fn(this: *mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
+        unsafe extern "system" fn(*mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricApplicationUpgradeProgressResult3(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricApplicationUpgradeProgressResult3,
+    IFabricApplicationUpgradeProgressResult3_Vtbl,
+    0x1bc1d9c3_eef5_41fe_b8a2_abb97a8ba8e2
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricApplicationUpgradeProgressResult3,
+    ::windows_core::IUnknown,
+    IFabricApplicationUpgradeProgressResult,
+    IFabricApplicationUpgradeProgressResult2
+);
 impl IFabricApplicationUpgradeProgressResult3 {
     pub unsafe fn get_ApplicationName(&self) -> *mut u16 {
         (::windows_core::Interface::vtable(self)
@@ -7049,27 +6758,27 @@ impl IFabricApplicationUpgradeProgressResult3 {
     pub unsafe fn GetUpgradeDomains(
         &self,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()> {
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION> {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self)
             .base__
             .base__
             .GetUpgradeDomains)(
             ::windows_core::Interface::as_raw(self),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn GetChangedUpgradeDomains<P0>(
         &self,
         previousprogress: P0,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()>
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION>
     where
         P0: ::windows_core::IntoParam<IFabricApplicationUpgradeProgressResult>,
     {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self)
             .base__
             .base__
@@ -7077,9 +6786,9 @@ impl IFabricApplicationUpgradeProgressResult3 {
             ::windows_core::Interface::as_raw(self),
             previousprogress.into_param().abi(),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn get_RollingUpgradeMode(&self) -> super::super::FABRIC_ROLLING_UPGRADE_MODE {
         (::windows_core::Interface::vtable(self)
@@ -7099,54 +6808,24 @@ impl IFabricApplicationUpgradeProgressResult3 {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricApplicationUpgradeProgressResult3,
-    ::windows_core::IUnknown,
-    IFabricApplicationUpgradeProgressResult,
-    IFabricApplicationUpgradeProgressResult2
-);
-impl ::core::cmp::PartialEq for IFabricApplicationUpgradeProgressResult3 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricApplicationUpgradeProgressResult3 {}
-impl ::core::fmt::Debug for IFabricApplicationUpgradeProgressResult3 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricApplicationUpgradeProgressResult3")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricApplicationUpgradeProgressResult3 {}
 unsafe impl ::core::marker::Sync for IFabricApplicationUpgradeProgressResult3 {}
-unsafe impl ::windows_core::Interface for IFabricApplicationUpgradeProgressResult3 {
-    type Vtable = IFabricApplicationUpgradeProgressResult3_Vtbl;
-}
-impl ::core::clone::Clone for IFabricApplicationUpgradeProgressResult3 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricApplicationUpgradeProgressResult3 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x1bc1d9c3_eef5_41fe_b8a2_abb97a8ba8e2);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricApplicationUpgradeProgressResult3_Vtbl {
     pub base__: IFabricApplicationUpgradeProgressResult2_Vtbl,
     pub get_UpgradeProgress:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_APPLICATION_UPGRADE_PROGRESS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricChaosDescriptionResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricChaosDescriptionResult,
+    IFabricChaosDescriptionResult_Vtbl,
+    0xfa8aa86e_f0fa_4a14_bed7_1dcfa0980b5b
+);
+::windows_core::imp::interface_hierarchy!(IFabricChaosDescriptionResult, ::windows_core::IUnknown);
 impl IFabricChaosDescriptionResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_ChaosDescriptionResult(&self) -> *mut super::super::FABRIC_CHAOS_DESCRIPTION {
         (::windows_core::Interface::vtable(self).get_ChaosDescriptionResult)(
@@ -7154,49 +6833,28 @@ impl IFabricChaosDescriptionResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricChaosDescriptionResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricChaosDescriptionResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricChaosDescriptionResult {}
-impl ::core::fmt::Debug for IFabricChaosDescriptionResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricChaosDescriptionResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricChaosDescriptionResult {}
 unsafe impl ::core::marker::Sync for IFabricChaosDescriptionResult {}
-unsafe impl ::windows_core::Interface for IFabricChaosDescriptionResult {
-    type Vtable = IFabricChaosDescriptionResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricChaosDescriptionResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricChaosDescriptionResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xfa8aa86e_f0fa_4a14_bed7_1dcfa0980b5b);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricChaosDescriptionResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_ChaosDescriptionResult:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_CHAOS_DESCRIPTION,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_ChaosDescriptionResult: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricChaosEventsSegmentResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricChaosEventsSegmentResult,
+    IFabricChaosEventsSegmentResult_Vtbl,
+    0xde148299_c48a_4540_877b_5b1daa518d76
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricChaosEventsSegmentResult,
+    ::windows_core::IUnknown
+);
 impl IFabricChaosEventsSegmentResult {
     pub unsafe fn get_ChaosEventsSegmentResult(
         &self,
@@ -7206,51 +6864,23 @@ impl IFabricChaosEventsSegmentResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricChaosEventsSegmentResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricChaosEventsSegmentResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricChaosEventsSegmentResult {}
-impl ::core::fmt::Debug for IFabricChaosEventsSegmentResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricChaosEventsSegmentResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricChaosEventsSegmentResult {}
 unsafe impl ::core::marker::Sync for IFabricChaosEventsSegmentResult {}
-unsafe impl ::windows_core::Interface for IFabricChaosEventsSegmentResult {
-    type Vtable = IFabricChaosEventsSegmentResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricChaosEventsSegmentResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricChaosEventsSegmentResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xde148299_c48a_4540_877b_5b1daa518d76);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricChaosEventsSegmentResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ChaosEventsSegmentResult:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_CHAOS_EVENTS_SEGMENT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricChaosReportResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricChaosReportResult,
+    IFabricChaosReportResult_Vtbl,
+    0x8952e931_b2b3_470a_b982_6b415f30dbc0
+);
+::windows_core::imp::interface_hierarchy!(IFabricChaosReportResult, ::windows_core::IUnknown);
 impl IFabricChaosReportResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_ChaosReportResult(&self) -> *mut super::super::FABRIC_CHAOS_REPORT {
         (::windows_core::Interface::vtable(self).get_ChaosReportResult)(
@@ -7258,51 +6888,29 @@ impl IFabricChaosReportResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricChaosReportResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricChaosReportResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricChaosReportResult {}
-impl ::core::fmt::Debug for IFabricChaosReportResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricChaosReportResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricChaosReportResult {}
 unsafe impl ::core::marker::Sync for IFabricChaosReportResult {}
-unsafe impl ::windows_core::Interface for IFabricChaosReportResult {
-    type Vtable = IFabricChaosReportResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricChaosReportResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricChaosReportResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x8952e931_b2b3_470a_b982_6b415f30dbc0);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricChaosReportResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_ChaosReportResult: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> *mut super::super::FABRIC_CHAOS_REPORT,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_ChaosReportResult: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricChaosScheduleDescriptionResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricChaosScheduleDescriptionResult,
+    IFabricChaosScheduleDescriptionResult_Vtbl,
+    0x3b93f0d9_c0a9_4df5_9b09_b2365de89d84
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricChaosScheduleDescriptionResult,
+    ::windows_core::IUnknown
+);
 impl IFabricChaosScheduleDescriptionResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_ChaosScheduleDescriptionResult(
         &self,
@@ -7312,52 +6920,28 @@ impl IFabricChaosScheduleDescriptionResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricChaosScheduleDescriptionResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricChaosScheduleDescriptionResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricChaosScheduleDescriptionResult {}
-impl ::core::fmt::Debug for IFabricChaosScheduleDescriptionResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricChaosScheduleDescriptionResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricChaosScheduleDescriptionResult {}
 unsafe impl ::core::marker::Sync for IFabricChaosScheduleDescriptionResult {}
-unsafe impl ::windows_core::Interface for IFabricChaosScheduleDescriptionResult {
-    type Vtable = IFabricChaosScheduleDescriptionResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricChaosScheduleDescriptionResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricChaosScheduleDescriptionResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x3b93f0d9_c0a9_4df5_9b09_b2365de89d84);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricChaosScheduleDescriptionResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_ChaosScheduleDescriptionResult:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_CHAOS_SCHEDULE_DESCRIPTION,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_ChaosScheduleDescriptionResult: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClientConnectionEventHandler(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClientConnectionEventHandler,
+    IFabricClientConnectionEventHandler_Vtbl,
+    0x2bd21f94_d962_4bb4_84b8_5a4b3e9d4d4d
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricClientConnectionEventHandler,
+    ::windows_core::IUnknown
+);
 impl IFabricClientConnectionEventHandler {
     pub unsafe fn OnConnected<P0>(
         &self,
@@ -7390,53 +6974,30 @@ impl IFabricClientConnectionEventHandler {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricClientConnectionEventHandler,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricClientConnectionEventHandler {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClientConnectionEventHandler {}
-impl ::core::fmt::Debug for IFabricClientConnectionEventHandler {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClientConnectionEventHandler")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricClientConnectionEventHandler {}
 unsafe impl ::core::marker::Sync for IFabricClientConnectionEventHandler {}
-unsafe impl ::windows_core::Interface for IFabricClientConnectionEventHandler {
-    type Vtable = IFabricClientConnectionEventHandler_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClientConnectionEventHandler {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClientConnectionEventHandler {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x2bd21f94_d962_4bb4_84b8_5a4b3e9d4d4d);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClientConnectionEventHandler_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub OnConnected: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        __midl__ifabricclientconnectioneventhandler0000: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub OnDisconnected: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        __midl__ifabricclientconnectioneventhandler0001: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClientConnectionEventHandler2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClientConnectionEventHandler2,
+    IFabricClientConnectionEventHandler2_Vtbl,
+    0x6b5dbd26_7d7a_4a3f_b8ea_1f049105e897
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricClientConnectionEventHandler2,
+    ::windows_core::IUnknown,
+    IFabricClientConnectionEventHandler
+);
 impl IFabricClientConnectionEventHandler2 {
     pub unsafe fn OnConnected<P0>(
         &self,
@@ -7480,54 +7041,26 @@ impl IFabricClientConnectionEventHandler2 {
             metadata,
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricClientConnectionEventHandler2,
-    ::windows_core::IUnknown,
-    IFabricClientConnectionEventHandler
-);
-impl ::core::cmp::PartialEq for IFabricClientConnectionEventHandler2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClientConnectionEventHandler2 {}
-impl ::core::fmt::Debug for IFabricClientConnectionEventHandler2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClientConnectionEventHandler2")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricClientConnectionEventHandler2 {}
 unsafe impl ::core::marker::Sync for IFabricClientConnectionEventHandler2 {}
-unsafe impl ::windows_core::Interface for IFabricClientConnectionEventHandler2 {
-    type Vtable = IFabricClientConnectionEventHandler2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClientConnectionEventHandler2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClientConnectionEventHandler2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x6b5dbd26_7d7a_4a3f_b8ea_1f049105e897);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClientConnectionEventHandler2_Vtbl {
     pub base__: IFabricClientConnectionEventHandler_Vtbl,
     pub OnClaimsRetrieval: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        metadata: *const super::super::FABRIC_CLAIMS_RETRIEVAL_METADATA,
-        token: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_CLAIMS_RETRIEVAL_METADATA,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClientSettings(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClientSettings,
+    IFabricClientSettings_Vtbl,
+    0xb0e7dee0_cf64_11e0_9572_0800200c9a66
+);
+::windows_core::imp::interface_hierarchy!(IFabricClientSettings, ::windows_core::IUnknown);
 impl IFabricClientSettings {
     pub unsafe fn SetSecurityCredentials(
         &self,
@@ -7550,50 +7083,28 @@ impl IFabricClientSettings {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricClientSettings, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricClientSettings {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClientSettings {}
-impl ::core::fmt::Debug for IFabricClientSettings {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClientSettings")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricClientSettings {}
 unsafe impl ::core::marker::Sync for IFabricClientSettings {}
-unsafe impl ::windows_core::Interface for IFabricClientSettings {
-    type Vtable = IFabricClientSettings_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClientSettings {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClientSettings {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xb0e7dee0_cf64_11e0_9572_0800200c9a66);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClientSettings_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub SetSecurityCredentials: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        securitycredentials: *const super::super::FABRIC_SECURITY_CREDENTIALS,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SECURITY_CREDENTIALS,
     ) -> ::windows_core::HRESULT,
-    pub SetKeepAlive: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        keepaliveintervalinseconds: u32,
-    ) -> ::windows_core::HRESULT,
+    pub SetKeepAlive:
+        unsafe extern "system" fn(*mut ::core::ffi::c_void, u32) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClientSettings2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClientSettings2,
+    IFabricClientSettings2_Vtbl,
+    0xc6fb97f7_82f3_4e6c_a80a_021e8ffca425
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricClientSettings2,
+    ::windows_core::IUnknown,
+    IFabricClientSettings
+);
 impl IFabricClientSettings2 {
     pub unsafe fn SetSecurityCredentials(
         &self,
@@ -7622,7 +7133,7 @@ impl IFabricClientSettings2 {
             ::windows_core::Interface::as_raw(self),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn SetSettings(
         &self,
@@ -7635,54 +7146,26 @@ impl IFabricClientSettings2 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricClientSettings2,
-    ::windows_core::IUnknown,
-    IFabricClientSettings
-);
-impl ::core::cmp::PartialEq for IFabricClientSettings2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClientSettings2 {}
-impl ::core::fmt::Debug for IFabricClientSettings2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClientSettings2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricClientSettings2 {}
 unsafe impl ::core::marker::Sync for IFabricClientSettings2 {}
-unsafe impl ::windows_core::Interface for IFabricClientSettings2 {
-    type Vtable = IFabricClientSettings2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClientSettings2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClientSettings2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xc6fb97f7_82f3_4e6c_a80a_021e8ffca425);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClientSettings2_Vtbl {
     pub base__: IFabricClientSettings_Vtbl,
     pub GetSettings: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub SetSettings: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        fabricclientsettings: *const super::super::FABRIC_CLIENT_SETTINGS,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_CLIENT_SETTINGS,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClientSettingsResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClientSettingsResult,
+    IFabricClientSettingsResult_Vtbl,
+    0x3b825afd_cb31_4589_961e_e3778aa23a60
+);
+::windows_core::imp::interface_hierarchy!(IFabricClientSettingsResult, ::windows_core::IUnknown);
 impl IFabricClientSettingsResult {
     pub unsafe fn get_Settings(&self) -> *mut super::super::FABRIC_CLIENT_SETTINGS {
         (::windows_core::Interface::vtable(self).get_Settings)(::windows_core::Interface::as_raw(
@@ -7690,45 +7173,21 @@ impl IFabricClientSettingsResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricClientSettingsResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricClientSettingsResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClientSettingsResult {}
-impl ::core::fmt::Debug for IFabricClientSettingsResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClientSettingsResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricClientSettingsResult {}
 unsafe impl ::core::marker::Sync for IFabricClientSettingsResult {}
-unsafe impl ::windows_core::Interface for IFabricClientSettingsResult {
-    type Vtable = IFabricClientSettingsResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClientSettingsResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClientSettingsResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x3b825afd_cb31_4589_961e_e3778aa23a60);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClientSettingsResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Settings: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_CLIENT_SETTINGS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterHealthResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClusterHealthResult,
+    IFabricClusterHealthResult_Vtbl,
+    0x6b9b0f2c_6782_4a31_a256_570fa8ba32d3
+);
+::windows_core::imp::interface_hierarchy!(IFabricClusterHealthResult, ::windows_core::IUnknown);
 impl IFabricClusterHealthResult {
     pub unsafe fn get_ClusterHealth(&self) -> *mut super::super::FABRIC_CLUSTER_HEALTH {
         (::windows_core::Interface::vtable(self).get_ClusterHealth)(
@@ -7736,46 +7195,22 @@ impl IFabricClusterHealthResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricClusterHealthResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricClusterHealthResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterHealthResult {}
-impl ::core::fmt::Debug for IFabricClusterHealthResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterHealthResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricClusterHealthResult {}
 unsafe impl ::core::marker::Sync for IFabricClusterHealthResult {}
-unsafe impl ::windows_core::Interface for IFabricClusterHealthResult {
-    type Vtable = IFabricClusterHealthResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterHealthResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterHealthResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x6b9b0f2c_6782_4a31_a256_570fa8ba32d3);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClusterHealthResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ClusterHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> *mut super::super::FABRIC_CLUSTER_HEALTH,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterManagementClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClusterManagementClient,
+    IFabricClusterManagementClient_Vtbl,
+    0xa3cf17e0_cf84_4ae0_b720_1785c0fb4ace
+);
+::windows_core::imp::interface_hierarchy!(IFabricClusterManagementClient, ::windows_core::IUnknown);
 impl IFabricClusterManagementClient {
     pub unsafe fn BeginNodeStateRemoved<P0, P1>(
         &self,
@@ -7795,7 +7230,7 @@ impl IFabricClusterManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNodeStateRemoved<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -7822,7 +7257,7 @@ impl IFabricClusterManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -7835,63 +7270,51 @@ impl IFabricClusterManagementClient {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricClusterManagementClient, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricClusterManagementClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterManagementClient {}
-impl ::core::fmt::Debug for IFabricClusterManagementClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterManagementClient")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricClusterManagementClient {}
 unsafe impl ::core::marker::Sync for IFabricClusterManagementClient {}
-unsafe impl ::windows_core::Interface for IFabricClusterManagementClient {
-    type Vtable = IFabricClusterManagementClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterManagementClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterManagementClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xa3cf17e0_cf84_4ae0_b720_1785c0fb4ace);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClusterManagementClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub BeginNodeStateRemoved: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        nodename: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndNodeStateRemoved: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginRecoverPartitions: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRecoverPartitions: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterManagementClient10(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClusterManagementClient10,
+    IFabricClusterManagementClient10_Vtbl,
+    0xa4aceb4f_2e2b_4be1_9d12_44fe8cb5fb20
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricClusterManagementClient10,
+    ::windows_core::IUnknown,
+    IFabricClusterManagementClient,
+    IFabricClusterManagementClient2,
+    IFabricClusterManagementClient3,
+    IFabricClusterManagementClient4,
+    IFabricClusterManagementClient5,
+    IFabricClusterManagementClient6,
+    IFabricClusterManagementClient7,
+    IFabricClusterManagementClient8,
+    IFabricClusterManagementClient9
+);
 impl IFabricClusterManagementClient10 {
     pub unsafe fn BeginNodeStateRemoved<P0, P1>(
         &self,
@@ -7921,7 +7344,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNodeStateRemoved<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -7968,7 +7391,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8019,7 +7442,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeactivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8067,7 +7490,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndActivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8118,7 +7541,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8165,7 +7588,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8210,7 +7633,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetFabricUpgradeProgress<P0>(
         &self,
@@ -8234,7 +7657,7 @@ impl IFabricClusterManagementClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextFabricUpgradeDomain<P0, P1>(
         &self,
@@ -8263,7 +7686,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain<P0>(
         &self,
@@ -8314,7 +7737,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain2<P0>(
         &self,
@@ -8368,7 +7791,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8413,7 +7836,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest<P0>(
         &self,
@@ -8437,7 +7860,7 @@ impl IFabricClusterManagementClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRecoverPartition<P0>(
         &self,
@@ -8465,7 +7888,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8512,7 +7935,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverServicePartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8557,7 +7980,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverSystemPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8603,7 +8026,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8648,7 +8071,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8693,7 +8116,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8738,7 +8161,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8840,7 +8263,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8882,7 +8305,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResetPartitionLoad<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -8900,7 +8323,6 @@ impl IFabricClusterManagementClient10 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginToggleVerboseServicePlacementHealthReporting<P0, P1>(
         &self,
@@ -8925,7 +8347,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndToggleVerboseServicePlacementHealthReporting<P0>(
         &self,
@@ -8966,7 +8388,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeConfiguration<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9001,7 +8423,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterConfigurationUpgradeStatus<P0>(
         &self,
@@ -9020,7 +8442,7 @@ impl IFabricClusterManagementClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterConfiguration<P0>(
         &self,
@@ -9041,7 +8463,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterConfiguration<P0>(
         &self,
@@ -9060,7 +8482,7 @@ impl IFabricClusterManagementClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetUpgradesPendingApproval<P0>(
         &self,
@@ -9081,7 +8503,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUpgradesPendingApproval<P0>(
         &self,
@@ -9119,7 +8541,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartApprovedUpgrades<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9155,7 +8577,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest2<P0>(
         &self,
@@ -9173,7 +8595,7 @@ impl IFabricClusterManagementClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetUpgradeOrchestrationServiceState<P0>(
         &self,
@@ -9192,7 +8614,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUpgradeOrchestrationServiceState<P0>(
         &self,
@@ -9209,7 +8631,7 @@ impl IFabricClusterManagementClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginSetUpgradeOrchestrationServiceState<P0, P1>(
         &self,
@@ -9231,7 +8653,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndSetUpgradeOrchestrationServiceState<P0>(
         &self,
@@ -9248,7 +8670,7 @@ impl IFabricClusterManagementClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterConfiguration2<P0, P1>(
         &self,
@@ -9268,7 +8690,7 @@ impl IFabricClusterManagementClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterConfiguration2<P0>(
         &self,
@@ -9283,69 +8705,37 @@ impl IFabricClusterManagementClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricClusterManagementClient10,
-    ::windows_core::IUnknown,
-    IFabricClusterManagementClient,
-    IFabricClusterManagementClient2,
-    IFabricClusterManagementClient3,
-    IFabricClusterManagementClient4,
-    IFabricClusterManagementClient5,
-    IFabricClusterManagementClient6,
-    IFabricClusterManagementClient7,
-    IFabricClusterManagementClient8,
-    IFabricClusterManagementClient9
-);
-impl ::core::cmp::PartialEq for IFabricClusterManagementClient10 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterManagementClient10 {}
-impl ::core::fmt::Debug for IFabricClusterManagementClient10 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterManagementClient10")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricClusterManagementClient10 {}
 unsafe impl ::core::marker::Sync for IFabricClusterManagementClient10 {}
-unsafe impl ::windows_core::Interface for IFabricClusterManagementClient10 {
-    type Vtable = IFabricClusterManagementClient10_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterManagementClient10 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterManagementClient10 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xa4aceb4f_2e2b_4be1_9d12_44fe8cb5fb20);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClusterManagementClient10_Vtbl {
     pub base__: IFabricClusterManagementClient9_Vtbl,
     pub BeginGetClusterConfiguration2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        apiversion: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetClusterConfiguration2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterManagementClient2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClusterManagementClient2,
+    IFabricClusterManagementClient2_Vtbl,
+    0xf9493e16_6a49_4d79_8695_5a6826b504c5
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricClusterManagementClient2,
+    ::windows_core::IUnknown,
+    IFabricClusterManagementClient
+);
 impl IFabricClusterManagementClient2 {
     pub unsafe fn BeginNodeStateRemoved<P0, P1>(
         &self,
@@ -9367,7 +8757,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNodeStateRemoved<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9398,7 +8788,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9432,7 +8822,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeactivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9462,7 +8852,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndActivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9495,7 +8885,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9524,7 +8914,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9551,7 +8941,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetFabricUpgradeProgress<P0>(
         &self,
@@ -9566,7 +8956,7 @@ impl IFabricClusterManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextFabricUpgradeDomain<P0, P1>(
         &self,
@@ -9586,7 +8976,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain<P0>(
         &self,
@@ -9619,7 +9009,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain2<P0>(
         &self,
@@ -9655,7 +9045,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9682,7 +9072,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest<P0>(
         &self,
@@ -9697,7 +9087,7 @@ impl IFabricClusterManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRecoverPartition<P0>(
         &self,
@@ -9716,7 +9106,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9745,7 +9135,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverServicePartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9772,7 +9162,7 @@ impl IFabricClusterManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverSystemPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -9785,181 +9175,158 @@ impl IFabricClusterManagementClient2 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricClusterManagementClient2,
-    ::windows_core::IUnknown,
-    IFabricClusterManagementClient
-);
-impl ::core::cmp::PartialEq for IFabricClusterManagementClient2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterManagementClient2 {}
-impl ::core::fmt::Debug for IFabricClusterManagementClient2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterManagementClient2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricClusterManagementClient2 {}
 unsafe impl ::core::marker::Sync for IFabricClusterManagementClient2 {}
-unsafe impl ::windows_core::Interface for IFabricClusterManagementClient2 {
-    type Vtable = IFabricClusterManagementClient2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterManagementClient2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterManagementClient2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xf9493e16_6a49_4d79_8695_5a6826b504c5);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClusterManagementClient2_Vtbl {
     pub base__: IFabricClusterManagementClient_Vtbl,
     pub BeginDeactivateNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        nodename: ::windows_core::PCWSTR,
-        intent: super::super::FABRIC_NODE_DEACTIVATION_INTENT,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        super::super::FABRIC_NODE_DEACTIVATION_INTENT,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndDeactivateNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginActivateNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        nodename: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndActivateNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginProvisionFabric: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        codefilepath: ::windows_core::PCWSTR,
-        clustermanifestfilepath: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndProvisionFabric: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginUpgradeFabric: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        upgradedescription: *const super::super::FABRIC_UPGRADE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_UPGRADE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndUpgradeFabric: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetFabricUpgradeProgress: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetFabricUpgradeProgress: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginMoveNextFabricUpgradeDomain: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        progress: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndMoveNextFabricUpgradeDomain: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginMoveNextFabricUpgradeDomain2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        nextupgradedomain: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     pub EndMoveNextFabricUpgradeDomain2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginUnprovisionFabric: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        codeversion: ::windows_core::PCWSTR,
-        configversion: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndUnprovisionFabric: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetClusterManifest: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetClusterManifest: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginRecoverPartition: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        partitionid: ::windows_core::GUID,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::GUID,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRecoverPartition: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginRecoverServicePartitions: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        servicename: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRecoverServicePartitions: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginRecoverSystemPartitions: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRecoverSystemPartitions: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterManagementClient3(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClusterManagementClient3,
+    IFabricClusterManagementClient3_Vtbl,
+    0xc3001d74_92b6_44cb_ac2f_2ffc4a56287c
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricClusterManagementClient3,
+    ::windows_core::IUnknown,
+    IFabricClusterManagementClient,
+    IFabricClusterManagementClient2
+);
 impl IFabricClusterManagementClient3 {
     pub unsafe fn BeginNodeStateRemoved<P0, P1>(
         &self,
@@ -9982,7 +9349,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNodeStateRemoved<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10015,7 +9382,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10052,7 +9419,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeactivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10086,7 +9453,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndActivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10123,7 +9490,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10156,7 +9523,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10187,7 +9554,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetFabricUpgradeProgress<P0>(
         &self,
@@ -10204,7 +9571,7 @@ impl IFabricClusterManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextFabricUpgradeDomain<P0, P1>(
         &self,
@@ -10226,7 +9593,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain<P0>(
         &self,
@@ -10263,7 +9630,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain2<P0>(
         &self,
@@ -10303,7 +9670,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10334,7 +9701,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest<P0>(
         &self,
@@ -10351,7 +9718,7 @@ impl IFabricClusterManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRecoverPartition<P0>(
         &self,
@@ -10372,7 +9739,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10405,7 +9772,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverServicePartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10436,7 +9803,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverSystemPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10467,7 +9834,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10496,7 +9863,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10525,7 +9892,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10554,7 +9921,7 @@ impl IFabricClusterManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10611,105 +9978,82 @@ impl IFabricClusterManagementClient3 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricClusterManagementClient3,
-    ::windows_core::IUnknown,
-    IFabricClusterManagementClient,
-    IFabricClusterManagementClient2
-);
-impl ::core::cmp::PartialEq for IFabricClusterManagementClient3 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterManagementClient3 {}
-impl ::core::fmt::Debug for IFabricClusterManagementClient3 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterManagementClient3")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricClusterManagementClient3 {}
 unsafe impl ::core::marker::Sync for IFabricClusterManagementClient3 {}
-unsafe impl ::windows_core::Interface for IFabricClusterManagementClient3 {
-    type Vtable = IFabricClusterManagementClient3_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterManagementClient3 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterManagementClient3 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xc3001d74_92b6_44cb_ac2f_2ffc4a56287c);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClusterManagementClient3_Vtbl {
     pub base__: IFabricClusterManagementClient2_Vtbl,
     pub BeginUpdateFabricUpgrade: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_UPGRADE_UPDATE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_UPGRADE_UPDATE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndUpdateFabricUpgrade: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginStopNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        stopnodedescription: *const super::super::FABRIC_STOP_NODE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_STOP_NODE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndStopNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginRestartNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        restartnodedescription: *const super::super::FABRIC_RESTART_NODE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_RESTART_NODE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRestartNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginStartNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        startnodedescription: *const super::super::FABRIC_START_NODE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_START_NODE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndStartNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub CopyClusterPackage: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        imagestoreconnectionstring: ::windows_core::PCWSTR,
-        clustermanifestpath: ::windows_core::PCWSTR,
-        clustermanifestpathinimagestore: ::windows_core::PCWSTR,
-        codepackagepath: ::windows_core::PCWSTR,
-        codepackagepathinimagestore: ::windows_core::PCWSTR,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
     ) -> ::windows_core::HRESULT,
     pub RemoveClusterPackage: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        imagestoreconnectionstring: ::windows_core::PCWSTR,
-        clustermanifestpathinimagestore: ::windows_core::PCWSTR,
-        codepackagepathinimagestore: ::windows_core::PCWSTR,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterManagementClient4(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClusterManagementClient4,
+    IFabricClusterManagementClient4_Vtbl,
+    0xb6b12671_f283_4d71_a818_0260549bc83e
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricClusterManagementClient4,
+    ::windows_core::IUnknown,
+    IFabricClusterManagementClient,
+    IFabricClusterManagementClient2,
+    IFabricClusterManagementClient3
+);
 impl IFabricClusterManagementClient4 {
     pub unsafe fn BeginNodeStateRemoved<P0, P1>(
         &self,
@@ -10733,7 +10077,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNodeStateRemoved<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10768,7 +10112,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10807,7 +10151,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeactivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10843,7 +10187,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndActivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10882,7 +10226,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10917,7 +10261,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -10950,7 +10294,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetFabricUpgradeProgress<P0>(
         &self,
@@ -10968,7 +10312,7 @@ impl IFabricClusterManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextFabricUpgradeDomain<P0, P1>(
         &self,
@@ -10991,7 +10335,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain<P0>(
         &self,
@@ -11030,7 +10374,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain2<P0>(
         &self,
@@ -11072,7 +10416,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11105,7 +10449,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest<P0>(
         &self,
@@ -11123,7 +10467,7 @@ impl IFabricClusterManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRecoverPartition<P0>(
         &self,
@@ -11145,7 +10489,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11180,7 +10524,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverServicePartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11213,7 +10557,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverSystemPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11247,7 +10591,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11278,7 +10622,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11309,7 +10653,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11342,7 +10686,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11417,7 +10761,7 @@ impl IFabricClusterManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11430,58 +10774,35 @@ impl IFabricClusterManagementClient4 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricClusterManagementClient4,
-    ::windows_core::IUnknown,
-    IFabricClusterManagementClient,
-    IFabricClusterManagementClient2,
-    IFabricClusterManagementClient3
-);
-impl ::core::cmp::PartialEq for IFabricClusterManagementClient4 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterManagementClient4 {}
-impl ::core::fmt::Debug for IFabricClusterManagementClient4 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterManagementClient4")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricClusterManagementClient4 {}
 unsafe impl ::core::marker::Sync for IFabricClusterManagementClient4 {}
-unsafe impl ::windows_core::Interface for IFabricClusterManagementClient4 {
-    type Vtable = IFabricClusterManagementClient4_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterManagementClient4 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterManagementClient4 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xb6b12671_f283_4d71_a818_0260549bc83e);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClusterManagementClient4_Vtbl {
     pub base__: IFabricClusterManagementClient3_Vtbl,
     pub BeginRollbackFabricUpgrade: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRollbackFabricUpgrade: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterManagementClient5(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClusterManagementClient5,
+    IFabricClusterManagementClient5_Vtbl,
+    0xa6ddd816_a100_11e4_89d3_123b93f75cba
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricClusterManagementClient5,
+    ::windows_core::IUnknown,
+    IFabricClusterManagementClient,
+    IFabricClusterManagementClient2,
+    IFabricClusterManagementClient3,
+    IFabricClusterManagementClient4
+);
 impl IFabricClusterManagementClient5 {
     pub unsafe fn BeginNodeStateRemoved<P0, P1>(
         &self,
@@ -11506,7 +10827,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNodeStateRemoved<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11543,7 +10864,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11584,7 +10905,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeactivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11622,7 +10943,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndActivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11663,7 +10984,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11700,7 +11021,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11735,7 +11056,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetFabricUpgradeProgress<P0>(
         &self,
@@ -11754,7 +11075,7 @@ impl IFabricClusterManagementClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextFabricUpgradeDomain<P0, P1>(
         &self,
@@ -11778,7 +11099,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain<P0>(
         &self,
@@ -11819,7 +11140,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain2<P0>(
         &self,
@@ -11863,7 +11184,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11898,7 +11219,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest<P0>(
         &self,
@@ -11917,7 +11238,7 @@ impl IFabricClusterManagementClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRecoverPartition<P0>(
         &self,
@@ -11940,7 +11261,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -11977,7 +11298,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverServicePartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12012,7 +11333,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverSystemPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12048,7 +11369,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12083,7 +11404,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12118,7 +11439,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12153,7 +11474,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12235,7 +11556,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12266,7 +11587,7 @@ impl IFabricClusterManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResetPartitionLoad<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12279,60 +11600,37 @@ impl IFabricClusterManagementClient5 {
         .ok()
     }
 }
+unsafe impl ::core::marker::Send for IFabricClusterManagementClient5 {}
+unsafe impl ::core::marker::Sync for IFabricClusterManagementClient5 {}
+#[repr(C)]
+pub struct IFabricClusterManagementClient5_Vtbl {
+    pub base__: IFabricClusterManagementClient4_Vtbl,
+    pub BeginResetPartitionLoad: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        ::windows_core::GUID,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndResetPartitionLoad: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricClusterManagementClient6,
+    IFabricClusterManagementClient6_Vtbl,
+    0x9e454ae8_4b8c_4136_884a_37b0b92cc855
+);
 ::windows_core::imp::interface_hierarchy!(
-    IFabricClusterManagementClient5,
+    IFabricClusterManagementClient6,
     ::windows_core::IUnknown,
     IFabricClusterManagementClient,
     IFabricClusterManagementClient2,
     IFabricClusterManagementClient3,
-    IFabricClusterManagementClient4
+    IFabricClusterManagementClient4,
+    IFabricClusterManagementClient5
 );
-impl ::core::cmp::PartialEq for IFabricClusterManagementClient5 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterManagementClient5 {}
-impl ::core::fmt::Debug for IFabricClusterManagementClient5 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterManagementClient5")
-            .field(&self.0)
-            .finish()
-    }
-}
-unsafe impl ::core::marker::Send for IFabricClusterManagementClient5 {}
-unsafe impl ::core::marker::Sync for IFabricClusterManagementClient5 {}
-unsafe impl ::windows_core::Interface for IFabricClusterManagementClient5 {
-    type Vtable = IFabricClusterManagementClient5_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterManagementClient5 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterManagementClient5 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xa6ddd816_a100_11e4_89d3_123b93f75cba);
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IFabricClusterManagementClient5_Vtbl {
-    pub base__: IFabricClusterManagementClient4_Vtbl,
-    pub BeginResetPartitionLoad: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        partitionid: ::windows_core::GUID,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndResetPartitionLoad: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-}
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterManagementClient6(::windows_core::IUnknown);
 impl IFabricClusterManagementClient6 {
     pub unsafe fn BeginNodeStateRemoved<P0, P1>(
         &self,
@@ -12358,7 +11656,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNodeStateRemoved<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12397,7 +11695,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12440,7 +11738,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeactivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12480,7 +11778,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndActivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12523,7 +11821,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12562,7 +11860,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12599,7 +11897,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetFabricUpgradeProgress<P0>(
         &self,
@@ -12619,7 +11917,7 @@ impl IFabricClusterManagementClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextFabricUpgradeDomain<P0, P1>(
         &self,
@@ -12644,7 +11942,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain<P0>(
         &self,
@@ -12687,7 +11985,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain2<P0>(
         &self,
@@ -12733,7 +12031,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12770,7 +12068,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest<P0>(
         &self,
@@ -12790,7 +12088,7 @@ impl IFabricClusterManagementClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRecoverPartition<P0>(
         &self,
@@ -12814,7 +12112,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12853,7 +12151,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverServicePartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12890,7 +12188,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverSystemPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12928,7 +12226,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -12965,7 +12263,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13002,7 +12300,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13039,7 +12337,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13125,7 +12423,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13159,7 +12457,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResetPartitionLoad<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13173,7 +12471,6 @@ impl IFabricClusterManagementClient6 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginToggleVerboseServicePlacementHealthReporting<P0, P1>(
         &self,
@@ -13193,7 +12490,7 @@ impl IFabricClusterManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndToggleVerboseServicePlacementHealthReporting<P0>(
         &self,
@@ -13209,66 +12506,43 @@ impl IFabricClusterManagementClient6 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricClusterManagementClient6,
-    ::windows_core::IUnknown,
-    IFabricClusterManagementClient,
-    IFabricClusterManagementClient2,
-    IFabricClusterManagementClient3,
-    IFabricClusterManagementClient4,
-    IFabricClusterManagementClient5
-);
-impl ::core::cmp::PartialEq for IFabricClusterManagementClient6 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterManagementClient6 {}
-impl ::core::fmt::Debug for IFabricClusterManagementClient6 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterManagementClient6")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricClusterManagementClient6 {}
 unsafe impl ::core::marker::Sync for IFabricClusterManagementClient6 {}
-unsafe impl ::windows_core::Interface for IFabricClusterManagementClient6 {
-    type Vtable = IFabricClusterManagementClient6_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterManagementClient6 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterManagementClient6 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x9e454ae8_4b8c_4136_884a_37b0b92cc855);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClusterManagementClient6_Vtbl {
     pub base__: IFabricClusterManagementClient5_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginToggleVerboseServicePlacementHealthReporting:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            enabled: ::windows::Win32::Foundation::BOOLEAN,
-            timeoutmilliseconds: u32,
-            callback: *mut ::core::ffi::c_void,
-            context: *mut *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            ::windows::Win32::Foundation::BOOLEAN,
+            u32,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
         ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginToggleVerboseServicePlacementHealthReporting: usize,
     pub EndToggleVerboseServicePlacementHealthReporting:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            context: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterManagementClient7(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricClusterManagementClient7,
+    IFabricClusterManagementClient7_Vtbl,
+    0x9b9105ac_d595_4f59_9c94_1ffdbf92a876
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricClusterManagementClient7,
+    ::windows_core::IUnknown,
+    IFabricClusterManagementClient,
+    IFabricClusterManagementClient2,
+    IFabricClusterManagementClient3,
+    IFabricClusterManagementClient4,
+    IFabricClusterManagementClient5,
+    IFabricClusterManagementClient6
+);
 impl IFabricClusterManagementClient7 {
     pub unsafe fn BeginNodeStateRemoved<P0, P1>(
         &self,
@@ -13295,7 +12569,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNodeStateRemoved<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13336,7 +12610,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13381,7 +12655,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeactivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13423,7 +12697,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndActivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13468,7 +12742,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13509,7 +12783,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13548,7 +12822,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetFabricUpgradeProgress<P0>(
         &self,
@@ -13569,7 +12843,7 @@ impl IFabricClusterManagementClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextFabricUpgradeDomain<P0, P1>(
         &self,
@@ -13595,7 +12869,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain<P0>(
         &self,
@@ -13640,7 +12914,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain2<P0>(
         &self,
@@ -13688,7 +12962,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13727,7 +13001,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest<P0>(
         &self,
@@ -13748,7 +13022,7 @@ impl IFabricClusterManagementClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRecoverPartition<P0>(
         &self,
@@ -13773,7 +13047,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13814,7 +13088,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverServicePartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13853,7 +13127,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverSystemPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13893,7 +13167,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13932,7 +13206,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -13971,7 +13245,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14010,7 +13284,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14100,7 +13374,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14136,7 +13410,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResetPartitionLoad<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14151,7 +13425,6 @@ impl IFabricClusterManagementClient7 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginToggleVerboseServicePlacementHealthReporting<P0, P1>(
         &self,
@@ -14173,7 +13446,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndToggleVerboseServicePlacementHealthReporting<P0>(
         &self,
@@ -14207,7 +13480,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeConfiguration<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14234,7 +13507,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterConfigurationUpgradeStatus<P0>(
         &self,
@@ -14249,7 +13522,7 @@ impl IFabricClusterManagementClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterConfiguration<P0>(
         &self,
@@ -14266,7 +13539,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterConfiguration<P0>(
         &self,
@@ -14281,7 +13554,7 @@ impl IFabricClusterManagementClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetUpgradesPendingApproval<P0>(
         &self,
@@ -14298,7 +13571,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUpgradesPendingApproval<P0>(
         &self,
@@ -14328,7 +13601,7 @@ impl IFabricClusterManagementClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartApprovedUpgrades<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14341,106 +13614,83 @@ impl IFabricClusterManagementClient7 {
         .ok()
     }
 }
+unsafe impl ::core::marker::Send for IFabricClusterManagementClient7 {}
+unsafe impl ::core::marker::Sync for IFabricClusterManagementClient7 {}
+#[repr(C)]
+pub struct IFabricClusterManagementClient7_Vtbl {
+    pub base__: IFabricClusterManagementClient6_Vtbl,
+    pub BeginUpgradeConfiguration: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_START_UPGRADE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndUpgradeConfiguration: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetClusterConfigurationUpgradeStatus:
+        unsafe extern "system" fn(
+            *mut ::core::ffi::c_void,
+            u32,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT,
+    pub EndGetClusterConfigurationUpgradeStatus:
+        unsafe extern "system" fn(
+            *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT,
+    pub BeginGetClusterConfiguration: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetClusterConfiguration: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetUpgradesPendingApproval: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetUpgradesPendingApproval: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginStartApprovedUpgrades: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndStartApprovedUpgrades: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricClusterManagementClient8,
+    IFabricClusterManagementClient8_Vtbl,
+    0x0b79641c_79a6_4162_904a_840babd08381
+);
 ::windows_core::imp::interface_hierarchy!(
-    IFabricClusterManagementClient7,
+    IFabricClusterManagementClient8,
     ::windows_core::IUnknown,
     IFabricClusterManagementClient,
     IFabricClusterManagementClient2,
     IFabricClusterManagementClient3,
     IFabricClusterManagementClient4,
     IFabricClusterManagementClient5,
-    IFabricClusterManagementClient6
+    IFabricClusterManagementClient6,
+    IFabricClusterManagementClient7
 );
-impl ::core::cmp::PartialEq for IFabricClusterManagementClient7 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterManagementClient7 {}
-impl ::core::fmt::Debug for IFabricClusterManagementClient7 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterManagementClient7")
-            .field(&self.0)
-            .finish()
-    }
-}
-unsafe impl ::core::marker::Send for IFabricClusterManagementClient7 {}
-unsafe impl ::core::marker::Sync for IFabricClusterManagementClient7 {}
-unsafe impl ::windows_core::Interface for IFabricClusterManagementClient7 {
-    type Vtable = IFabricClusterManagementClient7_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterManagementClient7 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterManagementClient7 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x9b9105ac_d595_4f59_9c94_1ffdbf92a876);
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IFabricClusterManagementClient7_Vtbl {
-    pub base__: IFabricClusterManagementClient6_Vtbl,
-    pub BeginUpgradeConfiguration: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        startupgradedescription: *const super::super::FABRIC_START_UPGRADE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndUpgradeConfiguration: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub BeginGetClusterConfigurationUpgradeStatus:
-        unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            timeoutmilliseconds: u32,
-            callback: *mut ::core::ffi::c_void,
-            context: *mut *mut ::core::ffi::c_void,
-        ) -> ::windows_core::HRESULT,
-    pub EndGetClusterConfigurationUpgradeStatus:
-        unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            context: *mut ::core::ffi::c_void,
-            result: *mut *mut ::core::ffi::c_void,
-        ) -> ::windows_core::HRESULT,
-    pub BeginGetClusterConfiguration: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndGetClusterConfiguration: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub BeginGetUpgradesPendingApproval: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndGetUpgradesPendingApproval: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub BeginStartApprovedUpgrades: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndStartApprovedUpgrades: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-}
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterManagementClient8(::windows_core::IUnknown);
 impl IFabricClusterManagementClient8 {
     pub unsafe fn BeginNodeStateRemoved<P0, P1>(
         &self,
@@ -14468,7 +13718,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNodeStateRemoved<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14511,7 +13761,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14558,7 +13808,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeactivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14602,7 +13852,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndActivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14649,7 +13899,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14692,7 +13942,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14733,7 +13983,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetFabricUpgradeProgress<P0>(
         &self,
@@ -14755,7 +14005,7 @@ impl IFabricClusterManagementClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextFabricUpgradeDomain<P0, P1>(
         &self,
@@ -14782,7 +14032,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain<P0>(
         &self,
@@ -14829,7 +14079,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain2<P0>(
         &self,
@@ -14879,7 +14129,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -14920,7 +14170,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest<P0>(
         &self,
@@ -14942,7 +14192,7 @@ impl IFabricClusterManagementClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRecoverPartition<P0>(
         &self,
@@ -14968,7 +14218,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15011,7 +14261,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverServicePartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15052,7 +14302,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverSystemPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15094,7 +14344,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15135,7 +14385,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15176,7 +14426,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15217,7 +14467,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15311,7 +14561,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15349,7 +14599,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResetPartitionLoad<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15365,7 +14615,6 @@ impl IFabricClusterManagementClient8 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginToggleVerboseServicePlacementHealthReporting<P0, P1>(
         &self,
@@ -15388,7 +14637,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndToggleVerboseServicePlacementHealthReporting<P0>(
         &self,
@@ -15425,7 +14674,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeConfiguration<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15456,7 +14705,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterConfigurationUpgradeStatus<P0>(
         &self,
@@ -15473,7 +14722,7 @@ impl IFabricClusterManagementClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterConfiguration<P0>(
         &self,
@@ -15492,7 +14741,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterConfiguration<P0>(
         &self,
@@ -15509,7 +14758,7 @@ impl IFabricClusterManagementClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetUpgradesPendingApproval<P0>(
         &self,
@@ -15528,7 +14777,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUpgradesPendingApproval<P0>(
         &self,
@@ -15562,7 +14811,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartApprovedUpgrades<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15593,7 +14842,7 @@ impl IFabricClusterManagementClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest2<P0>(
         &self,
@@ -15608,11 +14857,34 @@ impl IFabricClusterManagementClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
+unsafe impl ::core::marker::Send for IFabricClusterManagementClient8 {}
+unsafe impl ::core::marker::Sync for IFabricClusterManagementClient8 {}
+#[repr(C)]
+pub struct IFabricClusterManagementClient8_Vtbl {
+    pub base__: IFabricClusterManagementClient7_Vtbl,
+    pub BeginGetClusterManifest2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_CLUSTER_MANIFEST_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetClusterManifest2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricClusterManagementClient9,
+    IFabricClusterManagementClient9_Vtbl,
+    0xc0f57578_538c_4cbe_bb55_8098b6a7cd4e
+);
 ::windows_core::imp::interface_hierarchy!(
-    IFabricClusterManagementClient8,
+    IFabricClusterManagementClient9,
     ::windows_core::IUnknown,
     IFabricClusterManagementClient,
     IFabricClusterManagementClient2,
@@ -15620,55 +14892,9 @@ impl IFabricClusterManagementClient8 {
     IFabricClusterManagementClient4,
     IFabricClusterManagementClient5,
     IFabricClusterManagementClient6,
-    IFabricClusterManagementClient7
+    IFabricClusterManagementClient7,
+    IFabricClusterManagementClient8
 );
-impl ::core::cmp::PartialEq for IFabricClusterManagementClient8 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterManagementClient8 {}
-impl ::core::fmt::Debug for IFabricClusterManagementClient8 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterManagementClient8")
-            .field(&self.0)
-            .finish()
-    }
-}
-unsafe impl ::core::marker::Send for IFabricClusterManagementClient8 {}
-unsafe impl ::core::marker::Sync for IFabricClusterManagementClient8 {}
-unsafe impl ::windows_core::Interface for IFabricClusterManagementClient8 {
-    type Vtable = IFabricClusterManagementClient8_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterManagementClient8 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterManagementClient8 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x0b79641c_79a6_4162_904a_840babd08381);
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IFabricClusterManagementClient8_Vtbl {
-    pub base__: IFabricClusterManagementClient7_Vtbl,
-    pub BeginGetClusterManifest2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_CLUSTER_MANIFEST_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndGetClusterManifest2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-}
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricClusterManagementClient9(::windows_core::IUnknown);
 impl IFabricClusterManagementClient9 {
     pub unsafe fn BeginNodeStateRemoved<P0, P1>(
         &self,
@@ -15697,7 +14923,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNodeStateRemoved<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15742,7 +14968,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15791,7 +15017,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeactivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15837,7 +15063,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndActivateNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15886,7 +15112,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndProvisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15931,7 +15157,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -15974,7 +15200,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetFabricUpgradeProgress<P0>(
         &self,
@@ -15997,7 +15223,7 @@ impl IFabricClusterManagementClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveNextFabricUpgradeDomain<P0, P1>(
         &self,
@@ -16025,7 +15251,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain<P0>(
         &self,
@@ -16074,7 +15300,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveNextFabricUpgradeDomain2<P0>(
         &self,
@@ -16126,7 +15352,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnprovisionFabric<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16169,7 +15395,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest<P0>(
         &self,
@@ -16192,7 +15418,7 @@ impl IFabricClusterManagementClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRecoverPartition<P0>(
         &self,
@@ -16219,7 +15445,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverPartition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16264,7 +15490,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverServicePartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16307,7 +15533,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRecoverSystemPartitions<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16351,7 +15577,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16394,7 +15620,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16437,7 +15663,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16480,7 +15706,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNode<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16578,7 +15804,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRollbackFabricUpgrade<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16618,7 +15844,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResetPartitionLoad<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16635,7 +15861,6 @@ impl IFabricClusterManagementClient9 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginToggleVerboseServicePlacementHealthReporting<P0, P1>(
         &self,
@@ -16659,7 +15884,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndToggleVerboseServicePlacementHealthReporting<P0>(
         &self,
@@ -16698,7 +15923,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpgradeConfiguration<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16731,7 +15956,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterConfigurationUpgradeStatus<P0>(
         &self,
@@ -16749,7 +15974,7 @@ impl IFabricClusterManagementClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterConfiguration<P0>(
         &self,
@@ -16769,7 +15994,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterConfiguration<P0>(
         &self,
@@ -16787,7 +16012,7 @@ impl IFabricClusterManagementClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetUpgradesPendingApproval<P0>(
         &self,
@@ -16807,7 +16032,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUpgradesPendingApproval<P0>(
         &self,
@@ -16843,7 +16068,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartApprovedUpgrades<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -16877,7 +16102,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterManifest2<P0>(
         &self,
@@ -16894,7 +16119,7 @@ impl IFabricClusterManagementClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetUpgradeOrchestrationServiceState<P0>(
         &self,
@@ -16911,7 +16136,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUpgradeOrchestrationServiceState<P0>(
         &self,
@@ -16926,7 +16151,7 @@ impl IFabricClusterManagementClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginSetUpgradeOrchestrationServiceState<P0, P1>(
         &self,
@@ -16946,7 +16171,7 @@ impl IFabricClusterManagementClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndSetUpgradeOrchestrationServiceState<P0>(
         &self,
@@ -16961,85 +16186,52 @@ impl IFabricClusterManagementClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricClusterManagementClient9,
-    ::windows_core::IUnknown,
-    IFabricClusterManagementClient,
-    IFabricClusterManagementClient2,
-    IFabricClusterManagementClient3,
-    IFabricClusterManagementClient4,
-    IFabricClusterManagementClient5,
-    IFabricClusterManagementClient6,
-    IFabricClusterManagementClient7,
-    IFabricClusterManagementClient8
-);
-impl ::core::cmp::PartialEq for IFabricClusterManagementClient9 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricClusterManagementClient9 {}
-impl ::core::fmt::Debug for IFabricClusterManagementClient9 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricClusterManagementClient9")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricClusterManagementClient9 {}
 unsafe impl ::core::marker::Sync for IFabricClusterManagementClient9 {}
-unsafe impl ::windows_core::Interface for IFabricClusterManagementClient9 {
-    type Vtable = IFabricClusterManagementClient9_Vtbl;
-}
-impl ::core::clone::Clone for IFabricClusterManagementClient9 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricClusterManagementClient9 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xc0f57578_538c_4cbe_bb55_8098b6a7cd4e);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricClusterManagementClient9_Vtbl {
     pub base__: IFabricClusterManagementClient8_Vtbl,
     pub BeginGetUpgradeOrchestrationServiceState:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            timeoutmilliseconds: u32,
-            callback: *mut ::core::ffi::c_void,
-            context: *mut *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            u32,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
         ) -> ::windows_core::HRESULT,
     pub EndGetUpgradeOrchestrationServiceState:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            context: *mut ::core::ffi::c_void,
-            result: *mut *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
         ) -> ::windows_core::HRESULT,
     pub BeginSetUpgradeOrchestrationServiceState:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            state: ::windows_core::PCWSTR,
-            timeoutmilliseconds: u32,
-            callback: *mut ::core::ffi::c_void,
-            context: *mut *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            ::windows_core::PCWSTR,
+            u32,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
         ) -> ::windows_core::HRESULT,
     pub EndSetUpgradeOrchestrationServiceState:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            context: *mut ::core::ffi::c_void,
-            result: *mut *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
         ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricDeployedApplicationHealthResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricDeployedApplicationHealthResult,
+    IFabricDeployedApplicationHealthResult_Vtbl,
+    0x4df50bf4_7c28_4210_94f7_50625df6c942
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricDeployedApplicationHealthResult,
+    ::windows_core::IUnknown
+);
 impl IFabricDeployedApplicationHealthResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_DeployedApplicationHealth(
         &self,
@@ -17049,54 +16241,29 @@ impl IFabricDeployedApplicationHealthResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricDeployedApplicationHealthResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricDeployedApplicationHealthResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricDeployedApplicationHealthResult {}
-impl ::core::fmt::Debug for IFabricDeployedApplicationHealthResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricDeployedApplicationHealthResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricDeployedApplicationHealthResult {}
 unsafe impl ::core::marker::Sync for IFabricDeployedApplicationHealthResult {}
-unsafe impl ::windows_core::Interface for IFabricDeployedApplicationHealthResult {
-    type Vtable = IFabricDeployedApplicationHealthResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricDeployedApplicationHealthResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricDeployedApplicationHealthResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x4df50bf4_7c28_4210_94f7_50625df6c942);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricDeployedApplicationHealthResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_DeployedApplicationHealth:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_DEPLOYED_APPLICATION_HEALTH,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_DeployedApplicationHealth: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricDeployedServicePackageHealthResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricDeployedServicePackageHealthResult,
+    IFabricDeployedServicePackageHealthResult_Vtbl,
+    0x40991ce0_cdbb_44e9_9cdc_b14a5d5ea4c1
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricDeployedServicePackageHealthResult,
+    ::windows_core::IUnknown
+);
 impl IFabricDeployedServicePackageHealthResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_DeployedServicePackageHealth(
         &self,
@@ -17106,53 +16273,26 @@ impl IFabricDeployedServicePackageHealthResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricDeployedServicePackageHealthResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricDeployedServicePackageHealthResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricDeployedServicePackageHealthResult {}
-impl ::core::fmt::Debug for IFabricDeployedServicePackageHealthResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricDeployedServicePackageHealthResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricDeployedServicePackageHealthResult {}
 unsafe impl ::core::marker::Sync for IFabricDeployedServicePackageHealthResult {}
-unsafe impl ::windows_core::Interface for IFabricDeployedServicePackageHealthResult {
-    type Vtable = IFabricDeployedServicePackageHealthResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricDeployedServicePackageHealthResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricDeployedServicePackageHealthResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x40991ce0_cdbb_44e9_9cdc_b14a5d5ea4c1);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricDeployedServicePackageHealthResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_DeployedServicePackageHealth:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_DeployedServicePackageHealth: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricFaultManagementClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricFaultManagementClient,
+    IFabricFaultManagementClient_Vtbl,
+    0x769e1838_8726_4dcd_a3c0_211673a6967a
+);
+::windows_core::imp::interface_hierarchy!(IFabricFaultManagementClient, ::windows_core::IUnknown);
 impl IFabricFaultManagementClient {
     pub unsafe fn BeginRestartNode<P0>(
         &self,
@@ -17171,7 +16311,7 @@ impl IFabricFaultManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartNode<P0>(
         &self,
@@ -17186,7 +16326,7 @@ impl IFabricFaultManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartNode<P0>(
         &self,
@@ -17205,7 +16345,7 @@ impl IFabricFaultManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNode<P0>(
         &self,
@@ -17220,7 +16360,7 @@ impl IFabricFaultManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStopNode<P0>(
         &self,
@@ -17239,7 +16379,7 @@ impl IFabricFaultManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopNode<P0>(
         &self,
@@ -17254,7 +16394,7 @@ impl IFabricFaultManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRestartDeployedCodePackage<P0>(
         &self,
@@ -17273,7 +16413,7 @@ impl IFabricFaultManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartDeployedCodePackage<P0>(
         &self,
@@ -17288,7 +16428,7 @@ impl IFabricFaultManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMovePrimary<P0>(
         &self,
@@ -17307,7 +16447,7 @@ impl IFabricFaultManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMovePrimary<P0>(
         &self,
@@ -17322,7 +16462,7 @@ impl IFabricFaultManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginMoveSecondary<P0>(
         &self,
@@ -17341,7 +16481,7 @@ impl IFabricFaultManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndMoveSecondary<P0>(
         &self,
@@ -17356,117 +16496,96 @@ impl IFabricFaultManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricFaultManagementClient, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricFaultManagementClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricFaultManagementClient {}
-impl ::core::fmt::Debug for IFabricFaultManagementClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricFaultManagementClient")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricFaultManagementClient {}
 unsafe impl ::core::marker::Sync for IFabricFaultManagementClient {}
-unsafe impl ::windows_core::Interface for IFabricFaultManagementClient {
-    type Vtable = IFabricFaultManagementClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricFaultManagementClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricFaultManagementClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x769e1838_8726_4dcd_a3c0_211673a6967a);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricFaultManagementClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub BeginRestartNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_RESTART_NODE_DESCRIPTION2,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_RESTART_NODE_DESCRIPTION2,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRestartNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginStartNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_START_NODE_DESCRIPTION2,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_START_NODE_DESCRIPTION2,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndStartNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginStopNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_STOP_NODE_DESCRIPTION2,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_STOP_NODE_DESCRIPTION2,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndStopNode: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginRestartDeployedCodePackage: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_RESTART_DEPLOYED_CODE_PACKAGE_DESCRIPTION2,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_RESTART_DEPLOYED_CODE_PACKAGE_DESCRIPTION2,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRestartDeployedCodePackage: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginMovePrimary: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_MOVE_PRIMARY_DESCRIPTION2,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_MOVE_PRIMARY_DESCRIPTION2,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndMovePrimary: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginMoveSecondary: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_MOVE_SECONDARY_DESCRIPTION2,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_MOVE_SECONDARY_DESCRIPTION2,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndMoveSecondary: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGatewayInformationResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGatewayInformationResult,
+    IFabricGatewayInformationResult_Vtbl,
+    0xa57e7740_fa33_448e_9f35_8bf802a713aa
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGatewayInformationResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGatewayInformationResult {
     pub unsafe fn get_GatewayInformation(&self) -> *mut super::super::FABRIC_GATEWAY_INFORMATION {
         (::windows_core::Interface::vtable(self).get_GatewayInformation)(
@@ -17474,49 +16593,25 @@ impl IFabricGatewayInformationResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGatewayInformationResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGatewayInformationResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGatewayInformationResult {}
-impl ::core::fmt::Debug for IFabricGatewayInformationResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGatewayInformationResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGatewayInformationResult {}
 unsafe impl ::core::marker::Sync for IFabricGatewayInformationResult {}
-unsafe impl ::windows_core::Interface for IFabricGatewayInformationResult {
-    type Vtable = IFabricGatewayInformationResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGatewayInformationResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGatewayInformationResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xa57e7740_fa33_448e_9f35_8bf802a713aa);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGatewayInformationResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_GatewayInformation:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_GATEWAY_INFORMATION,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetApplicationListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetApplicationListResult,
+    IFabricGetApplicationListResult_Vtbl,
+    0xf038c61e_7059_41b6_8dea_d304a2080f46
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetApplicationListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetApplicationListResult {
     pub unsafe fn get_ApplicationList(
         &self,
@@ -17526,50 +16621,27 @@ impl IFabricGetApplicationListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetApplicationListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetApplicationListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetApplicationListResult {}
-impl ::core::fmt::Debug for IFabricGetApplicationListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetApplicationListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetApplicationListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetApplicationListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetApplicationListResult {
-    type Vtable = IFabricGetApplicationListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetApplicationListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetApplicationListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xf038c61e_7059_41b6_8dea_d304a2080f46);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetApplicationListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ApplicationList:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_APPLICATION_QUERY_RESULT_LIST,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetApplicationListResult2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetApplicationListResult2,
+    IFabricGetApplicationListResult2_Vtbl,
+    0x6637a860_26bc_4f1a_902f_f418fcfe1e51
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetApplicationListResult2,
+    ::windows_core::IUnknown,
+    IFabricGetApplicationListResult
+);
 impl IFabricGetApplicationListResult2 {
     pub unsafe fn get_ApplicationList(
         &self,
@@ -17584,49 +16656,24 @@ impl IFabricGetApplicationListResult2 {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetApplicationListResult2,
-    ::windows_core::IUnknown,
-    IFabricGetApplicationListResult
-);
-impl ::core::cmp::PartialEq for IFabricGetApplicationListResult2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetApplicationListResult2 {}
-impl ::core::fmt::Debug for IFabricGetApplicationListResult2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetApplicationListResult2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetApplicationListResult2 {}
 unsafe impl ::core::marker::Sync for IFabricGetApplicationListResult2 {}
-unsafe impl ::windows_core::Interface for IFabricGetApplicationListResult2 {
-    type Vtable = IFabricGetApplicationListResult2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetApplicationListResult2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetApplicationListResult2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x6637a860_26bc_4f1a_902f_f418fcfe1e51);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetApplicationListResult2_Vtbl {
     pub base__: IFabricGetApplicationListResult_Vtbl,
     pub get_PagingStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_PAGING_STATUS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetApplicationLoadInformationResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetApplicationLoadInformationResult,
+    IFabricGetApplicationLoadInformationResult_Vtbl,
+    0x38fd0512_7586_4bd5_9616_b7070cf025c0
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetApplicationLoadInformationResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetApplicationLoadInformationResult {
     pub unsafe fn get_ApplicationLoadInformation(
         &self,
@@ -17636,50 +16683,26 @@ impl IFabricGetApplicationLoadInformationResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetApplicationLoadInformationResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetApplicationLoadInformationResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetApplicationLoadInformationResult {}
-impl ::core::fmt::Debug for IFabricGetApplicationLoadInformationResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetApplicationLoadInformationResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetApplicationLoadInformationResult {}
 unsafe impl ::core::marker::Sync for IFabricGetApplicationLoadInformationResult {}
-unsafe impl ::windows_core::Interface for IFabricGetApplicationLoadInformationResult {
-    type Vtable = IFabricGetApplicationLoadInformationResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetApplicationLoadInformationResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetApplicationLoadInformationResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x38fd0512_7586_4bd5_9616_b7070cf025c0);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetApplicationLoadInformationResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ApplicationLoadInformation:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_APPLICATION_LOAD_INFORMATION,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetApplicationNameResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetApplicationNameResult,
+    IFabricGetApplicationNameResult_Vtbl,
+    0x258dbcc8_ac9a_47ff_838b_57ff506c73b1
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetApplicationNameResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetApplicationNameResult {
     pub unsafe fn get_ApplicationName(
         &self,
@@ -17689,50 +16712,26 @@ impl IFabricGetApplicationNameResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetApplicationNameResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetApplicationNameResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetApplicationNameResult {}
-impl ::core::fmt::Debug for IFabricGetApplicationNameResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetApplicationNameResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetApplicationNameResult {}
 unsafe impl ::core::marker::Sync for IFabricGetApplicationNameResult {}
-unsafe impl ::windows_core::Interface for IFabricGetApplicationNameResult {
-    type Vtable = IFabricGetApplicationNameResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetApplicationNameResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetApplicationNameResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x258dbcc8_ac9a_47ff_838b_57ff506c73b1);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetApplicationNameResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ApplicationName:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_APPLICATION_NAME_QUERY_RESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetApplicationNetworkListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetApplicationNetworkListResult,
+    IFabricGetApplicationNetworkListResult_Vtbl,
+    0x4f9d0390_aa08_4dee_ba49_62891eb47c37
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetApplicationNetworkListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetApplicationNetworkListResult {
     pub unsafe fn get_ApplicationNetworkList(
         &self,
@@ -17747,43 +16746,19 @@ impl IFabricGetApplicationNetworkListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetApplicationNetworkListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetApplicationNetworkListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetApplicationNetworkListResult {}
-impl ::core::fmt::Debug for IFabricGetApplicationNetworkListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetApplicationNetworkListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetApplicationNetworkListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetApplicationNetworkListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetApplicationNetworkListResult {
-    type Vtable = IFabricGetApplicationNetworkListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetApplicationNetworkListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetApplicationNetworkListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x4f9d0390_aa08_4dee_ba49_62891eb47c37);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetApplicationNetworkListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ApplicationNetworkList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_APPLICATION_NETWORK_QUERY_RESULT_LIST , pub get_PagingStatus :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PAGING_STATUS , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetApplicationTypeListResult(::windows_core::IUnknown);
+pub struct IFabricGetApplicationNetworkListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ApplicationNetworkList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_APPLICATION_NETWORK_QUERY_RESULT_LIST , pub get_PagingStatus :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PAGING_STATUS , }
+::windows_core::imp::com_interface!(
+    IFabricGetApplicationTypeListResult,
+    IFabricGetApplicationTypeListResult_Vtbl,
+    0x944f7a70_224e_4191_8dd1_bba46dc88dd2
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetApplicationTypeListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetApplicationTypeListResult {
     pub unsafe fn get_ApplicationTypeList(
         &self,
@@ -17793,50 +16768,26 @@ impl IFabricGetApplicationTypeListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetApplicationTypeListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetApplicationTypeListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetApplicationTypeListResult {}
-impl ::core::fmt::Debug for IFabricGetApplicationTypeListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetApplicationTypeListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetApplicationTypeListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetApplicationTypeListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetApplicationTypeListResult {
-    type Vtable = IFabricGetApplicationTypeListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetApplicationTypeListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetApplicationTypeListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x944f7a70_224e_4191_8dd1_bba46dc88dd2);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetApplicationTypeListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ApplicationTypeList:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_APPLICATION_TYPE_QUERY_RESULT_LIST,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetApplicationTypePagedListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetApplicationTypePagedListResult,
+    IFabricGetApplicationTypePagedListResult_Vtbl,
+    0x5d8dde9c_05e8_428d_b494_43873d7c2db8
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetApplicationTypePagedListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetApplicationTypePagedListResult {
     pub unsafe fn get_ApplicationTypePagedList(
         &self,
@@ -17851,53 +16802,29 @@ impl IFabricGetApplicationTypePagedListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetApplicationTypePagedListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetApplicationTypePagedListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetApplicationTypePagedListResult {}
-impl ::core::fmt::Debug for IFabricGetApplicationTypePagedListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetApplicationTypePagedListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetApplicationTypePagedListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetApplicationTypePagedListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetApplicationTypePagedListResult {
-    type Vtable = IFabricGetApplicationTypePagedListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetApplicationTypePagedListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetApplicationTypePagedListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x5d8dde9c_05e8_428d_b494_43873d7c2db8);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetApplicationTypePagedListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ApplicationTypePagedList:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_APPLICATION_TYPE_QUERY_RESULT_LIST,
     pub get_PagingStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_PAGING_STATUS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetClusterHealthChunkResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetClusterHealthChunkResult,
+    IFabricGetClusterHealthChunkResult_Vtbl,
+    0x7fefcf06_c840_4d8a_9cc7_36f080e0e121
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetClusterHealthChunkResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetClusterHealthChunkResult {
     pub unsafe fn get_ClusterHealthChunk(&self) -> *mut super::super::FABRIC_CLUSTER_HEALTH_CHUNK {
         (::windows_core::Interface::vtable(self).get_ClusterHealthChunk)(
@@ -17905,51 +16832,26 @@ impl IFabricGetClusterHealthChunkResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetClusterHealthChunkResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetClusterHealthChunkResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetClusterHealthChunkResult {}
-impl ::core::fmt::Debug for IFabricGetClusterHealthChunkResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetClusterHealthChunkResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetClusterHealthChunkResult {}
 unsafe impl ::core::marker::Sync for IFabricGetClusterHealthChunkResult {}
-unsafe impl ::windows_core::Interface for IFabricGetClusterHealthChunkResult {
-    type Vtable = IFabricGetClusterHealthChunkResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetClusterHealthChunkResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetClusterHealthChunkResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x7fefcf06_c840_4d8a_9cc7_36f080e0e121);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetClusterHealthChunkResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ClusterHealthChunk:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_CLUSTER_HEALTH_CHUNK,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetClusterLoadInformationResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetClusterLoadInformationResult,
+    IFabricGetClusterLoadInformationResult_Vtbl,
+    0x7cc3eb08_0e69_4e52_81fc_0190ab997dbf
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetClusterLoadInformationResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetClusterLoadInformationResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_ClusterLoadInformation(
         &self,
@@ -17959,52 +16861,28 @@ impl IFabricGetClusterLoadInformationResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetClusterLoadInformationResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetClusterLoadInformationResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetClusterLoadInformationResult {}
-impl ::core::fmt::Debug for IFabricGetClusterLoadInformationResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetClusterLoadInformationResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetClusterLoadInformationResult {}
 unsafe impl ::core::marker::Sync for IFabricGetClusterLoadInformationResult {}
-unsafe impl ::windows_core::Interface for IFabricGetClusterLoadInformationResult {
-    type Vtable = IFabricGetClusterLoadInformationResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetClusterLoadInformationResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetClusterLoadInformationResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x7cc3eb08_0e69_4e52_81fc_0190ab997dbf);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetClusterLoadInformationResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_ClusterLoadInformation:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_CLUSTER_LOAD_INFORMATION,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_ClusterLoadInformation: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetDeployedApplicationListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetDeployedApplicationListResult,
+    IFabricGetDeployedApplicationListResult_Vtbl,
+    0x5722b789_3936_4c33_9f7a_342967457612
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetDeployedApplicationListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetDeployedApplicationListResult {
     pub unsafe fn get_DeployedApplicationList(
         &self,
@@ -18014,43 +16892,19 @@ impl IFabricGetDeployedApplicationListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetDeployedApplicationListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetDeployedApplicationListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetDeployedApplicationListResult {}
-impl ::core::fmt::Debug for IFabricGetDeployedApplicationListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetDeployedApplicationListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetDeployedApplicationListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetDeployedApplicationListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetDeployedApplicationListResult {
-    type Vtable = IFabricGetDeployedApplicationListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetDeployedApplicationListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetDeployedApplicationListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x5722b789_3936_4c33_9f7a_342967457612);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetDeployedApplicationListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedApplicationList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_LIST , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetDeployedApplicationPagedListResult(::windows_core::IUnknown);
+pub struct IFabricGetDeployedApplicationListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedApplicationList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_LIST , }
+::windows_core::imp::com_interface!(
+    IFabricGetDeployedApplicationPagedListResult,
+    IFabricGetDeployedApplicationPagedListResult_Vtbl,
+    0xebd76f6f_508e_43ea_9ca2_a98ea2c0e846
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetDeployedApplicationPagedListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetDeployedApplicationPagedListResult {
     pub unsafe fn get_DeployedApplicationPagedList(
         &self,
@@ -18065,45 +16919,20 @@ impl IFabricGetDeployedApplicationPagedListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetDeployedApplicationPagedListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetDeployedApplicationPagedListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetDeployedApplicationPagedListResult {}
-impl ::core::fmt::Debug for IFabricGetDeployedApplicationPagedListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetDeployedApplicationPagedListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetDeployedApplicationPagedListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetDeployedApplicationPagedListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetDeployedApplicationPagedListResult {
-    type Vtable = IFabricGetDeployedApplicationPagedListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetDeployedApplicationPagedListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetDeployedApplicationPagedListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xebd76f6f_508e_43ea_9ca2_a98ea2c0e846);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetDeployedApplicationPagedListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedApplicationPagedList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_LIST , pub get_PagingStatus :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PAGING_STATUS , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetDeployedCodePackageListResult(::windows_core::IUnknown);
+pub struct IFabricGetDeployedApplicationPagedListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedApplicationPagedList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_LIST , pub get_PagingStatus :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PAGING_STATUS , }
+::windows_core::imp::com_interface!(
+    IFabricGetDeployedCodePackageListResult,
+    IFabricGetDeployedCodePackageListResult_Vtbl,
+    0x3f390652_c0dc_4919_8a7f_8ae1e827de0c
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetDeployedCodePackageListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetDeployedCodePackageListResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_DeployedCodePackageList(
         &self,
@@ -18113,43 +16942,19 @@ impl IFabricGetDeployedCodePackageListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetDeployedCodePackageListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetDeployedCodePackageListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetDeployedCodePackageListResult {}
-impl ::core::fmt::Debug for IFabricGetDeployedCodePackageListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetDeployedCodePackageListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetDeployedCodePackageListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetDeployedCodePackageListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetDeployedCodePackageListResult {
-    type Vtable = IFabricGetDeployedCodePackageListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetDeployedCodePackageListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetDeployedCodePackageListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x3f390652_c0dc_4919_8a7f_8ae1e827de0c);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetDeployedCodePackageListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , # [ cfg ( feature = "Win32_Foundation" ) ] pub get_DeployedCodePackageList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_LIST , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] get_DeployedCodePackageList :usize , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetDeployedNetworkCodePackageListResult(::windows_core::IUnknown);
+pub struct IFabricGetDeployedCodePackageListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , # [ cfg ( feature = "Win32_Foundation" ) ] pub get_DeployedCodePackageList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_LIST , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] get_DeployedCodePackageList :usize , }
+::windows_core::imp::com_interface!(
+    IFabricGetDeployedNetworkCodePackageListResult,
+    IFabricGetDeployedNetworkCodePackageListResult_Vtbl,
+    0x6586d264_a96e_4f46_9388_189de5d61d6d
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetDeployedNetworkCodePackageListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetDeployedNetworkCodePackageListResult {
     pub unsafe fn get_DeployedNetworkCodePackageList(
         &self,
@@ -18164,43 +16969,19 @@ impl IFabricGetDeployedNetworkCodePackageListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetDeployedNetworkCodePackageListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetDeployedNetworkCodePackageListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetDeployedNetworkCodePackageListResult {}
-impl ::core::fmt::Debug for IFabricGetDeployedNetworkCodePackageListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetDeployedNetworkCodePackageListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetDeployedNetworkCodePackageListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetDeployedNetworkCodePackageListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetDeployedNetworkCodePackageListResult {
-    type Vtable = IFabricGetDeployedNetworkCodePackageListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetDeployedNetworkCodePackageListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetDeployedNetworkCodePackageListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x6586d264_a96e_4f46_9388_189de5d61d6d);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetDeployedNetworkCodePackageListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedNetworkCodePackageList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_NETWORK_CODE_PACKAGE_QUERY_RESULT_LIST , pub get_PagingStatus :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PAGING_STATUS , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetDeployedNetworkListResult(::windows_core::IUnknown);
+pub struct IFabricGetDeployedNetworkCodePackageListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedNetworkCodePackageList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_NETWORK_CODE_PACKAGE_QUERY_RESULT_LIST , pub get_PagingStatus :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PAGING_STATUS , }
+::windows_core::imp::com_interface!(
+    IFabricGetDeployedNetworkListResult,
+    IFabricGetDeployedNetworkListResult_Vtbl,
+    0x347f5d8c_1abd_48e1_a7d1_9083556dafd3
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetDeployedNetworkListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetDeployedNetworkListResult {
     pub unsafe fn get_DeployedNetworkList(
         &self,
@@ -18215,53 +16996,29 @@ impl IFabricGetDeployedNetworkListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetDeployedNetworkListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetDeployedNetworkListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetDeployedNetworkListResult {}
-impl ::core::fmt::Debug for IFabricGetDeployedNetworkListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetDeployedNetworkListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetDeployedNetworkListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetDeployedNetworkListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetDeployedNetworkListResult {
-    type Vtable = IFabricGetDeployedNetworkListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetDeployedNetworkListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetDeployedNetworkListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x347f5d8c_1abd_48e1_a7d1_9083556dafd3);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetDeployedNetworkListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_DeployedNetworkList:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_DEPLOYED_NETWORK_QUERY_RESULT_LIST,
     pub get_PagingStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_PAGING_STATUS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetDeployedReplicaListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetDeployedReplicaListResult,
+    IFabricGetDeployedReplicaListResult_Vtbl,
+    0x29e064bf_5d78_49e5_baa6_acfc24a4a8b5
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetDeployedReplicaListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetDeployedReplicaListResult {
     pub unsafe fn get_DeployedReplicaList(
         &self,
@@ -18271,43 +17028,19 @@ impl IFabricGetDeployedReplicaListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetDeployedReplicaListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetDeployedReplicaListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetDeployedReplicaListResult {}
-impl ::core::fmt::Debug for IFabricGetDeployedReplicaListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetDeployedReplicaListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetDeployedReplicaListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetDeployedReplicaListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetDeployedReplicaListResult {
-    type Vtable = IFabricGetDeployedReplicaListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetDeployedReplicaListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetDeployedReplicaListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x29e064bf_5d78_49e5_baa6_acfc24a4a8b5);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetDeployedReplicaListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedReplicaList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_SERVICE_REPLICA_QUERY_RESULT_LIST , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetDeployedServicePackageListResult(::windows_core::IUnknown);
+pub struct IFabricGetDeployedReplicaListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedReplicaList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_SERVICE_REPLICA_QUERY_RESULT_LIST , }
+::windows_core::imp::com_interface!(
+    IFabricGetDeployedServicePackageListResult,
+    IFabricGetDeployedServicePackageListResult_Vtbl,
+    0x65851388_0421_4107_977b_39f4e15440d4
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetDeployedServicePackageListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetDeployedServicePackageListResult {
     pub unsafe fn get_DeployedServicePackageList(
         &self,
@@ -18317,43 +17050,19 @@ impl IFabricGetDeployedServicePackageListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetDeployedServicePackageListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetDeployedServicePackageListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetDeployedServicePackageListResult {}
-impl ::core::fmt::Debug for IFabricGetDeployedServicePackageListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetDeployedServicePackageListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetDeployedServicePackageListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetDeployedServicePackageListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetDeployedServicePackageListResult {
-    type Vtable = IFabricGetDeployedServicePackageListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetDeployedServicePackageListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetDeployedServicePackageListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x65851388_0421_4107_977b_39f4e15440d4);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetDeployedServicePackageListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedServicePackageList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_LIST , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetDeployedServiceReplicaDetailResult(::windows_core::IUnknown);
+pub struct IFabricGetDeployedServicePackageListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedServicePackageList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_LIST , }
+::windows_core::imp::com_interface!(
+    IFabricGetDeployedServiceReplicaDetailResult,
+    IFabricGetDeployedServiceReplicaDetailResult_Vtbl,
+    0x6d9d355e_89cf_4928_b758_b11ca4664fbe
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetDeployedServiceReplicaDetailResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetDeployedServiceReplicaDetailResult {
     pub unsafe fn get_ReplicaDetail(
         &self,
@@ -18363,43 +17072,19 @@ impl IFabricGetDeployedServiceReplicaDetailResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetDeployedServiceReplicaDetailResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetDeployedServiceReplicaDetailResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetDeployedServiceReplicaDetailResult {}
-impl ::core::fmt::Debug for IFabricGetDeployedServiceReplicaDetailResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetDeployedServiceReplicaDetailResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetDeployedServiceReplicaDetailResult {}
 unsafe impl ::core::marker::Sync for IFabricGetDeployedServiceReplicaDetailResult {}
-unsafe impl ::windows_core::Interface for IFabricGetDeployedServiceReplicaDetailResult {
-    type Vtable = IFabricGetDeployedServiceReplicaDetailResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetDeployedServiceReplicaDetailResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetDeployedServiceReplicaDetailResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x6d9d355e_89cf_4928_b758_b11ca4664fbe);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetDeployedServiceReplicaDetailResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ReplicaDetail :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetDeployedServiceTypeListResult(::windows_core::IUnknown);
+pub struct IFabricGetDeployedServiceReplicaDetailResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ReplicaDetail :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM , }
+::windows_core::imp::com_interface!(
+    IFabricGetDeployedServiceTypeListResult,
+    IFabricGetDeployedServiceTypeListResult_Vtbl,
+    0xdba68c7a_3f77_49bb_b611_ff94df062b8d
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetDeployedServiceTypeListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetDeployedServiceTypeListResult {
     pub unsafe fn get_DeployedServiceTypeList(
         &self,
@@ -18409,43 +17094,19 @@ impl IFabricGetDeployedServiceTypeListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetDeployedServiceTypeListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetDeployedServiceTypeListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetDeployedServiceTypeListResult {}
-impl ::core::fmt::Debug for IFabricGetDeployedServiceTypeListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetDeployedServiceTypeListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetDeployedServiceTypeListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetDeployedServiceTypeListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetDeployedServiceTypeListResult {
-    type Vtable = IFabricGetDeployedServiceTypeListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetDeployedServiceTypeListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetDeployedServiceTypeListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xdba68c7a_3f77_49bb_b611_ff94df062b8d);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetDeployedServiceTypeListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedServiceTypeList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_SERVICE_TYPE_QUERY_RESULT_LIST , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetNetworkApplicationListResult(::windows_core::IUnknown);
+pub struct IFabricGetDeployedServiceTypeListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_DeployedServiceTypeList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_DEPLOYED_SERVICE_TYPE_QUERY_RESULT_LIST , }
+::windows_core::imp::com_interface!(
+    IFabricGetNetworkApplicationListResult,
+    IFabricGetNetworkApplicationListResult_Vtbl,
+    0xad1f51ff_e244_498e_9f72_609b01124b84
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetNetworkApplicationListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetNetworkApplicationListResult {
     pub unsafe fn get_NetworkApplicationList(
         &self,
@@ -18460,43 +17121,16 @@ impl IFabricGetNetworkApplicationListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetNetworkApplicationListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetNetworkApplicationListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetNetworkApplicationListResult {}
-impl ::core::fmt::Debug for IFabricGetNetworkApplicationListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetNetworkApplicationListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetNetworkApplicationListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetNetworkApplicationListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetNetworkApplicationListResult {
-    type Vtable = IFabricGetNetworkApplicationListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetNetworkApplicationListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetNetworkApplicationListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xad1f51ff_e244_498e_9f72_609b01124b84);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetNetworkApplicationListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_NetworkApplicationList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_NETWORK_APPLICATION_QUERY_RESULT_LIST , pub get_PagingStatus :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PAGING_STATUS , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetNetworkListResult(::windows_core::IUnknown);
+pub struct IFabricGetNetworkApplicationListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_NetworkApplicationList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_NETWORK_APPLICATION_QUERY_RESULT_LIST , pub get_PagingStatus :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PAGING_STATUS , }
+::windows_core::imp::com_interface!(
+    IFabricGetNetworkListResult,
+    IFabricGetNetworkListResult_Vtbl,
+    0xbd777a0f_2020_40bb_8f23_8756649cce47
+);
+::windows_core::imp::interface_hierarchy!(IFabricGetNetworkListResult, ::windows_core::IUnknown);
 impl IFabricGetNetworkListResult {
     pub unsafe fn get_NetworkList(&self) -> *mut super::super::FABRIC_NETWORK_QUERY_RESULT_LIST {
         (::windows_core::Interface::vtable(self).get_NetworkList)(
@@ -18509,49 +17143,28 @@ impl IFabricGetNetworkListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricGetNetworkListResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricGetNetworkListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetNetworkListResult {}
-impl ::core::fmt::Debug for IFabricGetNetworkListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetNetworkListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetNetworkListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetNetworkListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetNetworkListResult {
-    type Vtable = IFabricGetNetworkListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetNetworkListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetNetworkListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xbd777a0f_2020_40bb_8f23_8756649cce47);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetNetworkListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_NetworkList:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_NETWORK_QUERY_RESULT_LIST,
     pub get_PagingStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_PAGING_STATUS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetNetworkNodeListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetNetworkNodeListResult,
+    IFabricGetNetworkNodeListResult_Vtbl,
+    0x3ba780e9_58eb_478d_bc89_42c89e19d083
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetNetworkNodeListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetNetworkNodeListResult {
     pub unsafe fn get_NetworkNodeList(
         &self,
@@ -18566,55 +17179,27 @@ impl IFabricGetNetworkNodeListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetNetworkNodeListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetNetworkNodeListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetNetworkNodeListResult {}
-impl ::core::fmt::Debug for IFabricGetNetworkNodeListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetNetworkNodeListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetNetworkNodeListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetNetworkNodeListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetNetworkNodeListResult {
-    type Vtable = IFabricGetNetworkNodeListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetNetworkNodeListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetNetworkNodeListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x3ba780e9_58eb_478d_bc89_42c89e19d083);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetNetworkNodeListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_NetworkNodeList:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_NETWORK_NODE_QUERY_RESULT_LIST,
     pub get_PagingStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_PAGING_STATUS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetNodeListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetNodeListResult,
+    IFabricGetNodeListResult_Vtbl,
+    0x7cc3eb08_0e69_4e52_81fc_0190ab997dbe
+);
+::windows_core::imp::interface_hierarchy!(IFabricGetNodeListResult, ::windows_core::IUnknown);
 impl IFabricGetNodeListResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_NodeList(&self) -> *mut super::super::FABRIC_NODE_QUERY_RESULT_LIST {
         (::windows_core::Interface::vtable(self).get_NodeList)(::windows_core::Interface::as_raw(
@@ -18622,51 +17207,30 @@ impl IFabricGetNodeListResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricGetNodeListResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricGetNodeListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetNodeListResult {}
-impl ::core::fmt::Debug for IFabricGetNodeListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetNodeListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetNodeListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetNodeListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetNodeListResult {
-    type Vtable = IFabricGetNodeListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetNodeListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetNodeListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x7cc3eb08_0e69_4e52_81fc_0190ab997dbe);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetNodeListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_NodeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> *mut super::super::FABRIC_NODE_QUERY_RESULT_LIST,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_NodeList: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetNodeListResult2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetNodeListResult2,
+    IFabricGetNodeListResult2_Vtbl,
+    0x4a0f2da7_f851_44e5_8e12_aa521076097a
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetNodeListResult2,
+    ::windows_core::IUnknown,
+    IFabricGetNodeListResult
+);
 impl IFabricGetNodeListResult2 {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_NodeList(&self) -> *mut super::super::FABRIC_NODE_QUERY_RESULT_LIST {
         (::windows_core::Interface::vtable(self).base__.get_NodeList)(
@@ -18679,51 +17243,25 @@ impl IFabricGetNodeListResult2 {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetNodeListResult2,
-    ::windows_core::IUnknown,
-    IFabricGetNodeListResult
-);
-impl ::core::cmp::PartialEq for IFabricGetNodeListResult2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetNodeListResult2 {}
-impl ::core::fmt::Debug for IFabricGetNodeListResult2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetNodeListResult2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetNodeListResult2 {}
 unsafe impl ::core::marker::Sync for IFabricGetNodeListResult2 {}
-unsafe impl ::windows_core::Interface for IFabricGetNodeListResult2 {
-    type Vtable = IFabricGetNodeListResult2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetNodeListResult2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetNodeListResult2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x4a0f2da7_f851_44e5_8e12_aa521076097a);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetNodeListResult2_Vtbl {
     pub base__: IFabricGetNodeListResult_Vtbl,
     pub get_PagingStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_PAGING_STATUS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetNodeLoadInformationResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetNodeLoadInformationResult,
+    IFabricGetNodeLoadInformationResult_Vtbl,
+    0x4332eb3a_aed6_86fe_c2fa_653123dea09b
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetNodeLoadInformationResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetNodeLoadInformationResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_NodeLoadInformation(
         &self,
@@ -18733,52 +17271,25 @@ impl IFabricGetNodeLoadInformationResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetNodeLoadInformationResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetNodeLoadInformationResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetNodeLoadInformationResult {}
-impl ::core::fmt::Debug for IFabricGetNodeLoadInformationResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetNodeLoadInformationResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetNodeLoadInformationResult {}
 unsafe impl ::core::marker::Sync for IFabricGetNodeLoadInformationResult {}
-unsafe impl ::windows_core::Interface for IFabricGetNodeLoadInformationResult {
-    type Vtable = IFabricGetNodeLoadInformationResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetNodeLoadInformationResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetNodeLoadInformationResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x4332eb3a_aed6_86fe_c2fa_653123dea09b);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetNodeLoadInformationResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_NodeLoadInformation:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_NODE_LOAD_INFORMATION,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_NodeLoadInformation: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetPartitionListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetPartitionListResult,
+    IFabricGetPartitionListResult_Vtbl,
+    0xafc1266c_967b_4769_9f8a_b249c5887ee6
+);
+::windows_core::imp::interface_hierarchy!(IFabricGetPartitionListResult, ::windows_core::IUnknown);
 impl IFabricGetPartitionListResult {
     pub unsafe fn get_PartitionList(
         &self,
@@ -18788,47 +17299,27 @@ impl IFabricGetPartitionListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricGetPartitionListResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricGetPartitionListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetPartitionListResult {}
-impl ::core::fmt::Debug for IFabricGetPartitionListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetPartitionListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetPartitionListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetPartitionListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetPartitionListResult {
-    type Vtable = IFabricGetPartitionListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetPartitionListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetPartitionListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xafc1266c_967b_4769_9f8a_b249c5887ee6);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetPartitionListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_PartitionList:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_SERVICE_PARTITION_QUERY_RESULT_LIST,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetPartitionListResult2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetPartitionListResult2,
+    IFabricGetPartitionListResult2_Vtbl,
+    0xb131b99a_d251_47b2_9d08_24ddd6793206
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetPartitionListResult2,
+    ::windows_core::IUnknown,
+    IFabricGetPartitionListResult
+);
 impl IFabricGetPartitionListResult2 {
     pub unsafe fn get_PartitionList(
         &self,
@@ -18843,51 +17334,25 @@ impl IFabricGetPartitionListResult2 {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetPartitionListResult2,
-    ::windows_core::IUnknown,
-    IFabricGetPartitionListResult
-);
-impl ::core::cmp::PartialEq for IFabricGetPartitionListResult2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetPartitionListResult2 {}
-impl ::core::fmt::Debug for IFabricGetPartitionListResult2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetPartitionListResult2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetPartitionListResult2 {}
 unsafe impl ::core::marker::Sync for IFabricGetPartitionListResult2 {}
-unsafe impl ::windows_core::Interface for IFabricGetPartitionListResult2 {
-    type Vtable = IFabricGetPartitionListResult2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetPartitionListResult2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetPartitionListResult2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xb131b99a_d251_47b2_9d08_24ddd6793206);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetPartitionListResult2_Vtbl {
     pub base__: IFabricGetPartitionListResult_Vtbl,
     pub get_PagingStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_PAGING_STATUS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetPartitionLoadInformationResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetPartitionLoadInformationResult,
+    IFabricGetPartitionLoadInformationResult_Vtbl,
+    0x46f1a40c_a4f3_409e_a7ec_6fd115f7acc7
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetPartitionLoadInformationResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetPartitionLoadInformationResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_PartitionLoadInformation(
         &self,
@@ -18897,52 +17362,28 @@ impl IFabricGetPartitionLoadInformationResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetPartitionLoadInformationResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetPartitionLoadInformationResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetPartitionLoadInformationResult {}
-impl ::core::fmt::Debug for IFabricGetPartitionLoadInformationResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetPartitionLoadInformationResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetPartitionLoadInformationResult {}
 unsafe impl ::core::marker::Sync for IFabricGetPartitionLoadInformationResult {}
-unsafe impl ::windows_core::Interface for IFabricGetPartitionLoadInformationResult {
-    type Vtable = IFabricGetPartitionLoadInformationResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetPartitionLoadInformationResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetPartitionLoadInformationResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x46f1a40c_a4f3_409e_a7ec_6fd115f7acc7);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetPartitionLoadInformationResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_PartitionLoadInformation:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_PARTITION_LOAD_INFORMATION,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_PartitionLoadInformation: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetProvisionedCodeVersionListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetProvisionedCodeVersionListResult,
+    IFabricGetProvisionedCodeVersionListResult_Vtbl,
+    0xd042bdb6_4364_4818_b395_0e6b1a22cb11
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetProvisionedCodeVersionListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetProvisionedCodeVersionListResult {
     pub unsafe fn get_ProvisionedCodeVersionList(
         &self,
@@ -18952,43 +17393,19 @@ impl IFabricGetProvisionedCodeVersionListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetProvisionedCodeVersionListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetProvisionedCodeVersionListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetProvisionedCodeVersionListResult {}
-impl ::core::fmt::Debug for IFabricGetProvisionedCodeVersionListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetProvisionedCodeVersionListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetProvisionedCodeVersionListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetProvisionedCodeVersionListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetProvisionedCodeVersionListResult {
-    type Vtable = IFabricGetProvisionedCodeVersionListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetProvisionedCodeVersionListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetProvisionedCodeVersionListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xd042bdb6_4364_4818_b395_0e6b1a22cb11);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetProvisionedCodeVersionListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ProvisionedCodeVersionList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PROVISIONED_CODE_VERSION_QUERY_RESULT_LIST , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetProvisionedConfigVersionListResult(::windows_core::IUnknown);
+pub struct IFabricGetProvisionedCodeVersionListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ProvisionedCodeVersionList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PROVISIONED_CODE_VERSION_QUERY_RESULT_LIST , }
+::windows_core::imp::com_interface!(
+    IFabricGetProvisionedConfigVersionListResult,
+    IFabricGetProvisionedConfigVersionListResult_Vtbl,
+    0x1bbb9f78_e883_49d1_a998_7eb864fd4a0e
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetProvisionedConfigVersionListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetProvisionedConfigVersionListResult {
     pub unsafe fn get_ProvisionedConfigVersionList(
         &self,
@@ -18998,92 +17415,40 @@ impl IFabricGetProvisionedConfigVersionListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetProvisionedConfigVersionListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetProvisionedConfigVersionListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetProvisionedConfigVersionListResult {}
-impl ::core::fmt::Debug for IFabricGetProvisionedConfigVersionListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetProvisionedConfigVersionListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetProvisionedConfigVersionListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetProvisionedConfigVersionListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetProvisionedConfigVersionListResult {
-    type Vtable = IFabricGetProvisionedConfigVersionListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetProvisionedConfigVersionListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetProvisionedConfigVersionListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x1bbb9f78_e883_49d1_a998_7eb864fd4a0e);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetProvisionedConfigVersionListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ProvisionedConfigVersionList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PROVISIONED_CONFIG_VERSION_QUERY_RESULT_LIST , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetRepairTaskListResult(::windows_core::IUnknown);
+pub struct IFabricGetProvisionedConfigVersionListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ProvisionedConfigVersionList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_PROVISIONED_CONFIG_VERSION_QUERY_RESULT_LIST , }
+::windows_core::imp::com_interface!(
+    IFabricGetRepairTaskListResult,
+    IFabricGetRepairTaskListResult_Vtbl,
+    0x576b2462_5f69_4351_87c7_3ec2d1654a22
+);
+::windows_core::imp::interface_hierarchy!(IFabricGetRepairTaskListResult, ::windows_core::IUnknown);
 impl IFabricGetRepairTaskListResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_Tasks(&self) -> *mut super::super::FABRIC_REPAIR_TASK_LIST {
         (::windows_core::Interface::vtable(self).get_Tasks)(::windows_core::Interface::as_raw(self))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricGetRepairTaskListResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricGetRepairTaskListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetRepairTaskListResult {}
-impl ::core::fmt::Debug for IFabricGetRepairTaskListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetRepairTaskListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetRepairTaskListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetRepairTaskListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetRepairTaskListResult {
-    type Vtable = IFabricGetRepairTaskListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetRepairTaskListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetRepairTaskListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x576b2462_5f69_4351_87c7_3ec2d1654a22);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetRepairTaskListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_Tasks: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_REPAIR_TASK_LIST,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_Tasks: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetReplicaListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetReplicaListResult,
+    IFabricGetReplicaListResult_Vtbl,
+    0xe00d3761_3ac5_407d_a04f_1b59486217cf
+);
+::windows_core::imp::interface_hierarchy!(IFabricGetReplicaListResult, ::windows_core::IUnknown);
 impl IFabricGetReplicaListResult {
     pub unsafe fn get_ReplicaList(
         &self,
@@ -19093,47 +17458,27 @@ impl IFabricGetReplicaListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricGetReplicaListResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricGetReplicaListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetReplicaListResult {}
-impl ::core::fmt::Debug for IFabricGetReplicaListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetReplicaListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetReplicaListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetReplicaListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetReplicaListResult {
-    type Vtable = IFabricGetReplicaListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetReplicaListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetReplicaListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xe00d3761_3ac5_407d_a04f_1b59486217cf);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetReplicaListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ReplicaList:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_SERVICE_REPLICA_QUERY_RESULT_LIST,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetReplicaListResult2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetReplicaListResult2,
+    IFabricGetReplicaListResult2_Vtbl,
+    0x0bc12f86_c157_4c0d_b274_01fb09145934
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetReplicaListResult2,
+    ::windows_core::IUnknown,
+    IFabricGetReplicaListResult
+);
 impl IFabricGetReplicaListResult2 {
     pub unsafe fn get_ReplicaList(
         &self,
@@ -19148,51 +17493,25 @@ impl IFabricGetReplicaListResult2 {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetReplicaListResult2,
-    ::windows_core::IUnknown,
-    IFabricGetReplicaListResult
-);
-impl ::core::cmp::PartialEq for IFabricGetReplicaListResult2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetReplicaListResult2 {}
-impl ::core::fmt::Debug for IFabricGetReplicaListResult2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetReplicaListResult2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetReplicaListResult2 {}
 unsafe impl ::core::marker::Sync for IFabricGetReplicaListResult2 {}
-unsafe impl ::windows_core::Interface for IFabricGetReplicaListResult2 {
-    type Vtable = IFabricGetReplicaListResult2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetReplicaListResult2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetReplicaListResult2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x0bc12f86_c157_4c0d_b274_01fb09145934);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetReplicaListResult2_Vtbl {
     pub base__: IFabricGetReplicaListResult_Vtbl,
     pub get_PagingStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_PAGING_STATUS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetReplicaLoadInformationResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetReplicaLoadInformationResult,
+    IFabricGetReplicaLoadInformationResult_Vtbl,
+    0xe4190ca0_225c_11e4_8c21_0800200c9a66
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetReplicaLoadInformationResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetReplicaLoadInformationResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_ReplicaLoadInformation(
         &self,
@@ -19202,52 +17521,28 @@ impl IFabricGetReplicaLoadInformationResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetReplicaLoadInformationResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetReplicaLoadInformationResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetReplicaLoadInformationResult {}
-impl ::core::fmt::Debug for IFabricGetReplicaLoadInformationResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetReplicaLoadInformationResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetReplicaLoadInformationResult {}
 unsafe impl ::core::marker::Sync for IFabricGetReplicaLoadInformationResult {}
-unsafe impl ::windows_core::Interface for IFabricGetReplicaLoadInformationResult {
-    type Vtable = IFabricGetReplicaLoadInformationResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetReplicaLoadInformationResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetReplicaLoadInformationResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xe4190ca0_225c_11e4_8c21_0800200c9a66);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetReplicaLoadInformationResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_ReplicaLoadInformation:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_REPLICA_LOAD_INFORMATION,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_ReplicaLoadInformation: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetRollingUpgradeMonitoringPolicyResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetRollingUpgradeMonitoringPolicyResult,
+    IFabricGetRollingUpgradeMonitoringPolicyResult_Vtbl,
+    0x02bd6674_9c5a_4262_89a8_ac1a6a2fb5e9
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetRollingUpgradeMonitoringPolicyResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetRollingUpgradeMonitoringPolicyResult {
     pub unsafe fn get_Policy(&self) -> *mut super::super::FABRIC_ROLLING_UPGRADE_MONITORING_POLICY {
         (::windows_core::Interface::vtable(self).get_Policy)(::windows_core::Interface::as_raw(
@@ -19255,50 +17550,26 @@ impl IFabricGetRollingUpgradeMonitoringPolicyResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetRollingUpgradeMonitoringPolicyResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetRollingUpgradeMonitoringPolicyResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetRollingUpgradeMonitoringPolicyResult {}
-impl ::core::fmt::Debug for IFabricGetRollingUpgradeMonitoringPolicyResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetRollingUpgradeMonitoringPolicyResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetRollingUpgradeMonitoringPolicyResult {}
 unsafe impl ::core::marker::Sync for IFabricGetRollingUpgradeMonitoringPolicyResult {}
-unsafe impl ::windows_core::Interface for IFabricGetRollingUpgradeMonitoringPolicyResult {
-    type Vtable = IFabricGetRollingUpgradeMonitoringPolicyResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetRollingUpgradeMonitoringPolicyResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetRollingUpgradeMonitoringPolicyResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x02bd6674_9c5a_4262_89a8_ac1a6a2fb5e9);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetRollingUpgradeMonitoringPolicyResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Policy:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_ROLLING_UPGRADE_MONITORING_POLICY,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetServiceGroupMemberListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetServiceGroupMemberListResult,
+    IFabricGetServiceGroupMemberListResult_Vtbl,
+    0xe9f7f574_fd07_4a71_9f22_9cf9ccf3c166
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetServiceGroupMemberListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetServiceGroupMemberListResult {
     pub unsafe fn get_ServiceGroupMemberList(
         &self,
@@ -19308,43 +17579,19 @@ impl IFabricGetServiceGroupMemberListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetServiceGroupMemberListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetServiceGroupMemberListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetServiceGroupMemberListResult {}
-impl ::core::fmt::Debug for IFabricGetServiceGroupMemberListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetServiceGroupMemberListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetServiceGroupMemberListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetServiceGroupMemberListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetServiceGroupMemberListResult {
-    type Vtable = IFabricGetServiceGroupMemberListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetServiceGroupMemberListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetServiceGroupMemberListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xe9f7f574_fd07_4a71_9f22_9cf9ccf3c166);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetServiceGroupMemberListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ServiceGroupMemberList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_SERVICE_GROUP_MEMBER_QUERY_RESULT_LIST , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetServiceGroupMemberTypeListResult(::windows_core::IUnknown);
+pub struct IFabricGetServiceGroupMemberListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ServiceGroupMemberList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_SERVICE_GROUP_MEMBER_QUERY_RESULT_LIST , }
+::windows_core::imp::com_interface!(
+    IFabricGetServiceGroupMemberTypeListResult,
+    IFabricGetServiceGroupMemberTypeListResult_Vtbl,
+    0x5e572763_29a9_463a_b602_1332c0f60e6b
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetServiceGroupMemberTypeListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetServiceGroupMemberTypeListResult {
     pub unsafe fn get_ServiceGroupMemberTypeList(
         &self,
@@ -19354,43 +17601,16 @@ impl IFabricGetServiceGroupMemberTypeListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetServiceGroupMemberTypeListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetServiceGroupMemberTypeListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetServiceGroupMemberTypeListResult {}
-impl ::core::fmt::Debug for IFabricGetServiceGroupMemberTypeListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetServiceGroupMemberTypeListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetServiceGroupMemberTypeListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetServiceGroupMemberTypeListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetServiceGroupMemberTypeListResult {
-    type Vtable = IFabricGetServiceGroupMemberTypeListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetServiceGroupMemberTypeListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetServiceGroupMemberTypeListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x5e572763_29a9_463a_b602_1332c0f60e6b);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricGetServiceGroupMemberTypeListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ServiceGroupMemberTypeList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_SERVICE_GROUP_MEMBER_TYPE_QUERY_RESULT_LIST , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetServiceListResult(::windows_core::IUnknown);
+pub struct IFabricGetServiceGroupMemberTypeListResult_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub get_ServiceGroupMemberTypeList :unsafe extern "system" fn ( * mut::core::ffi::c_void , ) -> *mut super::super:: FABRIC_SERVICE_GROUP_MEMBER_TYPE_QUERY_RESULT_LIST , }
+::windows_core::imp::com_interface!(
+    IFabricGetServiceListResult,
+    IFabricGetServiceListResult_Vtbl,
+    0x9953e19a_ea1e_4a1f_bda4_ab42fdb77185
+);
+::windows_core::imp::interface_hierarchy!(IFabricGetServiceListResult, ::windows_core::IUnknown);
 impl IFabricGetServiceListResult {
     pub unsafe fn get_ServiceList(&self) -> *mut super::super::FABRIC_SERVICE_QUERY_RESULT_LIST {
         (::windows_core::Interface::vtable(self).get_ServiceList)(
@@ -19398,46 +17618,26 @@ impl IFabricGetServiceListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricGetServiceListResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricGetServiceListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetServiceListResult {}
-impl ::core::fmt::Debug for IFabricGetServiceListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetServiceListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetServiceListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetServiceListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetServiceListResult {
-    type Vtable = IFabricGetServiceListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetServiceListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetServiceListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x9953e19a_ea1e_4a1f_bda4_ab42fdb77185);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetServiceListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ServiceList:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_SERVICE_QUERY_RESULT_LIST,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetServiceListResult2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetServiceListResult2,
+    IFabricGetServiceListResult2_Vtbl,
+    0x30263683_4b25_4ec3_86d7_94ed86e7a8bf
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetServiceListResult2,
+    ::windows_core::IUnknown,
+    IFabricGetServiceListResult
+);
 impl IFabricGetServiceListResult2 {
     pub unsafe fn get_ServiceList(&self) -> *mut super::super::FABRIC_SERVICE_QUERY_RESULT_LIST {
         (::windows_core::Interface::vtable(self)
@@ -19450,49 +17650,21 @@ impl IFabricGetServiceListResult2 {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetServiceListResult2,
-    ::windows_core::IUnknown,
-    IFabricGetServiceListResult
-);
-impl ::core::cmp::PartialEq for IFabricGetServiceListResult2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetServiceListResult2 {}
-impl ::core::fmt::Debug for IFabricGetServiceListResult2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetServiceListResult2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetServiceListResult2 {}
 unsafe impl ::core::marker::Sync for IFabricGetServiceListResult2 {}
-unsafe impl ::windows_core::Interface for IFabricGetServiceListResult2 {
-    type Vtable = IFabricGetServiceListResult2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetServiceListResult2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetServiceListResult2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x30263683_4b25_4ec3_86d7_94ed86e7a8bf);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetServiceListResult2_Vtbl {
     pub base__: IFabricGetServiceListResult_Vtbl,
     pub get_PagingStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_PAGING_STATUS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetServiceNameResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetServiceNameResult,
+    IFabricGetServiceNameResult_Vtbl,
+    0xb64fb70c_fe53_4ca1_b6d9_23d1150fe76c
+);
+::windows_core::imp::interface_hierarchy!(IFabricGetServiceNameResult, ::windows_core::IUnknown);
 impl IFabricGetServiceNameResult {
     pub unsafe fn get_ServiceName(&self) -> *mut super::super::FABRIC_SERVICE_NAME_QUERY_RESULT {
         (::windows_core::Interface::vtable(self).get_ServiceName)(
@@ -19500,46 +17672,25 @@ impl IFabricGetServiceNameResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricGetServiceNameResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricGetServiceNameResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetServiceNameResult {}
-impl ::core::fmt::Debug for IFabricGetServiceNameResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetServiceNameResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetServiceNameResult {}
 unsafe impl ::core::marker::Sync for IFabricGetServiceNameResult {}
-unsafe impl ::windows_core::Interface for IFabricGetServiceNameResult {
-    type Vtable = IFabricGetServiceNameResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetServiceNameResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetServiceNameResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xb64fb70c_fe53_4ca1_b6d9_23d1150fe76c);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetServiceNameResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ServiceName:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_SERVICE_NAME_QUERY_RESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetServiceTypeListResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetServiceTypeListResult,
+    IFabricGetServiceTypeListResult_Vtbl,
+    0x886e4ad2_edb8_4734_9dd4_0e9a2be5238b
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetServiceTypeListResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetServiceTypeListResult {
     pub unsafe fn get_ServiceTypeList(
         &self,
@@ -19549,50 +17700,26 @@ impl IFabricGetServiceTypeListResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetServiceTypeListResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetServiceTypeListResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetServiceTypeListResult {}
-impl ::core::fmt::Debug for IFabricGetServiceTypeListResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetServiceTypeListResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetServiceTypeListResult {}
 unsafe impl ::core::marker::Sync for IFabricGetServiceTypeListResult {}
-unsafe impl ::windows_core::Interface for IFabricGetServiceTypeListResult {
-    type Vtable = IFabricGetServiceTypeListResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetServiceTypeListResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetServiceTypeListResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x886e4ad2_edb8_4734_9dd4_0e9a2be5238b);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetServiceTypeListResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ServiceTypeList:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_SERVICE_TYPE_QUERY_RESULT_LIST,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricGetUnplacedReplicaInformationResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricGetUnplacedReplicaInformationResult,
+    IFabricGetUnplacedReplicaInformationResult_Vtbl,
+    0x9d86a611_3fd3_451b_9495_6a831f417473
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricGetUnplacedReplicaInformationResult,
+    ::windows_core::IUnknown
+);
 impl IFabricGetUnplacedReplicaInformationResult {
     pub unsafe fn get_UnplacedReplicaInformation(
         &self,
@@ -19602,50 +17729,23 @@ impl IFabricGetUnplacedReplicaInformationResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricGetUnplacedReplicaInformationResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricGetUnplacedReplicaInformationResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricGetUnplacedReplicaInformationResult {}
-impl ::core::fmt::Debug for IFabricGetUnplacedReplicaInformationResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricGetUnplacedReplicaInformationResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricGetUnplacedReplicaInformationResult {}
 unsafe impl ::core::marker::Sync for IFabricGetUnplacedReplicaInformationResult {}
-unsafe impl ::windows_core::Interface for IFabricGetUnplacedReplicaInformationResult {
-    type Vtable = IFabricGetUnplacedReplicaInformationResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricGetUnplacedReplicaInformationResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricGetUnplacedReplicaInformationResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x9d86a611_3fd3_451b_9495_6a831f417473);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricGetUnplacedReplicaInformationResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_UnplacedReplicaInformation:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_UNPLACED_REPLICA_INFORMATION,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricHealthClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricHealthClient,
+    IFabricHealthClient_Vtbl,
+    0x3d00d0be_7014_41da_9c5b_0a9ef46e2a43
+);
+::windows_core::imp::interface_hierarchy!(IFabricHealthClient, ::windows_core::IUnknown);
 impl IFabricHealthClient {
     pub unsafe fn ReportHealth(
         &self,
@@ -19657,7 +17757,6 @@ impl IFabricHealthClient {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetClusterHealth<P0>(
         &self,
@@ -19676,7 +17775,7 @@ impl IFabricHealthClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterHealth<P0>(
         &self,
@@ -19691,9 +17790,8 @@ impl IFabricHealthClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetNodeHealth<P0, P1>(
         &self,
@@ -19715,7 +17813,7 @@ impl IFabricHealthClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeHealth<P0>(
         &self,
@@ -19730,9 +17828,8 @@ impl IFabricHealthClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetApplicationHealth<P0>(
         &self,
@@ -19753,7 +17850,7 @@ impl IFabricHealthClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationHealth<P0>(
         &self,
@@ -19768,9 +17865,8 @@ impl IFabricHealthClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetServiceHealth<P0>(
         &self,
@@ -19791,7 +17887,7 @@ impl IFabricHealthClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceHealth<P0>(
         &self,
@@ -19806,9 +17902,8 @@ impl IFabricHealthClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetPartitionHealth<P0>(
         &self,
@@ -19829,7 +17924,7 @@ impl IFabricHealthClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionHealth<P0>(
         &self,
@@ -19844,9 +17939,8 @@ impl IFabricHealthClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetReplicaHealth<P0>(
         &self,
@@ -19869,7 +17963,7 @@ impl IFabricHealthClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaHealth<P0>(
         &self,
@@ -19884,9 +17978,8 @@ impl IFabricHealthClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedApplicationHealth<P0, P1>(
         &self,
@@ -19910,7 +18003,7 @@ impl IFabricHealthClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationHealth<P0>(
         &self,
@@ -19925,9 +18018,8 @@ impl IFabricHealthClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedServicePackageHealth<P0, P1, P2>(
         &self,
@@ -19954,7 +18046,7 @@ impl IFabricHealthClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageHealth<P0>(
         &self,
@@ -19969,181 +18061,163 @@ impl IFabricHealthClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricHealthClient, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricHealthClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricHealthClient {}
-impl ::core::fmt::Debug for IFabricHealthClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricHealthClient").field(&self.0).finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricHealthClient {}
 unsafe impl ::core::marker::Sync for IFabricHealthClient {}
-unsafe impl ::windows_core::Interface for IFabricHealthClient {
-    type Vtable = IFabricHealthClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricHealthClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricHealthClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x3d00d0be_7014_41da_9c5b_0a9ef46e2a43);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricHealthClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub ReportHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        healthreport: *const super::super::FABRIC_HEALTH_REPORT,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_HEALTH_REPORT,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetClusterHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        healthpolicy: *const super::super::FABRIC_CLUSTER_HEALTH_POLICY,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_CLUSTER_HEALTH_POLICY,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetClusterHealth: usize,
     pub EndGetClusterHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetNodeHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        nodename: ::windows_core::PCWSTR,
-        healthpolicy: *const super::super::FABRIC_CLUSTER_HEALTH_POLICY,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        *const super::super::FABRIC_CLUSTER_HEALTH_POLICY,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetNodeHealth: usize,
     pub EndGetNodeHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetApplicationHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationname: *const u16,
-        healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetApplicationHealth: usize,
     pub EndGetApplicationHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetServiceHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        servicename: *const u16,
-        healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetServiceHealth: usize,
     pub EndGetServiceHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetPartitionHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        partitionid: ::windows_core::GUID,
-        healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::GUID,
+        *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetPartitionHealth: usize,
     pub EndGetPartitionHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetReplicaHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        partitionid: ::windows_core::GUID,
-        replicaid: i64,
-        healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::GUID,
+        i64,
+        *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetReplicaHealth: usize,
     pub EndGetReplicaHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetDeployedApplicationHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationname: *const u16,
-        nodename: ::windows_core::PCWSTR,
-        healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetDeployedApplicationHealth: usize,
     pub EndGetDeployedApplicationHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetDeployedServicePackageHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationname: *const u16,
-        servicemanifestname: ::windows_core::PCWSTR,
-        nodename: ::windows_core::PCWSTR,
-        healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetDeployedServicePackageHealth: usize,
     pub EndGetDeployedServicePackageHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricHealthClient2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricHealthClient2,
+    IFabricHealthClient2_Vtbl,
+    0x66cbc014_d7b3_4f81_a498_e580feb9a1f5
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricHealthClient2,
+    ::windows_core::IUnknown,
+    IFabricHealthClient
+);
 impl IFabricHealthClient2 {
     pub unsafe fn ReportHealth(
         &self,
@@ -20155,7 +18229,6 @@ impl IFabricHealthClient2 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetClusterHealth<P0>(
         &self,
@@ -20176,7 +18249,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterHealth<P0>(
         &self,
@@ -20193,9 +18266,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetNodeHealth<P0, P1>(
         &self,
@@ -20219,7 +18291,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeHealth<P0>(
         &self,
@@ -20236,9 +18308,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetApplicationHealth<P0>(
         &self,
@@ -20261,7 +18332,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationHealth<P0>(
         &self,
@@ -20278,9 +18349,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetServiceHealth<P0>(
         &self,
@@ -20303,7 +18373,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceHealth<P0>(
         &self,
@@ -20320,9 +18390,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetPartitionHealth<P0>(
         &self,
@@ -20345,7 +18414,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionHealth<P0>(
         &self,
@@ -20362,9 +18431,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetReplicaHealth<P0>(
         &self,
@@ -20389,7 +18457,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaHealth<P0>(
         &self,
@@ -20406,9 +18474,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedApplicationHealth<P0, P1>(
         &self,
@@ -20434,7 +18501,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationHealth<P0>(
         &self,
@@ -20451,9 +18518,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedServicePackageHealth<P0, P1, P2>(
         &self,
@@ -20482,7 +18548,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageHealth<P0>(
         &self,
@@ -20499,9 +18565,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetClusterHealth2<P0>(
         &self,
@@ -20520,7 +18585,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterHealth2<P0>(
         &self,
@@ -20535,9 +18600,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetNodeHealth2<P0>(
         &self,
@@ -20556,7 +18620,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeHealth2<P0>(
         &self,
@@ -20571,9 +18635,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetApplicationHealth2<P0>(
         &self,
@@ -20592,7 +18655,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationHealth2<P0>(
         &self,
@@ -20607,9 +18670,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetServiceHealth2<P0>(
         &self,
@@ -20628,7 +18690,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceHealth2<P0>(
         &self,
@@ -20643,9 +18705,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetPartitionHealth2<P0>(
         &self,
@@ -20664,7 +18725,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionHealth2<P0>(
         &self,
@@ -20679,9 +18740,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetReplicaHealth2<P0>(
         &self,
@@ -20700,7 +18760,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaHealth2<P0>(
         &self,
@@ -20715,9 +18775,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedApplicationHealth2<P0>(
         &self,
@@ -20736,7 +18795,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationHealth2<P0>(
         &self,
@@ -20751,9 +18810,8 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedServicePackageHealth2<P0>(
         &self,
@@ -20772,7 +18830,7 @@ impl IFabricHealthClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageHealth2<P0>(
         &self,
@@ -20787,47 +18845,149 @@ impl IFabricHealthClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricHealthClient2,
-    ::windows_core::IUnknown,
-    IFabricHealthClient
-);
-impl ::core::cmp::PartialEq for IFabricHealthClient2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricHealthClient2 {}
-impl ::core::fmt::Debug for IFabricHealthClient2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricHealthClient2")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricHealthClient2 {}
 unsafe impl ::core::marker::Sync for IFabricHealthClient2 {}
-unsafe impl ::windows_core::Interface for IFabricHealthClient2 {
-    type Vtable = IFabricHealthClient2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricHealthClient2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricHealthClient2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x66cbc014_d7b3_4f81_a498_e580feb9a1f5);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricHealthClient2_Vtbl where { pub base__ : IFabricHealthClient_Vtbl , # [ cfg ( feature = "Win32_Foundation" ) ] pub BeginGetClusterHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] BeginGetClusterHealth2 :usize , pub EndGetClusterHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( feature = "Win32_Foundation" ) ] pub BeginGetNodeHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_NODE_HEALTH_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] BeginGetNodeHealth2 :usize , pub EndGetNodeHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( feature = "Win32_Foundation" ) ] pub BeginGetApplicationHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_APPLICATION_HEALTH_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] BeginGetApplicationHealth2 :usize , pub EndGetApplicationHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( feature = "Win32_Foundation" ) ] pub BeginGetServiceHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] BeginGetServiceHealth2 :usize , pub EndGetServiceHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( feature = "Win32_Foundation" ) ] pub BeginGetPartitionHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] BeginGetPartitionHealth2 :usize , pub EndGetPartitionHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( feature = "Win32_Foundation" ) ] pub BeginGetReplicaHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] BeginGetReplicaHealth2 :usize , pub EndGetReplicaHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( feature = "Win32_Foundation" ) ] pub BeginGetDeployedApplicationHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] BeginGetDeployedApplicationHealth2 :usize , pub EndGetDeployedApplicationHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( feature = "Win32_Foundation" ) ] pub BeginGetDeployedServicePackageHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] BeginGetDeployedServicePackageHealth2 :usize , pub EndGetDeployedServicePackageHealth2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricHealthClient3(::windows_core::IUnknown);
+pub struct IFabricHealthClient2_Vtbl {
+    pub base__: IFabricHealthClient_Vtbl,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginGetClusterHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginGetClusterHealth2: usize,
+    pub EndGetClusterHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginGetNodeHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_NODE_HEALTH_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginGetNodeHealth2: usize,
+    pub EndGetNodeHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginGetApplicationHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_APPLICATION_HEALTH_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginGetApplicationHealth2: usize,
+    pub EndGetApplicationHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginGetServiceHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginGetServiceHealth2: usize,
+    pub EndGetServiceHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginGetPartitionHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginGetPartitionHealth2: usize,
+    pub EndGetPartitionHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginGetReplicaHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginGetReplicaHealth2: usize,
+    pub EndGetReplicaHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginGetDeployedApplicationHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    )
+        -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginGetDeployedApplicationHealth2: usize,
+    pub EndGetDeployedApplicationHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginGetDeployedServicePackageHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    )
+        -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginGetDeployedServicePackageHealth2: usize,
+    pub EndGetDeployedServicePackageHealth2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    )
+        -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricHealthClient3,
+    IFabricHealthClient3_Vtbl,
+    0xdd3e4497_3373_458d_ad22_c88ebd27493e
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricHealthClient3,
+    ::windows_core::IUnknown,
+    IFabricHealthClient,
+    IFabricHealthClient2
+);
 impl IFabricHealthClient3 {
     pub unsafe fn ReportHealth(
         &self,
@@ -20839,7 +18999,6 @@ impl IFabricHealthClient3 {
             .ReportHealth)(::windows_core::Interface::as_raw(self), healthreport)
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetClusterHealth<P0>(
         &self,
@@ -20861,7 +19020,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterHealth<P0>(
         &self,
@@ -20879,9 +19038,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetNodeHealth<P0, P1>(
         &self,
@@ -20906,7 +19064,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeHealth<P0>(
         &self,
@@ -20924,9 +19082,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetApplicationHealth<P0>(
         &self,
@@ -20950,7 +19107,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationHealth<P0>(
         &self,
@@ -20968,9 +19125,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetServiceHealth<P0>(
         &self,
@@ -20994,7 +19150,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceHealth<P0>(
         &self,
@@ -21012,9 +19168,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetPartitionHealth<P0>(
         &self,
@@ -21038,7 +19193,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionHealth<P0>(
         &self,
@@ -21056,9 +19211,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetReplicaHealth<P0>(
         &self,
@@ -21084,7 +19238,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaHealth<P0>(
         &self,
@@ -21102,9 +19256,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedApplicationHealth<P0, P1>(
         &self,
@@ -21131,7 +19284,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationHealth<P0>(
         &self,
@@ -21149,9 +19302,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedServicePackageHealth<P0, P1, P2>(
         &self,
@@ -21181,7 +19333,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageHealth<P0>(
         &self,
@@ -21199,9 +19351,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetClusterHealth2<P0>(
         &self,
@@ -21222,7 +19373,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterHealth2<P0>(
         &self,
@@ -21239,9 +19390,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetNodeHealth2<P0>(
         &self,
@@ -21262,7 +19412,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeHealth2<P0>(
         &self,
@@ -21279,9 +19429,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetApplicationHealth2<P0>(
         &self,
@@ -21302,7 +19451,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationHealth2<P0>(
         &self,
@@ -21319,9 +19468,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetServiceHealth2<P0>(
         &self,
@@ -21342,7 +19490,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceHealth2<P0>(
         &self,
@@ -21359,9 +19507,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetPartitionHealth2<P0>(
         &self,
@@ -21382,7 +19529,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionHealth2<P0>(
         &self,
@@ -21399,9 +19546,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetReplicaHealth2<P0>(
         &self,
@@ -21422,7 +19568,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaHealth2<P0>(
         &self,
@@ -21439,9 +19585,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedApplicationHealth2<P0>(
         &self,
@@ -21462,7 +19607,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationHealth2<P0>(
         &self,
@@ -21479,9 +19624,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedServicePackageHealth2<P0>(
         &self,
@@ -21502,7 +19646,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageHealth2<P0>(
         &self,
@@ -21519,9 +19663,8 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetClusterHealthChunk<P0>(
         &self,
@@ -21540,7 +19683,7 @@ impl IFabricHealthClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterHealthChunk<P0>(
         &self,
@@ -21555,65 +19698,42 @@ impl IFabricHealthClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricHealthClient3,
-    ::windows_core::IUnknown,
-    IFabricHealthClient,
-    IFabricHealthClient2
-);
-impl ::core::cmp::PartialEq for IFabricHealthClient3 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricHealthClient3 {}
-impl ::core::fmt::Debug for IFabricHealthClient3 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricHealthClient3")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricHealthClient3 {}
 unsafe impl ::core::marker::Sync for IFabricHealthClient3 {}
-unsafe impl ::windows_core::Interface for IFabricHealthClient3 {
-    type Vtable = IFabricHealthClient3_Vtbl;
-}
-impl ::core::clone::Clone for IFabricHealthClient3 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricHealthClient3 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xdd3e4497_3373_458d_ad22_c88ebd27493e);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricHealthClient3_Vtbl {
     pub base__: IFabricHealthClient2_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetClusterHealthChunk: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_CLUSTER_HEALTH_CHUNK_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_CLUSTER_HEALTH_CHUNK_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetClusterHealthChunk: usize,
     pub EndGetClusterHealthChunk: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricHealthClient4(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricHealthClient4,
+    IFabricHealthClient4_Vtbl,
+    0x9f0401af_4909_404f_8696_0a71bd753e98
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricHealthClient4,
+    ::windows_core::IUnknown,
+    IFabricHealthClient,
+    IFabricHealthClient2,
+    IFabricHealthClient3
+);
 impl IFabricHealthClient4 {
     pub unsafe fn ReportHealth(
         &self,
@@ -21626,7 +19746,6 @@ impl IFabricHealthClient4 {
             .ReportHealth)(::windows_core::Interface::as_raw(self), healthreport)
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetClusterHealth<P0>(
         &self,
@@ -21649,7 +19768,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterHealth<P0>(
         &self,
@@ -21668,9 +19787,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetNodeHealth<P0, P1>(
         &self,
@@ -21696,7 +19814,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeHealth<P0>(
         &self,
@@ -21715,9 +19833,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetApplicationHealth<P0>(
         &self,
@@ -21742,7 +19859,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationHealth<P0>(
         &self,
@@ -21761,9 +19878,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetServiceHealth<P0>(
         &self,
@@ -21788,7 +19904,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceHealth<P0>(
         &self,
@@ -21807,9 +19923,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetPartitionHealth<P0>(
         &self,
@@ -21834,7 +19949,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionHealth<P0>(
         &self,
@@ -21853,9 +19968,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetReplicaHealth<P0>(
         &self,
@@ -21882,7 +19996,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaHealth<P0>(
         &self,
@@ -21901,9 +20015,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedApplicationHealth<P0, P1>(
         &self,
@@ -21931,7 +20044,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationHealth<P0>(
         &self,
@@ -21950,9 +20063,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedServicePackageHealth<P0, P1, P2>(
         &self,
@@ -21983,7 +20095,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageHealth<P0>(
         &self,
@@ -22002,9 +20114,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetClusterHealth2<P0>(
         &self,
@@ -22026,7 +20137,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterHealth2<P0>(
         &self,
@@ -22044,9 +20155,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetNodeHealth2<P0>(
         &self,
@@ -22068,7 +20178,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeHealth2<P0>(
         &self,
@@ -22086,9 +20196,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetApplicationHealth2<P0>(
         &self,
@@ -22110,7 +20219,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationHealth2<P0>(
         &self,
@@ -22128,9 +20237,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetServiceHealth2<P0>(
         &self,
@@ -22152,7 +20260,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceHealth2<P0>(
         &self,
@@ -22170,9 +20278,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetPartitionHealth2<P0>(
         &self,
@@ -22194,7 +20301,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionHealth2<P0>(
         &self,
@@ -22212,9 +20319,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetReplicaHealth2<P0>(
         &self,
@@ -22236,7 +20342,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaHealth2<P0>(
         &self,
@@ -22254,9 +20360,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedApplicationHealth2<P0>(
         &self,
@@ -22278,7 +20383,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationHealth2<P0>(
         &self,
@@ -22296,9 +20401,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedServicePackageHealth2<P0>(
         &self,
@@ -22320,7 +20424,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageHealth2<P0>(
         &self,
@@ -22338,9 +20442,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetClusterHealthChunk<P0>(
         &self,
@@ -22361,7 +20464,7 @@ impl IFabricHealthClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterHealthChunk<P0>(
         &self,
@@ -22378,9 +20481,8 @@ impl IFabricHealthClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn ReportHealth2(
         &self,
@@ -22395,56 +20497,29 @@ impl IFabricHealthClient4 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricHealthClient4,
-    ::windows_core::IUnknown,
-    IFabricHealthClient,
-    IFabricHealthClient2,
-    IFabricHealthClient3
-);
-impl ::core::cmp::PartialEq for IFabricHealthClient4 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricHealthClient4 {}
-impl ::core::fmt::Debug for IFabricHealthClient4 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricHealthClient4")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricHealthClient4 {}
 unsafe impl ::core::marker::Sync for IFabricHealthClient4 {}
-unsafe impl ::windows_core::Interface for IFabricHealthClient4 {
-    type Vtable = IFabricHealthClient4_Vtbl;
-}
-impl ::core::clone::Clone for IFabricHealthClient4 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricHealthClient4 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x9f0401af_4909_404f_8696_0a71bd753e98);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricHealthClient4_Vtbl {
     pub base__: IFabricHealthClient3_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub ReportHealth2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        healthreport: *const super::super::FABRIC_HEALTH_REPORT,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_HEALTH_REPORT,
+        *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     ReportHealth2: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricInfrastructureServiceClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricInfrastructureServiceClient,
+    IFabricInfrastructureServiceClient_Vtbl,
+    0xa0cfbc71_184b_443b_b102_4b6d0a7cbc49
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricInfrastructureServiceClient,
+    ::windows_core::IUnknown
+);
 impl IFabricInfrastructureServiceClient {
     pub unsafe fn BeginInvokeInfrastructureCommand<P0, P1>(
         &self,
@@ -22466,7 +20541,7 @@ impl IFabricInfrastructureServiceClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndInvokeInfrastructureCommand<P0>(
         &self,
@@ -22481,7 +20556,7 @@ impl IFabricInfrastructureServiceClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginInvokeInfrastructureQuery<P0, P1>(
         &self,
@@ -22503,7 +20578,7 @@ impl IFabricInfrastructureServiceClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndInvokeInfrastructureQuery<P0>(
         &self,
@@ -22518,74 +20593,47 @@ impl IFabricInfrastructureServiceClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricInfrastructureServiceClient,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricInfrastructureServiceClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricInfrastructureServiceClient {}
-impl ::core::fmt::Debug for IFabricInfrastructureServiceClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricInfrastructureServiceClient")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricInfrastructureServiceClient {}
 unsafe impl ::core::marker::Sync for IFabricInfrastructureServiceClient {}
-unsafe impl ::windows_core::Interface for IFabricInfrastructureServiceClient {
-    type Vtable = IFabricInfrastructureServiceClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricInfrastructureServiceClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricInfrastructureServiceClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xa0cfbc71_184b_443b_b102_4b6d0a7cbc49);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricInfrastructureServiceClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub BeginInvokeInfrastructureCommand: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        servicename: *const u16,
-        command: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndInvokeInfrastructureCommand: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginInvokeInfrastructureQuery: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        servicename: *const u16,
-        command: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndInvokeInfrastructureQuery: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricMovePrimaryResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricMovePrimaryResult,
+    IFabricMovePrimaryResult_Vtbl,
+    0x66ac03f5_e61c_47a2_80fe_49309a02c92c
+);
+::windows_core::imp::interface_hierarchy!(IFabricMovePrimaryResult, ::windows_core::IUnknown);
 impl IFabricMovePrimaryResult {
     pub unsafe fn get_Result(&self) -> *mut super::super::FABRIC_MOVE_PRIMARY_RESULT {
         (::windows_core::Interface::vtable(self).get_Result)(::windows_core::Interface::as_raw(
@@ -22593,45 +20641,21 @@ impl IFabricMovePrimaryResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricMovePrimaryResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricMovePrimaryResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricMovePrimaryResult {}
-impl ::core::fmt::Debug for IFabricMovePrimaryResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricMovePrimaryResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricMovePrimaryResult {}
 unsafe impl ::core::marker::Sync for IFabricMovePrimaryResult {}
-unsafe impl ::windows_core::Interface for IFabricMovePrimaryResult {
-    type Vtable = IFabricMovePrimaryResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricMovePrimaryResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricMovePrimaryResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x66ac03f5_e61c_47a2_80fe_49309a02c92c);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricMovePrimaryResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Result: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_MOVE_PRIMARY_RESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricMoveSecondaryResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricMoveSecondaryResult,
+    IFabricMoveSecondaryResult_Vtbl,
+    0x60fe896a_b690_4abb_94fd_86c615d29bee
+);
+::windows_core::imp::interface_hierarchy!(IFabricMoveSecondaryResult, ::windows_core::IUnknown);
 impl IFabricMoveSecondaryResult {
     pub unsafe fn get_Result(&self) -> *mut super::super::FABRIC_MOVE_SECONDARY_RESULT {
         (::windows_core::Interface::vtable(self).get_Result)(::windows_core::Interface::as_raw(
@@ -22639,110 +20663,59 @@ impl IFabricMoveSecondaryResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricMoveSecondaryResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricMoveSecondaryResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricMoveSecondaryResult {}
-impl ::core::fmt::Debug for IFabricMoveSecondaryResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricMoveSecondaryResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricMoveSecondaryResult {}
 unsafe impl ::core::marker::Sync for IFabricMoveSecondaryResult {}
-unsafe impl ::windows_core::Interface for IFabricMoveSecondaryResult {
-    type Vtable = IFabricMoveSecondaryResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricMoveSecondaryResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricMoveSecondaryResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x60fe896a_b690_4abb_94fd_86c615d29bee);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricMoveSecondaryResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Result: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> *mut super::super::FABRIC_MOVE_SECONDARY_RESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricNameEnumerationResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricNameEnumerationResult,
+    IFabricNameEnumerationResult_Vtbl,
+    0x557e8105_f4f4_4fd3_9d21_075f34e2f98c
+);
+::windows_core::imp::interface_hierarchy!(IFabricNameEnumerationResult, ::windows_core::IUnknown);
 impl IFabricNameEnumerationResult {
     pub unsafe fn get_EnumerationStatus(&self) -> super::super::FABRIC_ENUMERATION_STATUS {
         (::windows_core::Interface::vtable(self).get_EnumerationStatus)(
             ::windows_core::Interface::as_raw(self),
         )
     }
-    pub unsafe fn GetNames(
-        &self,
-        itemcount: *mut u32,
-        buffereditems: *mut *mut *mut u16,
-    ) -> ::windows_core::Result<()> {
+    pub unsafe fn GetNames(&self, itemcount: *mut u32) -> ::windows_core::Result<*mut *mut u16> {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self).GetNames)(
             ::windows_core::Interface::as_raw(self),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricNameEnumerationResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricNameEnumerationResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricNameEnumerationResult {}
-impl ::core::fmt::Debug for IFabricNameEnumerationResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricNameEnumerationResult")
-            .field(&self.0)
-            .finish()
+        .map(|| result__)
     }
 }
 unsafe impl ::core::marker::Send for IFabricNameEnumerationResult {}
 unsafe impl ::core::marker::Sync for IFabricNameEnumerationResult {}
-unsafe impl ::windows_core::Interface for IFabricNameEnumerationResult {
-    type Vtable = IFabricNameEnumerationResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricNameEnumerationResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricNameEnumerationResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x557e8105_f4f4_4fd3_9d21_075f34e2f98c);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricNameEnumerationResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_EnumerationStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> super::super::FABRIC_ENUMERATION_STATUS,
     pub GetNames: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        itemcount: *mut u32,
-        buffereditems: *mut *mut *mut u16,
+        *mut ::core::ffi::c_void,
+        *mut u32,
+        *mut *mut *mut u16,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricNetworkManagementClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricNetworkManagementClient,
+    IFabricNetworkManagementClient_Vtbl,
+    0xfdb754c6_69c5_4bcf_bba5_cb70c84a4398
+);
+::windows_core::imp::interface_hierarchy!(IFabricNetworkManagementClient, ::windows_core::IUnknown);
 impl IFabricNetworkManagementClient {
     pub unsafe fn BeginCreateNetwork<P0, P1>(
         &self,
@@ -22764,7 +20737,7 @@ impl IFabricNetworkManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateNetwork<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -22793,7 +20766,7 @@ impl IFabricNetworkManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteNetwork<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -22822,7 +20795,7 @@ impl IFabricNetworkManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNetworkList<P0>(
         &self,
@@ -22837,7 +20810,7 @@ impl IFabricNetworkManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetNetworkApplicationList<P0>(
         &self,
@@ -22856,7 +20829,7 @@ impl IFabricNetworkManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNetworkApplicationList<P0>(
         &self,
@@ -22871,7 +20844,7 @@ impl IFabricNetworkManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetNetworkNodeList<P0>(
         &self,
@@ -22890,7 +20863,7 @@ impl IFabricNetworkManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNetworkNodeList<P0>(
         &self,
@@ -22905,7 +20878,7 @@ impl IFabricNetworkManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationNetworkList<P0>(
         &self,
@@ -22924,7 +20897,7 @@ impl IFabricNetworkManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationNetworkList<P0>(
         &self,
@@ -22939,7 +20912,7 @@ impl IFabricNetworkManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedNetworkList<P0>(
         &self,
@@ -22958,7 +20931,7 @@ impl IFabricNetworkManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedNetworkList<P0>(
         &self,
@@ -22973,7 +20946,7 @@ impl IFabricNetworkManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedNetworkCodePackageList<P0>(
         &self,
@@ -22992,7 +20965,7 @@ impl IFabricNetworkManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedNetworkCodePackageList<P0>(
         &self,
@@ -23007,45 +20980,119 @@ impl IFabricNetworkManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricNetworkManagementClient, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricNetworkManagementClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricNetworkManagementClient {}
-impl ::core::fmt::Debug for IFabricNetworkManagementClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricNetworkManagementClient")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricNetworkManagementClient {}
 unsafe impl ::core::marker::Sync for IFabricNetworkManagementClient {}
-unsafe impl ::windows_core::Interface for IFabricNetworkManagementClient {
-    type Vtable = IFabricNetworkManagementClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricNetworkManagementClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricNetworkManagementClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xfdb754c6_69c5_4bcf_bba5_cb70c84a4398);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricNetworkManagementClient_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub BeginCreateNetwork :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , networkname : ::windows_core::PCWSTR , description : *const super::super:: FABRIC_NETWORK_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndCreateNetwork :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginDeleteNetwork :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , deletedescription : *const super::super:: FABRIC_DELETE_NETWORK_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndDeleteNetwork :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetNetworkList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_NETWORK_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetNetworkList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetNetworkApplicationList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_NETWORK_APPLICATION_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetNetworkApplicationList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetNetworkNodeList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_NETWORK_NODE_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetNetworkNodeList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetApplicationNetworkList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_APPLICATION_NETWORK_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetApplicationNetworkList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetDeployedNetworkList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_DEPLOYED_NETWORK_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetDeployedNetworkList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetDeployedNetworkCodePackageList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_DEPLOYED_NETWORK_CODE_PACKAGE_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetDeployedNetworkCodePackageList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricNodeHealthResult(::windows_core::IUnknown);
+pub struct IFabricNetworkManagementClient_Vtbl {
+    pub base__: ::windows_core::IUnknown_Vtbl,
+    pub BeginCreateNetwork: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        *const super::super::FABRIC_NETWORK_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndCreateNetwork: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginDeleteNetwork: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DELETE_NETWORK_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndDeleteNetwork: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetNetworkList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_NETWORK_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetNetworkList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetNetworkApplicationList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_NETWORK_APPLICATION_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetNetworkApplicationList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetNetworkNodeList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_NETWORK_NODE_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetNetworkNodeList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetApplicationNetworkList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_APPLICATION_NETWORK_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetApplicationNetworkList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetDeployedNetworkList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DEPLOYED_NETWORK_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetDeployedNetworkList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetDeployedNetworkCodePackageList:
+        unsafe extern "system" fn(
+            *mut ::core::ffi::c_void,
+            *const super::super::FABRIC_DEPLOYED_NETWORK_CODE_PACKAGE_QUERY_DESCRIPTION,
+            u32,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT,
+    pub EndGetDeployedNetworkCodePackageList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    )
+        -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricNodeHealthResult,
+    IFabricNodeHealthResult_Vtbl,
+    0xe461f70b_51b8_4b73_9f35_e38e5ac68719
+);
+::windows_core::imp::interface_hierarchy!(IFabricNodeHealthResult, ::windows_core::IUnknown);
 impl IFabricNodeHealthResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_NodeHealth(&self) -> *mut super::super::FABRIC_NODE_HEALTH {
         (::windows_core::Interface::vtable(self).get_NodeHealth)(::windows_core::Interface::as_raw(
@@ -23053,48 +21100,27 @@ impl IFabricNodeHealthResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricNodeHealthResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricNodeHealthResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricNodeHealthResult {}
-impl ::core::fmt::Debug for IFabricNodeHealthResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricNodeHealthResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricNodeHealthResult {}
 unsafe impl ::core::marker::Sync for IFabricNodeHealthResult {}
-unsafe impl ::windows_core::Interface for IFabricNodeHealthResult {
-    type Vtable = IFabricNodeHealthResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricNodeHealthResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricNodeHealthResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xe461f70b_51b8_4b73_9f35_e38e5ac68719);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricNodeHealthResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_NodeHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_NODE_HEALTH,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_NodeHealth: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricNodeTransitionProgressResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricNodeTransitionProgressResult,
+    IFabricNodeTransitionProgressResult_Vtbl,
+    0x68a98626_6a1b_4dd8_ad93_74c0936e86aa
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricNodeTransitionProgressResult,
+    ::windows_core::IUnknown
+);
 impl IFabricNodeTransitionProgressResult {
     pub unsafe fn get_Progress(&self) -> *mut super::super::FABRIC_NODE_TRANSITION_PROGRESS {
         (::windows_core::Interface::vtable(self).get_Progress)(::windows_core::Interface::as_raw(
@@ -23102,49 +21128,25 @@ impl IFabricNodeTransitionProgressResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricNodeTransitionProgressResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricNodeTransitionProgressResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricNodeTransitionProgressResult {}
-impl ::core::fmt::Debug for IFabricNodeTransitionProgressResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricNodeTransitionProgressResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricNodeTransitionProgressResult {}
 unsafe impl ::core::marker::Sync for IFabricNodeTransitionProgressResult {}
-unsafe impl ::windows_core::Interface for IFabricNodeTransitionProgressResult {
-    type Vtable = IFabricNodeTransitionProgressResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricNodeTransitionProgressResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricNodeTransitionProgressResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x68a98626_6a1b_4dd8_ad93_74c0936e86aa);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricNodeTransitionProgressResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Progress:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_NODE_TRANSITION_PROGRESS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricOrchestrationUpgradeStatusResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricOrchestrationUpgradeStatusResult,
+    IFabricOrchestrationUpgradeStatusResult_Vtbl,
+    0x95a56e4a_490d_445e_865c_ef0a62f15504
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricOrchestrationUpgradeStatusResult,
+    ::windows_core::IUnknown
+);
 impl IFabricOrchestrationUpgradeStatusResult {
     pub unsafe fn get_Progress(&self) -> *mut super::super::FABRIC_ORCHESTRATION_UPGRADE_PROGRESS {
         (::windows_core::Interface::vtable(self).get_Progress)(::windows_core::Interface::as_raw(
@@ -23152,50 +21154,26 @@ impl IFabricOrchestrationUpgradeStatusResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricOrchestrationUpgradeStatusResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricOrchestrationUpgradeStatusResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricOrchestrationUpgradeStatusResult {}
-impl ::core::fmt::Debug for IFabricOrchestrationUpgradeStatusResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricOrchestrationUpgradeStatusResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricOrchestrationUpgradeStatusResult {}
 unsafe impl ::core::marker::Sync for IFabricOrchestrationUpgradeStatusResult {}
-unsafe impl ::windows_core::Interface for IFabricOrchestrationUpgradeStatusResult {
-    type Vtable = IFabricOrchestrationUpgradeStatusResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricOrchestrationUpgradeStatusResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricOrchestrationUpgradeStatusResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x95a56e4a_490d_445e_865c_ef0a62f15504);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricOrchestrationUpgradeStatusResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Progress:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_ORCHESTRATION_UPGRADE_PROGRESS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricPartitionDataLossProgressResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricPartitionDataLossProgressResult,
+    IFabricPartitionDataLossProgressResult_Vtbl,
+    0x614921e6_75f1_44e7_9107_ab88819136b8
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricPartitionDataLossProgressResult,
+    ::windows_core::IUnknown
+);
 impl IFabricPartitionDataLossProgressResult {
     pub unsafe fn get_Progress(&self) -> *mut super::super::FABRIC_PARTITION_DATA_LOSS_PROGRESS {
         (::windows_core::Interface::vtable(self).get_Progress)(::windows_core::Interface::as_raw(
@@ -23203,52 +21181,24 @@ impl IFabricPartitionDataLossProgressResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricPartitionDataLossProgressResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricPartitionDataLossProgressResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricPartitionDataLossProgressResult {}
-impl ::core::fmt::Debug for IFabricPartitionDataLossProgressResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricPartitionDataLossProgressResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricPartitionDataLossProgressResult {}
 unsafe impl ::core::marker::Sync for IFabricPartitionDataLossProgressResult {}
-unsafe impl ::windows_core::Interface for IFabricPartitionDataLossProgressResult {
-    type Vtable = IFabricPartitionDataLossProgressResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricPartitionDataLossProgressResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricPartitionDataLossProgressResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x614921e6_75f1_44e7_9107_ab88819136b8);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricPartitionDataLossProgressResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Progress:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_PARTITION_DATA_LOSS_PROGRESS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricPartitionHealthResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricPartitionHealthResult,
+    IFabricPartitionHealthResult_Vtbl,
+    0x10c9e99d_bb3f_4263_a7f7_abbaf3c03576
+);
+::windows_core::imp::interface_hierarchy!(IFabricPartitionHealthResult, ::windows_core::IUnknown);
 impl IFabricPartitionHealthResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_PartitionHealth(&self) -> *mut super::super::FABRIC_PARTITION_HEALTH {
         (::windows_core::Interface::vtable(self).get_PartitionHealth)(
@@ -23256,49 +21206,28 @@ impl IFabricPartitionHealthResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricPartitionHealthResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricPartitionHealthResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricPartitionHealthResult {}
-impl ::core::fmt::Debug for IFabricPartitionHealthResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricPartitionHealthResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricPartitionHealthResult {}
 unsafe impl ::core::marker::Sync for IFabricPartitionHealthResult {}
-unsafe impl ::windows_core::Interface for IFabricPartitionHealthResult {
-    type Vtable = IFabricPartitionHealthResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricPartitionHealthResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricPartitionHealthResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x10c9e99d_bb3f_4263_a7f7_abbaf3c03576);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricPartitionHealthResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_PartitionHealth:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_PARTITION_HEALTH,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_PartitionHealth: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricPartitionQuorumLossProgressResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricPartitionQuorumLossProgressResult,
+    IFabricPartitionQuorumLossProgressResult_Vtbl,
+    0x36d8e378_3706_403d_8d99_2afd1a120687
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricPartitionQuorumLossProgressResult,
+    ::windows_core::IUnknown
+);
 impl IFabricPartitionQuorumLossProgressResult {
     pub unsafe fn get_Progress(&self) -> *mut super::super::FABRIC_PARTITION_QUORUM_LOSS_PROGRESS {
         (::windows_core::Interface::vtable(self).get_Progress)(::windows_core::Interface::as_raw(
@@ -23306,50 +21235,26 @@ impl IFabricPartitionQuorumLossProgressResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricPartitionQuorumLossProgressResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricPartitionQuorumLossProgressResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricPartitionQuorumLossProgressResult {}
-impl ::core::fmt::Debug for IFabricPartitionQuorumLossProgressResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricPartitionQuorumLossProgressResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricPartitionQuorumLossProgressResult {}
 unsafe impl ::core::marker::Sync for IFabricPartitionQuorumLossProgressResult {}
-unsafe impl ::windows_core::Interface for IFabricPartitionQuorumLossProgressResult {
-    type Vtable = IFabricPartitionQuorumLossProgressResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricPartitionQuorumLossProgressResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricPartitionQuorumLossProgressResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x36d8e378_3706_403d_8d99_2afd1a120687);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricPartitionQuorumLossProgressResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Progress:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_PARTITION_QUORUM_LOSS_PROGRESS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricPartitionRestartProgressResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricPartitionRestartProgressResult,
+    IFabricPartitionRestartProgressResult_Vtbl,
+    0xd2cb2ee1_a1ba_4cbd_80f7_14fd3d55bb61
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricPartitionRestartProgressResult,
+    ::windows_core::IUnknown
+);
 impl IFabricPartitionRestartProgressResult {
     pub unsafe fn get_Progress(&self) -> *mut super::super::FABRIC_PARTITION_RESTART_PROGRESS {
         (::windows_core::Interface::vtable(self).get_Progress)(::windows_core::Interface::as_raw(
@@ -23357,49 +21262,22 @@ impl IFabricPartitionRestartProgressResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricPartitionRestartProgressResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricPartitionRestartProgressResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricPartitionRestartProgressResult {}
-impl ::core::fmt::Debug for IFabricPartitionRestartProgressResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricPartitionRestartProgressResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricPartitionRestartProgressResult {}
 unsafe impl ::core::marker::Sync for IFabricPartitionRestartProgressResult {}
-unsafe impl ::windows_core::Interface for IFabricPartitionRestartProgressResult {
-    type Vtable = IFabricPartitionRestartProgressResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricPartitionRestartProgressResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricPartitionRestartProgressResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xd2cb2ee1_a1ba_4cbd_80f7_14fd3d55bb61);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricPartitionRestartProgressResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Progress:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_PARTITION_RESTART_PROGRESS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricPropertyBatchResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricPropertyBatchResult,
+    IFabricPropertyBatchResult_Vtbl,
+    0xee747ff5_3fbb_46a8_adbc_47ce09c48bbe
+);
+::windows_core::imp::interface_hierarchy!(IFabricPropertyBatchResult, ::windows_core::IUnknown);
 impl IFabricPropertyBatchResult {
     pub unsafe fn GetProperty(
         &self,
@@ -23411,50 +21289,29 @@ impl IFabricPropertyBatchResult {
             operationindexinrequest,
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricPropertyBatchResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricPropertyBatchResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricPropertyBatchResult {}
-impl ::core::fmt::Debug for IFabricPropertyBatchResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricPropertyBatchResult")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricPropertyBatchResult {}
 unsafe impl ::core::marker::Sync for IFabricPropertyBatchResult {}
-unsafe impl ::windows_core::Interface for IFabricPropertyBatchResult {
-    type Vtable = IFabricPropertyBatchResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricPropertyBatchResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricPropertyBatchResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xee747ff5_3fbb_46a8_adbc_47ce09c48bbe);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricPropertyBatchResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub GetProperty: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        operationindexinrequest: u32,
-        property: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricPropertyEnumerationResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricPropertyEnumerationResult,
+    IFabricPropertyEnumerationResult_Vtbl,
+    0xa42da40d_a637_478d_83f3_2813871234cf
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricPropertyEnumerationResult,
+    ::windows_core::IUnknown
+);
 impl IFabricPropertyEnumerationResult {
     pub unsafe fn get_EnumerationStatus(&self) -> super::super::FABRIC_ENUMERATION_STATUS {
         (::windows_core::Interface::vtable(self).get_EnumerationStatus)(
@@ -23476,58 +21333,34 @@ impl IFabricPropertyEnumerationResult {
             index,
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricPropertyEnumerationResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricPropertyEnumerationResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricPropertyEnumerationResult {}
-impl ::core::fmt::Debug for IFabricPropertyEnumerationResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricPropertyEnumerationResult")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricPropertyEnumerationResult {}
 unsafe impl ::core::marker::Sync for IFabricPropertyEnumerationResult {}
-unsafe impl ::windows_core::Interface for IFabricPropertyEnumerationResult {
-    type Vtable = IFabricPropertyEnumerationResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricPropertyEnumerationResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricPropertyEnumerationResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xa42da40d_a637_478d_83f3_2813871234cf);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricPropertyEnumerationResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_EnumerationStatus: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> super::super::FABRIC_ENUMERATION_STATUS,
-    pub get_PropertyCount: unsafe extern "system" fn(this: *mut ::core::ffi::c_void) -> u32,
+    pub get_PropertyCount: unsafe extern "system" fn(*mut ::core::ffi::c_void) -> u32,
     pub GetProperty: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        index: u32,
-        property: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricPropertyManagementClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricPropertyManagementClient,
+    IFabricPropertyManagementClient_Vtbl,
+    0x26e58816_b5d5_4f08_9770_dbf0410c99d6
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricPropertyManagementClient,
+    ::windows_core::IUnknown
+);
 impl IFabricPropertyManagementClient {
     pub unsafe fn BeginCreateName<P0>(
         &self,
@@ -23546,7 +21379,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateName<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -23575,7 +21408,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteName<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -23604,7 +21437,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNameExists<P0>(&self, context: P0) -> ::windows_core::Result<u8>
     where
@@ -23616,9 +21449,8 @@ impl IFabricPropertyManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginEnumerateSubNames<P0, P1, P2>(
         &self,
@@ -23643,7 +21475,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndEnumerateSubNames<P0>(
         &self,
@@ -23658,7 +21490,7 @@ impl IFabricPropertyManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginPutPropertyBinary<P0, P1>(
         &self,
@@ -23677,13 +21509,13 @@ impl IFabricPropertyManagementClient {
             ::windows_core::Interface::as_raw(self),
             name,
             propertyname.into_param().abi(),
-            data.len() as _,
+            data.len().try_into().unwrap(),
             ::core::mem::transmute(data.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutPropertyBinary<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -23717,7 +21549,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutPropertyInt64<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -23751,7 +21583,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutPropertyDouble<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -23786,7 +21618,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutPropertyWString<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -23820,7 +21652,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutPropertyGuid<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -23852,7 +21684,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteProperty<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -23884,7 +21716,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPropertyMetadata<P0>(
         &self,
@@ -23899,7 +21731,7 @@ impl IFabricPropertyManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProperty<P0, P1>(
         &self,
@@ -23921,7 +21753,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProperty<P0>(
         &self,
@@ -23936,7 +21768,7 @@ impl IFabricPropertyManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginSubmitPropertyBatch<P0>(
         &self,
@@ -23952,32 +21784,31 @@ impl IFabricPropertyManagementClient {
         (::windows_core::Interface::vtable(self).BeginSubmitPropertyBatch)(
             ::windows_core::Interface::as_raw(self),
             name,
-            operations.len() as _,
+            operations.len().try_into().unwrap(),
             ::core::mem::transmute(operations.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndSubmitPropertyBatch<P0>(
         &self,
         context: P0,
         failedoperationindexinrequest: *mut u32,
-        result: *mut ::core::option::Option<IFabricPropertyBatchResult>,
-    ) -> ::windows_core::Result<()>
+    ) -> ::windows_core::Result<IFabricPropertyBatchResult>
     where
         P0: ::windows_core::IntoParam<super::IFabricAsyncOperationContext>,
     {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self).EndSubmitPropertyBatch)(
             ::windows_core::Interface::as_raw(self),
             context.into_param().abi(),
             failedoperationindexinrequest,
-            ::core::mem::transmute(result),
+            &mut result__,
         )
-        .ok()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginEnumerateProperties<P0, P1, P2>(
         &self,
@@ -24002,7 +21833,7 @@ impl IFabricPropertyManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndEnumerateProperties<P0>(
         &self,
@@ -24017,235 +21848,212 @@ impl IFabricPropertyManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricPropertyManagementClient,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricPropertyManagementClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricPropertyManagementClient {}
-impl ::core::fmt::Debug for IFabricPropertyManagementClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricPropertyManagementClient")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricPropertyManagementClient {}
 unsafe impl ::core::marker::Sync for IFabricPropertyManagementClient {}
-unsafe impl ::windows_core::Interface for IFabricPropertyManagementClient {
-    type Vtable = IFabricPropertyManagementClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricPropertyManagementClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricPropertyManagementClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x26e58816_b5d5_4f08_9770_dbf0410c99d6);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricPropertyManagementClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub BeginCreateName: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndCreateName: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginDeleteName: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndDeleteName: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginNameExists: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndNameExists: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        value: *mut u8,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut u8,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginEnumerateSubNames: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        previousresult: *mut ::core::ffi::c_void,
-        recursive: ::windows::Win32::Foundation::BOOLEAN,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        *mut ::core::ffi::c_void,
+        ::windows::Win32::Foundation::BOOLEAN,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginEnumerateSubNames: usize,
     pub EndEnumerateSubNames: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginPutPropertyBinary: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        propertyname: ::windows_core::PCWSTR,
-        datalength: u32,
-        data: *const u8,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        u32,
+        *const u8,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndPutPropertyBinary: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginPutPropertyInt64: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        propertyname: ::windows_core::PCWSTR,
-        data: i64,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        i64,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndPutPropertyInt64: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginPutPropertyDouble: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        propertyname: ::windows_core::PCWSTR,
-        data: f64,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        f64,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndPutPropertyDouble: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginPutPropertyWString: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        propertyname: ::windows_core::PCWSTR,
-        data: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndPutPropertyWString: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginPutPropertyGuid: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        propertyname: ::windows_core::PCWSTR,
-        data: *const ::windows_core::GUID,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        *const ::windows_core::GUID,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndPutPropertyGuid: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginDeleteProperty: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        propertyname: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndDeleteProperty: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetPropertyMetadata: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        propertyname: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetPropertyMetadata: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetProperty: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        propertyname: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetProperty: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginSubmitPropertyBatch: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        operationcount: u32,
-        operations: *const super::super::FABRIC_PROPERTY_BATCH_OPERATION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *const super::super::FABRIC_PROPERTY_BATCH_OPERATION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndSubmitPropertyBatch: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        failedoperationindexinrequest: *mut u32,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut u32,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginEnumerateProperties: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        includevalues: ::windows::Win32::Foundation::BOOLEAN,
-        previousresult: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        ::windows::Win32::Foundation::BOOLEAN,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginEnumerateProperties: usize,
     pub EndEnumerateProperties: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricPropertyManagementClient2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricPropertyManagementClient2,
+    IFabricPropertyManagementClient2_Vtbl,
+    0x04991c28_3f9d_4a49_9322_a56d308965fd
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricPropertyManagementClient2,
+    ::windows_core::IUnknown,
+    IFabricPropertyManagementClient
+);
 impl IFabricPropertyManagementClient2 {
     pub unsafe fn BeginCreateName<P0>(
         &self,
@@ -24266,7 +22074,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateName<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -24297,7 +22105,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteName<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -24328,7 +22136,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndNameExists<P0>(&self, context: P0) -> ::windows_core::Result<u8>
     where
@@ -24340,9 +22148,8 @@ impl IFabricPropertyManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginEnumerateSubNames<P0, P1, P2>(
         &self,
@@ -24369,7 +22176,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndEnumerateSubNames<P0>(
         &self,
@@ -24386,7 +22193,7 @@ impl IFabricPropertyManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginPutPropertyBinary<P0, P1>(
         &self,
@@ -24407,13 +22214,13 @@ impl IFabricPropertyManagementClient2 {
             ::windows_core::Interface::as_raw(self),
             name,
             propertyname.into_param().abi(),
-            data.len() as _,
+            data.len().try_into().unwrap(),
             ::core::mem::transmute(data.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutPropertyBinary<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -24451,7 +22258,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutPropertyInt64<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -24489,7 +22296,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutPropertyDouble<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -24528,7 +22335,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutPropertyWString<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -24566,7 +22373,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutPropertyGuid<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -24602,7 +22409,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteProperty<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -24638,7 +22445,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPropertyMetadata<P0>(
         &self,
@@ -24655,7 +22462,7 @@ impl IFabricPropertyManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProperty<P0, P1>(
         &self,
@@ -24679,7 +22486,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProperty<P0>(
         &self,
@@ -24696,7 +22503,7 @@ impl IFabricPropertyManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginSubmitPropertyBatch<P0>(
         &self,
@@ -24714,34 +22521,33 @@ impl IFabricPropertyManagementClient2 {
             .BeginSubmitPropertyBatch)(
             ::windows_core::Interface::as_raw(self),
             name,
-            operations.len() as _,
+            operations.len().try_into().unwrap(),
             ::core::mem::transmute(operations.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndSubmitPropertyBatch<P0>(
         &self,
         context: P0,
         failedoperationindexinrequest: *mut u32,
-        result: *mut ::core::option::Option<IFabricPropertyBatchResult>,
-    ) -> ::windows_core::Result<()>
+    ) -> ::windows_core::Result<IFabricPropertyBatchResult>
     where
         P0: ::windows_core::IntoParam<super::IFabricAsyncOperationContext>,
     {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self)
             .base__
             .EndSubmitPropertyBatch)(
             ::windows_core::Interface::as_raw(self),
             context.into_param().abi(),
             failedoperationindexinrequest,
-            ::core::mem::transmute(result),
+            &mut result__,
         )
-        .ok()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginEnumerateProperties<P0, P1, P2>(
         &self,
@@ -24768,7 +22574,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndEnumerateProperties<P0>(
         &self,
@@ -24785,7 +22591,7 @@ impl IFabricPropertyManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginPutCustomPropertyOperation<P0>(
         &self,
@@ -24806,7 +22612,7 @@ impl IFabricPropertyManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndPutCustomPropertyOperation<P0>(
         &self,
@@ -24822,60 +22628,31 @@ impl IFabricPropertyManagementClient2 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricPropertyManagementClient2,
-    ::windows_core::IUnknown,
-    IFabricPropertyManagementClient
-);
-impl ::core::cmp::PartialEq for IFabricPropertyManagementClient2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricPropertyManagementClient2 {}
-impl ::core::fmt::Debug for IFabricPropertyManagementClient2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricPropertyManagementClient2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricPropertyManagementClient2 {}
 unsafe impl ::core::marker::Sync for IFabricPropertyManagementClient2 {}
-unsafe impl ::windows_core::Interface for IFabricPropertyManagementClient2 {
-    type Vtable = IFabricPropertyManagementClient2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricPropertyManagementClient2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricPropertyManagementClient2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x04991c28_3f9d_4a49_9322_a56d308965fd);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricPropertyManagementClient2_Vtbl {
     pub base__: IFabricPropertyManagementClient_Vtbl,
     pub BeginPutCustomPropertyOperation: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        propertyoperation: *const super::super::FABRIC_PUT_CUSTOM_PROPERTY_OPERATION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        *const super::super::FABRIC_PUT_CUSTOM_PROPERTY_OPERATION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndPutCustomPropertyOperation: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricPropertyMetadataResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricPropertyMetadataResult,
+    IFabricPropertyMetadataResult_Vtbl,
+    0x33302306_fb8d_4831_b493_57efcc772462
+);
+::windows_core::imp::interface_hierarchy!(IFabricPropertyMetadataResult, ::windows_core::IUnknown);
 impl IFabricPropertyMetadataResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_Metadata(&self) -> *mut super::super::FABRIC_NAMED_PROPERTY_METADATA {
         (::windows_core::Interface::vtable(self).get_Metadata)(::windows_core::Interface::as_raw(
@@ -24883,68 +22660,40 @@ impl IFabricPropertyMetadataResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricPropertyMetadataResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricPropertyMetadataResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricPropertyMetadataResult {}
-impl ::core::fmt::Debug for IFabricPropertyMetadataResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricPropertyMetadataResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricPropertyMetadataResult {}
 unsafe impl ::core::marker::Sync for IFabricPropertyMetadataResult {}
-unsafe impl ::windows_core::Interface for IFabricPropertyMetadataResult {
-    type Vtable = IFabricPropertyMetadataResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricPropertyMetadataResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricPropertyMetadataResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x33302306_fb8d_4831_b493_57efcc772462);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricPropertyMetadataResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_Metadata:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_NAMED_PROPERTY_METADATA,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_Metadata: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricPropertyValueResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricPropertyValueResult,
+    IFabricPropertyValueResult_Vtbl,
+    0x9a518b49_9903_4b8f_834e_1979e9c6745e
+);
+::windows_core::imp::interface_hierarchy!(IFabricPropertyValueResult, ::windows_core::IUnknown);
 impl IFabricPropertyValueResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_Property(&self) -> *mut super::super::FABRIC_NAMED_PROPERTY {
         (::windows_core::Interface::vtable(self).get_Property)(::windows_core::Interface::as_raw(
             self,
         ))
     }
-    pub unsafe fn GetValueAsBinary(
-        &self,
-        bytecount: *mut u32,
-        bufferedvalue: *mut *mut u8,
-    ) -> ::windows_core::Result<()> {
+    pub unsafe fn GetValueAsBinary(&self, bytecount: *mut u32) -> ::windows_core::Result<*mut u8> {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self).GetValueAsBinary)(
             ::windows_core::Interface::as_raw(self),
             bytecount,
-            bufferedvalue,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn GetValueAsInt64(&self) -> ::windows_core::Result<i64> {
         let mut result__ = ::std::mem::zeroed();
@@ -24952,7 +22701,7 @@ impl IFabricPropertyValueResult {
             ::windows_core::Interface::as_raw(self),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn GetValueAsDouble(&self) -> ::windows_core::Result<f64> {
         let mut result__ = ::std::mem::zeroed();
@@ -24960,7 +22709,7 @@ impl IFabricPropertyValueResult {
             ::windows_core::Interface::as_raw(self),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn GetValueAsWString(&self) -> ::windows_core::Result<::windows_core::PCWSTR> {
         let mut result__ = ::std::mem::zeroed();
@@ -24968,7 +22717,7 @@ impl IFabricPropertyValueResult {
             ::windows_core::Interface::as_raw(self),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn GetValueAsGuid(&self) -> ::windows_core::Result<::windows_core::GUID> {
         let mut result__ = ::std::mem::zeroed();
@@ -24976,72 +22725,44 @@ impl IFabricPropertyValueResult {
             ::windows_core::Interface::as_raw(self),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricPropertyValueResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricPropertyValueResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricPropertyValueResult {}
-impl ::core::fmt::Debug for IFabricPropertyValueResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricPropertyValueResult")
-            .field(&self.0)
-            .finish()
+        .map(|| result__)
     }
 }
 unsafe impl ::core::marker::Send for IFabricPropertyValueResult {}
 unsafe impl ::core::marker::Sync for IFabricPropertyValueResult {}
-unsafe impl ::windows_core::Interface for IFabricPropertyValueResult {
-    type Vtable = IFabricPropertyValueResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricPropertyValueResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricPropertyValueResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x9a518b49_9903_4b8f_834e_1979e9c6745e);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricPropertyValueResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_Property: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_NAMED_PROPERTY,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_Property: usize,
     pub GetValueAsBinary: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        bytecount: *mut u32,
-        bufferedvalue: *mut *mut u8,
+        *mut ::core::ffi::c_void,
+        *mut u32,
+        *mut *mut u8,
     ) -> ::windows_core::HRESULT,
-    pub GetValueAsInt64: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        value: *mut i64,
-    ) -> ::windows_core::HRESULT,
-    pub GetValueAsDouble: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        value: *mut f64,
-    ) -> ::windows_core::HRESULT,
+    pub GetValueAsInt64:
+        unsafe extern "system" fn(*mut ::core::ffi::c_void, *mut i64) -> ::windows_core::HRESULT,
+    pub GetValueAsDouble:
+        unsafe extern "system" fn(*mut ::core::ffi::c_void, *mut f64) -> ::windows_core::HRESULT,
     pub GetValueAsWString: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        bufferedvalue: *mut ::windows_core::PCWSTR,
+        *mut ::core::ffi::c_void,
+        *mut ::windows_core::PCWSTR,
     ) -> ::windows_core::HRESULT,
     pub GetValueAsGuid: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        value: *mut ::windows_core::GUID,
+        *mut ::core::ffi::c_void,
+        *mut ::windows_core::GUID,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricQueryClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricQueryClient,
+    IFabricQueryClient_Vtbl,
+    0xc629e422_90ba_4efd_8f64_cecf51bc3df0
+);
+::windows_core::imp::interface_hierarchy!(IFabricQueryClient, ::windows_core::IUnknown);
 impl IFabricQueryClient {
     pub unsafe fn BeginGetNodeList<P0>(
         &self,
@@ -25060,7 +22781,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList<P0>(
         &self,
@@ -25075,7 +22796,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationTypeList<P0>(
         &self,
@@ -25094,7 +22815,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypeList<P0>(
         &self,
@@ -25109,7 +22830,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceTypeList<P0>(
         &self,
@@ -25128,7 +22849,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceTypeList<P0>(
         &self,
@@ -25143,7 +22864,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationList<P0>(
         &self,
@@ -25162,7 +22883,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList<P0>(
         &self,
@@ -25177,7 +22898,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceList<P0>(
         &self,
@@ -25196,7 +22917,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList<P0>(
         &self,
@@ -25211,7 +22932,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionList<P0>(
         &self,
@@ -25230,7 +22951,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList<P0>(
         &self,
@@ -25245,7 +22966,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaList<P0>(
         &self,
@@ -25264,7 +22985,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList<P0>(
         &self,
@@ -25279,7 +23000,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedApplicationList<P0>(
         &self,
@@ -25298,7 +23019,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationList<P0>(
         &self,
@@ -25313,7 +23034,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServicePackageList<P0>(
         &self,
@@ -25332,7 +23053,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageList<P0>(
         &self,
@@ -25347,7 +23068,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServiceTypeList<P0>(
         &self,
@@ -25366,7 +23087,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServiceTypeList<P0>(
         &self,
@@ -25381,7 +23102,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedCodePackageList<P0>(
         &self,
@@ -25400,7 +23121,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedCodePackageList<P0>(
         &self,
@@ -25415,7 +23136,7 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaList<P0>(
         &self,
@@ -25434,7 +23155,7 @@ impl IFabricQueryClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaList<P0>(
         &self,
@@ -25449,188 +23170,178 @@ impl IFabricQueryClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricQueryClient, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricQueryClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricQueryClient {}
-impl ::core::fmt::Debug for IFabricQueryClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricQueryClient").field(&self.0).finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricQueryClient {}
 unsafe impl ::core::marker::Sync for IFabricQueryClient {}
-unsafe impl ::windows_core::Interface for IFabricQueryClient {
-    type Vtable = IFabricQueryClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricQueryClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricQueryClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xc629e422_90ba_4efd_8f64_cecf51bc3df0);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricQueryClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub BeginGetNodeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_NODE_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_NODE_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetNodeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetApplicationTypeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetApplicationTypeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetServiceTypeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_SERVICE_TYPE_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_TYPE_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetServiceTypeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetApplicationList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_APPLICATION_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_APPLICATION_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetApplicationList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetServiceList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_SERVICE_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetServiceList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetPartitionList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetPartitionList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetReplicaList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetReplicaList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetDeployedApplicationList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetDeployedApplicationList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetDeployedServicePackageList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     pub EndGetDeployedServicePackageList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetDeployedServiceTypeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_DEPLOYED_SERVICE_TYPE_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DEPLOYED_SERVICE_TYPE_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetDeployedServiceTypeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetDeployedCodePackageList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetDeployedCodePackageList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetDeployedReplicaList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_DEPLOYED_SERVICE_REPLICA_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DEPLOYED_SERVICE_REPLICA_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetDeployedReplicaList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricQueryClient10(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricQueryClient10,
+    IFabricQueryClient10_Vtbl,
+    0x02139da8_7140_42ae_8403_79a551600e63
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricQueryClient10,
+    ::windows_core::IUnknown,
+    IFabricQueryClient,
+    IFabricQueryClient2,
+    IFabricQueryClient3,
+    IFabricQueryClient4,
+    IFabricQueryClient5,
+    IFabricQueryClient6,
+    IFabricQueryClient7,
+    IFabricQueryClient8,
+    IFabricQueryClient9
+);
 impl IFabricQueryClient10 {
     pub unsafe fn BeginGetNodeList<P0>(
         &self,
@@ -25659,7 +23370,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList<P0>(
         &self,
@@ -25684,7 +23395,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationTypeList<P0>(
         &self,
@@ -25713,7 +23424,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypeList<P0>(
         &self,
@@ -25738,7 +23449,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceTypeList<P0>(
         &self,
@@ -25767,7 +23478,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceTypeList<P0>(
         &self,
@@ -25792,7 +23503,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationList<P0>(
         &self,
@@ -25821,7 +23532,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList<P0>(
         &self,
@@ -25846,7 +23557,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceList<P0>(
         &self,
@@ -25875,7 +23586,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList<P0>(
         &self,
@@ -25900,7 +23611,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionList<P0>(
         &self,
@@ -25929,7 +23640,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList<P0>(
         &self,
@@ -25954,7 +23665,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaList<P0>(
         &self,
@@ -25983,7 +23694,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList<P0>(
         &self,
@@ -26008,7 +23719,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedApplicationList<P0>(
         &self,
@@ -26037,7 +23748,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationList<P0>(
         &self,
@@ -26062,7 +23773,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServicePackageList<P0>(
         &self,
@@ -26091,7 +23802,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageList<P0>(
         &self,
@@ -26116,7 +23827,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServiceTypeList<P0>(
         &self,
@@ -26145,7 +23856,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServiceTypeList<P0>(
         &self,
@@ -26170,7 +23881,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedCodePackageList<P0>(
         &self,
@@ -26199,7 +23910,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedCodePackageList<P0>(
         &self,
@@ -26224,7 +23935,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaList<P0>(
         &self,
@@ -26253,7 +23964,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaList<P0>(
         &self,
@@ -26278,7 +23989,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaDetail<P0>(
         &self,
@@ -26306,7 +24017,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaDetail<P0>(
         &self,
@@ -26330,7 +24041,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterLoadInformation<P0>(
         &self,
@@ -26356,7 +24067,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterLoadInformation<P0>(
         &self,
@@ -26380,7 +24091,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionLoadInformation<P0>(
         &self,
@@ -26408,7 +24119,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionLoadInformation<P0>(
         &self,
@@ -26432,7 +24143,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -26460,7 +24171,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -26484,7 +24195,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -26512,7 +24223,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -26536,7 +24247,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetNodeLoadInformation<P0>(
         &self,
@@ -26563,7 +24274,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeLoadInformation<P0>(
         &self,
@@ -26586,7 +24297,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaLoadInformation<P0>(
         &self,
@@ -26613,7 +24324,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaLoadInformation<P0>(
         &self,
@@ -26636,7 +24347,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberList<P0>(
         &self,
@@ -26662,7 +24373,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberList<P0>(
         &self,
@@ -26684,7 +24395,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -26710,7 +24421,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -26732,9 +24443,8 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetUnplacedReplicaInformation<P0>(
         &self,
@@ -26759,7 +24469,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUnplacedReplicaInformation<P0>(
         &self,
@@ -26780,7 +24490,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList2<P0>(
         &self,
@@ -26800,7 +24510,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList2<P0>(
         &self,
@@ -26820,7 +24530,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList2<P0>(
         &self,
@@ -26840,7 +24550,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList2<P0>(
         &self,
@@ -26860,7 +24570,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList2<P0>(
         &self,
@@ -26880,7 +24590,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationLoadInformation<P0>(
         &self,
@@ -26903,7 +24613,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationLoadInformation<P0>(
         &self,
@@ -26922,7 +24632,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceName<P0>(
         &self,
@@ -26944,7 +24654,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceName<P0>(
         &self,
@@ -26962,7 +24672,7 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationName<P0>(
         &self,
@@ -26984,7 +24694,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationName<P0>(
         &self,
@@ -27002,9 +24712,8 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetApplicationTypePagedList<P0>(
         &self,
@@ -27025,7 +24734,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypePagedList<P0>(
         &self,
@@ -27042,9 +24751,8 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetDeployedApplicationPagedList<P0>(
         &self,
@@ -27063,7 +24771,7 @@ impl IFabricQueryClient10 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationPagedList<P0>(
         &self,
@@ -27078,74 +24786,42 @@ impl IFabricQueryClient10 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricQueryClient10,
-    ::windows_core::IUnknown,
-    IFabricQueryClient,
-    IFabricQueryClient2,
-    IFabricQueryClient3,
-    IFabricQueryClient4,
-    IFabricQueryClient5,
-    IFabricQueryClient6,
-    IFabricQueryClient7,
-    IFabricQueryClient8,
-    IFabricQueryClient9
-);
-impl ::core::cmp::PartialEq for IFabricQueryClient10 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricQueryClient10 {}
-impl ::core::fmt::Debug for IFabricQueryClient10 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricQueryClient10")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricQueryClient10 {}
 unsafe impl ::core::marker::Sync for IFabricQueryClient10 {}
-unsafe impl ::windows_core::Interface for IFabricQueryClient10 {
-    type Vtable = IFabricQueryClient10_Vtbl;
-}
-impl ::core::clone::Clone for IFabricQueryClient10 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricQueryClient10 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x02139da8_7140_42ae_8403_79a551600e63);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricQueryClient10_Vtbl {
     pub base__: IFabricQueryClient9_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetDeployedApplicationPagedList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_PAGED_DEPLOYED_APPLICATION_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_PAGED_DEPLOYED_APPLICATION_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetDeployedApplicationPagedList: usize,
     pub EndGetDeployedApplicationPagedList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricQueryClient2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricQueryClient2,
+    IFabricQueryClient2_Vtbl,
+    0x4e6d5d61_24c8_4240_a2e8_bcb1fc15d9af
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricQueryClient2,
+    ::windows_core::IUnknown,
+    IFabricQueryClient
+);
 impl IFabricQueryClient2 {
     pub unsafe fn BeginGetNodeList<P0>(
         &self,
@@ -27166,7 +24842,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList<P0>(
         &self,
@@ -27183,7 +24859,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationTypeList<P0>(
         &self,
@@ -27204,7 +24880,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypeList<P0>(
         &self,
@@ -27221,7 +24897,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceTypeList<P0>(
         &self,
@@ -27242,7 +24918,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceTypeList<P0>(
         &self,
@@ -27259,7 +24935,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationList<P0>(
         &self,
@@ -27280,7 +24956,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList<P0>(
         &self,
@@ -27297,7 +24973,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceList<P0>(
         &self,
@@ -27318,7 +24994,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList<P0>(
         &self,
@@ -27335,7 +25011,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionList<P0>(
         &self,
@@ -27356,7 +25032,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList<P0>(
         &self,
@@ -27373,7 +25049,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaList<P0>(
         &self,
@@ -27394,7 +25070,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList<P0>(
         &self,
@@ -27411,7 +25087,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedApplicationList<P0>(
         &self,
@@ -27432,7 +25108,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationList<P0>(
         &self,
@@ -27449,7 +25125,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServicePackageList<P0>(
         &self,
@@ -27470,7 +25146,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageList<P0>(
         &self,
@@ -27487,7 +25163,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServiceTypeList<P0>(
         &self,
@@ -27508,7 +25184,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServiceTypeList<P0>(
         &self,
@@ -27525,7 +25201,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedCodePackageList<P0>(
         &self,
@@ -27546,7 +25222,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedCodePackageList<P0>(
         &self,
@@ -27563,7 +25239,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaList<P0>(
         &self,
@@ -27584,7 +25260,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaList<P0>(
         &self,
@@ -27601,7 +25277,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaDetail<P0>(
         &self,
@@ -27620,7 +25296,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaDetail<P0>(
         &self,
@@ -27635,7 +25311,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterLoadInformation<P0>(
         &self,
@@ -27652,7 +25328,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterLoadInformation<P0>(
         &self,
@@ -27667,7 +25343,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionLoadInformation<P0>(
         &self,
@@ -27686,7 +25362,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionLoadInformation<P0>(
         &self,
@@ -27701,7 +25377,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -27720,7 +25396,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -27735,7 +25411,7 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -27754,7 +25430,7 @@ impl IFabricQueryClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -27769,45 +25445,89 @@ impl IFabricQueryClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricQueryClient2,
-    ::windows_core::IUnknown,
-    IFabricQueryClient
-);
-impl ::core::cmp::PartialEq for IFabricQueryClient2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricQueryClient2 {}
-impl ::core::fmt::Debug for IFabricQueryClient2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricQueryClient2").field(&self.0).finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricQueryClient2 {}
 unsafe impl ::core::marker::Sync for IFabricQueryClient2 {}
-unsafe impl ::windows_core::Interface for IFabricQueryClient2 {
-    type Vtable = IFabricQueryClient2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricQueryClient2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricQueryClient2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x4e6d5d61_24c8_4240_a2e8_bcb1fc15d9af);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricQueryClient2_Vtbl where { pub base__ : IFabricQueryClient_Vtbl , pub BeginGetDeployedReplicaDetail :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetDeployedReplicaDetail :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetClusterLoadInformation :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetClusterLoadInformation :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetPartitionLoadInformation :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetPartitionLoadInformation :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetProvisionedFabricCodeVersionList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_PROVISIONED_CODE_VERSION_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetProvisionedFabricCodeVersionList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetProvisionedFabricConfigVersionList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , querydescription : *const super::super:: FABRIC_PROVISIONED_CONFIG_VERSION_QUERY_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetProvisionedFabricConfigVersionList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricQueryClient3(::windows_core::IUnknown);
+pub struct IFabricQueryClient2_Vtbl {
+    pub base__: IFabricQueryClient_Vtbl,
+    pub BeginGetDeployedReplicaDetail: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetDeployedReplicaDetail: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetClusterLoadInformation: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetClusterLoadInformation: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetPartitionLoadInformation: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetPartitionLoadInformation: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetProvisionedFabricCodeVersionList:
+        unsafe extern "system" fn(
+            *mut ::core::ffi::c_void,
+            *const super::super::FABRIC_PROVISIONED_CODE_VERSION_QUERY_DESCRIPTION,
+            u32,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT,
+    pub EndGetProvisionedFabricCodeVersionList:
+        unsafe extern "system" fn(
+            *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT,
+    pub BeginGetProvisionedFabricConfigVersionList:
+        unsafe extern "system" fn(
+            *mut ::core::ffi::c_void,
+            *const super::super::FABRIC_PROVISIONED_CONFIG_VERSION_QUERY_DESCRIPTION,
+            u32,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT,
+    pub EndGetProvisionedFabricConfigVersionList:
+        unsafe extern "system" fn(
+            *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
+        ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricQueryClient3,
+    IFabricQueryClient3_Vtbl,
+    0x16f563f3_4017_496e_b0e7_2650de5774b3
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricQueryClient3,
+    ::windows_core::IUnknown,
+    IFabricQueryClient,
+    IFabricQueryClient2
+);
 impl IFabricQueryClient3 {
     pub unsafe fn BeginGetNodeList<P0>(
         &self,
@@ -27829,7 +25549,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList<P0>(
         &self,
@@ -27847,7 +25567,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationTypeList<P0>(
         &self,
@@ -27869,7 +25589,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypeList<P0>(
         &self,
@@ -27887,7 +25607,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceTypeList<P0>(
         &self,
@@ -27909,7 +25629,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceTypeList<P0>(
         &self,
@@ -27927,7 +25647,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationList<P0>(
         &self,
@@ -27949,7 +25669,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList<P0>(
         &self,
@@ -27967,7 +25687,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceList<P0>(
         &self,
@@ -27989,7 +25709,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList<P0>(
         &self,
@@ -28007,7 +25727,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionList<P0>(
         &self,
@@ -28029,7 +25749,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList<P0>(
         &self,
@@ -28047,7 +25767,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaList<P0>(
         &self,
@@ -28069,7 +25789,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList<P0>(
         &self,
@@ -28087,7 +25807,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedApplicationList<P0>(
         &self,
@@ -28109,7 +25829,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationList<P0>(
         &self,
@@ -28127,7 +25847,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServicePackageList<P0>(
         &self,
@@ -28149,7 +25869,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageList<P0>(
         &self,
@@ -28167,7 +25887,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServiceTypeList<P0>(
         &self,
@@ -28189,7 +25909,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServiceTypeList<P0>(
         &self,
@@ -28207,7 +25927,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedCodePackageList<P0>(
         &self,
@@ -28229,7 +25949,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedCodePackageList<P0>(
         &self,
@@ -28247,7 +25967,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaList<P0>(
         &self,
@@ -28269,7 +25989,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaList<P0>(
         &self,
@@ -28287,7 +26007,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaDetail<P0>(
         &self,
@@ -28308,7 +26028,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaDetail<P0>(
         &self,
@@ -28325,7 +26045,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterLoadInformation<P0>(
         &self,
@@ -28344,7 +26064,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterLoadInformation<P0>(
         &self,
@@ -28361,7 +26081,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionLoadInformation<P0>(
         &self,
@@ -28382,7 +26102,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionLoadInformation<P0>(
         &self,
@@ -28399,7 +26119,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -28420,7 +26140,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -28437,7 +26157,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -28458,7 +26178,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -28475,7 +26195,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetNodeLoadInformation<P0>(
         &self,
@@ -28494,7 +26214,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeLoadInformation<P0>(
         &self,
@@ -28509,7 +26229,7 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaLoadInformation<P0>(
         &self,
@@ -28528,7 +26248,7 @@ impl IFabricQueryClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaLoadInformation<P0>(
         &self,
@@ -28543,72 +26263,51 @@ impl IFabricQueryClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricQueryClient3,
-    ::windows_core::IUnknown,
-    IFabricQueryClient,
-    IFabricQueryClient2
-);
-impl ::core::cmp::PartialEq for IFabricQueryClient3 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricQueryClient3 {}
-impl ::core::fmt::Debug for IFabricQueryClient3 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricQueryClient3").field(&self.0).finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricQueryClient3 {}
 unsafe impl ::core::marker::Sync for IFabricQueryClient3 {}
-unsafe impl ::windows_core::Interface for IFabricQueryClient3 {
-    type Vtable = IFabricQueryClient3_Vtbl;
-}
-impl ::core::clone::Clone for IFabricQueryClient3 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricQueryClient3 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x16f563f3_4017_496e_b0e7_2650de5774b3);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricQueryClient3_Vtbl {
     pub base__: IFabricQueryClient2_Vtbl,
     pub BeginGetNodeLoadInformation: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_NODE_LOAD_INFORMATION_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_NODE_LOAD_INFORMATION_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetNodeLoadInformation: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetReplicaLoadInformation: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_REPLICA_LOAD_INFORMATION_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_REPLICA_LOAD_INFORMATION_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetReplicaLoadInformation: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricQueryClient4(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricQueryClient4,
+    IFabricQueryClient4_Vtbl,
+    0xab92081d_0d78_410b_9777_0846dba24c10
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricQueryClient4,
+    ::windows_core::IUnknown,
+    IFabricQueryClient,
+    IFabricQueryClient2,
+    IFabricQueryClient3
+);
 impl IFabricQueryClient4 {
     pub unsafe fn BeginGetNodeList<P0>(
         &self,
@@ -28631,7 +26330,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList<P0>(
         &self,
@@ -28650,7 +26349,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationTypeList<P0>(
         &self,
@@ -28673,7 +26372,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypeList<P0>(
         &self,
@@ -28692,7 +26391,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceTypeList<P0>(
         &self,
@@ -28715,7 +26414,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceTypeList<P0>(
         &self,
@@ -28734,7 +26433,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationList<P0>(
         &self,
@@ -28757,7 +26456,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList<P0>(
         &self,
@@ -28776,7 +26475,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceList<P0>(
         &self,
@@ -28799,7 +26498,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList<P0>(
         &self,
@@ -28818,7 +26517,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionList<P0>(
         &self,
@@ -28841,7 +26540,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList<P0>(
         &self,
@@ -28860,7 +26559,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaList<P0>(
         &self,
@@ -28883,7 +26582,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList<P0>(
         &self,
@@ -28902,7 +26601,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedApplicationList<P0>(
         &self,
@@ -28925,7 +26624,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationList<P0>(
         &self,
@@ -28944,7 +26643,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServicePackageList<P0>(
         &self,
@@ -28967,7 +26666,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageList<P0>(
         &self,
@@ -28986,7 +26685,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServiceTypeList<P0>(
         &self,
@@ -29009,7 +26708,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServiceTypeList<P0>(
         &self,
@@ -29028,7 +26727,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedCodePackageList<P0>(
         &self,
@@ -29051,7 +26750,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedCodePackageList<P0>(
         &self,
@@ -29070,7 +26769,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaList<P0>(
         &self,
@@ -29093,7 +26792,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaList<P0>(
         &self,
@@ -29112,7 +26811,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaDetail<P0>(
         &self,
@@ -29134,7 +26833,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaDetail<P0>(
         &self,
@@ -29152,7 +26851,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterLoadInformation<P0>(
         &self,
@@ -29172,7 +26871,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterLoadInformation<P0>(
         &self,
@@ -29190,7 +26889,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionLoadInformation<P0>(
         &self,
@@ -29212,7 +26911,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionLoadInformation<P0>(
         &self,
@@ -29230,7 +26929,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -29252,7 +26951,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -29270,7 +26969,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -29292,7 +26991,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -29310,7 +27009,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetNodeLoadInformation<P0>(
         &self,
@@ -29331,7 +27030,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeLoadInformation<P0>(
         &self,
@@ -29348,7 +27047,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaLoadInformation<P0>(
         &self,
@@ -29369,7 +27068,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaLoadInformation<P0>(
         &self,
@@ -29386,7 +27085,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberList<P0>(
         &self,
@@ -29405,7 +27104,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberList<P0>(
         &self,
@@ -29420,7 +27119,7 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -29439,7 +27138,7 @@ impl IFabricQueryClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -29454,74 +27153,53 @@ impl IFabricQueryClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricQueryClient4,
-    ::windows_core::IUnknown,
-    IFabricQueryClient,
-    IFabricQueryClient2,
-    IFabricQueryClient3
-);
-impl ::core::cmp::PartialEq for IFabricQueryClient4 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricQueryClient4 {}
-impl ::core::fmt::Debug for IFabricQueryClient4 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricQueryClient4").field(&self.0).finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricQueryClient4 {}
 unsafe impl ::core::marker::Sync for IFabricQueryClient4 {}
-unsafe impl ::windows_core::Interface for IFabricQueryClient4 {
-    type Vtable = IFabricQueryClient4_Vtbl;
-}
-impl ::core::clone::Clone for IFabricQueryClient4 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricQueryClient4 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xab92081d_0d78_410b_9777_0846dba24c10);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricQueryClient4_Vtbl {
     pub base__: IFabricQueryClient3_Vtbl,
     pub BeginGetServiceGroupMemberList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_SERVICE_GROUP_MEMBER_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_GROUP_MEMBER_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetServiceGroupMemberList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetServiceGroupMemberTypeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_SERVICE_GROUP_MEMBER_TYPE_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_GROUP_MEMBER_TYPE_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     pub EndGetServiceGroupMemberTypeList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricQueryClient5(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricQueryClient5,
+    IFabricQueryClient5_Vtbl,
+    0x75c35e8c_87a2_4810_a401_b50da858fe34
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricQueryClient5,
+    ::windows_core::IUnknown,
+    IFabricQueryClient,
+    IFabricQueryClient2,
+    IFabricQueryClient3,
+    IFabricQueryClient4
+);
 impl IFabricQueryClient5 {
     pub unsafe fn BeginGetNodeList<P0>(
         &self,
@@ -29545,7 +27223,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList<P0>(
         &self,
@@ -29565,7 +27243,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationTypeList<P0>(
         &self,
@@ -29589,7 +27267,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypeList<P0>(
         &self,
@@ -29609,7 +27287,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceTypeList<P0>(
         &self,
@@ -29633,7 +27311,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceTypeList<P0>(
         &self,
@@ -29653,7 +27331,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationList<P0>(
         &self,
@@ -29677,7 +27355,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList<P0>(
         &self,
@@ -29697,7 +27375,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceList<P0>(
         &self,
@@ -29721,7 +27399,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList<P0>(
         &self,
@@ -29741,7 +27419,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionList<P0>(
         &self,
@@ -29765,7 +27443,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList<P0>(
         &self,
@@ -29785,7 +27463,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaList<P0>(
         &self,
@@ -29809,7 +27487,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList<P0>(
         &self,
@@ -29829,7 +27507,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedApplicationList<P0>(
         &self,
@@ -29853,7 +27531,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationList<P0>(
         &self,
@@ -29873,7 +27551,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServicePackageList<P0>(
         &self,
@@ -29897,7 +27575,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageList<P0>(
         &self,
@@ -29917,7 +27595,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServiceTypeList<P0>(
         &self,
@@ -29941,7 +27619,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServiceTypeList<P0>(
         &self,
@@ -29961,7 +27639,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedCodePackageList<P0>(
         &self,
@@ -29985,7 +27663,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedCodePackageList<P0>(
         &self,
@@ -30005,7 +27683,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaList<P0>(
         &self,
@@ -30029,7 +27707,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaList<P0>(
         &self,
@@ -30049,7 +27727,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaDetail<P0>(
         &self,
@@ -30072,7 +27750,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaDetail<P0>(
         &self,
@@ -30091,7 +27769,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterLoadInformation<P0>(
         &self,
@@ -30112,7 +27790,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterLoadInformation<P0>(
         &self,
@@ -30131,7 +27809,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionLoadInformation<P0>(
         &self,
@@ -30154,7 +27832,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionLoadInformation<P0>(
         &self,
@@ -30173,7 +27851,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -30196,7 +27874,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -30215,7 +27893,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -30238,7 +27916,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -30257,7 +27935,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetNodeLoadInformation<P0>(
         &self,
@@ -30279,7 +27957,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeLoadInformation<P0>(
         &self,
@@ -30297,7 +27975,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaLoadInformation<P0>(
         &self,
@@ -30319,7 +27997,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaLoadInformation<P0>(
         &self,
@@ -30337,7 +28015,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberList<P0>(
         &self,
@@ -30358,7 +28036,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberList<P0>(
         &self,
@@ -30375,7 +28053,7 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -30396,7 +28074,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -30413,9 +28091,8 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetUnplacedReplicaInformation<P0>(
         &self,
@@ -30434,7 +28111,7 @@ impl IFabricQueryClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUnplacedReplicaInformation<P0>(
         &self,
@@ -30449,66 +28126,45 @@ impl IFabricQueryClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricQueryClient5,
-    ::windows_core::IUnknown,
-    IFabricQueryClient,
-    IFabricQueryClient2,
-    IFabricQueryClient3,
-    IFabricQueryClient4
-);
-impl ::core::cmp::PartialEq for IFabricQueryClient5 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricQueryClient5 {}
-impl ::core::fmt::Debug for IFabricQueryClient5 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricQueryClient5").field(&self.0).finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricQueryClient5 {}
 unsafe impl ::core::marker::Sync for IFabricQueryClient5 {}
-unsafe impl ::windows_core::Interface for IFabricQueryClient5 {
-    type Vtable = IFabricQueryClient5_Vtbl;
-}
-impl ::core::clone::Clone for IFabricQueryClient5 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricQueryClient5 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x75c35e8c_87a2_4810_a401_b50da858fe34);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricQueryClient5_Vtbl {
     pub base__: IFabricQueryClient4_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetUnplacedReplicaInformation: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_UNPLACED_REPLICA_INFORMATION_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_UNPLACED_REPLICA_INFORMATION_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetUnplacedReplicaInformation: usize,
     pub EndGetUnplacedReplicaInformation: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricQueryClient6(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricQueryClient6,
+    IFabricQueryClient6_Vtbl,
+    0x173b2bb4_09c6_42fb_8754_caa8d43cf1b2
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricQueryClient6,
+    ::windows_core::IUnknown,
+    IFabricQueryClient,
+    IFabricQueryClient2,
+    IFabricQueryClient3,
+    IFabricQueryClient4,
+    IFabricQueryClient5
+);
 impl IFabricQueryClient6 {
     pub unsafe fn BeginGetNodeList<P0>(
         &self,
@@ -30533,7 +28189,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList<P0>(
         &self,
@@ -30554,7 +28210,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationTypeList<P0>(
         &self,
@@ -30579,7 +28235,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypeList<P0>(
         &self,
@@ -30600,7 +28256,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceTypeList<P0>(
         &self,
@@ -30625,7 +28281,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceTypeList<P0>(
         &self,
@@ -30646,7 +28302,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationList<P0>(
         &self,
@@ -30671,7 +28327,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList<P0>(
         &self,
@@ -30692,7 +28348,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceList<P0>(
         &self,
@@ -30717,7 +28373,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList<P0>(
         &self,
@@ -30738,7 +28394,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionList<P0>(
         &self,
@@ -30763,7 +28419,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList<P0>(
         &self,
@@ -30784,7 +28440,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaList<P0>(
         &self,
@@ -30809,7 +28465,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList<P0>(
         &self,
@@ -30830,7 +28486,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedApplicationList<P0>(
         &self,
@@ -30855,7 +28511,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationList<P0>(
         &self,
@@ -30876,7 +28532,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServicePackageList<P0>(
         &self,
@@ -30901,7 +28557,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageList<P0>(
         &self,
@@ -30922,7 +28578,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServiceTypeList<P0>(
         &self,
@@ -30947,7 +28603,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServiceTypeList<P0>(
         &self,
@@ -30968,7 +28624,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedCodePackageList<P0>(
         &self,
@@ -30993,7 +28649,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedCodePackageList<P0>(
         &self,
@@ -31014,7 +28670,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaList<P0>(
         &self,
@@ -31039,7 +28695,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaList<P0>(
         &self,
@@ -31060,7 +28716,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaDetail<P0>(
         &self,
@@ -31084,7 +28740,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaDetail<P0>(
         &self,
@@ -31104,7 +28760,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterLoadInformation<P0>(
         &self,
@@ -31126,7 +28782,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterLoadInformation<P0>(
         &self,
@@ -31146,7 +28802,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionLoadInformation<P0>(
         &self,
@@ -31170,7 +28826,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionLoadInformation<P0>(
         &self,
@@ -31190,7 +28846,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -31214,7 +28870,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -31234,7 +28890,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -31258,7 +28914,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -31278,7 +28934,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetNodeLoadInformation<P0>(
         &self,
@@ -31301,7 +28957,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeLoadInformation<P0>(
         &self,
@@ -31320,7 +28976,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaLoadInformation<P0>(
         &self,
@@ -31343,7 +28999,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaLoadInformation<P0>(
         &self,
@@ -31362,7 +29018,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberList<P0>(
         &self,
@@ -31384,7 +29040,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberList<P0>(
         &self,
@@ -31402,7 +29058,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -31424,7 +29080,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -31442,9 +29098,8 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetUnplacedReplicaInformation<P0>(
         &self,
@@ -31465,7 +29120,7 @@ impl IFabricQueryClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUnplacedReplicaInformation<P0>(
         &self,
@@ -31482,7 +29137,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList2<P0>(
         &self,
@@ -31497,7 +29152,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList2<P0>(
         &self,
@@ -31512,7 +29167,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList2<P0>(
         &self,
@@ -31527,7 +29182,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList2<P0>(
         &self,
@@ -31542,7 +29197,7 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList2<P0>(
         &self,
@@ -31557,76 +29212,55 @@ impl IFabricQueryClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
+unsafe impl ::core::marker::Send for IFabricQueryClient6 {}
+unsafe impl ::core::marker::Sync for IFabricQueryClient6 {}
+#[repr(C)]
+pub struct IFabricQueryClient6_Vtbl {
+    pub base__: IFabricQueryClient5_Vtbl,
+    pub EndGetNodeList2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetApplicationList2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetServiceList2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetPartitionList2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetReplicaList2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricQueryClient7,
+    IFabricQueryClient7_Vtbl,
+    0x538baa81_ba97_46da_95ac_e1cdd184cc74
+);
 ::windows_core::imp::interface_hierarchy!(
-    IFabricQueryClient6,
+    IFabricQueryClient7,
     ::windows_core::IUnknown,
     IFabricQueryClient,
     IFabricQueryClient2,
     IFabricQueryClient3,
     IFabricQueryClient4,
-    IFabricQueryClient5
+    IFabricQueryClient5,
+    IFabricQueryClient6
 );
-impl ::core::cmp::PartialEq for IFabricQueryClient6 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricQueryClient6 {}
-impl ::core::fmt::Debug for IFabricQueryClient6 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricQueryClient6").field(&self.0).finish()
-    }
-}
-unsafe impl ::core::marker::Send for IFabricQueryClient6 {}
-unsafe impl ::core::marker::Sync for IFabricQueryClient6 {}
-unsafe impl ::windows_core::Interface for IFabricQueryClient6 {
-    type Vtable = IFabricQueryClient6_Vtbl;
-}
-impl ::core::clone::Clone for IFabricQueryClient6 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricQueryClient6 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x173b2bb4_09c6_42fb_8754_caa8d43cf1b2);
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IFabricQueryClient6_Vtbl {
-    pub base__: IFabricQueryClient5_Vtbl,
-    pub EndGetNodeList2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndGetApplicationList2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndGetServiceList2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndGetPartitionList2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndGetReplicaList2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-}
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricQueryClient7(::windows_core::IUnknown);
 impl IFabricQueryClient7 {
     pub unsafe fn BeginGetNodeList<P0>(
         &self,
@@ -31652,7 +29286,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList<P0>(
         &self,
@@ -31674,7 +29308,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationTypeList<P0>(
         &self,
@@ -31700,7 +29334,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypeList<P0>(
         &self,
@@ -31722,7 +29356,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceTypeList<P0>(
         &self,
@@ -31748,7 +29382,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceTypeList<P0>(
         &self,
@@ -31770,7 +29404,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationList<P0>(
         &self,
@@ -31796,7 +29430,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList<P0>(
         &self,
@@ -31818,7 +29452,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceList<P0>(
         &self,
@@ -31844,7 +29478,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList<P0>(
         &self,
@@ -31866,7 +29500,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionList<P0>(
         &self,
@@ -31892,7 +29526,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList<P0>(
         &self,
@@ -31914,7 +29548,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaList<P0>(
         &self,
@@ -31940,7 +29574,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList<P0>(
         &self,
@@ -31962,7 +29596,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedApplicationList<P0>(
         &self,
@@ -31988,7 +29622,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationList<P0>(
         &self,
@@ -32010,7 +29644,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServicePackageList<P0>(
         &self,
@@ -32036,7 +29670,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageList<P0>(
         &self,
@@ -32058,7 +29692,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServiceTypeList<P0>(
         &self,
@@ -32084,7 +29718,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServiceTypeList<P0>(
         &self,
@@ -32106,7 +29740,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedCodePackageList<P0>(
         &self,
@@ -32132,7 +29766,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedCodePackageList<P0>(
         &self,
@@ -32154,7 +29788,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaList<P0>(
         &self,
@@ -32180,7 +29814,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaList<P0>(
         &self,
@@ -32202,7 +29836,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaDetail<P0>(
         &self,
@@ -32227,7 +29861,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaDetail<P0>(
         &self,
@@ -32248,7 +29882,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterLoadInformation<P0>(
         &self,
@@ -32271,7 +29905,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterLoadInformation<P0>(
         &self,
@@ -32292,7 +29926,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionLoadInformation<P0>(
         &self,
@@ -32317,7 +29951,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionLoadInformation<P0>(
         &self,
@@ -32338,7 +29972,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -32363,7 +29997,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -32384,7 +30018,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -32409,7 +30043,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -32430,7 +30064,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetNodeLoadInformation<P0>(
         &self,
@@ -32454,7 +30088,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeLoadInformation<P0>(
         &self,
@@ -32474,7 +30108,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaLoadInformation<P0>(
         &self,
@@ -32498,7 +30132,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaLoadInformation<P0>(
         &self,
@@ -32518,7 +30152,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberList<P0>(
         &self,
@@ -32541,7 +30175,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberList<P0>(
         &self,
@@ -32560,7 +30194,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -32583,7 +30217,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -32602,9 +30236,8 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetUnplacedReplicaInformation<P0>(
         &self,
@@ -32626,7 +30259,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUnplacedReplicaInformation<P0>(
         &self,
@@ -32644,7 +30277,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList2<P0>(
         &self,
@@ -32661,7 +30294,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList2<P0>(
         &self,
@@ -32678,7 +30311,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList2<P0>(
         &self,
@@ -32695,7 +30328,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList2<P0>(
         &self,
@@ -32712,7 +30345,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList2<P0>(
         &self,
@@ -32729,7 +30362,7 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationLoadInformation<P0>(
         &self,
@@ -32748,7 +30381,7 @@ impl IFabricQueryClient7 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationLoadInformation<P0>(
         &self,
@@ -32763,65 +30396,44 @@ impl IFabricQueryClient7 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
+unsafe impl ::core::marker::Send for IFabricQueryClient7 {}
+unsafe impl ::core::marker::Sync for IFabricQueryClient7 {}
+#[repr(C)]
+pub struct IFabricQueryClient7_Vtbl {
+    pub base__: IFabricQueryClient6_Vtbl,
+    pub BeginGetApplicationLoadInformation: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_APPLICATION_LOAD_INFORMATION_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    )
+        -> ::windows_core::HRESULT,
+    pub EndGetApplicationLoadInformation: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricQueryClient8,
+    IFabricQueryClient8_Vtbl,
+    0x2c850629_6a83_4fc3_8468_c868b87e9a17
+);
 ::windows_core::imp::interface_hierarchy!(
-    IFabricQueryClient7,
+    IFabricQueryClient8,
     ::windows_core::IUnknown,
     IFabricQueryClient,
     IFabricQueryClient2,
     IFabricQueryClient3,
     IFabricQueryClient4,
     IFabricQueryClient5,
-    IFabricQueryClient6
+    IFabricQueryClient6,
+    IFabricQueryClient7
 );
-impl ::core::cmp::PartialEq for IFabricQueryClient7 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricQueryClient7 {}
-impl ::core::fmt::Debug for IFabricQueryClient7 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricQueryClient7").field(&self.0).finish()
-    }
-}
-unsafe impl ::core::marker::Send for IFabricQueryClient7 {}
-unsafe impl ::core::marker::Sync for IFabricQueryClient7 {}
-unsafe impl ::windows_core::Interface for IFabricQueryClient7 {
-    type Vtable = IFabricQueryClient7_Vtbl;
-}
-impl ::core::clone::Clone for IFabricQueryClient7 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricQueryClient7 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x538baa81_ba97_46da_95ac_e1cdd184cc74);
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IFabricQueryClient7_Vtbl {
-    pub base__: IFabricQueryClient6_Vtbl,
-    pub BeginGetApplicationLoadInformation: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_APPLICATION_LOAD_INFORMATION_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    )
-        -> ::windows_core::HRESULT,
-    pub EndGetApplicationLoadInformation: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-}
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricQueryClient8(::windows_core::IUnknown);
 impl IFabricQueryClient8 {
     pub unsafe fn BeginGetNodeList<P0>(
         &self,
@@ -32848,7 +30460,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList<P0>(
         &self,
@@ -32871,7 +30483,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationTypeList<P0>(
         &self,
@@ -32898,7 +30510,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypeList<P0>(
         &self,
@@ -32921,7 +30533,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceTypeList<P0>(
         &self,
@@ -32948,7 +30560,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceTypeList<P0>(
         &self,
@@ -32971,7 +30583,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationList<P0>(
         &self,
@@ -32998,7 +30610,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList<P0>(
         &self,
@@ -33021,7 +30633,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceList<P0>(
         &self,
@@ -33048,7 +30660,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList<P0>(
         &self,
@@ -33071,7 +30683,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionList<P0>(
         &self,
@@ -33098,7 +30710,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList<P0>(
         &self,
@@ -33121,7 +30733,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaList<P0>(
         &self,
@@ -33148,7 +30760,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList<P0>(
         &self,
@@ -33171,7 +30783,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedApplicationList<P0>(
         &self,
@@ -33198,7 +30810,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationList<P0>(
         &self,
@@ -33221,7 +30833,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServicePackageList<P0>(
         &self,
@@ -33248,7 +30860,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageList<P0>(
         &self,
@@ -33271,7 +30883,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServiceTypeList<P0>(
         &self,
@@ -33298,7 +30910,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServiceTypeList<P0>(
         &self,
@@ -33321,7 +30933,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedCodePackageList<P0>(
         &self,
@@ -33348,7 +30960,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedCodePackageList<P0>(
         &self,
@@ -33371,7 +30983,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaList<P0>(
         &self,
@@ -33398,7 +31010,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaList<P0>(
         &self,
@@ -33421,7 +31033,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaDetail<P0>(
         &self,
@@ -33447,7 +31059,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaDetail<P0>(
         &self,
@@ -33469,7 +31081,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterLoadInformation<P0>(
         &self,
@@ -33493,7 +31105,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterLoadInformation<P0>(
         &self,
@@ -33515,7 +31127,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionLoadInformation<P0>(
         &self,
@@ -33541,7 +31153,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionLoadInformation<P0>(
         &self,
@@ -33563,7 +31175,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -33589,7 +31201,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -33611,7 +31223,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -33637,7 +31249,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -33659,7 +31271,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetNodeLoadInformation<P0>(
         &self,
@@ -33684,7 +31296,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeLoadInformation<P0>(
         &self,
@@ -33705,7 +31317,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaLoadInformation<P0>(
         &self,
@@ -33730,7 +31342,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaLoadInformation<P0>(
         &self,
@@ -33751,7 +31363,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberList<P0>(
         &self,
@@ -33775,7 +31387,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberList<P0>(
         &self,
@@ -33795,7 +31407,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -33819,7 +31431,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -33839,9 +31451,8 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetUnplacedReplicaInformation<P0>(
         &self,
@@ -33864,7 +31475,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUnplacedReplicaInformation<P0>(
         &self,
@@ -33883,7 +31494,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList2<P0>(
         &self,
@@ -33901,7 +31512,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList2<P0>(
         &self,
@@ -33919,7 +31530,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList2<P0>(
         &self,
@@ -33937,7 +31548,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList2<P0>(
         &self,
@@ -33955,7 +31566,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList2<P0>(
         &self,
@@ -33973,7 +31584,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationLoadInformation<P0>(
         &self,
@@ -33994,7 +31605,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationLoadInformation<P0>(
         &self,
@@ -34011,7 +31622,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceName<P0>(
         &self,
@@ -34030,7 +31641,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceName<P0>(
         &self,
@@ -34045,7 +31656,7 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationName<P0>(
         &self,
@@ -34064,7 +31675,7 @@ impl IFabricQueryClient8 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationName<P0>(
         &self,
@@ -34079,11 +31690,46 @@ impl IFabricQueryClient8 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
+unsafe impl ::core::marker::Send for IFabricQueryClient8 {}
+unsafe impl ::core::marker::Sync for IFabricQueryClient8 {}
+#[repr(C)]
+pub struct IFabricQueryClient8_Vtbl {
+    pub base__: IFabricQueryClient7_Vtbl,
+    pub BeginGetServiceName: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_NAME_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetServiceName: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetApplicationName: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_APPLICATION_NAME_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetApplicationName: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricQueryClient9,
+    IFabricQueryClient9_Vtbl,
+    0x76f0b4a5_4941_49d7_993c_ad7afc37c6af
+);
 ::windows_core::imp::interface_hierarchy!(
-    IFabricQueryClient8,
+    IFabricQueryClient9,
     ::windows_core::IUnknown,
     IFabricQueryClient,
     IFabricQueryClient2,
@@ -34091,65 +31737,9 @@ impl IFabricQueryClient8 {
     IFabricQueryClient4,
     IFabricQueryClient5,
     IFabricQueryClient6,
-    IFabricQueryClient7
+    IFabricQueryClient7,
+    IFabricQueryClient8
 );
-impl ::core::cmp::PartialEq for IFabricQueryClient8 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricQueryClient8 {}
-impl ::core::fmt::Debug for IFabricQueryClient8 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricQueryClient8").field(&self.0).finish()
-    }
-}
-unsafe impl ::core::marker::Send for IFabricQueryClient8 {}
-unsafe impl ::core::marker::Sync for IFabricQueryClient8 {}
-unsafe impl ::windows_core::Interface for IFabricQueryClient8 {
-    type Vtable = IFabricQueryClient8_Vtbl;
-}
-impl ::core::clone::Clone for IFabricQueryClient8 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricQueryClient8 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x2c850629_6a83_4fc3_8468_c868b87e9a17);
-}
-#[repr(C)]
-#[doc(hidden)]
-pub struct IFabricQueryClient8_Vtbl {
-    pub base__: IFabricQueryClient7_Vtbl,
-    pub BeginGetServiceName: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_SERVICE_NAME_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndGetServiceName: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub BeginGetApplicationName: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_APPLICATION_NAME_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-    pub EndGetApplicationName: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
-    ) -> ::windows_core::HRESULT,
-}
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricQueryClient9(::windows_core::IUnknown);
 impl IFabricQueryClient9 {
     pub unsafe fn BeginGetNodeList<P0>(
         &self,
@@ -34177,7 +31767,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList<P0>(
         &self,
@@ -34201,7 +31791,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationTypeList<P0>(
         &self,
@@ -34229,7 +31819,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypeList<P0>(
         &self,
@@ -34253,7 +31843,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceTypeList<P0>(
         &self,
@@ -34281,7 +31871,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceTypeList<P0>(
         &self,
@@ -34305,7 +31895,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationList<P0>(
         &self,
@@ -34333,7 +31923,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList<P0>(
         &self,
@@ -34357,7 +31947,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceList<P0>(
         &self,
@@ -34385,7 +31975,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList<P0>(
         &self,
@@ -34409,7 +31999,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionList<P0>(
         &self,
@@ -34437,7 +32027,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList<P0>(
         &self,
@@ -34461,7 +32051,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaList<P0>(
         &self,
@@ -34489,7 +32079,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList<P0>(
         &self,
@@ -34513,7 +32103,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedApplicationList<P0>(
         &self,
@@ -34541,7 +32131,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedApplicationList<P0>(
         &self,
@@ -34565,7 +32155,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServicePackageList<P0>(
         &self,
@@ -34593,7 +32183,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServicePackageList<P0>(
         &self,
@@ -34617,7 +32207,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedServiceTypeList<P0>(
         &self,
@@ -34645,7 +32235,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedServiceTypeList<P0>(
         &self,
@@ -34669,7 +32259,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedCodePackageList<P0>(
         &self,
@@ -34697,7 +32287,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedCodePackageList<P0>(
         &self,
@@ -34721,7 +32311,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaList<P0>(
         &self,
@@ -34749,7 +32339,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaList<P0>(
         &self,
@@ -34773,7 +32363,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetDeployedReplicaDetail<P0>(
         &self,
@@ -34800,7 +32390,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetDeployedReplicaDetail<P0>(
         &self,
@@ -34823,7 +32413,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetClusterLoadInformation<P0>(
         &self,
@@ -34848,7 +32438,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetClusterLoadInformation<P0>(
         &self,
@@ -34871,7 +32461,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetPartitionLoadInformation<P0>(
         &self,
@@ -34898,7 +32488,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionLoadInformation<P0>(
         &self,
@@ -34921,7 +32511,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -34948,7 +32538,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricCodeVersionList<P0>(
         &self,
@@ -34971,7 +32561,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -34998,7 +32588,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetProvisionedFabricConfigVersionList<P0>(
         &self,
@@ -35021,7 +32611,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetNodeLoadInformation<P0>(
         &self,
@@ -35047,7 +32637,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeLoadInformation<P0>(
         &self,
@@ -35069,7 +32659,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetReplicaLoadInformation<P0>(
         &self,
@@ -35095,7 +32685,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaLoadInformation<P0>(
         &self,
@@ -35117,7 +32707,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberList<P0>(
         &self,
@@ -35142,7 +32732,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberList<P0>(
         &self,
@@ -35163,7 +32753,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -35188,7 +32778,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupMemberTypeList<P0>(
         &self,
@@ -35209,9 +32799,8 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetUnplacedReplicaInformation<P0>(
         &self,
@@ -35235,7 +32824,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetUnplacedReplicaInformation<P0>(
         &self,
@@ -35255,7 +32844,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeList2<P0>(
         &self,
@@ -35274,7 +32863,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationList2<P0>(
         &self,
@@ -35293,7 +32882,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceList2<P0>(
         &self,
@@ -35312,7 +32901,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionList2<P0>(
         &self,
@@ -35331,7 +32920,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetReplicaList2<P0>(
         &self,
@@ -35350,7 +32939,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationLoadInformation<P0>(
         &self,
@@ -35372,7 +32961,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationLoadInformation<P0>(
         &self,
@@ -35390,7 +32979,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceName<P0>(
         &self,
@@ -35411,7 +33000,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceName<P0>(
         &self,
@@ -35428,7 +33017,7 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetApplicationName<P0>(
         &self,
@@ -35449,7 +33038,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationName<P0>(
         &self,
@@ -35466,9 +33055,8 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetApplicationTypePagedList<P0>(
         &self,
@@ -35487,7 +33075,7 @@ impl IFabricQueryClient9 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetApplicationTypePagedList<P0>(
         &self,
@@ -35502,71 +33090,37 @@ impl IFabricQueryClient9 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricQueryClient9,
-    ::windows_core::IUnknown,
-    IFabricQueryClient,
-    IFabricQueryClient2,
-    IFabricQueryClient3,
-    IFabricQueryClient4,
-    IFabricQueryClient5,
-    IFabricQueryClient6,
-    IFabricQueryClient7,
-    IFabricQueryClient8
-);
-impl ::core::cmp::PartialEq for IFabricQueryClient9 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricQueryClient9 {}
-impl ::core::fmt::Debug for IFabricQueryClient9 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricQueryClient9").field(&self.0).finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricQueryClient9 {}
 unsafe impl ::core::marker::Sync for IFabricQueryClient9 {}
-unsafe impl ::windows_core::Interface for IFabricQueryClient9 {
-    type Vtable = IFabricQueryClient9_Vtbl;
-}
-impl ::core::clone::Clone for IFabricQueryClient9 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricQueryClient9 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x76f0b4a5_4941_49d7_993c_ad7afc37c6af);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricQueryClient9_Vtbl {
     pub base__: IFabricQueryClient8_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetApplicationTypePagedList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::PAGED_FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::PAGED_FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetApplicationTypePagedList: usize,
     pub EndGetApplicationTypePagedList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricRepairManagementClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricRepairManagementClient,
+    IFabricRepairManagementClient_Vtbl,
+    0xee483ba5_9018_4c99_9804_be6185db88e6
+);
+::windows_core::imp::interface_hierarchy!(IFabricRepairManagementClient, ::windows_core::IUnknown);
 impl IFabricRepairManagementClient {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginCreateRepairTask<P0>(
         &self,
@@ -35585,7 +33139,7 @@ impl IFabricRepairManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateRepairTask<P0>(&self, context: P0) -> ::windows_core::Result<i64>
     where
@@ -35597,9 +33151,8 @@ impl IFabricRepairManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginCancelRepairTask<P0>(
         &self,
@@ -35618,7 +33171,7 @@ impl IFabricRepairManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCancelRepairTask<P0>(&self, context: P0) -> ::windows_core::Result<i64>
     where
@@ -35630,7 +33183,7 @@ impl IFabricRepairManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn BeginForceApproveRepairTask<P0>(
         &self,
@@ -35649,7 +33202,7 @@ impl IFabricRepairManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndForceApproveRepairTask<P0>(&self, context: P0) -> ::windows_core::Result<i64>
     where
@@ -35661,7 +33214,7 @@ impl IFabricRepairManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn BeginDeleteRepairTask<P0>(
         &self,
@@ -35680,7 +33233,7 @@ impl IFabricRepairManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteRepairTask<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -35692,7 +33245,6 @@ impl IFabricRepairManagementClient {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginUpdateRepairExecutionState<P0>(
         &self,
@@ -35711,7 +33263,7 @@ impl IFabricRepairManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateRepairExecutionState<P0>(
         &self,
@@ -35726,7 +33278,7 @@ impl IFabricRepairManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn BeginGetRepairTaskList<P0>(
         &self,
@@ -35745,7 +33297,7 @@ impl IFabricRepairManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetRepairTaskList<P0>(
         &self,
@@ -35760,127 +33312,106 @@ impl IFabricRepairManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricRepairManagementClient, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricRepairManagementClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricRepairManagementClient {}
-impl ::core::fmt::Debug for IFabricRepairManagementClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricRepairManagementClient")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricRepairManagementClient {}
 unsafe impl ::core::marker::Sync for IFabricRepairManagementClient {}
-unsafe impl ::windows_core::Interface for IFabricRepairManagementClient {
-    type Vtable = IFabricRepairManagementClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricRepairManagementClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricRepairManagementClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xee483ba5_9018_4c99_9804_be6185db88e6);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricRepairManagementClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginCreateRepairTask: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        repairtask: *const super::super::FABRIC_REPAIR_TASK,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_REPAIR_TASK,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginCreateRepairTask: usize,
     pub EndCreateRepairTask: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        commitversion: *mut i64,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut i64,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginCancelRepairTask: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        requestdescription: *const super::super::FABRIC_REPAIR_CANCEL_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_REPAIR_CANCEL_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginCancelRepairTask: usize,
     pub EndCancelRepairTask: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        commitversion: *mut i64,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut i64,
     ) -> ::windows_core::HRESULT,
     pub BeginForceApproveRepairTask: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        requestdescription: *const super::super::FABRIC_REPAIR_APPROVE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_REPAIR_APPROVE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndForceApproveRepairTask: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        commitversion: *mut i64,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut i64,
     ) -> ::windows_core::HRESULT,
     pub BeginDeleteRepairTask: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        requestdescription: *const super::super::FABRIC_REPAIR_DELETE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_REPAIR_DELETE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndDeleteRepairTask: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginUpdateRepairExecutionState: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        repairtask: *const super::super::FABRIC_REPAIR_TASK,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_REPAIR_TASK,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginUpdateRepairExecutionState: usize,
     pub EndUpdateRepairExecutionState: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        commitversion: *mut i64,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut i64,
     ) -> ::windows_core::HRESULT,
     pub BeginGetRepairTaskList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        querydescription: *const super::super::FABRIC_REPAIR_TASK_QUERY_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_REPAIR_TASK_QUERY_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetRepairTaskList: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricRepairManagementClient2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricRepairManagementClient2,
+    IFabricRepairManagementClient2_Vtbl,
+    0x5067d775_3baa_48e4_8c72_bb5573cc3fb8
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricRepairManagementClient2,
+    ::windows_core::IUnknown,
+    IFabricRepairManagementClient
+);
 impl IFabricRepairManagementClient2 {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginCreateRepairTask<P0>(
         &self,
@@ -35901,7 +33432,7 @@ impl IFabricRepairManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateRepairTask<P0>(&self, context: P0) -> ::windows_core::Result<i64>
     where
@@ -35915,9 +33446,8 @@ impl IFabricRepairManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginCancelRepairTask<P0>(
         &self,
@@ -35938,7 +33468,7 @@ impl IFabricRepairManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCancelRepairTask<P0>(&self, context: P0) -> ::windows_core::Result<i64>
     where
@@ -35952,7 +33482,7 @@ impl IFabricRepairManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn BeginForceApproveRepairTask<P0>(
         &self,
@@ -35973,7 +33503,7 @@ impl IFabricRepairManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndForceApproveRepairTask<P0>(&self, context: P0) -> ::windows_core::Result<i64>
     where
@@ -35987,7 +33517,7 @@ impl IFabricRepairManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn BeginDeleteRepairTask<P0>(
         &self,
@@ -36008,7 +33538,7 @@ impl IFabricRepairManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteRepairTask<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -36022,7 +33552,6 @@ impl IFabricRepairManagementClient2 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginUpdateRepairExecutionState<P0>(
         &self,
@@ -36043,7 +33572,7 @@ impl IFabricRepairManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateRepairExecutionState<P0>(
         &self,
@@ -36060,7 +33589,7 @@ impl IFabricRepairManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn BeginGetRepairTaskList<P0>(
         &self,
@@ -36081,7 +33610,7 @@ impl IFabricRepairManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetRepairTaskList<P0>(
         &self,
@@ -36098,9 +33627,8 @@ impl IFabricRepairManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginUpdateRepairTaskHealthPolicy<P0>(
         &self,
@@ -36119,7 +33647,7 @@ impl IFabricRepairManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateRepairTaskHealthPolicy<P0>(
         &self,
@@ -36134,65 +33662,37 @@ impl IFabricRepairManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricRepairManagementClient2,
-    ::windows_core::IUnknown,
-    IFabricRepairManagementClient
-);
-impl ::core::cmp::PartialEq for IFabricRepairManagementClient2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricRepairManagementClient2 {}
-impl ::core::fmt::Debug for IFabricRepairManagementClient2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricRepairManagementClient2")
-            .field(&self.0)
-            .finish()
+        .map(|| result__)
     }
 }
 unsafe impl ::core::marker::Send for IFabricRepairManagementClient2 {}
 unsafe impl ::core::marker::Sync for IFabricRepairManagementClient2 {}
-unsafe impl ::windows_core::Interface for IFabricRepairManagementClient2 {
-    type Vtable = IFabricRepairManagementClient2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricRepairManagementClient2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricRepairManagementClient2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x5067d775_3baa_48e4_8c72_bb5573cc3fb8);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricRepairManagementClient2_Vtbl {
     pub base__: IFabricRepairManagementClient_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginUpdateRepairTaskHealthPolicy: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        updatedescription: *const super::super::FABRIC_REPAIR_TASK_HEALTH_POLICY_UPDATE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_REPAIR_TASK_HEALTH_POLICY_UPDATE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginUpdateRepairTaskHealthPolicy: usize,
     pub EndUpdateRepairTaskHealthPolicy: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        commitversion: *mut i64,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut i64,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricReplicaHealthResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricReplicaHealthResult,
+    IFabricReplicaHealthResult_Vtbl,
+    0xb4d5f2d9_e5cc_49ae_a6c8_89e8df7b6c15
+);
+::windows_core::imp::interface_hierarchy!(IFabricReplicaHealthResult, ::windows_core::IUnknown);
 impl IFabricReplicaHealthResult {
     pub unsafe fn get_ReplicaHealth(&self) -> *mut super::super::FABRIC_REPLICA_HEALTH {
         (::windows_core::Interface::vtable(self).get_ReplicaHealth)(
@@ -36200,46 +33700,25 @@ impl IFabricReplicaHealthResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricReplicaHealthResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricReplicaHealthResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricReplicaHealthResult {}
-impl ::core::fmt::Debug for IFabricReplicaHealthResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricReplicaHealthResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricReplicaHealthResult {}
 unsafe impl ::core::marker::Sync for IFabricReplicaHealthResult {}
-unsafe impl ::windows_core::Interface for IFabricReplicaHealthResult {
-    type Vtable = IFabricReplicaHealthResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricReplicaHealthResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricReplicaHealthResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xb4d5f2d9_e5cc_49ae_a6c8_89e8df7b6c15);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricReplicaHealthResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_ReplicaHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> *mut super::super::FABRIC_REPLICA_HEALTH,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricResolvedServicePartitionResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricResolvedServicePartitionResult,
+    IFabricResolvedServicePartitionResult_Vtbl,
+    0xfd0fe113_cdf8_4803_b4a0_32b1b3ef3716
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricResolvedServicePartitionResult,
+    ::windows_core::IUnknown
+);
 impl IFabricResolvedServicePartitionResult {
     pub unsafe fn get_Partition(&self) -> *mut super::super::FABRIC_RESOLVED_SERVICE_PARTITION {
         (::windows_core::Interface::vtable(self).get_Partition)(::windows_core::Interface::as_raw(
@@ -36254,7 +33733,7 @@ impl IFabricResolvedServicePartitionResult {
             ::windows_core::Interface::as_raw(self),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn CompareVersion<P0>(&self, other: P0) -> ::windows_core::Result<i32>
     where
@@ -36266,61 +33745,37 @@ impl IFabricResolvedServicePartitionResult {
             other.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricResolvedServicePartitionResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricResolvedServicePartitionResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricResolvedServicePartitionResult {}
-impl ::core::fmt::Debug for IFabricResolvedServicePartitionResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricResolvedServicePartitionResult")
-            .field(&self.0)
-            .finish()
+        .map(|| result__)
     }
 }
 unsafe impl ::core::marker::Send for IFabricResolvedServicePartitionResult {}
 unsafe impl ::core::marker::Sync for IFabricResolvedServicePartitionResult {}
-unsafe impl ::windows_core::Interface for IFabricResolvedServicePartitionResult {
-    type Vtable = IFabricResolvedServicePartitionResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricResolvedServicePartitionResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricResolvedServicePartitionResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xfd0fe113_cdf8_4803_b4a0_32b1b3ef3716);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricResolvedServicePartitionResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Partition:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_RESOLVED_SERVICE_PARTITION,
     pub GetEndpoint: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        endpoint: *mut *mut super::super::FABRIC_RESOLVED_SERVICE_ENDPOINT,
+        *mut ::core::ffi::c_void,
+        *mut *mut super::super::FABRIC_RESOLVED_SERVICE_ENDPOINT,
     ) -> ::windows_core::HRESULT,
     pub CompareVersion: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        other: *mut ::core::ffi::c_void,
-        compareresult: *mut i32,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut i32,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricRestartDeployedCodePackageResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricRestartDeployedCodePackageResult,
+    IFabricRestartDeployedCodePackageResult_Vtbl,
+    0xfe087dc4_7a6a_41e3_90e9_b734a4cef41f
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricRestartDeployedCodePackageResult,
+    ::windows_core::IUnknown
+);
 impl IFabricRestartDeployedCodePackageResult {
     pub unsafe fn get_Result(&self) -> *mut super::super::FABRIC_DEPLOYED_CODE_PACKAGE_RESULT {
         (::windows_core::Interface::vtable(self).get_Result)(::windows_core::Interface::as_raw(
@@ -36328,50 +33783,23 @@ impl IFabricRestartDeployedCodePackageResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricRestartDeployedCodePackageResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricRestartDeployedCodePackageResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricRestartDeployedCodePackageResult {}
-impl ::core::fmt::Debug for IFabricRestartDeployedCodePackageResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricRestartDeployedCodePackageResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricRestartDeployedCodePackageResult {}
 unsafe impl ::core::marker::Sync for IFabricRestartDeployedCodePackageResult {}
-unsafe impl ::windows_core::Interface for IFabricRestartDeployedCodePackageResult {
-    type Vtable = IFabricRestartDeployedCodePackageResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricRestartDeployedCodePackageResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricRestartDeployedCodePackageResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xfe087dc4_7a6a_41e3_90e9_b734a4cef41f);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricRestartDeployedCodePackageResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Result:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_DEPLOYED_CODE_PACKAGE_RESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricRestartNodeResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricRestartNodeResult,
+    IFabricRestartNodeResult_Vtbl,
+    0x2f7e9d57_fe07_4e34_93e1_01d5a6298ca9
+);
+::windows_core::imp::interface_hierarchy!(IFabricRestartNodeResult, ::windows_core::IUnknown);
 impl IFabricRestartNodeResult {
     pub unsafe fn get_Result(&self) -> *mut super::super::FABRIC_NODE_RESULT {
         (::windows_core::Interface::vtable(self).get_Result)(::windows_core::Interface::as_raw(
@@ -36379,45 +33807,21 @@ impl IFabricRestartNodeResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricRestartNodeResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricRestartNodeResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricRestartNodeResult {}
-impl ::core::fmt::Debug for IFabricRestartNodeResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricRestartNodeResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricRestartNodeResult {}
 unsafe impl ::core::marker::Sync for IFabricRestartNodeResult {}
-unsafe impl ::windows_core::Interface for IFabricRestartNodeResult {
-    type Vtable = IFabricRestartNodeResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricRestartNodeResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricRestartNodeResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x2f7e9d57_fe07_4e34_93e1_01d5a6298ca9);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricRestartNodeResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Result: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_NODE_RESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricSecretReferencesResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricSecretReferencesResult,
+    IFabricSecretReferencesResult_Vtbl,
+    0xbb8f69de_f667_4fab_820d_274cf4303ab4
+);
+::windows_core::imp::interface_hierarchy!(IFabricSecretReferencesResult, ::windows_core::IUnknown);
 impl IFabricSecretReferencesResult {
     pub unsafe fn get_SecretReferences(&self) -> *mut super::super::FABRIC_SECRET_REFERENCE_LIST {
         (::windows_core::Interface::vtable(self).get_SecretReferences)(
@@ -36425,48 +33829,23 @@ impl IFabricSecretReferencesResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricSecretReferencesResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricSecretReferencesResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricSecretReferencesResult {}
-impl ::core::fmt::Debug for IFabricSecretReferencesResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricSecretReferencesResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricSecretReferencesResult {}
 unsafe impl ::core::marker::Sync for IFabricSecretReferencesResult {}
-unsafe impl ::windows_core::Interface for IFabricSecretReferencesResult {
-    type Vtable = IFabricSecretReferencesResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricSecretReferencesResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricSecretReferencesResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xbb8f69de_f667_4fab_820d_274cf4303ab4);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricSecretReferencesResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_SecretReferences:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_SECRET_REFERENCE_LIST,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricSecretStoreClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricSecretStoreClient,
+    IFabricSecretStoreClient_Vtbl,
+    0x38c4c723_3815_49d8_bdf2_68bfb536b8c9
+);
+::windows_core::imp::interface_hierarchy!(IFabricSecretStoreClient, ::windows_core::IUnknown);
 impl IFabricSecretStoreClient {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetSecrets<P0, P1>(
         &self,
@@ -36488,7 +33867,7 @@ impl IFabricSecretStoreClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetSecrets<P0>(
         &self,
@@ -36503,7 +33882,7 @@ impl IFabricSecretStoreClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginSetSecrets<P0>(
         &self,
@@ -36522,7 +33901,7 @@ impl IFabricSecretStoreClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndSetSecrets<P0>(
         &self,
@@ -36537,7 +33916,7 @@ impl IFabricSecretStoreClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginRemoveSecrets<P0>(
         &self,
@@ -36556,7 +33935,7 @@ impl IFabricSecretStoreClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRemoveSecrets<P0>(
         &self,
@@ -36571,7 +33950,7 @@ impl IFabricSecretStoreClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetSecretVersions<P0>(
         &self,
@@ -36590,7 +33969,7 @@ impl IFabricSecretStoreClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetSecretVersions<P0>(
         &self,
@@ -36605,97 +33984,73 @@ impl IFabricSecretStoreClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricSecretStoreClient, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricSecretStoreClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricSecretStoreClient {}
-impl ::core::fmt::Debug for IFabricSecretStoreClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricSecretStoreClient")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricSecretStoreClient {}
 unsafe impl ::core::marker::Sync for IFabricSecretStoreClient {}
-unsafe impl ::windows_core::Interface for IFabricSecretStoreClient {
-    type Vtable = IFabricSecretStoreClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricSecretStoreClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricSecretStoreClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x38c4c723_3815_49d8_bdf2_68bfb536b8c9);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricSecretStoreClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetSecrets: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        secretreferences: *const super::super::FABRIC_SECRET_REFERENCE_LIST,
-        includevalue: ::windows::Win32::Foundation::BOOLEAN,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SECRET_REFERENCE_LIST,
+        ::windows::Win32::Foundation::BOOLEAN,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetSecrets: usize,
     pub EndGetSecrets: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginSetSecrets: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        secrets: *const super::super::FABRIC_SECRET_LIST,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SECRET_LIST,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndSetSecrets: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginRemoveSecrets: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        secretreferences: *const super::super::FABRIC_SECRET_REFERENCE_LIST,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SECRET_REFERENCE_LIST,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRemoveSecrets: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetSecretVersions: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        secretreferences: *const super::super::FABRIC_SECRET_REFERENCE_LIST,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SECRET_REFERENCE_LIST,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetSecretVersions: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricSecretsResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricSecretsResult,
+    IFabricSecretsResult_Vtbl,
+    0xfe15a879_0dbe_4841_9cc6_6e92077cd669
+);
+::windows_core::imp::interface_hierarchy!(IFabricSecretsResult, ::windows_core::IUnknown);
 impl IFabricSecretsResult {
     pub unsafe fn get_Secrets(&self) -> *mut super::super::FABRIC_SECRET_LIST {
         (::windows_core::Interface::vtable(self).get_Secrets)(::windows_core::Interface::as_raw(
@@ -36703,45 +34058,24 @@ impl IFabricSecretsResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricSecretsResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricSecretsResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricSecretsResult {}
-impl ::core::fmt::Debug for IFabricSecretsResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricSecretsResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricSecretsResult {}
 unsafe impl ::core::marker::Sync for IFabricSecretsResult {}
-unsafe impl ::windows_core::Interface for IFabricSecretsResult {
-    type Vtable = IFabricSecretsResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricSecretsResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricSecretsResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xfe15a879_0dbe_4841_9cc6_6e92077cd669);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricSecretsResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Secrets: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_SECRET_LIST,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceDescriptionResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceDescriptionResult,
+    IFabricServiceDescriptionResult_Vtbl,
+    0x86b4f744_38c7_4dab_b6b4_11c23734c269
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceDescriptionResult,
+    ::windows_core::IUnknown
+);
 impl IFabricServiceDescriptionResult {
     pub unsafe fn get_Description(&self) -> *mut super::super::FABRIC_SERVICE_DESCRIPTION {
         (::windows_core::Interface::vtable(self).get_Description)(
@@ -36749,49 +34083,22 @@ impl IFabricServiceDescriptionResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceDescriptionResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricServiceDescriptionResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceDescriptionResult {}
-impl ::core::fmt::Debug for IFabricServiceDescriptionResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceDescriptionResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceDescriptionResult {}
 unsafe impl ::core::marker::Sync for IFabricServiceDescriptionResult {}
-unsafe impl ::windows_core::Interface for IFabricServiceDescriptionResult {
-    type Vtable = IFabricServiceDescriptionResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceDescriptionResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceDescriptionResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x86b4f744_38c7_4dab_b6b4_11c23734c269);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceDescriptionResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Description: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> *mut super::super::FABRIC_SERVICE_DESCRIPTION,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceEndpointsVersion(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceEndpointsVersion,
+    IFabricServiceEndpointsVersion_Vtbl,
+    0x0a673dc5_2297_4fc5_a38f_482d29144fa5
+);
+::windows_core::imp::interface_hierarchy!(IFabricServiceEndpointsVersion, ::windows_core::IUnknown);
 impl IFabricServiceEndpointsVersion {
     pub unsafe fn Compare<P0>(&self, other: P0) -> ::windows_core::Result<i32>
     where
@@ -36803,50 +34110,29 @@ impl IFabricServiceEndpointsVersion {
             other.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricServiceEndpointsVersion, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricServiceEndpointsVersion {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceEndpointsVersion {}
-impl ::core::fmt::Debug for IFabricServiceEndpointsVersion {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceEndpointsVersion")
-            .field(&self.0)
-            .finish()
+        .map(|| result__)
     }
 }
 unsafe impl ::core::marker::Send for IFabricServiceEndpointsVersion {}
 unsafe impl ::core::marker::Sync for IFabricServiceEndpointsVersion {}
-unsafe impl ::windows_core::Interface for IFabricServiceEndpointsVersion {
-    type Vtable = IFabricServiceEndpointsVersion_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceEndpointsVersion {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceEndpointsVersion {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x0a673dc5_2297_4fc5_a38f_482d29144fa5);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceEndpointsVersion_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub Compare: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        other: *mut ::core::ffi::c_void,
-        compareresult: *mut i32,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut i32,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceGroupDescriptionResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceGroupDescriptionResult,
+    IFabricServiceGroupDescriptionResult_Vtbl,
+    0x3ca814d4_e067_48b7_9bdc_9be33810416d
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceGroupDescriptionResult,
+    ::windows_core::IUnknown
+);
 impl IFabricServiceGroupDescriptionResult {
     pub unsafe fn get_Description(&self) -> *mut super::super::FABRIC_SERVICE_GROUP_DESCRIPTION {
         (::windows_core::Interface::vtable(self).get_Description)(
@@ -36854,49 +34140,25 @@ impl IFabricServiceGroupDescriptionResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceGroupDescriptionResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricServiceGroupDescriptionResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceGroupDescriptionResult {}
-impl ::core::fmt::Debug for IFabricServiceGroupDescriptionResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceGroupDescriptionResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceGroupDescriptionResult {}
 unsafe impl ::core::marker::Sync for IFabricServiceGroupDescriptionResult {}
-unsafe impl ::windows_core::Interface for IFabricServiceGroupDescriptionResult {
-    type Vtable = IFabricServiceGroupDescriptionResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceGroupDescriptionResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceGroupDescriptionResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x3ca814d4_e067_48b7_9bdc_9be33810416d);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceGroupDescriptionResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Description:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_SERVICE_GROUP_DESCRIPTION,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceGroupManagementClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceGroupManagementClient,
+    IFabricServiceGroupManagementClient_Vtbl,
+    0x2061227e_0281_4baf_9b19_b2dfb2e63bbe
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceGroupManagementClient,
+    ::windows_core::IUnknown
+);
 impl IFabricServiceGroupManagementClient {
     pub unsafe fn BeginCreateServiceGroup<P0>(
         &self,
@@ -36915,7 +34177,7 @@ impl IFabricServiceGroupManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -36944,7 +34206,7 @@ impl IFabricServiceGroupManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -36973,7 +34235,7 @@ impl IFabricServiceGroupManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupDescription<P0>(
         &self,
@@ -36988,82 +34250,59 @@ impl IFabricServiceGroupManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceGroupManagementClient,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricServiceGroupManagementClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceGroupManagementClient {}
-impl ::core::fmt::Debug for IFabricServiceGroupManagementClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceGroupManagementClient")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricServiceGroupManagementClient {}
 unsafe impl ::core::marker::Sync for IFabricServiceGroupManagementClient {}
-unsafe impl ::windows_core::Interface for IFabricServiceGroupManagementClient {
-    type Vtable = IFabricServiceGroupManagementClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceGroupManagementClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceGroupManagementClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x2061227e_0281_4baf_9b19_b2dfb2e63bbe);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceGroupManagementClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub BeginCreateServiceGroup: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_SERVICE_GROUP_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_GROUP_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndCreateServiceGroup: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginDeleteServiceGroup: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndDeleteServiceGroup: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetServiceGroupDescription: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetServiceGroupDescription: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceGroupManagementClient2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceGroupManagementClient2,
+    IFabricServiceGroupManagementClient2_Vtbl,
+    0x4f0dc42d_8fec_4ea9_a96b_5be1fa1e1d64
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceGroupManagementClient2,
+    ::windows_core::IUnknown,
+    IFabricServiceGroupManagementClient
+);
 impl IFabricServiceGroupManagementClient2 {
     pub unsafe fn BeginCreateServiceGroup<P0>(
         &self,
@@ -37084,7 +34323,7 @@ impl IFabricServiceGroupManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37117,7 +34356,7 @@ impl IFabricServiceGroupManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37150,7 +34389,7 @@ impl IFabricServiceGroupManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupDescription<P0>(
         &self,
@@ -37167,7 +34406,7 @@ impl IFabricServiceGroupManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginUpdateServiceGroup<P0>(
         &self,
@@ -37188,7 +34427,7 @@ impl IFabricServiceGroupManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37201,58 +34440,35 @@ impl IFabricServiceGroupManagementClient2 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceGroupManagementClient2,
-    ::windows_core::IUnknown,
-    IFabricServiceGroupManagementClient
-);
-impl ::core::cmp::PartialEq for IFabricServiceGroupManagementClient2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceGroupManagementClient2 {}
-impl ::core::fmt::Debug for IFabricServiceGroupManagementClient2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceGroupManagementClient2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceGroupManagementClient2 {}
 unsafe impl ::core::marker::Sync for IFabricServiceGroupManagementClient2 {}
-unsafe impl ::windows_core::Interface for IFabricServiceGroupManagementClient2 {
-    type Vtable = IFabricServiceGroupManagementClient2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceGroupManagementClient2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceGroupManagementClient2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x4f0dc42d_8fec_4ea9_a96b_5be1fa1e1d64);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceGroupManagementClient2_Vtbl {
     pub base__: IFabricServiceGroupManagementClient_Vtbl,
     pub BeginUpdateServiceGroup: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        servicegroupupdatedescription: *const super::super::FABRIC_SERVICE_GROUP_UPDATE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        *const super::super::FABRIC_SERVICE_GROUP_UPDATE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndUpdateServiceGroup: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceGroupManagementClient3(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceGroupManagementClient3,
+    IFabricServiceGroupManagementClient3_Vtbl,
+    0xcbee0e12_b5a0_44dc_8c3c_c067958f82f6
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceGroupManagementClient3,
+    ::windows_core::IUnknown,
+    IFabricServiceGroupManagementClient,
+    IFabricServiceGroupManagementClient2
+);
 impl IFabricServiceGroupManagementClient3 {
     pub unsafe fn BeginCreateServiceGroup<P0>(
         &self,
@@ -37274,7 +34490,7 @@ impl IFabricServiceGroupManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37309,7 +34525,7 @@ impl IFabricServiceGroupManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37344,7 +34560,7 @@ impl IFabricServiceGroupManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupDescription<P0>(
         &self,
@@ -37362,7 +34578,7 @@ impl IFabricServiceGroupManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginUpdateServiceGroup<P0>(
         &self,
@@ -37385,7 +34601,7 @@ impl IFabricServiceGroupManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37418,13 +34634,13 @@ impl IFabricServiceGroupManagementClient3 {
             applicationname,
             servicename,
             servicetypename.into_param().abi(),
-            initializationdata.len() as _,
+            initializationdata.len().try_into().unwrap(),
             ::core::mem::transmute(initializationdata.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceGroupFromTemplate<P0>(
         &self,
@@ -37440,64 +34656,41 @@ impl IFabricServiceGroupManagementClient3 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceGroupManagementClient3,
-    ::windows_core::IUnknown,
-    IFabricServiceGroupManagementClient,
-    IFabricServiceGroupManagementClient2
-);
-impl ::core::cmp::PartialEq for IFabricServiceGroupManagementClient3 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceGroupManagementClient3 {}
-impl ::core::fmt::Debug for IFabricServiceGroupManagementClient3 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceGroupManagementClient3")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceGroupManagementClient3 {}
 unsafe impl ::core::marker::Sync for IFabricServiceGroupManagementClient3 {}
-unsafe impl ::windows_core::Interface for IFabricServiceGroupManagementClient3 {
-    type Vtable = IFabricServiceGroupManagementClient3_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceGroupManagementClient3 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceGroupManagementClient3 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xcbee0e12_b5a0_44dc_8c3c_c067958f82f6);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceGroupManagementClient3_Vtbl {
     pub base__: IFabricServiceGroupManagementClient2_Vtbl,
     pub BeginCreateServiceGroupFromTemplate: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationname: *const u16,
-        servicename: *const u16,
-        servicetypename: ::windows_core::PCWSTR,
-        initializationdatasize: u32,
-        initializationdata: *const u8,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        *const u16,
+        ::windows_core::PCWSTR,
+        u32,
+        *const u8,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
     pub EndCreateServiceGroupFromTemplate: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceGroupManagementClient4(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceGroupManagementClient4,
+    IFabricServiceGroupManagementClient4_Vtbl,
+    0x3c73b32e_9a08_48ca_b3a3_993a2029e37a
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceGroupManagementClient4,
+    ::windows_core::IUnknown,
+    IFabricServiceGroupManagementClient,
+    IFabricServiceGroupManagementClient2,
+    IFabricServiceGroupManagementClient3
+);
 impl IFabricServiceGroupManagementClient4 {
     pub unsafe fn BeginCreateServiceGroup<P0>(
         &self,
@@ -37520,7 +34713,7 @@ impl IFabricServiceGroupManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37557,7 +34750,7 @@ impl IFabricServiceGroupManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37594,7 +34787,7 @@ impl IFabricServiceGroupManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceGroupDescription<P0>(
         &self,
@@ -37613,7 +34806,7 @@ impl IFabricServiceGroupManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginUpdateServiceGroup<P0>(
         &self,
@@ -37637,7 +34830,7 @@ impl IFabricServiceGroupManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateServiceGroup<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37673,13 +34866,13 @@ impl IFabricServiceGroupManagementClient4 {
             applicationname,
             servicename,
             servicetypename.into_param().abi(),
-            initializationdata.len() as _,
+            initializationdata.len().try_into().unwrap(),
             ::core::mem::transmute(initializationdata.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceGroupFromTemplate<P0>(
         &self,
@@ -37713,7 +34906,7 @@ impl IFabricServiceGroupManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceGroupFromTemplate2<P0>(
         &self,
@@ -37729,48 +34922,32 @@ impl IFabricServiceGroupManagementClient4 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceGroupManagementClient4,
-    ::windows_core::IUnknown,
-    IFabricServiceGroupManagementClient,
-    IFabricServiceGroupManagementClient2,
-    IFabricServiceGroupManagementClient3
-);
-impl ::core::cmp::PartialEq for IFabricServiceGroupManagementClient4 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceGroupManagementClient4 {}
-impl ::core::fmt::Debug for IFabricServiceGroupManagementClient4 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceGroupManagementClient4")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceGroupManagementClient4 {}
 unsafe impl ::core::marker::Sync for IFabricServiceGroupManagementClient4 {}
-unsafe impl ::windows_core::Interface for IFabricServiceGroupManagementClient4 {
-    type Vtable = IFabricServiceGroupManagementClient4_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceGroupManagementClient4 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceGroupManagementClient4 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x3c73b32e_9a08_48ca_b3a3_993a2029e37a);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricServiceGroupManagementClient4_Vtbl where { pub base__ : IFabricServiceGroupManagementClient3_Vtbl , pub BeginCreateServiceGroupFromTemplate2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , servicegroupfromtemplatedescription : *const super::super:: FABRIC_SERVICE_GROUP_FROM_TEMPLATE_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndCreateServiceGroupFromTemplate2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceHealthResult(::windows_core::IUnknown);
+pub struct IFabricServiceGroupManagementClient4_Vtbl {
+    pub base__: IFabricServiceGroupManagementClient3_Vtbl,
+    pub BeginCreateServiceGroupFromTemplate2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_GROUP_FROM_TEMPLATE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    )
+        -> ::windows_core::HRESULT,
+    pub EndCreateServiceGroupFromTemplate2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    )
+        -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricServiceHealthResult,
+    IFabricServiceHealthResult_Vtbl,
+    0x52040bd9_a78e_4308_a30e_7114e3684e76
+);
+::windows_core::imp::interface_hierarchy!(IFabricServiceHealthResult, ::windows_core::IUnknown);
 impl IFabricServiceHealthResult {
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn get_ServiceHealth(&self) -> *mut super::super::FABRIC_SERVICE_HEALTH {
         (::windows_core::Interface::vtable(self).get_ServiceHealth)(
@@ -37778,49 +34955,25 @@ impl IFabricServiceHealthResult {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricServiceHealthResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricServiceHealthResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceHealthResult {}
-impl ::core::fmt::Debug for IFabricServiceHealthResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceHealthResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceHealthResult {}
 unsafe impl ::core::marker::Sync for IFabricServiceHealthResult {}
-unsafe impl ::windows_core::Interface for IFabricServiceHealthResult {
-    type Vtable = IFabricServiceHealthResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceHealthResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceHealthResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x52040bd9_a78e_4308_a30e_7114e3684e76);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceHealthResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub get_ServiceHealth: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> *mut super::super::FABRIC_SERVICE_HEALTH,
     #[cfg(not(feature = "Win32_Foundation"))]
     get_ServiceHealth: usize,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceManagementClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceManagementClient,
+    IFabricServiceManagementClient_Vtbl,
+    0xf7368189_fd1f_437c_888d_8c89cecc57a0
+);
+::windows_core::imp::interface_hierarchy!(IFabricServiceManagementClient, ::windows_core::IUnknown);
 impl IFabricServiceManagementClient {
     pub unsafe fn BeginCreateService<P0>(
         &self,
@@ -37839,7 +34992,7 @@ impl IFabricServiceManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37870,13 +35023,13 @@ impl IFabricServiceManagementClient {
             applicationname,
             servicename,
             servicetypename.into_param().abi(),
-            initializationdata.len() as _,
+            initializationdata.len().try_into().unwrap(),
             ::core::mem::transmute(initializationdata.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceFromTemplate<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37905,7 +35058,7 @@ impl IFabricServiceManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -37934,7 +35087,7 @@ impl IFabricServiceManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceDescription<P0>(
         &self,
@@ -37949,7 +35102,7 @@ impl IFabricServiceManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn RegisterServicePartitionResolutionChangeHandler<P0>(
         &self,
@@ -37970,7 +35123,7 @@ impl IFabricServiceManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn UnregisterServicePartitionResolutionChangeHandler(
         &self,
@@ -38006,7 +35159,7 @@ impl IFabricServiceManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResolveServicePartition<P0>(
         &self,
@@ -38021,123 +35174,100 @@ impl IFabricServiceManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricServiceManagementClient, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricServiceManagementClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceManagementClient {}
-impl ::core::fmt::Debug for IFabricServiceManagementClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceManagementClient")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricServiceManagementClient {}
 unsafe impl ::core::marker::Sync for IFabricServiceManagementClient {}
-unsafe impl ::windows_core::Interface for IFabricServiceManagementClient {
-    type Vtable = IFabricServiceManagementClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceManagementClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceManagementClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xf7368189_fd1f_437c_888d_8c89cecc57a0);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceManagementClient_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub BeginCreateService: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_SERVICE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndCreateService: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginCreateServiceFromTemplate: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationname: *const u16,
-        servicename: *const u16,
-        servicetypename: ::windows_core::PCWSTR,
-        initializationdatasize: u32,
-        initializationdata: *const u8,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        *const u16,
+        ::windows_core::PCWSTR,
+        u32,
+        *const u8,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndCreateServiceFromTemplate: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginDeleteService: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndDeleteService: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetServiceDescription: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetServiceDescription: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub RegisterServicePartitionResolutionChangeHandler:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            name: *const u16,
-            keytype: super::super::FABRIC_PARTITION_KEY_TYPE,
-            partitionkey: *const ::core::ffi::c_void,
-            callback: *mut ::core::ffi::c_void,
-            callbackhandle: *mut i64,
+            *mut ::core::ffi::c_void,
+            *const u16,
+            super::super::FABRIC_PARTITION_KEY_TYPE,
+            *const ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *mut i64,
         ) -> ::windows_core::HRESULT,
     pub UnregisterServicePartitionResolutionChangeHandler:
-        unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            callbackhandle: i64,
-        ) -> ::windows_core::HRESULT,
+        unsafe extern "system" fn(*mut ::core::ffi::c_void, i64) -> ::windows_core::HRESULT,
     pub BeginResolveServicePartition: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        partitionkeytype: super::super::FABRIC_PARTITION_KEY_TYPE,
-        partitionkey: *const ::core::ffi::c_void,
-        previousresult: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        super::super::FABRIC_PARTITION_KEY_TYPE,
+        *const ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndResolveServicePartition: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceManagementClient2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceManagementClient2,
+    IFabricServiceManagementClient2_Vtbl,
+    0x9933ed08_5d0c_4aed_bab6_f676bf5be8aa
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceManagementClient2,
+    ::windows_core::IUnknown,
+    IFabricServiceManagementClient
+);
 impl IFabricServiceManagementClient2 {
     pub unsafe fn BeginCreateService<P0>(
         &self,
@@ -38158,7 +35288,7 @@ impl IFabricServiceManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -38193,13 +35323,13 @@ impl IFabricServiceManagementClient2 {
             applicationname,
             servicename,
             servicetypename.into_param().abi(),
-            initializationdata.len() as _,
+            initializationdata.len().try_into().unwrap(),
             ::core::mem::transmute(initializationdata.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceFromTemplate<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -38232,7 +35362,7 @@ impl IFabricServiceManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -38265,7 +35395,7 @@ impl IFabricServiceManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceDescription<P0>(
         &self,
@@ -38282,7 +35412,7 @@ impl IFabricServiceManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn RegisterServicePartitionResolutionChangeHandler<P0>(
         &self,
@@ -38305,7 +35435,7 @@ impl IFabricServiceManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn UnregisterServicePartitionResolutionChangeHandler(
         &self,
@@ -38345,7 +35475,7 @@ impl IFabricServiceManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResolveServicePartition<P0>(
         &self,
@@ -38362,7 +35492,7 @@ impl IFabricServiceManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceManifest<P0, P1, P2, P3>(
         &self,
@@ -38388,7 +35518,7 @@ impl IFabricServiceManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceManifest<P0>(
         &self,
@@ -38403,7 +35533,7 @@ impl IFabricServiceManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginUpdateService<P0>(
         &self,
@@ -38424,7 +35554,7 @@ impl IFabricServiceManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -38437,72 +35567,49 @@ impl IFabricServiceManagementClient2 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceManagementClient2,
-    ::windows_core::IUnknown,
-    IFabricServiceManagementClient
-);
-impl ::core::cmp::PartialEq for IFabricServiceManagementClient2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceManagementClient2 {}
-impl ::core::fmt::Debug for IFabricServiceManagementClient2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceManagementClient2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceManagementClient2 {}
 unsafe impl ::core::marker::Sync for IFabricServiceManagementClient2 {}
-unsafe impl ::windows_core::Interface for IFabricServiceManagementClient2 {
-    type Vtable = IFabricServiceManagementClient2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceManagementClient2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceManagementClient2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x9933ed08_5d0c_4aed_bab6_f676bf5be8aa);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceManagementClient2_Vtbl {
     pub base__: IFabricServiceManagementClient_Vtbl,
     pub BeginGetServiceManifest: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        applicationtypename: ::windows_core::PCWSTR,
-        applicationtypeversion: ::windows_core::PCWSTR,
-        servicemanifestname: ::windows_core::PCWSTR,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        ::windows_core::PCWSTR,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetServiceManifest: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginUpdateService: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        name: *const u16,
-        serviceupdatedescription: *const super::super::FABRIC_SERVICE_UPDATE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const u16,
+        *const super::super::FABRIC_SERVICE_UPDATE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndUpdateService: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceManagementClient3(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceManagementClient3,
+    IFabricServiceManagementClient3_Vtbl,
+    0x98ec1156_c249_4f66_8d7c_9a5fa88e8e6d
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceManagementClient3,
+    ::windows_core::IUnknown,
+    IFabricServiceManagementClient,
+    IFabricServiceManagementClient2
+);
 impl IFabricServiceManagementClient3 {
     pub unsafe fn BeginCreateService<P0>(
         &self,
@@ -38524,7 +35631,7 @@ impl IFabricServiceManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -38561,13 +35668,13 @@ impl IFabricServiceManagementClient3 {
             applicationname,
             servicename,
             servicetypename.into_param().abi(),
-            initializationdata.len() as _,
+            initializationdata.len().try_into().unwrap(),
             ::core::mem::transmute(initializationdata.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceFromTemplate<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -38602,7 +35709,7 @@ impl IFabricServiceManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -38637,7 +35744,7 @@ impl IFabricServiceManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceDescription<P0>(
         &self,
@@ -38655,7 +35762,7 @@ impl IFabricServiceManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn RegisterServicePartitionResolutionChangeHandler<P0>(
         &self,
@@ -38679,7 +35786,7 @@ impl IFabricServiceManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn UnregisterServicePartitionResolutionChangeHandler(
         &self,
@@ -38721,7 +35828,7 @@ impl IFabricServiceManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResolveServicePartition<P0>(
         &self,
@@ -38739,7 +35846,7 @@ impl IFabricServiceManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceManifest<P0, P1, P2, P3>(
         &self,
@@ -38767,7 +35874,7 @@ impl IFabricServiceManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceManifest<P0>(
         &self,
@@ -38784,7 +35891,7 @@ impl IFabricServiceManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginUpdateService<P0>(
         &self,
@@ -38807,7 +35914,7 @@ impl IFabricServiceManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -38838,7 +35945,7 @@ impl IFabricServiceManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRemoveReplica<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -38867,7 +35974,7 @@ impl IFabricServiceManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartReplica<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -38880,69 +35987,46 @@ impl IFabricServiceManagementClient3 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceManagementClient3,
-    ::windows_core::IUnknown,
-    IFabricServiceManagementClient,
-    IFabricServiceManagementClient2
-);
-impl ::core::cmp::PartialEq for IFabricServiceManagementClient3 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceManagementClient3 {}
-impl ::core::fmt::Debug for IFabricServiceManagementClient3 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceManagementClient3")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceManagementClient3 {}
 unsafe impl ::core::marker::Sync for IFabricServiceManagementClient3 {}
-unsafe impl ::windows_core::Interface for IFabricServiceManagementClient3 {
-    type Vtable = IFabricServiceManagementClient3_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceManagementClient3 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceManagementClient3 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x98ec1156_c249_4f66_8d7c_9a5fa88e8e6d);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceManagementClient3_Vtbl {
     pub base__: IFabricServiceManagementClient2_Vtbl,
     pub BeginRemoveReplica: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_REMOVE_REPLICA_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_REMOVE_REPLICA_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRemoveReplica: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginRestartReplica: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_RESTART_REPLICA_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_RESTART_REPLICA_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndRestartReplica: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceManagementClient4(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceManagementClient4,
+    IFabricServiceManagementClient4_Vtbl,
+    0x8180db27_7d0b_43b0_82e0_4a8e022fc238
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceManagementClient4,
+    ::windows_core::IUnknown,
+    IFabricServiceManagementClient,
+    IFabricServiceManagementClient2,
+    IFabricServiceManagementClient3
+);
 impl IFabricServiceManagementClient4 {
     pub unsafe fn BeginCreateService<P0>(
         &self,
@@ -38965,7 +36049,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39004,13 +36088,13 @@ impl IFabricServiceManagementClient4 {
             applicationname,
             servicename,
             servicetypename.into_param().abi(),
-            initializationdata.len() as _,
+            initializationdata.len().try_into().unwrap(),
             ::core::mem::transmute(initializationdata.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceFromTemplate<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39047,7 +36131,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39084,7 +36168,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceDescription<P0>(
         &self,
@@ -39103,7 +36187,7 @@ impl IFabricServiceManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn RegisterServicePartitionResolutionChangeHandler<P0>(
         &self,
@@ -39128,7 +36212,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn UnregisterServicePartitionResolutionChangeHandler(
         &self,
@@ -39172,7 +36256,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResolveServicePartition<P0>(
         &self,
@@ -39191,7 +36275,7 @@ impl IFabricServiceManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceManifest<P0, P1, P2, P3>(
         &self,
@@ -39220,7 +36304,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceManifest<P0>(
         &self,
@@ -39238,7 +36322,7 @@ impl IFabricServiceManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginUpdateService<P0>(
         &self,
@@ -39262,7 +36346,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39296,7 +36380,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRemoveReplica<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39329,7 +36413,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartReplica<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39360,7 +36444,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRegisterServiceNotificationFilter<P0>(
         &self,
@@ -39375,7 +36459,7 @@ impl IFabricServiceManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn BeginUnregisterServiceNotificationFilter<P0>(
         &self,
@@ -39394,7 +36478,7 @@ impl IFabricServiceManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnregisterServiceNotificationFilter<P0>(
         &self,
@@ -39410,75 +36494,52 @@ impl IFabricServiceManagementClient4 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceManagementClient4,
-    ::windows_core::IUnknown,
-    IFabricServiceManagementClient,
-    IFabricServiceManagementClient2,
-    IFabricServiceManagementClient3
-);
-impl ::core::cmp::PartialEq for IFabricServiceManagementClient4 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceManagementClient4 {}
-impl ::core::fmt::Debug for IFabricServiceManagementClient4 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceManagementClient4")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceManagementClient4 {}
 unsafe impl ::core::marker::Sync for IFabricServiceManagementClient4 {}
-unsafe impl ::windows_core::Interface for IFabricServiceManagementClient4 {
-    type Vtable = IFabricServiceManagementClient4_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceManagementClient4 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceManagementClient4 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x8180db27_7d0b_43b0_82e0_4a8e022fc238);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceManagementClient4_Vtbl {
     pub base__: IFabricServiceManagementClient3_Vtbl,
     pub BeginRegisterServiceNotificationFilter:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            description: *const super::super::FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
-            timeoutmilliseconds: u32,
-            callback: *mut ::core::ffi::c_void,
-            context: *mut *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *const super::super::FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
+            u32,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
         ) -> ::windows_core::HRESULT,
     pub EndRegisterServiceNotificationFilter: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        filterid: *mut i64,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut i64,
     )
         -> ::windows_core::HRESULT,
     pub BeginUnregisterServiceNotificationFilter:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            filterid: i64,
-            timeoutmilliseconds: u32,
-            callback: *mut ::core::ffi::c_void,
-            context: *mut *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            i64,
+            u32,
+            *mut ::core::ffi::c_void,
+            *mut *mut ::core::ffi::c_void,
         ) -> ::windows_core::HRESULT,
     pub EndUnregisterServiceNotificationFilter:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
-            context: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceManagementClient5(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceManagementClient5,
+    IFabricServiceManagementClient5_Vtbl,
+    0xf9a70679_8ca3_4e27_9411_483e0c89b1fa
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceManagementClient5,
+    ::windows_core::IUnknown,
+    IFabricServiceManagementClient,
+    IFabricServiceManagementClient2,
+    IFabricServiceManagementClient3,
+    IFabricServiceManagementClient4
+);
 impl IFabricServiceManagementClient5 {
     pub unsafe fn BeginCreateService<P0>(
         &self,
@@ -39502,7 +36563,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39543,13 +36604,13 @@ impl IFabricServiceManagementClient5 {
             applicationname,
             servicename,
             servicetypename.into_param().abi(),
-            initializationdata.len() as _,
+            initializationdata.len().try_into().unwrap(),
             ::core::mem::transmute(initializationdata.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceFromTemplate<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39588,7 +36649,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39627,7 +36688,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceDescription<P0>(
         &self,
@@ -39647,7 +36708,7 @@ impl IFabricServiceManagementClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn RegisterServicePartitionResolutionChangeHandler<P0>(
         &self,
@@ -39673,7 +36734,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn UnregisterServicePartitionResolutionChangeHandler(
         &self,
@@ -39719,7 +36780,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResolveServicePartition<P0>(
         &self,
@@ -39739,7 +36800,7 @@ impl IFabricServiceManagementClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceManifest<P0, P1, P2, P3>(
         &self,
@@ -39769,7 +36830,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceManifest<P0>(
         &self,
@@ -39788,7 +36849,7 @@ impl IFabricServiceManagementClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginUpdateService<P0>(
         &self,
@@ -39813,7 +36874,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39849,7 +36910,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRemoveReplica<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39884,7 +36945,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartReplica<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -39918,7 +36979,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRegisterServiceNotificationFilter<P0>(
         &self,
@@ -39935,7 +36996,7 @@ impl IFabricServiceManagementClient5 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn BeginUnregisterServiceNotificationFilter<P0>(
         &self,
@@ -39956,7 +37017,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnregisterServiceNotificationFilter<P0>(
         &self,
@@ -39973,7 +37034,6 @@ impl IFabricServiceManagementClient5 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginDeleteService2<P0>(
         &self,
@@ -39992,7 +37052,7 @@ impl IFabricServiceManagementClient5 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteService2<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -40005,63 +37065,40 @@ impl IFabricServiceManagementClient5 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceManagementClient5,
-    ::windows_core::IUnknown,
-    IFabricServiceManagementClient,
-    IFabricServiceManagementClient2,
-    IFabricServiceManagementClient3,
-    IFabricServiceManagementClient4
-);
-impl ::core::cmp::PartialEq for IFabricServiceManagementClient5 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceManagementClient5 {}
-impl ::core::fmt::Debug for IFabricServiceManagementClient5 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceManagementClient5")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceManagementClient5 {}
 unsafe impl ::core::marker::Sync for IFabricServiceManagementClient5 {}
-unsafe impl ::windows_core::Interface for IFabricServiceManagementClient5 {
-    type Vtable = IFabricServiceManagementClient5_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceManagementClient5 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceManagementClient5 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xf9a70679_8ca3_4e27_9411_483e0c89b1fa);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceManagementClient5_Vtbl {
     pub base__: IFabricServiceManagementClient4_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginDeleteService2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        deletedescription: *const super::super::FABRIC_DELETE_SERVICE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_DELETE_SERVICE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginDeleteService2: usize,
     pub EndDeleteService2: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceManagementClient6(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceManagementClient6,
+    IFabricServiceManagementClient6_Vtbl,
+    0x23e4ee1b_049a_48f5_8dd7_b601eace47de
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceManagementClient6,
+    ::windows_core::IUnknown,
+    IFabricServiceManagementClient,
+    IFabricServiceManagementClient2,
+    IFabricServiceManagementClient3,
+    IFabricServiceManagementClient4,
+    IFabricServiceManagementClient5
+);
 impl IFabricServiceManagementClient6 {
     pub unsafe fn BeginCreateService<P0>(
         &self,
@@ -40086,7 +37123,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -40129,13 +37166,13 @@ impl IFabricServiceManagementClient6 {
             applicationname,
             servicename,
             servicetypename.into_param().abi(),
-            initializationdata.len() as _,
+            initializationdata.len().try_into().unwrap(),
             ::core::mem::transmute(initializationdata.as_ptr()),
             timeoutmilliseconds,
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceFromTemplate<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -40176,7 +37213,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -40217,7 +37254,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceDescription<P0>(
         &self,
@@ -40238,7 +37275,7 @@ impl IFabricServiceManagementClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn RegisterServicePartitionResolutionChangeHandler<P0>(
         &self,
@@ -40265,7 +37302,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn UnregisterServicePartitionResolutionChangeHandler(
         &self,
@@ -40313,7 +37350,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndResolveServicePartition<P0>(
         &self,
@@ -40334,7 +37371,7 @@ impl IFabricServiceManagementClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetServiceManifest<P0, P1, P2, P3>(
         &self,
@@ -40365,7 +37402,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetServiceManifest<P0>(
         &self,
@@ -40385,7 +37422,7 @@ impl IFabricServiceManagementClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginUpdateService<P0>(
         &self,
@@ -40411,7 +37448,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUpdateService<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -40449,7 +37486,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRemoveReplica<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -40486,7 +37523,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRestartReplica<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -40522,7 +37559,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndRegisterServiceNotificationFilter<P0>(
         &self,
@@ -40540,7 +37577,7 @@ impl IFabricServiceManagementClient6 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .map(|| result__)
     }
     pub unsafe fn BeginUnregisterServiceNotificationFilter<P0>(
         &self,
@@ -40562,7 +37599,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndUnregisterServiceNotificationFilter<P0>(
         &self,
@@ -40580,7 +37617,6 @@ impl IFabricServiceManagementClient6 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginDeleteService2<P0>(
         &self,
@@ -40601,7 +37637,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndDeleteService2<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -40632,7 +37668,7 @@ impl IFabricServiceManagementClient6 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCreateServiceFromTemplate2<P0>(
         &self,
@@ -40648,48 +37684,29 @@ impl IFabricServiceManagementClient6 {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceManagementClient6,
-    ::windows_core::IUnknown,
-    IFabricServiceManagementClient,
-    IFabricServiceManagementClient2,
-    IFabricServiceManagementClient3,
-    IFabricServiceManagementClient4,
-    IFabricServiceManagementClient5
-);
-impl ::core::cmp::PartialEq for IFabricServiceManagementClient6 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceManagementClient6 {}
-impl ::core::fmt::Debug for IFabricServiceManagementClient6 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceManagementClient6")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceManagementClient6 {}
 unsafe impl ::core::marker::Sync for IFabricServiceManagementClient6 {}
-unsafe impl ::windows_core::Interface for IFabricServiceManagementClient6 {
-    type Vtable = IFabricServiceManagementClient6_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceManagementClient6 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceManagementClient6 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x23e4ee1b_049a_48f5_8dd7_b601eace47de);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricServiceManagementClient6_Vtbl where { pub base__ : IFabricServiceManagementClient5_Vtbl , pub BeginCreateServiceFromTemplate2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , servicefromtemplatedescription : *const super::super:: FABRIC_SERVICE_FROM_TEMPLATE_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndCreateServiceFromTemplate2 :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceNotification(::windows_core::IUnknown);
+pub struct IFabricServiceManagementClient6_Vtbl {
+    pub base__: IFabricServiceManagementClient5_Vtbl,
+    pub BeginCreateServiceFromTemplate2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_SERVICE_FROM_TEMPLATE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndCreateServiceFromTemplate2: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricServiceNotification,
+    IFabricServiceNotification_Vtbl,
+    0x8222c825_08ad_4639_afce_a8988cbd6db3
+);
+::windows_core::imp::interface_hierarchy!(IFabricServiceNotification, ::windows_core::IUnknown);
 impl IFabricServiceNotification {
     pub unsafe fn get_Notification(&self) -> *mut super::super::FABRIC_SERVICE_NOTIFICATION {
         (::windows_core::Interface::vtable(self).get_Notification)(
@@ -40702,53 +37719,32 @@ impl IFabricServiceNotification {
             ::windows_core::Interface::as_raw(self),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricServiceNotification, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricServiceNotification {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceNotification {}
-impl ::core::fmt::Debug for IFabricServiceNotification {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceNotification")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricServiceNotification {}
 unsafe impl ::core::marker::Sync for IFabricServiceNotification {}
-unsafe impl ::windows_core::Interface for IFabricServiceNotification {
-    type Vtable = IFabricServiceNotification_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceNotification {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceNotification {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x8222c825_08ad_4639_afce_a8988cbd6db3);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceNotification_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Notification:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_SERVICE_NOTIFICATION,
     pub GetVersion: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServiceNotificationEventHandler(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServiceNotificationEventHandler,
+    IFabricServiceNotificationEventHandler_Vtbl,
+    0xa04b7e9a_daab_45d4_8da3_95ef3ab5dbac
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServiceNotificationEventHandler,
+    ::windows_core::IUnknown
+);
 impl IFabricServiceNotificationEventHandler {
     pub unsafe fn OnNotification<P0>(
         &self,
@@ -40766,49 +37762,25 @@ impl IFabricServiceNotificationEventHandler {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServiceNotificationEventHandler,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricServiceNotificationEventHandler {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServiceNotificationEventHandler {}
-impl ::core::fmt::Debug for IFabricServiceNotificationEventHandler {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServiceNotificationEventHandler")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServiceNotificationEventHandler {}
 unsafe impl ::core::marker::Sync for IFabricServiceNotificationEventHandler {}
-unsafe impl ::windows_core::Interface for IFabricServiceNotificationEventHandler {
-    type Vtable = IFabricServiceNotificationEventHandler_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServiceNotificationEventHandler {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServiceNotificationEventHandler {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xa04b7e9a_daab_45d4_8da3_95ef3ab5dbac);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServiceNotificationEventHandler_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub OnNotification: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        __midl__ifabricservicenotificationeventhandler0000: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricServicePartitionResolutionChangeHandler(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricServicePartitionResolutionChangeHandler,
+    IFabricServicePartitionResolutionChangeHandler_Vtbl,
+    0xf495715d_8e03_4232_b8d6_1227b39984fc
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricServicePartitionResolutionChangeHandler,
+    ::windows_core::IUnknown
+);
 impl IFabricServicePartitionResolutionChangeHandler {
     pub unsafe fn OnChange<P0, P1>(
         &self,
@@ -40829,52 +37801,25 @@ impl IFabricServicePartitionResolutionChangeHandler {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricServicePartitionResolutionChangeHandler,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricServicePartitionResolutionChangeHandler {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricServicePartitionResolutionChangeHandler {}
-impl ::core::fmt::Debug for IFabricServicePartitionResolutionChangeHandler {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricServicePartitionResolutionChangeHandler")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricServicePartitionResolutionChangeHandler {}
 unsafe impl ::core::marker::Sync for IFabricServicePartitionResolutionChangeHandler {}
-unsafe impl ::windows_core::Interface for IFabricServicePartitionResolutionChangeHandler {
-    type Vtable = IFabricServicePartitionResolutionChangeHandler_Vtbl;
-}
-impl ::core::clone::Clone for IFabricServicePartitionResolutionChangeHandler {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricServicePartitionResolutionChangeHandler {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xf495715d_8e03_4232_b8d6_1227b39984fc);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricServicePartitionResolutionChangeHandler_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub OnChange: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        source: *mut ::core::ffi::c_void,
-        handlerid: i64,
-        partition: *mut ::core::ffi::c_void,
-        error: ::windows_core::HRESULT,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        i64,
+        *mut ::core::ffi::c_void,
+        ::windows_core::HRESULT,
     ),
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricStartNodeResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricStartNodeResult,
+    IFabricStartNodeResult_Vtbl,
+    0x7e9f51a5_88ac_49b8_958d_329e3334802e
+);
+::windows_core::imp::interface_hierarchy!(IFabricStartNodeResult, ::windows_core::IUnknown);
 impl IFabricStartNodeResult {
     pub unsafe fn get_Result(&self) -> *mut super::super::FABRIC_NODE_RESULT {
         (::windows_core::Interface::vtable(self).get_Result)(::windows_core::Interface::as_raw(
@@ -40882,45 +37827,21 @@ impl IFabricStartNodeResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricStartNodeResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricStartNodeResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricStartNodeResult {}
-impl ::core::fmt::Debug for IFabricStartNodeResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricStartNodeResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricStartNodeResult {}
 unsafe impl ::core::marker::Sync for IFabricStartNodeResult {}
-unsafe impl ::windows_core::Interface for IFabricStartNodeResult {
-    type Vtable = IFabricStartNodeResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricStartNodeResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricStartNodeResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x7e9f51a5_88ac_49b8_958d_329e3334802e);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricStartNodeResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Result: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_NODE_RESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricStopNodeResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricStopNodeResult,
+    IFabricStopNodeResult_Vtbl,
+    0x711d60a6_9623_476c_970c_83059a0b4d55
+);
+::windows_core::imp::interface_hierarchy!(IFabricStopNodeResult, ::windows_core::IUnknown);
 impl IFabricStopNodeResult {
     pub unsafe fn get_Result(&self) -> *mut super::super::FABRIC_NODE_RESULT {
         (::windows_core::Interface::vtable(self).get_Result)(::windows_core::Interface::as_raw(
@@ -40928,45 +37849,21 @@ impl IFabricStopNodeResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricStopNodeResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricStopNodeResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricStopNodeResult {}
-impl ::core::fmt::Debug for IFabricStopNodeResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricStopNodeResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricStopNodeResult {}
 unsafe impl ::core::marker::Sync for IFabricStopNodeResult {}
-unsafe impl ::windows_core::Interface for IFabricStopNodeResult {
-    type Vtable = IFabricStopNodeResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricStopNodeResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricStopNodeResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x711d60a6_9623_476c_970c_83059a0b4d55);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricStopNodeResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Result: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> *mut super::super::FABRIC_NODE_RESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricTestCommandStatusResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricTestCommandStatusResult,
+    IFabricTestCommandStatusResult_Vtbl,
+    0x87798f5c_e600_493a_a926_16b6807378e6
+);
+::windows_core::imp::interface_hierarchy!(IFabricTestCommandStatusResult, ::windows_core::IUnknown);
 impl IFabricTestCommandStatusResult {
     pub unsafe fn get_Result(&self) -> *mut super::super::TEST_COMMAND_QUERY_RESULT_LIST {
         (::windows_core::Interface::vtable(self).get_Result)(::windows_core::Interface::as_raw(
@@ -40974,46 +37871,22 @@ impl IFabricTestCommandStatusResult {
         ))
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricTestCommandStatusResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricTestCommandStatusResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricTestCommandStatusResult {}
-impl ::core::fmt::Debug for IFabricTestCommandStatusResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricTestCommandStatusResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricTestCommandStatusResult {}
 unsafe impl ::core::marker::Sync for IFabricTestCommandStatusResult {}
-unsafe impl ::windows_core::Interface for IFabricTestCommandStatusResult {
-    type Vtable = IFabricTestCommandStatusResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricTestCommandStatusResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricTestCommandStatusResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x87798f5c_e600_493a_a926_16b6807378e6);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricTestCommandStatusResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_Result: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     )
         -> *mut super::super::TEST_COMMAND_QUERY_RESULT_LIST,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricTestManagementClient(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricTestManagementClient,
+    IFabricTestManagementClient_Vtbl,
+    0x0df0f63a_4da0_44fe_81e8_f80cd28e9b28
+);
+::windows_core::imp::interface_hierarchy!(IFabricTestManagementClient, ::windows_core::IUnknown);
 impl IFabricTestManagementClient {
     pub unsafe fn BeginStartPartitionDataLoss<P0>(
         &self,
@@ -41032,7 +37905,7 @@ impl IFabricTestManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionDataLoss<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41061,7 +37934,7 @@ impl IFabricTestManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionDataLossProgress<P0>(
         &self,
@@ -41076,7 +37949,7 @@ impl IFabricTestManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartPartitionQuorumLoss<P0>(
         &self,
@@ -41095,7 +37968,7 @@ impl IFabricTestManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionQuorumLoss<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41124,7 +37997,7 @@ impl IFabricTestManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionQuorumLossProgress<P0>(
         &self,
@@ -41139,7 +38012,7 @@ impl IFabricTestManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartPartitionRestart<P0>(
         &self,
@@ -41158,7 +38031,7 @@ impl IFabricTestManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionRestart<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41187,7 +38060,7 @@ impl IFabricTestManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionRestartProgress<P0>(
         &self,
@@ -41202,7 +38075,7 @@ impl IFabricTestManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetTestCommandStatusList<P0>(
         &self,
@@ -41221,7 +38094,7 @@ impl IFabricTestManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetTestCommandStatusList<P0>(
         &self,
@@ -41236,9 +38109,8 @@ impl IFabricTestManagementClient {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginCancelTestCommand<P0>(
         &self,
@@ -41257,7 +38129,7 @@ impl IFabricTestManagementClient {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCancelTestCommand<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41270,40 +38142,120 @@ impl IFabricTestManagementClient {
         .ok()
     }
 }
-::windows_core::imp::interface_hierarchy!(IFabricTestManagementClient, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricTestManagementClient {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricTestManagementClient {}
-impl ::core::fmt::Debug for IFabricTestManagementClient {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricTestManagementClient")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricTestManagementClient {}
 unsafe impl ::core::marker::Sync for IFabricTestManagementClient {}
-unsafe impl ::windows_core::Interface for IFabricTestManagementClient {
-    type Vtable = IFabricTestManagementClient_Vtbl;
-}
-impl ::core::clone::Clone for IFabricTestManagementClient {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricTestManagementClient {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x0df0f63a_4da0_44fe_81e8_f80cd28e9b28);
-}
 #[repr(C)]
-#[doc(hidden)]
-pub struct IFabricTestManagementClient_Vtbl where { pub base__ : ::windows_core::IUnknown_Vtbl , pub BeginStartPartitionDataLoss :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , invokedatalossdescription : *const super::super:: FABRIC_START_PARTITION_DATA_LOSS_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndStartPartitionDataLoss :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetPartitionDataLossProgress :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , operationid : ::windows_core::GUID , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetPartitionDataLossProgress :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginStartPartitionQuorumLoss :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , invokequorumlossdescription : *const super::super:: FABRIC_START_PARTITION_QUORUM_LOSS_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndStartPartitionQuorumLoss :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetPartitionQuorumLossProgress :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , operationid : ::windows_core::GUID , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetPartitionQuorumLossProgress :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginStartPartitionRestart :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , restartpartitiondescription : *const super::super:: FABRIC_START_PARTITION_RESTART_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndStartPartitionRestart :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetPartitionRestartProgress :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , operationid : ::windows_core::GUID , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetPartitionRestartProgress :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub BeginGetTestCommandStatusList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , operationid : *const super::super:: FABRIC_TEST_COMMAND_LIST_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , pub EndGetTestCommandStatusList :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , result : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( feature = "Win32_Foundation" ) ] pub BeginCancelTestCommand :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , invokedatalossdescription : *const super::super:: FABRIC_CANCEL_TEST_COMMAND_DESCRIPTION , timeoutmilliseconds : u32 , callback : * mut::core::ffi::c_void , context : *mut * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , # [ cfg ( not ( feature = "Win32_Foundation" ) ) ] BeginCancelTestCommand :usize , pub EndCancelTestCommand :unsafe extern "system" fn ( this : * mut::core::ffi::c_void , context : * mut::core::ffi::c_void , ) -> ::windows_core::HRESULT , }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricTestManagementClient2(::windows_core::IUnknown);
+pub struct IFabricTestManagementClient_Vtbl {
+    pub base__: ::windows_core::IUnknown_Vtbl,
+    pub BeginStartPartitionDataLoss: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_START_PARTITION_DATA_LOSS_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndStartPartitionDataLoss: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetPartitionDataLossProgress: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        ::windows_core::GUID,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    )
+        -> ::windows_core::HRESULT,
+    pub EndGetPartitionDataLossProgress: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginStartPartitionQuorumLoss: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_START_PARTITION_QUORUM_LOSS_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndStartPartitionQuorumLoss: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetPartitionQuorumLossProgress: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        ::windows_core::GUID,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    )
+        -> ::windows_core::HRESULT,
+    pub EndGetPartitionQuorumLossProgress: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    )
+        -> ::windows_core::HRESULT,
+    pub BeginStartPartitionRestart: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_START_PARTITION_RESTART_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndStartPartitionRestart: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetPartitionRestartProgress: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        ::windows_core::GUID,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetPartitionRestartProgress: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub BeginGetTestCommandStatusList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_TEST_COMMAND_LIST_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    pub EndGetTestCommandStatusList: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(feature = "Win32_Foundation")]
+    pub BeginCancelTestCommand: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_CANCEL_TEST_COMMAND_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+    #[cfg(not(feature = "Win32_Foundation"))]
+    BeginCancelTestCommand: usize,
+    pub EndCancelTestCommand: unsafe extern "system" fn(
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+    ) -> ::windows_core::HRESULT,
+}
+::windows_core::imp::com_interface!(
+    IFabricTestManagementClient2,
+    IFabricTestManagementClient2_Vtbl,
+    0x1222b1ff_ae51_43b3_bbdf_439e7f61ca1a
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricTestManagementClient2,
+    ::windows_core::IUnknown,
+    IFabricTestManagementClient
+);
 impl IFabricTestManagementClient2 {
     pub unsafe fn BeginStartPartitionDataLoss<P0>(
         &self,
@@ -41324,7 +38276,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionDataLoss<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41357,7 +38309,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionDataLossProgress<P0>(
         &self,
@@ -41374,7 +38326,7 @@ impl IFabricTestManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartPartitionQuorumLoss<P0>(
         &self,
@@ -41395,7 +38347,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionQuorumLoss<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41428,7 +38380,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionQuorumLossProgress<P0>(
         &self,
@@ -41445,7 +38397,7 @@ impl IFabricTestManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartPartitionRestart<P0>(
         &self,
@@ -41466,7 +38418,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionRestart<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41499,7 +38451,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionRestartProgress<P0>(
         &self,
@@ -41516,7 +38468,7 @@ impl IFabricTestManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetTestCommandStatusList<P0>(
         &self,
@@ -41537,7 +38489,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetTestCommandStatusList<P0>(
         &self,
@@ -41554,9 +38506,8 @@ impl IFabricTestManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginCancelTestCommand<P0>(
         &self,
@@ -41577,7 +38528,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCancelTestCommand<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41591,7 +38542,6 @@ impl IFabricTestManagementClient2 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginStartChaos<P0>(
         &self,
@@ -41610,7 +38560,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartChaos<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41637,7 +38587,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopChaos<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41649,7 +38599,6 @@ impl IFabricTestManagementClient2 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetChaosReport<P0>(
         &self,
@@ -41668,7 +38617,7 @@ impl IFabricTestManagementClient2 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetChaosReport<P0>(
         &self,
@@ -41683,88 +38632,65 @@ impl IFabricTestManagementClient2 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricTestManagementClient2,
-    ::windows_core::IUnknown,
-    IFabricTestManagementClient
-);
-impl ::core::cmp::PartialEq for IFabricTestManagementClient2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricTestManagementClient2 {}
-impl ::core::fmt::Debug for IFabricTestManagementClient2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricTestManagementClient2")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricTestManagementClient2 {}
 unsafe impl ::core::marker::Sync for IFabricTestManagementClient2 {}
-unsafe impl ::windows_core::Interface for IFabricTestManagementClient2 {
-    type Vtable = IFabricTestManagementClient2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricTestManagementClient2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricTestManagementClient2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x1222b1ff_ae51_43b3_bbdf_439e7f61ca1a);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricTestManagementClient2_Vtbl {
     pub base__: IFabricTestManagementClient_Vtbl,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginStartChaos: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        restartpartitiondescription: *const super::super::FABRIC_START_CHAOS_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_START_CHAOS_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginStartChaos: usize,
     pub EndStartChaos: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginStopChaos: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndStopChaos: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetChaosReport: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        getchaosreportdescription: *const super::super::FABRIC_GET_CHAOS_REPORT_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_GET_CHAOS_REPORT_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetChaosReport: usize,
     pub EndGetChaosReport: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricTestManagementClient3(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricTestManagementClient3,
+    IFabricTestManagementClient3_Vtbl,
+    0xa4b94afd_0cb5_4010_8995_e58e9b6ca373
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricTestManagementClient3,
+    ::windows_core::IUnknown,
+    IFabricTestManagementClient,
+    IFabricTestManagementClient2
+);
 impl IFabricTestManagementClient3 {
     pub unsafe fn BeginStartPartitionDataLoss<P0>(
         &self,
@@ -41786,7 +38712,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionDataLoss<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41821,7 +38747,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionDataLossProgress<P0>(
         &self,
@@ -41839,7 +38765,7 @@ impl IFabricTestManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartPartitionQuorumLoss<P0>(
         &self,
@@ -41861,7 +38787,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionQuorumLoss<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41896,7 +38822,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionQuorumLossProgress<P0>(
         &self,
@@ -41914,7 +38840,7 @@ impl IFabricTestManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartPartitionRestart<P0>(
         &self,
@@ -41936,7 +38862,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionRestart<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -41971,7 +38897,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionRestartProgress<P0>(
         &self,
@@ -41989,7 +38915,7 @@ impl IFabricTestManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetTestCommandStatusList<P0>(
         &self,
@@ -42011,7 +38937,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetTestCommandStatusList<P0>(
         &self,
@@ -42029,9 +38955,8 @@ impl IFabricTestManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginCancelTestCommand<P0>(
         &self,
@@ -42053,7 +38978,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCancelTestCommand<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42068,7 +38993,6 @@ impl IFabricTestManagementClient3 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginStartChaos<P0>(
         &self,
@@ -42089,7 +39013,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartChaos<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42118,7 +39042,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopChaos<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42130,7 +39054,6 @@ impl IFabricTestManagementClient3 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetChaosReport<P0>(
         &self,
@@ -42151,7 +39074,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetChaosReport<P0>(
         &self,
@@ -42168,7 +39091,7 @@ impl IFabricTestManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartNodeTransition<P0>(
         &self,
@@ -42187,7 +39110,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNodeTransition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42216,7 +39139,7 @@ impl IFabricTestManagementClient3 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeTransitionProgress<P0>(
         &self,
@@ -42231,73 +39154,50 @@ impl IFabricTestManagementClient3 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricTestManagementClient3,
-    ::windows_core::IUnknown,
-    IFabricTestManagementClient,
-    IFabricTestManagementClient2
-);
-impl ::core::cmp::PartialEq for IFabricTestManagementClient3 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricTestManagementClient3 {}
-impl ::core::fmt::Debug for IFabricTestManagementClient3 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricTestManagementClient3")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricTestManagementClient3 {}
 unsafe impl ::core::marker::Sync for IFabricTestManagementClient3 {}
-unsafe impl ::windows_core::Interface for IFabricTestManagementClient3 {
-    type Vtable = IFabricTestManagementClient3_Vtbl;
-}
-impl ::core::clone::Clone for IFabricTestManagementClient3 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricTestManagementClient3 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xa4b94afd_0cb5_4010_8995_e58e9b6ca373);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricTestManagementClient3_Vtbl {
     pub base__: IFabricTestManagementClient2_Vtbl,
     pub BeginStartNodeTransition: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        description: *const super::super::FABRIC_NODE_TRANSITION_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_NODE_TRANSITION_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndStartNodeTransition: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetNodeTransitionProgress: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        operationid: ::windows_core::GUID,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        ::windows_core::GUID,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetNodeTransitionProgress: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricTestManagementClient4(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricTestManagementClient4,
+    IFabricTestManagementClient4_Vtbl,
+    0xb96aa7d4_acc0_4814_89dc_561b0cbb6028
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricTestManagementClient4,
+    ::windows_core::IUnknown,
+    IFabricTestManagementClient,
+    IFabricTestManagementClient2,
+    IFabricTestManagementClient3
+);
 impl IFabricTestManagementClient4 {
     pub unsafe fn BeginStartPartitionDataLoss<P0>(
         &self,
@@ -42320,7 +39220,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionDataLoss<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42357,7 +39257,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionDataLossProgress<P0>(
         &self,
@@ -42376,7 +39276,7 @@ impl IFabricTestManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartPartitionQuorumLoss<P0>(
         &self,
@@ -42399,7 +39299,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionQuorumLoss<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42436,7 +39336,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionQuorumLossProgress<P0>(
         &self,
@@ -42455,7 +39355,7 @@ impl IFabricTestManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartPartitionRestart<P0>(
         &self,
@@ -42478,7 +39378,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartPartitionRestart<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42515,7 +39415,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetPartitionRestartProgress<P0>(
         &self,
@@ -42534,7 +39434,7 @@ impl IFabricTestManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetTestCommandStatusList<P0>(
         &self,
@@ -42557,7 +39457,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetTestCommandStatusList<P0>(
         &self,
@@ -42576,9 +39476,8 @@ impl IFabricTestManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginCancelTestCommand<P0>(
         &self,
@@ -42601,7 +39500,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndCancelTestCommand<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42617,7 +39516,6 @@ impl IFabricTestManagementClient4 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginStartChaos<P0>(
         &self,
@@ -42639,7 +39537,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartChaos<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42672,7 +39570,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStopChaos<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42687,7 +39585,6 @@ impl IFabricTestManagementClient4 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetChaosReport<P0>(
         &self,
@@ -42709,7 +39606,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetChaosReport<P0>(
         &self,
@@ -42727,7 +39624,7 @@ impl IFabricTestManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginStartNodeTransition<P0>(
         &self,
@@ -42748,7 +39645,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndStartNodeTransition<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42781,7 +39678,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetNodeTransitionProgress<P0>(
         &self,
@@ -42798,7 +39695,7 @@ impl IFabricTestManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetChaos<P0>(
         &self,
@@ -42815,7 +39712,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetChaos<P0>(
         &self,
@@ -42830,7 +39727,7 @@ impl IFabricTestManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn BeginGetChaosSchedule<P0>(
         &self,
@@ -42847,7 +39744,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetChaosSchedule<P0>(
         &self,
@@ -42862,9 +39759,8 @@ impl IFabricTestManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginSetChaosSchedule<P0>(
         &self,
@@ -42883,7 +39779,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndSetChaosSchedule<P0>(&self, context: P0) -> ::windows_core::Result<()>
     where
@@ -42895,7 +39791,6 @@ impl IFabricTestManagementClient4 {
         )
         .ok()
     }
-    #[doc = "*Required features: `\"Win32_Foundation\"`*"]
     #[cfg(feature = "Win32_Foundation")]
     pub unsafe fn BeginGetChaosEvents<P0>(
         &self,
@@ -42914,7 +39809,7 @@ impl IFabricTestManagementClient4 {
             callback.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
     pub unsafe fn EndGetChaosEvents<P0>(
         &self,
@@ -42929,102 +39824,75 @@ impl IFabricTestManagementClient4 {
             context.into_param().abi(),
             &mut result__,
         )
-        .from_abi(result__)
-    }
-}
-::windows_core::imp::interface_hierarchy!(
-    IFabricTestManagementClient4,
-    ::windows_core::IUnknown,
-    IFabricTestManagementClient,
-    IFabricTestManagementClient2,
-    IFabricTestManagementClient3
-);
-impl ::core::cmp::PartialEq for IFabricTestManagementClient4 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricTestManagementClient4 {}
-impl ::core::fmt::Debug for IFabricTestManagementClient4 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricTestManagementClient4")
-            .field(&self.0)
-            .finish()
+        .and_then(|| ::windows_core::Type::from_abi(result__))
     }
 }
 unsafe impl ::core::marker::Send for IFabricTestManagementClient4 {}
 unsafe impl ::core::marker::Sync for IFabricTestManagementClient4 {}
-unsafe impl ::windows_core::Interface for IFabricTestManagementClient4 {
-    type Vtable = IFabricTestManagementClient4_Vtbl;
-}
-impl ::core::clone::Clone for IFabricTestManagementClient4 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricTestManagementClient4 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xb96aa7d4_acc0_4814_89dc_561b0cbb6028);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricTestManagementClient4_Vtbl {
     pub base__: IFabricTestManagementClient3_Vtbl,
     pub BeginGetChaos: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetChaos: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub BeginGetChaosSchedule: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     pub EndGetChaosSchedule: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginSetChaosSchedule: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        setchaosscheduledescription: *const super::super::FABRIC_CHAOS_SERVICE_SCHEDULE_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_CHAOS_SERVICE_SCHEDULE_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginSetChaosSchedule: usize,
     pub EndSetChaosSchedule: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetChaosEvents: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        chaoseventsdescription: *const super::super::FABRIC_CHAOS_EVENTS_SEGMENT_DESCRIPTION,
-        timeoutmilliseconds: u32,
-        callback: *mut ::core::ffi::c_void,
-        context: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *const super::super::FABRIC_CHAOS_EVENTS_SEGMENT_DESCRIPTION,
+        u32,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
     #[cfg(not(feature = "Win32_Foundation"))]
     BeginGetChaosEvents: usize,
     pub EndGetChaosEvents: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        context: *mut ::core::ffi::c_void,
-        result: *mut *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut *mut ::core::ffi::c_void,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricUpgradeOrchestrationServiceStateResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricUpgradeOrchestrationServiceStateResult,
+    IFabricUpgradeOrchestrationServiceStateResult_Vtbl,
+    0x413968aa_2eb7_4023_b9dc_0f2160b76a6d
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricUpgradeOrchestrationServiceStateResult,
+    ::windows_core::IUnknown
+);
 impl IFabricUpgradeOrchestrationServiceStateResult {
     pub unsafe fn get_State(
         &self,
@@ -43032,50 +39900,23 @@ impl IFabricUpgradeOrchestrationServiceStateResult {
         (::windows_core::Interface::vtable(self).get_State)(::windows_core::Interface::as_raw(self))
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricUpgradeOrchestrationServiceStateResult,
-    ::windows_core::IUnknown
-);
-impl ::core::cmp::PartialEq for IFabricUpgradeOrchestrationServiceStateResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricUpgradeOrchestrationServiceStateResult {}
-impl ::core::fmt::Debug for IFabricUpgradeOrchestrationServiceStateResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricUpgradeOrchestrationServiceStateResult")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricUpgradeOrchestrationServiceStateResult {}
 unsafe impl ::core::marker::Sync for IFabricUpgradeOrchestrationServiceStateResult {}
-unsafe impl ::windows_core::Interface for IFabricUpgradeOrchestrationServiceStateResult {
-    type Vtable = IFabricUpgradeOrchestrationServiceStateResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricUpgradeOrchestrationServiceStateResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricUpgradeOrchestrationServiceStateResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x413968aa_2eb7_4023_b9dc_0f2160b76a6d);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricUpgradeOrchestrationServiceStateResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_State:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         )
             -> *mut super::super::FABRIC_UPGRADE_ORCHESTRATION_SERVICE_STATE,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricUpgradeProgressResult(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricUpgradeProgressResult,
+    IFabricUpgradeProgressResult_Vtbl,
+    0x2adb07db_f7db_4621_9afc_daabe1e53bf8
+);
+::windows_core::imp::interface_hierarchy!(IFabricUpgradeProgressResult, ::windows_core::IUnknown);
 impl IFabricUpgradeProgressResult {
     pub unsafe fn get_TargetCodeVersion(&self) -> ::windows_core::PCWSTR {
         (::windows_core::Interface::vtable(self).get_TargetCodeVersion)(
@@ -43095,87 +39936,66 @@ impl IFabricUpgradeProgressResult {
     pub unsafe fn GetUpgradeDomains(
         &self,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()> {
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION> {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self).GetUpgradeDomains)(
             ::windows_core::Interface::as_raw(self),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn GetChangedUpgradeDomains<P0>(
         &self,
         previousprogress: P0,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()>
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION>
     where
         P0: ::windows_core::IntoParam<IFabricUpgradeProgressResult>,
     {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self).GetChangedUpgradeDomains)(
             ::windows_core::Interface::as_raw(self),
             previousprogress.into_param().abi(),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
-    }
-}
-::windows_core::imp::interface_hierarchy!(IFabricUpgradeProgressResult, ::windows_core::IUnknown);
-impl ::core::cmp::PartialEq for IFabricUpgradeProgressResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricUpgradeProgressResult {}
-impl ::core::fmt::Debug for IFabricUpgradeProgressResult {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricUpgradeProgressResult")
-            .field(&self.0)
-            .finish()
+        .map(|| result__)
     }
 }
 unsafe impl ::core::marker::Send for IFabricUpgradeProgressResult {}
 unsafe impl ::core::marker::Sync for IFabricUpgradeProgressResult {}
-unsafe impl ::windows_core::Interface for IFabricUpgradeProgressResult {
-    type Vtable = IFabricUpgradeProgressResult_Vtbl;
-}
-impl ::core::clone::Clone for IFabricUpgradeProgressResult {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricUpgradeProgressResult {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x2adb07db_f7db_4621_9afc_daabe1e53bf8);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricUpgradeProgressResult_Vtbl {
     pub base__: ::windows_core::IUnknown_Vtbl,
     pub get_TargetCodeVersion:
-        unsafe extern "system" fn(this: *mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
+        unsafe extern "system" fn(*mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
     pub get_TargetConfigVersion:
-        unsafe extern "system" fn(this: *mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
-    pub get_UpgradeState: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-    ) -> super::super::FABRIC_UPGRADE_STATE,
+        unsafe extern "system" fn(*mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
+    pub get_UpgradeState:
+        unsafe extern "system" fn(*mut ::core::ffi::c_void) -> super::super::FABRIC_UPGRADE_STATE,
     pub GetUpgradeDomains: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
+        *mut ::core::ffi::c_void,
+        *mut u32,
+        *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
     ) -> ::windows_core::HRESULT,
     pub GetChangedUpgradeDomains: unsafe extern "system" fn(
-        this: *mut ::core::ffi::c_void,
-        previousprogress: *mut ::core::ffi::c_void,
-        itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
+        *mut ::core::ffi::c_void,
+        *mut ::core::ffi::c_void,
+        *mut u32,
+        *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
     ) -> ::windows_core::HRESULT,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricUpgradeProgressResult2(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricUpgradeProgressResult2,
+    IFabricUpgradeProgressResult2_Vtbl,
+    0x9cc0aaf3_0f6c_40a3_85ac_38338dd36d75
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricUpgradeProgressResult2,
+    ::windows_core::IUnknown,
+    IFabricUpgradeProgressResult
+);
 impl IFabricUpgradeProgressResult2 {
     pub unsafe fn get_TargetCodeVersion(&self) -> ::windows_core::PCWSTR {
         (::windows_core::Interface::vtable(self)
@@ -43195,35 +40015,35 @@ impl IFabricUpgradeProgressResult2 {
     pub unsafe fn GetUpgradeDomains(
         &self,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()> {
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION> {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self)
             .base__
             .GetUpgradeDomains)(
             ::windows_core::Interface::as_raw(self),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn GetChangedUpgradeDomains<P0>(
         &self,
         previousprogress: P0,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()>
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION>
     where
         P0: ::windows_core::IntoParam<IFabricUpgradeProgressResult>,
     {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self)
             .base__
             .GetChangedUpgradeDomains)(
             ::windows_core::Interface::as_raw(self),
             previousprogress.into_param().abi(),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn get_RollingUpgradeMode(&self) -> super::super::FABRIC_ROLLING_UPGRADE_MODE {
         (::windows_core::Interface::vtable(self).get_RollingUpgradeMode)(
@@ -43236,52 +40056,29 @@ impl IFabricUpgradeProgressResult2 {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricUpgradeProgressResult2,
-    ::windows_core::IUnknown,
-    IFabricUpgradeProgressResult
-);
-impl ::core::cmp::PartialEq for IFabricUpgradeProgressResult2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricUpgradeProgressResult2 {}
-impl ::core::fmt::Debug for IFabricUpgradeProgressResult2 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricUpgradeProgressResult2")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricUpgradeProgressResult2 {}
 unsafe impl ::core::marker::Sync for IFabricUpgradeProgressResult2 {}
-unsafe impl ::windows_core::Interface for IFabricUpgradeProgressResult2 {
-    type Vtable = IFabricUpgradeProgressResult2_Vtbl;
-}
-impl ::core::clone::Clone for IFabricUpgradeProgressResult2 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricUpgradeProgressResult2 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0x9cc0aaf3_0f6c_40a3_85ac_38338dd36d75);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricUpgradeProgressResult2_Vtbl {
     pub base__: IFabricUpgradeProgressResult_Vtbl,
     pub get_RollingUpgradeMode:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> super::super::FABRIC_ROLLING_UPGRADE_MODE,
     pub get_NextUpgradeDomain:
-        unsafe extern "system" fn(this: *mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
+        unsafe extern "system" fn(*mut ::core::ffi::c_void) -> ::windows_core::PCWSTR,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
-#[repr(transparent)]
-pub struct IFabricUpgradeProgressResult3(::windows_core::IUnknown);
+::windows_core::imp::com_interface!(
+    IFabricUpgradeProgressResult3,
+    IFabricUpgradeProgressResult3_Vtbl,
+    0xdc3346ef_d2ef_40c1_807b_1ca8d2388b47
+);
+::windows_core::imp::interface_hierarchy!(
+    IFabricUpgradeProgressResult3,
+    ::windows_core::IUnknown,
+    IFabricUpgradeProgressResult,
+    IFabricUpgradeProgressResult2
+);
 impl IFabricUpgradeProgressResult3 {
     pub unsafe fn get_TargetCodeVersion(&self) -> ::windows_core::PCWSTR {
         (::windows_core::Interface::vtable(self)
@@ -43304,27 +40101,27 @@ impl IFabricUpgradeProgressResult3 {
     pub unsafe fn GetUpgradeDomains(
         &self,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()> {
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION> {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self)
             .base__
             .base__
             .GetUpgradeDomains)(
             ::windows_core::Interface::as_raw(self),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn GetChangedUpgradeDomains<P0>(
         &self,
         previousprogress: P0,
         itemcount: *mut u32,
-        buffereditems: *mut *mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION,
-    ) -> ::windows_core::Result<()>
+    ) -> ::windows_core::Result<*mut super::super::FABRIC_UPGRADE_DOMAIN_STATUS_DESCRIPTION>
     where
         P0: ::windows_core::IntoParam<IFabricUpgradeProgressResult>,
     {
+        let mut result__ = ::std::mem::zeroed();
         (::windows_core::Interface::vtable(self)
             .base__
             .base__
@@ -43332,9 +40129,9 @@ impl IFabricUpgradeProgressResult3 {
             ::windows_core::Interface::as_raw(self),
             previousprogress.into_param().abi(),
             itemcount,
-            buffereditems,
+            &mut result__,
         )
-        .ok()
+        .map(|| result__)
     }
     pub unsafe fn get_RollingUpgradeMode(&self) -> super::super::FABRIC_ROLLING_UPGRADE_MODE {
         (::windows_core::Interface::vtable(self)
@@ -43352,49 +40149,16 @@ impl IFabricUpgradeProgressResult3 {
         )
     }
 }
-::windows_core::imp::interface_hierarchy!(
-    IFabricUpgradeProgressResult3,
-    ::windows_core::IUnknown,
-    IFabricUpgradeProgressResult,
-    IFabricUpgradeProgressResult2
-);
-impl ::core::cmp::PartialEq for IFabricUpgradeProgressResult3 {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-impl ::core::cmp::Eq for IFabricUpgradeProgressResult3 {}
-impl ::core::fmt::Debug for IFabricUpgradeProgressResult3 {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_tuple("IFabricUpgradeProgressResult3")
-            .field(&self.0)
-            .finish()
-    }
-}
 unsafe impl ::core::marker::Send for IFabricUpgradeProgressResult3 {}
 unsafe impl ::core::marker::Sync for IFabricUpgradeProgressResult3 {}
-unsafe impl ::windows_core::Interface for IFabricUpgradeProgressResult3 {
-    type Vtable = IFabricUpgradeProgressResult3_Vtbl;
-}
-impl ::core::clone::Clone for IFabricUpgradeProgressResult3 {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-unsafe impl ::windows_core::ComInterface for IFabricUpgradeProgressResult3 {
-    const IID: ::windows_core::GUID =
-        ::windows_core::GUID::from_u128(0xdc3346ef_d2ef_40c1_807b_1ca8d2388b47);
-}
 #[repr(C)]
-#[doc(hidden)]
 pub struct IFabricUpgradeProgressResult3_Vtbl {
     pub base__: IFabricUpgradeProgressResult2_Vtbl,
     pub get_UpgradeProgress:
         unsafe extern "system" fn(
-            this: *mut ::core::ffi::c_void,
+            *mut ::core::ffi::c_void,
         ) -> *mut super::super::FABRIC_UPGRADE_PROGRESS,
 }
-#[doc = "*Required features: `\"ServiceFabric_FabricCommon_FabricClient\"`*"]
 pub const FabricClient: ::windows_core::GUID =
     ::windows_core::GUID::from_u128(0x75f087fa_37f1_4984_b513_724da5b02197);
 #[cfg(feature = "implement")]

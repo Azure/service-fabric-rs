@@ -40,11 +40,7 @@ features = [
 implement = []
 Foundation = []
 Win32_Foundation = []
-# ServiceFabric = ["Foundation"]
-# ServiceFabric_FabricCommon = ["ServiceFabric"]
-# ServiceFabric_FabricCommon_FabricClient = ["ServiceFabric_FabricCommon"]
-# ServiceFabric_FabricCommon_FabricRuntime = ["ServiceFabric_FabricCommon"]
-# ServiceFabric_FabricCommon_FabricTransport = ["ServiceFabric_FabricCommon"]
+# generated features
 ServiceFabric = ["Foundation"]
 ServiceFabric_FabricCommon = ["ServiceFabric"]
 ServiceFabric_FabricCommon_FabricClient = ["ServiceFabric_FabricCommon"]

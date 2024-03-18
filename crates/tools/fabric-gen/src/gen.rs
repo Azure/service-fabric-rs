@@ -5,9 +5,7 @@
 
 use std::collections::HashMap;
 
-use windows_metadata::{
-    InterfaceImpl, ParamAttributes, Reader, Type, TypeDef, TypeKind, TypeName,
-};
+use windows_metadata::{InterfaceImpl, ParamAttributes, Reader, Type, TypeDef, TypeKind, TypeName};
 
 #[derive(Default, Clone)]
 pub struct InterfaceLayout {
@@ -73,7 +71,7 @@ impl TypeEntry {
             Type::TypeRef(x) => {
                 let te = TypeEntry::from_typeref(x, r);
                 (te.name, te.ns, te.prefix)
-            },
+            }
             Type::Void => ("c_void".to_string(), "::core::ffi".to_string(), empty_str),
             _ => {
                 panic!("{:?} not supported", t)

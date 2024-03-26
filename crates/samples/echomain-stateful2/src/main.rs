@@ -17,7 +17,7 @@ use mssf_core::{
     WaitableCallback,
 };
 use windows::core::Interface;
-use windows_core::{w, HSTRING};
+use windows_core::HSTRING;
 
 mod statefulstore;
 

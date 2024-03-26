@@ -133,8 +133,7 @@ pub struct StringResult {
 
 impl StringResult {
     pub fn new(data: HSTRING) -> StringResult {
-        let ret = StringResult { data };
-        ret
+        StringResult { data }
     }
 }
 

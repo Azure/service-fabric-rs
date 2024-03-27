@@ -42,7 +42,7 @@ pub fn initialize() {
 }
 
 // retrieves the global reader
-pub fn get_reader() -> &'static  Reader {
+pub fn get_reader() -> &'static Reader {
     initialize();
     unsafe { SF_READER.as_ref().unwrap() }
 }

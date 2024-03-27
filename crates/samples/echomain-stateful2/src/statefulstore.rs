@@ -22,7 +22,7 @@ mod echo;
 pub struct Factory {
     replication_port: u32,
     hostname: HSTRING,
-    rt: DefaultExecutor,
+    _rt: DefaultExecutor,
 }
 
 impl Factory {
@@ -30,7 +30,7 @@ impl Factory {
         Factory {
             replication_port,
             hostname,
-            rt,
+            _rt: rt,
         }
     }
 }
@@ -62,7 +62,7 @@ impl Replicator for AppFabricReplicator {
     async fn open(&self) -> windows::core::Result<HSTRING> {
         info!("AppFabricReplicator2::Replicator::Open");
         let addr = get_addr(self.port_, self.hostname_.clone());
-        let str_res = HSTRING::from(addr).into();
+        let str_res = HSTRING::from(addr);
         Ok(str_res)
     }
 
@@ -71,12 +71,12 @@ impl Replicator for AppFabricReplicator {
         Ok(())
     }
 
-    async fn change_role(&self, epoch: &Epoch, role: &Role) -> windows::core::Result<()> {
+    async fn change_role(&self, _epoch: &Epoch, _role: &Role) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::Replicator::change_role");
         Ok(())
     }
 
-    async fn update_epoch(&self, epoch: &Epoch) -> windows::core::Result<()> {
+    async fn update_epoch(&self, _epoch: &Epoch) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::Replicator::update_epoch");
         Ok(())
     }
@@ -105,8 +105,8 @@ impl PrimaryReplicator for AppFabricReplicator {
 
     fn update_catch_up_replica_set_configuration(
         &self,
-        currentconfiguration: &ReplicaSetConfig,
-        previousconfiguration: &ReplicaSetConfig,
+        _currentconfiguration: &ReplicaSetConfig,
+        _previousconfiguration: &ReplicaSetConfig,
     ) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::update_catch_up_replica_set_configuration");
         Ok(())
@@ -114,7 +114,7 @@ impl PrimaryReplicator for AppFabricReplicator {
 
     async fn wait_for_catch_up_quorum(
         &self,
-        catchupmode: ReplicaSetQuarumMode,
+        _catchupmode: ReplicaSetQuarumMode,
     ) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::wait_for_catch_up_quorum");
         Ok(())
@@ -122,18 +122,18 @@ impl PrimaryReplicator for AppFabricReplicator {
 
     fn update_current_replica_set_configuration(
         &self,
-        currentconfiguration: &ReplicaSetConfig,
+        _currentconfiguration: &ReplicaSetConfig,
     ) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::update_current_replica_set_configuration");
         Ok(())
     }
 
-    async fn build_replica(&self, replica: &ReplicaInfo) -> windows::core::Result<()> {
+    async fn build_replica(&self, _replica: &ReplicaInfo) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::build_replica");
         Ok(())
     }
 
-    fn remove_replica(&self, replicaid: i64) -> windows::core::Result<()> {
+    fn remove_replica(&self, _replicaid: i64) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::remove_replica");
         Ok(())
     }
@@ -194,7 +194,6 @@ impl Replica {
 pub struct Service {
     port_: u32,
     hostname_: HSTRING,
-    //th_: Cell<Option<JoinHandle<Result<(), Error>>>>,
     tx_: Mutex<Cell<Option<Sender<()>>>>,
 }
 
@@ -204,20 +203,18 @@ impl Service {
             port_: port,
             hostname_: hostname,
             tx_: Mutex::new(Cell::new(None)),
-            //th_: Cell::from(None),
         }
     }
 
     pub fn start_loop(&self) {
-        let (tx, mut rx) = oneshot::channel::<()>();
+        let (tx, rx) = oneshot::channel::<()>();
         self.stop();
         self.tx_.lock().unwrap().set(Some(tx));
 
         let port_copy = self.port_;
         let hostname_copy = self.hostname_.clone();
-
-        let th = std::thread::spawn(move || echo::start_echo(rx, port_copy, hostname_copy));
-        //self.th_.set(Some(th));
+        // TODO: reuse the tokio runtime.
+        let _th = std::thread::spawn(move || echo::start_echo(rx, port_copy, hostname_copy));
     }
 
     pub fn stop(&self) {
@@ -232,7 +229,7 @@ impl StatefulServiceReplica for Replica {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: &StatefulServicePartition,
+        _partition: &StatefulServicePartition,
     ) -> windows::core::Result<impl PrimaryReplicator + 'static> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
@@ -246,7 +243,7 @@ impl StatefulServiceReplica for Replica {
         }
         // return the address
         let addr = get_addr(self.port_, self.hostname_.clone());
-        let str_res = HSTRING::from(addr).into();
+        let str_res = HSTRING::from(addr);
         Ok(str_res)
     }
     async fn close(&self) -> windows::core::Result<()> {

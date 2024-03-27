@@ -120,7 +120,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
 
     fn EndOpen(
         &self,
-        context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> windows_core::Result<IFabricStringResult> {
         info!("AppFabricReplicator::EndOpen");
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
@@ -131,8 +131,8 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
 
     fn BeginChangeRole(
         &self,
-        epoch: *const mssf_com::FABRIC_EPOCH,
-        role: mssf_com::FABRIC_REPLICA_ROLE,
+        _epoch: *const mssf_com::FABRIC_EPOCH,
+        _role: mssf_com::FABRIC_REPLICA_ROLE,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginChangeRole");
@@ -144,7 +144,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
 
     fn EndChangeRole(
         &self,
-        context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::EndChangeRole");
         Ok(())
@@ -152,7 +152,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
 
     fn BeginUpdateEpoch(
         &self,
-        epoch: *const mssf_com::FABRIC_EPOCH,
+        _epoch: *const mssf_com::FABRIC_EPOCH,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginUpdateEpoch");
@@ -163,7 +163,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
     }
     fn EndUpdateEpoch(
         &self,
-        context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::EndUpdateEpoch");
         Ok(())
@@ -180,7 +180,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
     }
     fn EndClose(
         &self,
-        context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::EndClose");
         Ok(())
@@ -214,7 +214,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
     }
     fn EndOnDataLoss(
         &self,
-        context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<u8> {
         info!("AppFabricReplicator::EndOnDataLoss");
         let v = 0;
@@ -222,15 +222,15 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
     }
     fn UpdateCatchUpReplicaSetConfiguration(
         &self,
-        currentconfiguration: *const mssf_com::FABRIC_REPLICA_SET_CONFIGURATION,
-        previousconfiguration: *const mssf_com::FABRIC_REPLICA_SET_CONFIGURATION,
+        _currentconfiguration: *const mssf_com::FABRIC_REPLICA_SET_CONFIGURATION,
+        _previousconfiguration: *const mssf_com::FABRIC_REPLICA_SET_CONFIGURATION,
     ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::UpdateCatchUpReplicaSetConfiguration");
         Ok(())
     }
     fn BeginWaitForCatchUpQuorum(
         &self,
-        catchupmode: mssf_com::FABRIC_REPLICA_SET_QUORUM_MODE,
+        _catchupmode: mssf_com::FABRIC_REPLICA_SET_QUORUM_MODE,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginWaitForCatchUpQuorum");
@@ -241,21 +241,21 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
     }
     fn EndWaitForCatchUpQuorum(
         &self,
-        context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::EndWaitForCatchUpQuorum");
         Ok(())
     }
     fn UpdateCurrentReplicaSetConfiguration(
         &self,
-        currentconfiguration: *const mssf_com::FABRIC_REPLICA_SET_CONFIGURATION,
+        _currentconfiguration: *const mssf_com::FABRIC_REPLICA_SET_CONFIGURATION,
     ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::UpdateCurrentReplicaSetConfiguration");
         Ok(())
     }
     fn BeginBuildReplica(
         &self,
-        replica: *const mssf_com::FABRIC_REPLICA_INFORMATION,
+        _replica: *const mssf_com::FABRIC_REPLICA_INFORMATION,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginBuildReplica");
@@ -266,7 +266,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
     }
     fn EndBuildReplica(
         &self,
-        context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("AppFabricReplicator::EndBuildReplica");
         Ok(())
@@ -287,8 +287,8 @@ pub struct AppInstance {
     hostname_: HSTRING,
     tx_: Cell<Option<Sender<()>>>, // hack to use this mutably
     th_: Cell<Option<JoinHandle<Result<(), Error>>>>,
-    role_: Cell<mssf_com::FABRIC_REPLICA_ROLE>,
-    replicator_: Cell<Option<IFabricReplicator>>,
+    // role_: Cell<mssf_com::FABRIC_REPLICA_ROLE>,
+    // replicator_: Cell<Option<IFabricReplicator>>,
 }
 
 impl AppInstance {
@@ -298,8 +298,8 @@ impl AppInstance {
             hostname_: hostname,
             tx_: Cell::from(None),
             th_: Cell::from(None),
-            role_: Cell::from(mssf_com::FABRIC_REPLICA_ROLE_UNKNOWN),
-            replicator_: Cell::from(None),
+            // role_: Cell::from(mssf_com::FABRIC_REPLICA_ROLE_UNKNOWN),
+            // replicator_: Cell::from(None),
         }
     }
 }
@@ -422,7 +422,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
 
     fn BeginChangeRole(
         &self,
-        newrole: mssf_com::FABRIC_REPLICA_ROLE,
+        _newrole: mssf_com::FABRIC_REPLICA_ROLE,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<IFabricAsyncOperationContext> {
         info!("AppInstance::BeginChangeRole");
@@ -434,7 +434,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
 
     fn EndChangeRole(
         &self,
-        context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<IFabricStringResult> {
         info!("AppInstance::EndChangeRole");
         let addr = echo::get_addr(self.port_, self.hostname_.clone());

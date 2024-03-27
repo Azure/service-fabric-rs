@@ -22,6 +22,23 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
+    
+    - name: Run cargo check
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+
+    - name: Run cargo fmt
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all -- --check
+    
+    - name: Run cargo clippy
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: -- -D warnings
 
     - name: run cmake
       run: > 
@@ -48,8 +65,11 @@ jobs:
     - name: run echo example app
       run: Powershell.exe -File .\tests\echo_script_test.ps1
 
-    - name: run all unittests
-      run: cargo test --all
+    - name: Run cargo test
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all -- --nocapture
 
   build-linux:
     runs-on: ${{ matrix.os }}
@@ -82,7 +102,24 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
+
+    - name: Run cargo check
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+
+    - name: Run cargo fmt
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all -- --check
     
+    - name: Run cargo clippy
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: -- -D warnings
+
     - name: run cmake
       run: > 
         cmake . -DCMAKE_BUILD_TYPE=${{ matrix.BUILD_TYPE }} -B build
@@ -131,5 +168,8 @@ jobs:
     #     sleep 120 # wait for app to be up
     #     sfctl service resolve --service-id EchoApp/EchoAppService
 
-    - name: run all unittests
-      run: cargo test --all
+    - name: Run cargo test
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all -- --nocapture

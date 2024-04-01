@@ -596,7 +596,7 @@ pub mod code {
             stream
         }
 
-        fn gen_return_type(&self, params: &Vec<ParamEntry>) -> TokenStream {
+        fn gen_return_type(&self, params: &[ParamEntry]) -> TokenStream {
             if params.is_empty() {
                 quote! {
                     crate::sync::FabricReceiver<::windows_core::Result<()>>

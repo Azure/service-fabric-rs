@@ -67,13 +67,14 @@ impl<F: Callback> AwaitableCallback2<F> {
 }
 
 // Token that wraps oneshot receiver.
-// The future recieve does not have error.
+// The future recieve does not have error. This is designed for the use
+// case where SF guarantees that sender will be called.
 pub struct FabricReceiver<T> {
     rx: tokio::sync::oneshot::Receiver<T>,
 }
 
 impl<T> FabricReceiver<T> {
-    pub fn new(rx: tokio::sync::oneshot::Receiver<T>) -> FabricReceiver<T> {
+    fn new(rx: tokio::sync::oneshot::Receiver<T>) -> FabricReceiver<T> {
         FabricReceiver { rx }
     }
 
@@ -93,11 +94,38 @@ impl<T> Future for FabricReceiver<T> {
             Poll::Ready(x) => {
                 // error only happens when sender is dropped without sending.
                 // we ignore this error since in sf-rs use this will never happen.
-                Poll::Ready(x.unwrap())
+                Poll::Ready(x.expect("sf sender closed without sending a value."))
             }
             Poll::Pending => Poll::Pending,
         }
     }
+}
+
+pub struct FabricSender<T> {
+    tx: tokio::sync::oneshot::Sender<T>,
+}
+
+impl<T> FabricSender<T> {
+    fn new(tx: tokio::sync::oneshot::Sender<T>) -> FabricSender<T> {
+        FabricSender { tx }
+    }
+
+    pub fn send(self, data: T) {
+        let e = self.tx.send(data);
+        if e.is_err() {
+            // In SF use case receiver should not be dropped by user.
+            // If it acctually dropped by user, it is ok to ignore because user
+            // does not want to want the value any more. But too bad SF has done
+            // the work to get the value.
+            debug_assert!(false, "receiver dropped.");
+        }
+    }
+}
+
+// Creates a fabric oneshot channel.
+pub fn oneshot_channel<T>() -> (FabricSender<T>, FabricReceiver<T>) {
+    let (tx, rx) = tokio::sync::oneshot::channel::<T>();
+    (FabricSender::new(tx), FabricReceiver::new(rx))
 }
 
 // Send Box. Wrap a type and implement send.
@@ -133,11 +161,11 @@ mod tests {
         FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM,
     };
 
-    use tokio::sync::oneshot::{self, Sender};
+    use tokio::sync::oneshot::Sender;
     use windows::core::implement;
     use windows_core::{Interface, HSTRING};
 
-    use super::{CreateLocalClient, FabricReceiver, SBox};
+    use super::{oneshot_channel, CreateLocalClient, FabricReceiver, SBox};
 
     use super::AwaitableCallback2;
 
@@ -352,23 +380,19 @@ mod tests {
             &self,
             querydescription: &FABRIC_NODE_QUERY_DESCRIPTION,
         ) -> FabricReceiver<::windows::core::Result<IFabricGetNodeListResult>> {
-            let (tx, rx) = oneshot::channel();
+            let (tx, rx) = oneshot_channel();
 
             let callback = AwaitableCallback2::i_new(move |ctx| {
                 let res = unsafe { self.com.EndGetNodeList(ctx) };
-                if tx.send(res).is_err() {
-                    // This can happen if user on the receiver end use cancel or select.
-                    // Ideally user should always wait for result.
-                    debug_assert!(false, "Receiver is dropped.");
-                }
+                tx.send(res);
             });
             let ctx = unsafe { self.com.BeginGetNodeList(querydescription, 1000, &callback) };
             if ctx.is_err() {
-                let (tx2, rx2) = oneshot::channel();
-                tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2"); // This should never fail since rx2 is available
-                FabricReceiver::new(rx2)
+                let (tx2, rx2) = oneshot_channel();
+                tx2.send(Err(ctx.err().unwrap()));
+                rx2
             } else {
-                FabricReceiver::new(rx)
+                rx
             }
         }
 
@@ -493,5 +517,15 @@ mod tests {
     #[test]
     fn local_client_create() {
         let _mgmt = CreateLocalClient::<IFabricClusterManagementClient3>();
+    }
+
+    #[tokio::test]
+    async fn test_oneshot() {
+        let (tx, rx) = super::oneshot_channel::<String>();
+        tokio::spawn(async move {
+            tx.send("hello".to_string());
+        });
+        let val = rx.await;
+        assert_eq!("hello", val);
     }
 }

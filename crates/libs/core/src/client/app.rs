@@ -13,23 +13,21 @@ impl IFabricApplicationManagementClient10Wrap {
         description: &::mssf_com::Microsoft::ServiceFabric::FABRIC_APPLICATION_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndCreateApplication(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginCreateApplication(description, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn DeleteApplication(
@@ -37,23 +35,21 @@ impl IFabricApplicationManagementClient10Wrap {
         applicationName: &u16,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndDeleteApplication(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginDeleteApplication(applicationName, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn DeleteApplication2(
@@ -61,23 +57,21 @@ impl IFabricApplicationManagementClient10Wrap {
         deleteDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_DELETE_APPLICATION_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndDeleteApplication2(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginDeleteApplication2(deleteDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn DeployServicePackageToNode(
@@ -89,12 +83,10 @@ impl IFabricApplicationManagementClient10Wrap {
         nodeName: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndDeployServicePackageToNode(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginDeployServicePackageToNode(
@@ -108,11 +100,11 @@ impl IFabricApplicationManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn GetApplicationManifest(
@@ -125,12 +117,10 @@ impl IFabricApplicationManagementClient10Wrap {
             ::mssf_com::Microsoft::ServiceFabric::FabricCommon::IFabricStringResult,
         >,
     > {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetApplicationManifest(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginGetApplicationManifest(
@@ -141,19 +131,17 @@ impl IFabricApplicationManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }    pub fn GetApplicationUpgradeProgress (& self , applicationName : & u16 , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationUpgradeProgressResult2 >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetApplicationUpgradeProgress(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginGetApplicationUpgradeProgress(
@@ -163,11 +151,11 @@ impl IFabricApplicationManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn MoveNextApplicationUpgradeDomain(
@@ -175,23 +163,21 @@ impl IFabricApplicationManagementClient10Wrap {
         progress : & :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationUpgradeProgressResult2,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndMoveNextApplicationUpgradeDomain(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginMoveNextApplicationUpgradeDomain(progress, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn MoveNextApplicationUpgradeDomain2(
@@ -200,12 +186,10 @@ impl IFabricApplicationManagementClient10Wrap {
         nextUpgradeDomain: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndMoveNextApplicationUpgradeDomain2(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginMoveNextApplicationUpgradeDomain2(
@@ -216,11 +200,11 @@ impl IFabricApplicationManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn ProvisionApplicationType(
@@ -228,12 +212,10 @@ impl IFabricApplicationManagementClient10Wrap {
         applicationBuildPath: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndProvisionApplicationType(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginProvisionApplicationType(
@@ -243,11 +225,11 @@ impl IFabricApplicationManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn ProvisionApplicationType2(
@@ -255,23 +237,21 @@ impl IFabricApplicationManagementClient10Wrap {
         description : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_PROVISION_APPLICATION_TYPE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndProvisionApplicationType2(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginProvisionApplicationType2(description, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn ProvisionApplicationType3(
@@ -279,23 +259,21 @@ impl IFabricApplicationManagementClient10Wrap {
         description : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_PROVISION_APPLICATION_TYPE_DESCRIPTION_BASE,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndProvisionApplicationType3(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginProvisionApplicationType3(description, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RestartDeployedCodePackage(
@@ -303,12 +281,10 @@ impl IFabricApplicationManagementClient10Wrap {
         restartCodePackageDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_RESTART_DEPLOYED_CODE_PACKAGE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRestartDeployedCodePackage(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginRestartDeployedCodePackage(
@@ -318,11 +294,11 @@ impl IFabricApplicationManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RollbackApplicationUpgrade(
@@ -330,12 +306,10 @@ impl IFabricApplicationManagementClient10Wrap {
         applicationName: &u16,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRollbackApplicationUpgrade(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginRollbackApplicationUpgrade(
@@ -345,11 +319,11 @@ impl IFabricApplicationManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UnprovisionApplicationType(
@@ -358,12 +332,10 @@ impl IFabricApplicationManagementClient10Wrap {
         applicationTypeVersion: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUnprovisionApplicationType(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginUnprovisionApplicationType(
@@ -374,11 +346,11 @@ impl IFabricApplicationManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UnprovisionApplicationType2(
@@ -386,23 +358,21 @@ impl IFabricApplicationManagementClient10Wrap {
         description : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_UNPROVISION_APPLICATION_TYPE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUnprovisionApplicationType2(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginUnprovisionApplicationType2(description, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UpdateApplication(
@@ -410,12 +380,10 @@ impl IFabricApplicationManagementClient10Wrap {
         applicationUpdateDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_UPDATE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUpdateApplication(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginUpdateApplication(
@@ -425,11 +393,11 @@ impl IFabricApplicationManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UpdateApplicationUpgrade(
@@ -437,23 +405,21 @@ impl IFabricApplicationManagementClient10Wrap {
         description : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_UPGRADE_UPDATE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUpdateApplicationUpgrade(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginUpdateApplicationUpgrade(description, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UpgradeApplication(
@@ -461,23 +427,21 @@ impl IFabricApplicationManagementClient10Wrap {
         upgradeDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_UPGRADE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUpgradeApplication(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginUpgradeApplication(upgradeDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
 }

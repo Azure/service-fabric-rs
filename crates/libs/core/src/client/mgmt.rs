@@ -13,23 +13,21 @@ impl IFabricClusterManagementClient10Wrap {
         nodeName: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndActivateNode(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginActivateNode(nodeName, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn DeactivateNode(
@@ -38,23 +36,21 @@ impl IFabricClusterManagementClient10Wrap {
         intent: ::mssf_com::Microsoft::ServiceFabric::FABRIC_NODE_DEACTIVATION_INTENT,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndDeactivateNode(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginDeactivateNode(nodeName, intent, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn GetClusterConfiguration(
@@ -65,23 +61,21 @@ impl IFabricClusterManagementClient10Wrap {
             ::mssf_com::Microsoft::ServiceFabric::FabricCommon::IFabricStringResult,
         >,
     > {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetClusterConfiguration(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetClusterConfiguration(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn GetClusterConfiguration2(
@@ -93,42 +87,38 @@ impl IFabricClusterManagementClient10Wrap {
             ::mssf_com::Microsoft::ServiceFabric::FabricCommon::IFabricStringResult,
         >,
     > {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetClusterConfiguration2(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetClusterConfiguration2(apiVersion, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }    pub fn GetClusterConfigurationUpgradeStatus (& self , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricOrchestrationUpgradeStatusResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetClusterConfigurationUpgradeStatus(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetClusterConfigurationUpgradeStatus(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn GetClusterManifest(
@@ -139,23 +129,21 @@ impl IFabricClusterManagementClient10Wrap {
             ::mssf_com::Microsoft::ServiceFabric::FabricCommon::IFabricStringResult,
         >,
     > {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetClusterManifest(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetClusterManifest(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn GetClusterManifest2(
@@ -167,42 +155,38 @@ impl IFabricClusterManagementClient10Wrap {
             ::mssf_com::Microsoft::ServiceFabric::FabricCommon::IFabricStringResult,
         >,
     > {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetClusterManifest2(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetClusterManifest2(queryDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }    pub fn GetFabricUpgradeProgress (& self , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricUpgradeProgressResult2 >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetFabricUpgradeProgress(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetFabricUpgradeProgress(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn GetUpgradeOrchestrationServiceState(
@@ -213,46 +197,42 @@ impl IFabricClusterManagementClient10Wrap {
             ::mssf_com::Microsoft::ServiceFabric::FabricCommon::IFabricStringResult,
         >,
     > {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetUpgradeOrchestrationServiceState(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetUpgradeOrchestrationServiceState(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn GetUpgradesPendingApproval(
         &self,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetUpgradesPendingApproval(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetUpgradesPendingApproval(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn MoveNextFabricUpgradeDomain(
@@ -260,23 +240,21 @@ impl IFabricClusterManagementClient10Wrap {
         progress : & :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricUpgradeProgressResult2,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndMoveNextFabricUpgradeDomain(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginMoveNextFabricUpgradeDomain(progress, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn MoveNextFabricUpgradeDomain2(
@@ -284,12 +262,10 @@ impl IFabricClusterManagementClient10Wrap {
         nextUpgradeDomain: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndMoveNextFabricUpgradeDomain2(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginMoveNextFabricUpgradeDomain2(
@@ -299,11 +275,11 @@ impl IFabricClusterManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn NodeStateRemoved(
@@ -311,23 +287,21 @@ impl IFabricClusterManagementClient10Wrap {
         nodeName: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndNodeStateRemoved(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginNodeStateRemoved(nodeName, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn ProvisionFabric(
@@ -336,12 +310,10 @@ impl IFabricClusterManagementClient10Wrap {
         clusterManifestFilepath: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndProvisionFabric(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginProvisionFabric(
@@ -352,11 +324,11 @@ impl IFabricClusterManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RecoverPartition(
@@ -364,46 +336,42 @@ impl IFabricClusterManagementClient10Wrap {
         partitionId: ::windows_core::GUID,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRecoverPartition(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginRecoverPartition(partitionId, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RecoverPartitions(
         &self,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRecoverPartitions(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginRecoverPartitions(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RecoverServicePartitions(
@@ -411,46 +379,42 @@ impl IFabricClusterManagementClient10Wrap {
         serviceName: &u16,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRecoverServicePartitions(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginRecoverServicePartitions(serviceName, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RecoverSystemPartitions(
         &self,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRecoverSystemPartitions(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginRecoverSystemPartitions(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn ResetPartitionLoad(
@@ -458,23 +422,21 @@ impl IFabricClusterManagementClient10Wrap {
         partitionId: ::windows_core::GUID,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndResetPartitionLoad(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginResetPartitionLoad(partitionId, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RestartNode(
@@ -482,88 +444,80 @@ impl IFabricClusterManagementClient10Wrap {
         restartNodeDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_RESTART_NODE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRestartNode(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginRestartNode(restartNodeDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RollbackFabricUpgrade(
         &self,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRollbackFabricUpgrade(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginRollbackFabricUpgrade(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }    pub fn SetUpgradeOrchestrationServiceState (& self , state : :: windows_core :: PCWSTR , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricUpgradeOrchestrationServiceStateResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndSetUpgradeOrchestrationServiceState(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginSetUpgradeOrchestrationServiceState(state, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn StartApprovedUpgrades(
         &self,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndStartApprovedUpgrades(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginStartApprovedUpgrades(timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn StartNode(
@@ -571,23 +525,21 @@ impl IFabricClusterManagementClient10Wrap {
         startNodeDescription: &::mssf_com::Microsoft::ServiceFabric::FABRIC_START_NODE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndStartNode(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginStartNode(startNodeDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn StopNode(
@@ -595,23 +547,21 @@ impl IFabricClusterManagementClient10Wrap {
         stopNodeDescription: &::mssf_com::Microsoft::ServiceFabric::FABRIC_STOP_NODE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndStopNode(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginStopNode(stopNodeDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn ToggleVerboseServicePlacementHealthReporting(
@@ -619,15 +569,13 @@ impl IFabricClusterManagementClient10Wrap {
         enabled: windows::Win32::Foundation::BOOLEAN,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe {
                 self.com
                     .EndToggleVerboseServicePlacementHealthReporting(ctx)
             };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginToggleVerboseServicePlacementHealthReporting(
@@ -637,11 +585,11 @@ impl IFabricClusterManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UnprovisionFabric(
@@ -650,12 +598,10 @@ impl IFabricClusterManagementClient10Wrap {
         configVersion: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUnprovisionFabric(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginUnprovisionFabric(
@@ -666,11 +612,11 @@ impl IFabricClusterManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UpdateFabricUpgrade(
@@ -678,23 +624,21 @@ impl IFabricClusterManagementClient10Wrap {
         description: &::mssf_com::Microsoft::ServiceFabric::FABRIC_UPGRADE_UPDATE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUpdateFabricUpgrade(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginUpdateFabricUpgrade(description, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UpgradeConfiguration(
@@ -702,12 +646,10 @@ impl IFabricClusterManagementClient10Wrap {
         startUpgradeDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_START_UPGRADE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUpgradeConfiguration(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginUpgradeConfiguration(
@@ -717,11 +659,11 @@ impl IFabricClusterManagementClient10Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UpgradeFabric(
@@ -729,23 +671,21 @@ impl IFabricClusterManagementClient10Wrap {
         upgradeDescription: &::mssf_com::Microsoft::ServiceFabric::FABRIC_UPGRADE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUpgradeFabric(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginUpgradeFabric(upgradeDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
 }

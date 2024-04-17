@@ -13,23 +13,21 @@ impl IFabricServiceManagementClient6Wrap {
         description: &::mssf_com::Microsoft::ServiceFabric::FABRIC_SERVICE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndCreateService(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginCreateService(description, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn CreateServiceFromTemplate2(
@@ -37,12 +35,10 @@ impl IFabricServiceManagementClient6Wrap {
         serviceFromTemplateDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_FROM_TEMPLATE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndCreateServiceFromTemplate2(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginCreateServiceFromTemplate2(
@@ -52,11 +48,11 @@ impl IFabricServiceManagementClient6Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn DeleteService(
@@ -64,23 +60,21 @@ impl IFabricServiceManagementClient6Wrap {
         name: &u16,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndDeleteService(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginDeleteService(name, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn DeleteService2(
@@ -88,42 +82,38 @@ impl IFabricServiceManagementClient6Wrap {
         deleteDescription: &::mssf_com::Microsoft::ServiceFabric::FABRIC_DELETE_SERVICE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndDeleteService2(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginDeleteService2(deleteDescription, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }    pub fn GetServiceDescription (& self , name : & u16 , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceDescriptionResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetServiceDescription(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetServiceDescription(name, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn GetServiceManifest(
@@ -137,12 +127,10 @@ impl IFabricServiceManagementClient6Wrap {
             ::mssf_com::Microsoft::ServiceFabric::FabricCommon::IFabricStringResult,
         >,
     > {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetServiceManifest(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginGetServiceManifest(
@@ -154,11 +142,11 @@ impl IFabricServiceManagementClient6Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RegisterServiceNotificationFilter(
@@ -166,12 +154,10 @@ impl IFabricServiceManagementClient6Wrap {
         description : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<i64>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRegisterServiceNotificationFilter(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginRegisterServiceNotificationFilter(
@@ -181,11 +167,11 @@ impl IFabricServiceManagementClient6Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RemoveReplica(
@@ -193,31 +179,27 @@ impl IFabricServiceManagementClient6Wrap {
         description: &::mssf_com::Microsoft::ServiceFabric::FABRIC_REMOVE_REPLICA_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRemoveReplica(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginRemoveReplica(description, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }    pub fn ResolveServicePartition (& self , name : & u16 , partitionKeyType : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_PARTITION_KEY_TYPE , partitionKey : & :: core :: ffi :: c_void , previousResult : & :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricResolvedServicePartitionResult , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricResolvedServicePartitionResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndResolveServicePartition(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginResolveServicePartition(
@@ -230,11 +212,11 @@ impl IFabricServiceManagementClient6Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn RestartReplica(
@@ -242,23 +224,21 @@ impl IFabricServiceManagementClient6Wrap {
         description: &::mssf_com::Microsoft::ServiceFabric::FABRIC_RESTART_REPLICA_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndRestartReplica(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginRestartReplica(description, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UnregisterServiceNotificationFilter(
@@ -266,12 +246,10 @@ impl IFabricServiceManagementClient6Wrap {
         filterId: i64,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUnregisterServiceNotificationFilter(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginUnregisterServiceNotificationFilter(
@@ -281,11 +259,11 @@ impl IFabricServiceManagementClient6Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn UpdateService(
@@ -294,12 +272,10 @@ impl IFabricServiceManagementClient6Wrap {
         serviceUpdateDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_UPDATE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndUpdateService(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginUpdateService(
@@ -310,11 +286,11 @@ impl IFabricServiceManagementClient6Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
 }

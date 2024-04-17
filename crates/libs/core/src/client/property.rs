@@ -13,23 +13,21 @@ impl IFabricPropertyManagementClient2Wrap {
         name: &u16,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndCreateName(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginCreateName(name, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn DeleteName(
@@ -37,23 +35,21 @@ impl IFabricPropertyManagementClient2Wrap {
         name: &u16,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndDeleteName(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginDeleteName(name, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn DeleteProperty(
@@ -62,31 +58,27 @@ impl IFabricPropertyManagementClient2Wrap {
         propertyName: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndDeleteProperty(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginDeleteProperty(name, propertyName, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }    pub fn EnumerateProperties (& self , name : & u16 , includeValues : windows :: Win32 :: Foundation :: BOOLEAN , previousResult : & :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricPropertyEnumerationResult , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricPropertyEnumerationResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndEnumerateProperties(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginEnumerateProperties(
@@ -98,19 +90,17 @@ impl IFabricPropertyManagementClient2Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }    pub fn EnumerateSubNames (& self , name : & u16 , previousResult : & :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricNameEnumerationResult , recursive : windows :: Win32 :: Foundation :: BOOLEAN , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricNameEnumerationResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndEnumerateSubNames(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginEnumerateSubNames(
@@ -122,49 +112,45 @@ impl IFabricPropertyManagementClient2Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }    pub fn GetProperty (& self , name : & u16 , propertyName : :: windows_core :: PCWSTR , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricPropertyValueResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetProperty(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetProperty(name, propertyName, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }    pub fn GetPropertyMetadata (& self , name : & u16 , propertyName : :: windows_core :: PCWSTR , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricPropertyMetadataResult >>{
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetPropertyMetadata(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginGetPropertyMetadata(name, propertyName, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn NameExists(
@@ -172,23 +158,21 @@ impl IFabricPropertyManagementClient2Wrap {
         name: &u16,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<u8>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndNameExists(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginNameExists(name, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn PutCustomPropertyOperation(
@@ -197,12 +181,10 @@ impl IFabricPropertyManagementClient2Wrap {
         propertyOperation : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_PUT_CUSTOM_PROPERTY_OPERATION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndPutCustomPropertyOperation(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginPutCustomPropertyOperation(
@@ -213,11 +195,11 @@ impl IFabricPropertyManagementClient2Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn PutPropertyDouble(
@@ -227,12 +209,10 @@ impl IFabricPropertyManagementClient2Wrap {
         data: f64,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndPutPropertyDouble(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginPutPropertyDouble(
@@ -244,11 +224,11 @@ impl IFabricPropertyManagementClient2Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn PutPropertyGuid(
@@ -258,23 +238,21 @@ impl IFabricPropertyManagementClient2Wrap {
         data: &::windows_core::GUID,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndPutPropertyGuid(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginPutPropertyGuid(name, propertyName, data, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn PutPropertyInt64(
@@ -284,23 +262,21 @@ impl IFabricPropertyManagementClient2Wrap {
         data: i64,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndPutPropertyInt64(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com
                 .BeginPutPropertyInt64(name, propertyName, data, timeoutMilliseconds, &callback)
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
     pub fn PutPropertyWString(
@@ -310,12 +286,10 @@ impl IFabricPropertyManagementClient2Wrap {
         data: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndPutPropertyWString(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
+            tx.send(res);
         });
         let ctx = unsafe {
             self.com.BeginPutPropertyWString(
@@ -327,11 +301,11 @@ impl IFabricPropertyManagementClient2Wrap {
             )
         };
         if ctx.is_err() {
-            let (tx2, rx2) = tokio::sync::oneshot::channel();
-            tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2");
-            crate::sync::FabricReceiver::new(rx2)
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
         } else {
-            crate::sync::FabricReceiver::new(rx)
+            rx
         }
     }
 }

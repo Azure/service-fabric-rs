@@ -526,24 +526,19 @@ pub mod code {
 
             quote! {
                 pub fn #f_name(&self #begin_params) -> #ret_t{
-                    let (tx, rx) = tokio::sync::oneshot::channel();
+                    let (tx, rx) = crate::sync::oneshot_channel();
 
                     let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
                         let res = unsafe { self.com.#end_f_ident(ctx) };
-                        if tx.send(res).is_err()
-                        {
-                            // This can happen if user on the receiver end use cancel or select.
-                            // Ideally user should always wait for result.
-                            debug_assert!(false, "Receiver is dropped.");
-                        }
+                        tx.send(res);
                     });
                     let ctx = unsafe { self.com.#begin_f_ident(#begin_params_call_args &callback) };
                     if ctx.is_err() {
-                        let (tx2, rx2) = tokio::sync::oneshot::channel();
-                        tx2.send(Err(ctx.err().unwrap())).expect("fail to send tx2"); // This should never fail since rx2 is available
-                        crate::sync::FabricReceiver::new(rx2)
+                        let (tx2, rx2) = crate::sync::oneshot_channel();
+                        tx2.send(Err(ctx.err().unwrap()));
+                        rx2
                     } else {
-                        crate::sync::FabricReceiver::new(rx)
+                        rx
                     }
                 }
             }

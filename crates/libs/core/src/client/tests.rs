@@ -1,8 +1,15 @@
 // contains tests for generated fabric client
 
-use mssf_com::FABRIC_NODE_QUERY_DESCRIPTION;
+use std::time::Duration;
 
-use super::query::IFabricQueryClient10Wrap;
+use mssf_com::{FABRIC_E_SERVICE_DOES_NOT_EXIST, FABRIC_NODE_QUERY_DESCRIPTION};
+use windows_core::HSTRING;
+
+use crate::client::{
+    query_client::NodeQueryDescription, svc_mgmt_client::PartitionKeyType, FabricClient,
+};
+
+use super::gen::query::IFabricQueryClient10Wrap;
 
 #[test]
 fn test_cluster_sync() {
@@ -21,23 +28,50 @@ fn test_cluster_sync() {
 }
 
 #[tokio::test]
-async fn test_get_node() {
-    let c = IFabricQueryClient10Wrap::new();
+async fn test_fabric_client() {
+    let c = FabricClient::new();
+    let qc = c.get_query_manager();
+    let timeout = Duration::from_secs(1);
+    {
+        let list = qc
+            .get_node_list(NodeQueryDescription::default(), timeout)
+            .await
+            .unwrap();
 
-    let handle = tokio::spawn(async move {
-        let future;
-        {
-            let queryDescription = FABRIC_NODE_QUERY_DESCRIPTION {
-                NodeNameFilter: windows_core::PCWSTR(std::ptr::null()),
-                Reserved: std::ptr::null_mut(),
-            };
-            future = c.GetNodeList(&queryDescription, 1000);
+        let v = list.iter().collect::<Vec<_>>();
+        assert_ne!(v.len(), 0);
+        for n in v {
+            println!("Node: {:?}", n)
         }
-        let nodes = future.await.unwrap();
-        let list = unsafe { nodes.get_NodeList() };
-        let node_count = unsafe { (*list).Count };
-        assert_ne!(node_count, 0);
-    });
+    }
 
-    handle.await.unwrap();
+    let smgr = c.get_service_manager();
+    // test resolve echo app
+    {
+        let res = smgr
+            .resolve_service_partition(
+                &HSTRING::from("fabric:/EchoApp/EchoAppService"),
+                &PartitionKeyType::None,
+                None,
+                timeout,
+            )
+            .await;
+        match res {
+            Ok(ptt) => {
+                let info = ptt.get_info();
+                println!("Info: {:?}", info);
+                let list = ptt.get_endpoint_list();
+                let v = list.iter().collect::<Vec<_>>();
+                println!("Endpoints: {:?}", v);
+            }
+            Err(e) => {
+                // If the app is not provisioned we validate the error.
+                assert_eq!(
+                    e.code(),
+                    windows_core::HRESULT(FABRIC_E_SERVICE_DOES_NOT_EXIST.0)
+                );
+                println!("EchoApp not provisioned. Skip validate.")
+            }
+        }
+    }
 }

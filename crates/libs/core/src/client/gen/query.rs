@@ -9,6 +9,11 @@ impl Default for IFabricQueryClient10Wrap {
 impl IFabricQueryClient10Wrap {
     pub fn new() -> IFabricQueryClient10Wrap {
         IFabricQueryClient10Wrap { com : crate :: sync :: CreateLocalClient :: < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricQueryClient10 > () , }
+    }
+    pub fn from_com(
+        com: ::mssf_com::Microsoft::ServiceFabric::FabricCommon::FabricClient::IFabricQueryClient10,
+    ) -> IFabricQueryClient10Wrap {
+        IFabricQueryClient10Wrap { com }
     }    pub fn GetApplicationList (& self , queryDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_QUERY_DESCRIPTION , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricGetApplicationListResult >>{
         let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {

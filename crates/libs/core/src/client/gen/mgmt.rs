@@ -8,6 +8,11 @@ impl IFabricClusterManagementClient10Wrap {
     pub fn new() -> IFabricClusterManagementClient10Wrap {
         IFabricClusterManagementClient10Wrap { com : crate :: sync :: CreateLocalClient :: < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricClusterManagementClient10 > () , }
     }
+    pub fn from_com(
+        com : :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricClusterManagementClient10,
+    ) -> IFabricClusterManagementClient10Wrap {
+        IFabricClusterManagementClient10Wrap { com }
+    }
     pub fn ActivateNode(
         &self,
         nodeName: ::windows_core::PCWSTR,

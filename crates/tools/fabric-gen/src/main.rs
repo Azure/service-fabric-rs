@@ -72,7 +72,7 @@ fn gen_class(ns: &'static str, name: &'static str, file_path: &Path, exclude: &V
 }
 
 fn main() {
-    let gen_folder = Path::new("crates/libs/core/src/client");
+    let gen_folder = Path::new("crates/libs/core/src/client/gen");
 
     // property client
     gen_class(

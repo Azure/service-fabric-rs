@@ -8,6 +8,11 @@ impl IFabricPropertyManagementClient2Wrap {
     pub fn new() -> IFabricPropertyManagementClient2Wrap {
         IFabricPropertyManagementClient2Wrap { com : crate :: sync :: CreateLocalClient :: < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricPropertyManagementClient2 > () , }
     }
+    pub fn from_com(
+        com : :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricPropertyManagementClient2,
+    ) -> IFabricPropertyManagementClient2Wrap {
+        IFabricPropertyManagementClient2Wrap { com }
+    }
     pub fn CreateName(
         &self,
         name: &u16,

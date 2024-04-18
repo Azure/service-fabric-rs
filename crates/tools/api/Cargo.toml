@@ -5,8 +5,5 @@ edition = "2018"
 publish = false
 
 [dependencies]
-serde = "1.0.136"
 windows-bindgen = "0.54"
 windows-metadata = "0.54"
-#windows-targets = "0.51"
-#windows-core = "0.51"

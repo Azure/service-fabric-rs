@@ -207,8 +207,8 @@ dependencies = [
  "mssf-com",
  "mssf-core",
  "tokio",
- "windows 0.54.0",
- "windows-core 0.54.0",
+ "windows",
+ "windows-core",
 ]
 
 [[package]]
@@ -270,17 +270,17 @@ dependencies = [
 
 [[package]]
 name = "mssf-com"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "mssf-metadata",
  "mssf-pal",
- "windows 0.54.0",
- "windows-core 0.54.0",
+ "windows",
+ "windows-core",
 ]
 
 [[package]]
 name = "mssf-core"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "ctrlc",
  "env_logger",
@@ -289,8 +289,8 @@ dependencies = [
  "paste",
  "tokio",
  "trait-variant",
- "windows 0.54.0",
- "windows-core 0.54.0",
+ "windows",
+ "windows-core",
 ]
 
 [[package]]
@@ -301,10 +301,10 @@ checksum = "39323a0ee935ad85894e31a9f42f2f41f5db403b7d2312d85e77b5a99eb8552d"
 
 [[package]]
 name = "mssf-pal"
-version = "0.0.1"
+version = "0.0.4"
 dependencies = [
  "libc",
- "windows 0.51.1",
+ "windows",
 ]
 
 [[package]]
@@ -467,8 +467,8 @@ version = "0.0.1"
 dependencies = [
  "mssf-com",
  "mssf-core",
- "windows 0.54.0",
- "windows-core 0.54.0",
+ "windows",
+ "windows-core",
 ]
 
 [[package]]
@@ -480,8 +480,8 @@ dependencies = [
  "mssf-com",
  "mssf-core",
  "tokio",
- "windows 0.54.0",
- "windows-core 0.54.0",
+ "windows",
+ "windows-core",
 ]
 
 [[package]]
@@ -494,8 +494,8 @@ dependencies = [
  "mssf-com",
  "mssf-core",
  "tokio",
- "windows 0.54.0",
- "windows-core 0.54.0",
+ "windows",
+ "windows-core",
 ]
 
 [[package]]
@@ -508,8 +508,8 @@ dependencies = [
  "mssf-com",
  "mssf-core",
  "tokio",
- "windows 0.54.0",
- "windows-core 0.54.0",
+ "windows",
+ "windows-core",
 ]
 
 [[package]]
@@ -523,8 +523,8 @@ dependencies = [
  "mssf-core",
  "tokio",
  "trait-variant",
- "windows 0.54.0",
- "windows-core 0.54.0",
+ "windows",
+ "windows-core",
 ]
 
 [[package]]
@@ -643,7 +643,6 @@ dependencies = [
 name = "tools_api"
 version = "0.0.0"
 dependencies = [
- "serde",
  "windows-bindgen",
  "windows-metadata",
 ]
@@ -722,21 +721,11 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "windows"
-version = "0.51.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca229916c5ee38c2f2bc1e9d8f04df975b4bd93f9955dc69fabb5d91270045c9"
-dependencies = [
- "windows-core 0.51.1",
- "windows-targets 0.48.5",
-]
-
-[[package]]
-name = "windows"
 version = "0.54.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9252e5725dbed82865af151df558e754e4a3c2c30818359eb17465f1346a1b49"
 dependencies = [
- "windows-core 0.54.0",
+ "windows-core",
  "windows-implement",
  "windows-interface",
  "windows-targets 0.52.4",
@@ -754,15 +743,6 @@ dependencies = [
  "serde_json",
  "syn",
  "windows-metadata",
-]
-
-[[package]]
-name = "windows-core"
-version = "0.51.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1f8cf84f35d2db49a46868f947758c7a1138116f7fac3bc844f43ade1292e64"
-dependencies = [
- "windows-targets 0.48.5",
 ]
 
 [[package]]

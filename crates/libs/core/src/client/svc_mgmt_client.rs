@@ -12,19 +12,54 @@ use mssf_com::{
     FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
     FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS,
 };
-use windows_core::{Interface, HSTRING, PCWSTR};
+use windows_core::{HSTRING, PCWSTR};
 
 use super::gen::svc::IFabricServiceManagementClient6Wrap;
 
 // Service Management Client
 pub struct ServiceManagementClient {
-    gen_wrap: IFabricServiceManagementClient6Wrap,
+    com: IFabricServiceManagementClient6,
+    _gen_wrap: IFabricServiceManagementClient6Wrap,
 }
 
 impl ServiceManagementClient {
     pub fn from_com(com: IFabricServiceManagementClient6) -> Self {
         Self {
-            gen_wrap: IFabricServiceManagementClient6Wrap::from_com(com),
+            com: com.clone(),
+            _gen_wrap: IFabricServiceManagementClient6Wrap::from_com(com),
+        }
+    }
+
+    fn resolve_service_partition_internal(
+        &self,
+        name: &u16,
+        partitionKeyType: FABRIC_PARTITION_KEY_TYPE,
+        partitionKey: &::core::ffi::c_void,
+        previousResult: Option<&IFabricResolvedServicePartitionResult>, // This is different from generated code
+        timeoutMilliseconds: u32,
+    ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricResolvedServicePartitionResult>>
+    {
+        let (tx, rx) = crate::sync::oneshot_channel();
+        let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
+            let res = unsafe { self.com.EndResolveServicePartition(ctx) };
+            tx.send(res);
+        });
+        let ctx = unsafe {
+            self.com.BeginResolveServicePartition(
+                name,
+                partitionKeyType,
+                partitionKey,
+                previousResult,
+                timeoutMilliseconds,
+                &callback,
+            )
+        };
+        if ctx.is_err() {
+            let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
+        } else {
+            rx
         }
     }
 
@@ -38,27 +73,18 @@ impl ServiceManagementClient {
     ) -> windows_core::Result<ResolvedServicePartition> {
         let uri = unsafe { name.as_ptr().as_ref().unwrap() };
         // supply prev as null if not present
-        let prev_ptr = std::ptr::null_mut();
-        let prev_empty = unsafe { IFabricResolvedServicePartitionResult::from_raw(prev_ptr) };
-        let mut prev_ref = &prev_empty;
-        if prev.is_some() {
-            prev_ref = &prev.unwrap().com;
-        }
+        let prev_opt = prev.map(|x| &x.com);
 
         let part_key_raw_ptr = key_type.get_raw();
         let part_key_raw = unsafe { &*part_key_raw_ptr };
 
-        let fu = self.gen_wrap.ResolveServicePartition(
+        let fu = self.resolve_service_partition_internal(
             uri,
             key_type.into(),
             part_key_raw,
-            prev_ref,
+            prev_opt,
             timeout.as_millis().try_into().unwrap(),
         );
-        // Do not run destruct/drop. TODO: find a better way to construct null prev result.
-        // prev_empty is constructed with a null ptr inside, and drop will try do Release()
-        // which dereferences the null ptr.
-        std::mem::forget(prev_empty);
 
         let com = fu.await?;
         let res = ResolvedServicePartition::from_com(com);
@@ -168,7 +194,7 @@ impl ResolvedServicePartition {
 
 #[derive(Debug)]
 pub struct ResolvedServicePartitionInfo {
-    pub name: HSTRING,
+    pub service_name: HSTRING,
     pub service_partition_kind: ServicePartitionKind,
     pub partition_key_type: PartitionKeyType,
 }
@@ -177,14 +203,14 @@ impl ResolvedServicePartition {
     // Get the service partition info/metadata
     pub fn get_info(&self) -> ResolvedServicePartitionInfo {
         let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
-        let name =
+        let service_name =
             HSTRING::from_wide(unsafe { PCWSTR::from_raw(raw.ServiceName).as_wide() }).unwrap();
         let kind_raw = raw.Info.Kind;
         let val = raw.Info.Value;
         let service_partition_kind: ServicePartitionKind = kind_raw.into();
         let partition_key_type = PartitionKeyType::from_raw_svc_part(service_partition_kind, val);
         ResolvedServicePartitionInfo {
-            name,
+            service_name,
             service_partition_kind,
             partition_key_type,
         }
@@ -194,28 +220,36 @@ impl ResolvedServicePartition {
     pub fn get_endpoint_list(&self) -> ResolvedServiceEndpointList {
         ResolvedServiceEndpointList::from_com(self.com.clone())
     }
+
+    // If compared with different partition error is returned.
+    // to enable the user to identify which RSP is more
+    // up-to-date. A returned value of 0 indicates that the two RSPs have the same version. 1 indicates that the other RSP has an older version.
+    // -1 indicates that the other RSP has a newer version.
+    pub fn compare_version(&self, other: &ResolvedServicePartition) -> windows_core::Result<i32> {
+        unsafe { self.com.CompareVersion(&other.com) }
+    }
 }
 
 #[derive(Debug)]
-pub enum ServiceRole {
+pub enum ServiceEndpointRole {
     Invalid,
     StatefulPrimary,
     StatefulSecondary,
     Stateless,
 }
 
-impl From<FABRIC_SERVICE_ENDPOINT_ROLE> for ServiceRole {
+impl From<FABRIC_SERVICE_ENDPOINT_ROLE> for ServiceEndpointRole {
     fn from(value: FABRIC_SERVICE_ENDPOINT_ROLE) -> Self {
         match value {
-            FABRIC_SERVICE_ROLE_INVALID => ServiceRole::Invalid,
-            FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY => ServiceRole::StatefulPrimary,
-            FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY => ServiceRole::StatefulSecondary,
-            FABRIC_SERVICE_ROLE_STATELESS => ServiceRole::Stateless,
+            FABRIC_SERVICE_ROLE_INVALID => ServiceEndpointRole::Invalid,
+            FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY => ServiceEndpointRole::StatefulPrimary,
+            FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY => ServiceEndpointRole::StatefulSecondary,
+            FABRIC_SERVICE_ROLE_STATELESS => ServiceEndpointRole::Stateless,
             _ => {
                 if cfg!(debug_assertions) {
                     panic!("unknown type: {:?}", value);
                 } else {
-                    ServiceRole::Invalid
+                    ServiceEndpointRole::Invalid
                 }
             }
         }
@@ -239,7 +273,7 @@ impl ResolvedServiceEndpointList {
 #[derive(Debug)]
 pub struct ResolvedServiceEndpoint {
     pub address: HSTRING,
-    pub role: ServiceRole,
+    pub role: ServiceEndpointRole,
 }
 
 pub struct ResolvedServiceEndpointListIter {

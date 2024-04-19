@@ -62,10 +62,7 @@ impl QueryClient {
         let fu;
         {
             let ex3 = FABRIC_NODE_QUERY_DESCRIPTION_EX3 {
-                MaxResults: match desc.paged_query.max_results {
-                    Some(x) => x,
-                    None => 0,
-                },
+                MaxResults: desc.paged_query.max_results.unwrap_or(0),
                 Reserved: std::ptr::null_mut(),
             };
 

@@ -57,6 +57,7 @@ impl FabricClient {
         }
     }
 
+    // Get the client for managing Fabric Properties in Naming Service
     pub fn get_property_manager(&self) -> PropertyManagementClient {
         PropertyManagementClient {
             _com: self.com_property_client.clone(),
@@ -66,10 +67,12 @@ impl FabricClient {
         }
     }
 
+    // Get the client for quering SF info.
     pub fn get_query_manager(&self) -> QueryClient {
         QueryClient::from_com(self.com_query_client.clone())
     }
 
+    // Get the client for managing service info and lifecycles.
     pub fn get_service_manager(&self) -> ServiceManagementClient {
         ServiceManagementClient::from_com(self.com_service_client.clone())
     }

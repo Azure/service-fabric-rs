@@ -1,10 +1,16 @@
 use std::{ffi::c_void, time::Duration};
 
 use crate::client::IFabricQueryClient10Wrap;
+use bitflags::bitflags;
 use mssf_com::{
     FabricCommon::FabricClient::{IFabricGetNodeListResult, IFabricQueryClient10},
     FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION_EX1,
-    FABRIC_NODE_QUERY_RESULT_ITEM,
+    FABRIC_NODE_QUERY_DESCRIPTION_EX2, FABRIC_NODE_QUERY_RESULT_ITEM,
+    FABRIC_QUERY_NODE_STATUS_FILTER_ALL, FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT,
+    FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED, FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING,
+    FABRIC_QUERY_NODE_STATUS_FILTER_DOWN, FABRIC_QUERY_NODE_STATUS_FILTER_ENABLING,
+    FABRIC_QUERY_NODE_STATUS_FILTER_REMOVED, FABRIC_QUERY_NODE_STATUS_FILTER_UNKNOWN,
+    FABRIC_QUERY_NODE_STATUS_FILTER_UP,
 };
 use windows_core::{HSTRING, PCWSTR};
 
@@ -21,16 +27,22 @@ impl QueryClient {
         }
     }
 
+    // List nodes in the cluster
     pub async fn get_node_list(
         &self,
-        desc: NodeQueryDescription,
+        desc: &NodeQueryDescription,
         timeout: Duration,
     ) -> windows_core::Result<NodeList> {
         let fu;
         {
+            let ex2 = FABRIC_NODE_QUERY_DESCRIPTION_EX2 {
+                NodeStatusFilter: desc.node_status_filter.bits(),
+                Reserved: std::ptr::null_mut(),
+            };
+
             let ex1 = FABRIC_NODE_QUERY_DESCRIPTION_EX1 {
                 ContinuationToken: get_pcwstr_from_opt(&desc.continuation_token),
-                Reserved: std::ptr::null_mut(),
+                Reserved: std::ptr::addr_of!(ex2) as *mut c_void,
             };
 
             let arg = FABRIC_NODE_QUERY_DESCRIPTION {
@@ -54,10 +66,32 @@ fn get_pcwstr_from_opt(opt: &Option<HSTRING>) -> PCWSTR {
     }
 }
 
+bitflags! {
+    #[derive(Debug)]
+    pub struct NodeStatusFilter: u32{
+        const All = FABRIC_QUERY_NODE_STATUS_FILTER_ALL.0 as u32;
+        const Default = FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT.0 as u32;
+        const Disabled = FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED.0 as u32;
+        const Disabling = FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING.0 as u32;
+        const Down = FABRIC_QUERY_NODE_STATUS_FILTER_DOWN.0 as u32;
+        const Enabling = FABRIC_QUERY_NODE_STATUS_FILTER_ENABLING.0 as u32;
+        const Removed = FABRIC_QUERY_NODE_STATUS_FILTER_REMOVED.0 as u32;
+        const Unknown = FABRIC_QUERY_NODE_STATUS_FILTER_UNKNOWN.0 as u32;
+        const Up = FABRIC_QUERY_NODE_STATUS_FILTER_UP.0 as u32;
+    }
+}
+
+impl Default for NodeStatusFilter {
+    fn default() -> Self {
+        Self::Default
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct NodeQueryDescription {
     pub node_name_filter: Option<HSTRING>,
     pub continuation_token: Option<HSTRING>,
+    pub node_status_filter: NodeStatusFilter,
 }
 
 pub struct NodeList {

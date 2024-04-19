@@ -6,7 +6,9 @@ use mssf_com::{FABRIC_E_SERVICE_DOES_NOT_EXIST, FABRIC_NODE_QUERY_DESCRIPTION};
 use windows_core::HSTRING;
 
 use crate::client::{
-    query_client::NodeQueryDescription, svc_mgmt_client::PartitionKeyType, FabricClient,
+    query_client::{NodeQueryDescription, NodeStatusFilter},
+    svc_mgmt_client::PartitionKeyType,
+    FabricClient,
 };
 
 use super::gen::query::IFabricQueryClient10Wrap;
@@ -33,10 +35,11 @@ async fn test_fabric_client() {
     let qc = c.get_query_manager();
     let timeout = Duration::from_secs(1);
     {
-        let list = qc
-            .get_node_list(NodeQueryDescription::default(), timeout)
-            .await
-            .unwrap();
+        let desc = NodeQueryDescription {
+            node_status_filter: NodeStatusFilter::Up,
+            ..Default::default()
+        };
+        let list = qc.get_node_list(&desc, timeout).await.unwrap();
 
         let v = list.iter().collect::<Vec<_>>();
         assert_ne!(v.len(), 0);

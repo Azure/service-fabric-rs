@@ -152,9 +152,10 @@ impl NodeList {
     pub fn iter(&self) -> NodeListIter {
         NodeListIter::new(self.com.clone())
     }
-    pub fn get_paging_status(&self) -> PagingStatus {
-        let raw = unsafe { self.com.get_PagingStatus().as_ref().unwrap() };
-        raw.into()
+    pub fn get_paging_status(&self) -> Option<PagingStatus> {
+        // If there is no more entries there is no paging status returned.
+        let raw = unsafe { self.com.get_PagingStatus().as_ref() }?;
+        Some(raw.into())
     }
 }
 

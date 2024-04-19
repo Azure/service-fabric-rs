@@ -57,7 +57,7 @@ async fn test_fabric_client() {
         let desc = NodeQueryDescription {
             node_status_filter: NodeStatusFilter::Up,
             paged_query: PagedQueryDescription {
-                continuation_token: Some(paging_status.continuation_token),
+                continuation_token: paging_status.map(|x| x.continuation_token),
                 max_results: Some(2),
             },
             ..Default::default()

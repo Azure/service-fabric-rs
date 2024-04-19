@@ -6,7 +6,7 @@ use mssf_com::{FABRIC_E_SERVICE_DOES_NOT_EXIST, FABRIC_NODE_QUERY_DESCRIPTION};
 use windows_core::HSTRING;
 
 use crate::client::{
-    query_client::{NodeQueryDescription, NodeStatusFilter},
+    query_client::{NodeQueryDescription, NodeStatusFilter, PagedQueryDescription},
     svc_mgmt_client::PartitionKeyType,
     FabricClient,
 };
@@ -34,17 +34,38 @@ async fn test_fabric_client() {
     let c = FabricClient::new();
     let qc = c.get_query_manager();
     let timeout = Duration::from_secs(1);
+    let paging_status;
     {
         let desc = NodeQueryDescription {
             node_status_filter: NodeStatusFilter::Up,
+            paged_query: PagedQueryDescription {
+                continuation_token: None,
+                max_results: Some(2),
+            },
             ..Default::default()
         };
         let list = qc.get_node_list(&desc, timeout).await.unwrap();
-
+        paging_status = list.get_paging_status();
         let v = list.iter().collect::<Vec<_>>();
         assert_ne!(v.len(), 0);
         for n in v {
             println!("Node: {:?}", n)
+        }
+    }
+    // get more nodes using paging
+    {
+        let desc = NodeQueryDescription {
+            node_status_filter: NodeStatusFilter::Up,
+            paged_query: PagedQueryDescription {
+                continuation_token: Some(paging_status.continuation_token),
+                max_results: Some(2),
+            },
+            ..Default::default()
+        };
+        let list = qc.get_node_list(&desc, timeout).await.unwrap();
+        let v = list.iter().collect::<Vec<_>>();
+        for n in v {
+            println!("More Node: {:?}", n)
         }
     }
 

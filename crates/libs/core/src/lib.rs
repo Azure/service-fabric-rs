@@ -21,7 +21,7 @@ use mssf_com::FabricCommon::{
     IFabricStringResult_Impl,
 };
 use windows::core::implement;
-use windows_core::HSTRING;
+use windows_core::{HSTRING, PCWSTR};
 
 #[derive(Debug)]
 #[implement(IFabricAsyncOperationCallback)]
@@ -147,6 +147,15 @@ impl IFabricStringResult_Impl for StringResult {
 pub fn IFabricStringResultToHString(s: &IFabricStringResult) -> HSTRING {
     let content = unsafe { s.get_String() };
     HSTRING::from_wide(unsafe { content.as_wide() }).unwrap()
+}
+
+// better wrapping conversion utilities
+// If nullptr returns empty string
+fn unsafe_pwstr_to_hstring(raw: PCWSTR) -> HSTRING {
+    if raw.is_null() {
+        return HSTRING::new();
+    }
+    HSTRING::from_wide(unsafe { raw.as_wide() }).unwrap()
 }
 
 #[cfg(test)]

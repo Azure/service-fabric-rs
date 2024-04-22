@@ -9,10 +9,10 @@ edition = "2021"
 log = "0.4"
 env_logger = "*"
 tokio = { version = "1", features = ["full"] }
-windows-core = "0.54"
+windows-core = "0.56"
 
 [dependencies.windows]
-version = "0.54"
+version = "0.56"
 features = [
     "implement"
 ]

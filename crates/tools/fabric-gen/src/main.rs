@@ -50,10 +50,7 @@ pub fn get_reader() -> &'static Reader {
 fn gen_class(ns: &'static str, name: &'static str, file_path: &Path, exclude: &Vec<&str>) {
     let reader = get_reader();
     let p = Parser::new(reader);
-    let mut itf = p.get_interface_layout_recursive(&TypeName {
-        namespace: ns,
-        name,
-    });
+    let mut itf = p.get_interface_layout_recursive(&TypeName::new(ns, name));
     itf.exclude_funcs(exclude);
 
     let gen = Gen::new(itf.to_async());

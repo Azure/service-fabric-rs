@@ -27,10 +27,10 @@ mssf-metadata = "0.0.1"
 mssf-pal = { path = "../pal" , version = "0.0.4"}
 
 [dependencies]
-windows-core = "0.54"
+windows-core = "0.56"
 
 [dependencies.windows]
-version = "0.54"
+version = "0.56"
 features = [
     "Win32_Foundation",
     "implement"

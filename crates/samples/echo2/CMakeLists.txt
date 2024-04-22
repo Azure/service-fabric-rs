@@ -19,5 +19,7 @@ add_custom_command(TARGET build_rust_sample_echo2 POST_BUILD
     COMMAND ${CMAKE_COMMAND} 
     -E copy_if_different ${_pkg_src}/manifests/ApplicationManifest.xml ${_pkg_root}/ApplicationManifest.xml
     COMMAND ${CMAKE_COMMAND} 
+    -E copy_if_different ${_pkg_src}/manifests/EchoAppServicePackage2/Config/Settings.xml ${_pkg_root}/EchoAppServicePackage2/Config/Settings.xml
+    COMMAND ${CMAKE_COMMAND} 
     -E copy_if_different ${_pkg_exe} ${_pkg_root}/EchoAppServicePackage2/Code/echo2.exe
 )

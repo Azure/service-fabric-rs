@@ -158,6 +158,23 @@ fn unsafe_pwstr_to_hstring(raw: PCWSTR) -> HSTRING {
     HSTRING::from_wide(unsafe { raw.as_wide() }).unwrap()
 }
 
+struct HSTRINGWrap {
+    h: HSTRING,
+}
+
+impl From<PCWSTR> for HSTRINGWrap {
+    fn from(value: PCWSTR) -> Self {
+        let h = unsafe_pwstr_to_hstring(value);
+        Self { h }
+    }
+}
+
+impl From<HSTRINGWrap> for HSTRING {
+    fn from(val: HSTRINGWrap) -> Self {
+        val.h
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::{IFabricStringResultToHString, StringResult};

@@ -17,7 +17,7 @@
       <EnvironmentVariable Name="RUST_LOG" Value="info"/>
     </EnvironmentVariables>
   </CodePackage>
-  <!-- <ConfigPackage Name="EchoAppService.Config" Version="1.0" /> -->
+  <ConfigPackage Name="Config" Version="1.0.0" />
   <!-- <DataPackage Name="EchoAppService.Data" Version="1.0" /> -->
   <Resources>
     <Endpoints>

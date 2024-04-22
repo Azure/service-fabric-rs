@@ -27,8 +27,8 @@ use self::{
 pub mod config;
 pub mod error;
 pub mod executor;
-pub mod node_context;
 mod iter;
+pub mod node_context;
 pub mod stateful;
 pub mod stateful_bridge;
 pub mod stateful_proxy;
@@ -158,7 +158,6 @@ impl ActivationContext {
         let c = unsafe { self.com_impl.GetConfigurationPackage(configpackagename) }?;
         Ok(ConfigurationPackage::from_com(c))
     }
-
 
     pub fn get_com(&self) -> IFabricCodePackageActivationContext {
         self.com_impl.clone()

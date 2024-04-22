@@ -8,6 +8,11 @@ impl IFabricServiceManagementClient6Wrap {
     pub fn new() -> IFabricServiceManagementClient6Wrap {
         IFabricServiceManagementClient6Wrap { com : crate :: sync :: CreateLocalClient :: < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceManagementClient6 > () , }
     }
+    pub fn from_com(
+        com : :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceManagementClient6,
+    ) -> IFabricServiceManagementClient6Wrap {
+        IFabricServiceManagementClient6Wrap { com }
+    }
     pub fn CreateService(
         &self,
         description: &::mssf_com::Microsoft::ServiceFabric::FABRIC_SERVICE_DESCRIPTION,

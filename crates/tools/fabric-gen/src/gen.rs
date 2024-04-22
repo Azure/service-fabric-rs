@@ -510,6 +510,12 @@ pub mod code {
                         }
                     }
 
+                    pub fn from_com(com: #itf_full_type) -> #wrap_ident {
+                        #wrap_ident {
+                            com
+                        }
+                    }
+
                     #method_stream
                 }
             }

@@ -9,6 +9,11 @@ impl Default for IFabricHealthClient4Wrap {
 impl IFabricHealthClient4Wrap {
     pub fn new() -> IFabricHealthClient4Wrap {
         IFabricHealthClient4Wrap { com : crate :: sync :: CreateLocalClient :: < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricHealthClient4 > () , }
+    }
+    pub fn from_com(
+        com: ::mssf_com::Microsoft::ServiceFabric::FabricCommon::FabricClient::IFabricHealthClient4,
+    ) -> IFabricHealthClient4Wrap {
+        IFabricHealthClient4Wrap { com }
     }    pub fn GetApplicationHealth (& self , applicationName : & u16 , healthPolicy : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationHealthResult >>{
         let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {

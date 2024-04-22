@@ -8,6 +8,11 @@ impl IFabricApplicationManagementClient10Wrap {
     pub fn new() -> IFabricApplicationManagementClient10Wrap {
         IFabricApplicationManagementClient10Wrap { com : crate :: sync :: CreateLocalClient :: < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationManagementClient10 > () , }
     }
+    pub fn from_com(
+        com : :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationManagementClient10,
+    ) -> IFabricApplicationManagementClient10Wrap {
+        IFabricApplicationManagementClient10Wrap { com }
+    }
     pub fn CreateApplication(
         &self,
         description: &::mssf_com::Microsoft::ServiceFabric::FABRIC_APPLICATION_DESCRIPTION,

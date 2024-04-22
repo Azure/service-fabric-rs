@@ -7,18 +7,13 @@
 // to create a SF stateless application.
 
 use log::info;
-use mssf_com::FabricCommon::FabricRuntime::{
-    FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricCodePackageActivationContext,
-    IFabricNodeContextResult, IFabricRuntime,
-};
-use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
-use mssf_core::{
-    runtime::{create_com_runtime, get_com_activation_context},
-    WaitableCallback,
-};
+use mssf_com::FabricCommon::FabricRuntime::IFabricRuntime;
+use mssf_core::runtime::create_com_runtime;
+use mssf_core::runtime::node_context::NodeContext;
+use mssf_core::runtime::ActivationContext;
 use std::sync::mpsc::channel;
-use windows::core::w;
-use windows::core::{Interface, HSTRING};
+use std::time::Duration;
+use windows::core::HSTRING;
 pub mod app;
 
 fn main() -> windows::core::Result<()> {
@@ -35,7 +30,7 @@ fn main() -> windows::core::Result<()> {
 
     let runtime = create_com_runtime().expect("cannot create runtime");
 
-    let activation_ctx = get_com_activation_context().expect("Cannot get activation ctx");
+    let activation_ctx = ActivationContext::create().expect("Cannot get activation ctx");
 
     run_app(&runtime, &activation_ctx);
 
@@ -45,42 +40,23 @@ fn main() -> windows::core::Result<()> {
     Ok(())
 }
 
-fn run_app(runtime: &IFabricRuntime, activation_ctx: &IFabricCodePackageActivationContext) {
+fn run_app(runtime: &IFabricRuntime, activation_ctx: &ActivationContext) {
     let port = get_port(activation_ctx);
     let hostname = get_hostname();
     app::run(runtime, port, hostname);
 }
 
-fn get_port(activation_ctx: &IFabricCodePackageActivationContext) -> u32 {
+fn get_port(activation_ctx: &ActivationContext) -> u32 {
     info!("trying to get port");
-    let endpoint_name = w!("ServiceEndpoint1");
-    let endpoint = unsafe {
-        activation_ctx
-            .GetServiceEndpointResource(endpoint_name)
-            .expect("cannot get endpoint")
-    };
-    unsafe { (*endpoint).Port }
+    let endpoint = activation_ctx
+        .get_endpoint_resource(&HSTRING::from("ServiceEndpoint1"))
+        .unwrap();
+    info!("Endpoint: {:?}", endpoint);
+    endpoint.Port
 }
 
 fn get_hostname() -> HSTRING {
-    let (token, callback) = WaitableCallback::channel();
-
-    let callback_arg = callback
-        .cast::<IFabricAsyncOperationCallback>()
-        .expect("castfailed");
-    let ctx = unsafe { FabricBeginGetNodeContext(1000, &callback_arg).expect("getctx failed") };
-
-    token.wait();
-
-    let result_raw = unsafe { FabricEndGetNodeContext(&ctx).expect("end failed") };
-
-    let result = unsafe { IFabricNodeContextResult::from_raw(result_raw) };
-
-    let node_ctx = unsafe { result.get_NodeContext() };
-
-    let hostname_raw = unsafe { (*node_ctx).IPAddressOrFQDN };
-
-    let ret = HSTRING::from_wide(unsafe { hostname_raw.as_wide() }).expect("hstring");
-    info!("got hostname: {:?}", ret);
-    ret
+    let ctx = NodeContext::get_sync(Duration::from_secs(1)).unwrap();
+    info!("NodeContext: {:?}", ctx);
+    ctx.ip_address_or_fqdn
 }

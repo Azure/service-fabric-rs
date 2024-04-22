@@ -104,8 +104,8 @@ impl TypeEntry {
     }
 
     fn from_typeref(t: &TypeName, _r: &Reader) -> TypeEntry {
-        let name = t.name;
-        let ns = t.namespace;
+        let name = t.name();
+        let ns = t.namespace();
         let ns_str = TypeEntry::normalize_namespace(ns);
         TypeEntry {
             ns: ns_str,
@@ -234,14 +234,14 @@ impl Parser<'_> {
     }
 
     pub fn get_type_def(&self, tn: &TypeName) -> TypeDef {
-        let mut type_def = self.r.get_type_def(tn.namespace, tn.name).peekable();
+        let mut type_def = self.r.get_type_def(tn.namespace(), tn.name()).peekable();
         assert!(type_def.peek().is_some());
 
         // find the type def for this interface.
         let mut x_td: Option<TypeDef> = None;
 
         for td in type_def {
-            if td.name() != tn.name {
+            if td.name() != tn.name() {
                 continue;
             }
             x_td = Some(td);
@@ -382,10 +382,10 @@ mod tests {
     fn reading_test1() {
         let r = get_reader();
         let gen = Parser::new(r);
-        let itf_layout = gen.get_interface_layout(gen.get_type_def(&TypeName {
-            namespace: "Microsoft.ServiceFabric.FabricCommon",
-            name: "IFabricAsyncOperationCallback",
-        }));
+        let itf_layout = gen.get_interface_layout(gen.get_type_def(&TypeName::new(
+            "Microsoft.ServiceFabric.FabricCommon",
+            "IFabricAsyncOperationCallback",
+        )));
 
         assert_eq!(itf_layout.type_entry.name, "IFabricAsyncOperationCallback");
         assert_eq!(
@@ -401,10 +401,10 @@ mod tests {
     fn reading_test2() {
         let r = get_reader();
         let gen = Parser::new(r);
-        let itf_layout = gen.get_interface_layout(gen.get_type_def(&TypeName {
-            namespace: "Microsoft.ServiceFabric.FabricCommon.FabricClient",
-            name: "IFabricClusterManagementClient",
-        }));
+        let itf_layout = gen.get_interface_layout(gen.get_type_def(&TypeName::new(
+            "Microsoft.ServiceFabric.FabricCommon.FabricClient",
+            "IFabricClusterManagementClient",
+        )));
 
         assert_eq!(
             itf_layout.type_entry.ns,
@@ -443,10 +443,10 @@ mod tests {
     fn reading_hierachy() {
         let r = get_reader();
         let gen = Parser::new(r);
-        let td = gen.get_type_def(&TypeName {
-            namespace: "Microsoft.ServiceFabric.FabricCommon.FabricClient",
-            name: "IFabricClusterManagementClient2",
-        });
+        let td = gen.get_type_def(&TypeName::new(
+            "Microsoft.ServiceFabric.FabricCommon.FabricClient",
+            "IFabricClusterManagementClient2",
+        ));
 
         let ptd = gen.get_parent_type(&td).unwrap();
         let ptde = TypeEntry::from_typedef_reader(&ptd, r);

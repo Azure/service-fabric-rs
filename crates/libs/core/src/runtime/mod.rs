@@ -26,6 +26,7 @@ use self::{
 
 pub mod error;
 pub mod executor;
+pub mod node_context;
 pub mod stateful;
 pub mod stateful_bridge;
 pub mod stateful_proxy;
@@ -102,6 +103,7 @@ where
     }
 }
 
+#[derive(Debug)]
 pub struct EndpointResourceDesc {
     pub Name: ::windows_core::HSTRING,
     pub Protocol: ::windows_core::HSTRING,
@@ -146,9 +148,11 @@ impl ActivationContext {
         let desc = EndpointResourceDesc::from(res_ref);
         Ok(desc)
     }
-}
 
-pub struct NodeContext {}
+    pub fn get_com(&self) -> IFabricCodePackageActivationContext {
+        self.com_impl.clone()
+    }
+}
 
 #[implement(IFabricAsyncOperationContext)]
 struct BridgeContext<T> {

@@ -1,6 +1,10 @@
 use std::{ffi::c_void, time::Duration};
 
-use crate::{client::IFabricQueryClient10Wrap, unsafe_pwstr_to_hstring};
+use crate::{
+    client::IFabricQueryClient10Wrap,
+    iter::{FabricIter, FabricListAccessor},
+    unsafe_pwstr_to_hstring,
+};
 use bitflags::bitflags;
 use mssf_com::{
     FabricCommon::FabricClient::{IFabricGetNodeListResult2, IFabricQueryClient10},
@@ -145,12 +149,24 @@ pub struct NodeList {
     com: IFabricGetNodeListResult2,
 }
 
+impl FabricListAccessor<FABRIC_NODE_QUERY_RESULT_ITEM> for NodeList {
+    fn get_count(&self) -> u32 {
+        let list = unsafe { self.com.get_NodeList().as_ref().unwrap() };
+        list.Count
+    }
+
+    fn get_first_item(&self) -> *const FABRIC_NODE_QUERY_RESULT_ITEM {
+        let list = unsafe { self.com.get_NodeList().as_ref().unwrap() };
+        list.Items
+    }
+}
+
 impl NodeList {
     fn from_com(com: IFabricGetNodeListResult2) -> Self {
         Self { com }
     }
     pub fn iter(&self) -> NodeListIter {
-        NodeListIter::new(self.com.clone())
+        NodeListIter::new(self, self)
     }
     pub fn get_paging_status(&self) -> Option<PagingStatus> {
         // If there is no more entries there is no paging status returned.
@@ -159,12 +175,7 @@ impl NodeList {
     }
 }
 
-pub struct NodeListIter {
-    _owner: IFabricGetNodeListResult2,
-    count: u32, // total
-    index: u32,
-    curr: *const FABRIC_NODE_QUERY_RESULT_ITEM,
-}
+type NodeListIter<'a> = FabricIter<'a, FABRIC_NODE_QUERY_RESULT_ITEM, Node, NodeList>;
 
 #[derive(Debug)]
 pub struct Node {
@@ -182,15 +193,9 @@ pub struct Node {
     pub node_instance_id: u64,
 }
 
-impl Iterator for NodeListIter {
-    type Item = Node;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.index >= self.count {
-            return None;
-        }
-        // get the curr out
-        let raw = unsafe { self.curr.as_ref().unwrap() };
+impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for Node {
+    fn from(value: &FABRIC_NODE_QUERY_RESULT_ITEM) -> Self {
+        let raw = value;
         // TODO: get node id. integrate with another PR
         let raw1 = unsafe {
             (raw.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX1)
@@ -202,7 +207,7 @@ impl Iterator for NodeListIter {
                 .as_ref()
                 .unwrap()
         };
-        let res = Node {
+        Node {
             name: HSTRING::from_wide(unsafe { raw.NodeName.as_wide() }).unwrap(),
             ip_address_or_fqdn: unsafe_pwstr_to_hstring(raw.IpAddressOrFQDN),
             node_type: unsafe_pwstr_to_hstring(raw.NodeType),
@@ -213,24 +218,6 @@ impl Iterator for NodeListIter {
             upgrade_domain: unsafe_pwstr_to_hstring(raw.UpgradeDomain),
             fault_domain: unsafe_pwstr_to_hstring(windows_core::PCWSTR(raw.FaultDomain)),
             node_instance_id: raw2.NodeInstanceId,
-        };
-        self.index += 1;
-        self.curr = unsafe { self.curr.offset(1) };
-        Some(res)
-    }
-}
-
-impl NodeListIter {
-    fn new(com: IFabricGetNodeListResult2) -> Self {
-        let list = unsafe { com.get_NodeList().as_ref().unwrap() };
-
-        let count = list.Count;
-        let item = list.Items;
-        Self {
-            _owner: com,
-            count,
-            index: 0,
-            curr: item,
         }
     }
 }

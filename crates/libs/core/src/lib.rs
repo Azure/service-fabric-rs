@@ -9,6 +9,7 @@
 
 pub mod client;
 pub mod debug;
+mod iter;
 pub mod runtime;
 pub mod sync;
 

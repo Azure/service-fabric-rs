@@ -6,9 +6,10 @@ use mssf_com::{
 use windows::Win32::Foundation::{BOOLEAN, E_POINTER};
 use windows_core::HSTRING;
 
-use crate::{unsafe_pwstr_to_hstring, HSTRINGWrap, IFabricStringResultToHString};
-
-use super::iter::{FabricIter, FabricListAccessor};
+use crate::{
+    iter::{FabricIter, FabricListAccessor},
+    unsafe_pwstr_to_hstring, HSTRINGWrap, IFabricStringResultToHString,
+};
 
 pub struct ConfigurationPackage {
     com: IFabricConfigurationPackage,

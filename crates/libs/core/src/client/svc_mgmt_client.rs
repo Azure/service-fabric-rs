@@ -14,6 +14,8 @@ use mssf_com::{
 };
 use windows_core::{HSTRING, PCWSTR};
 
+use crate::iter::{FabricIter, FabricListAccessor};
+
 use super::gen::svc::IFabricServiceManagementClient6Wrap;
 
 // Service Management Client
@@ -266,7 +268,19 @@ impl ResolvedServiceEndpointList {
     }
     // Get iterator for the list
     pub fn iter(&self) -> ResolvedServiceEndpointListIter {
-        ResolvedServiceEndpointListIter::new(self.com.clone())
+        ResolvedServiceEndpointListIter::new(self, self)
+    }
+}
+
+impl FabricListAccessor<FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpointList {
+    fn get_count(&self) -> u32 {
+        let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
+        raw.EndpointCount
+    }
+
+    fn get_first_item(&self) -> *const FABRIC_RESOLVED_SERVICE_ENDPOINT {
+        let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
+        raw.Endpoints
     }
 }
 
@@ -276,43 +290,20 @@ pub struct ResolvedServiceEndpoint {
     pub role: ServiceEndpointRole,
 }
 
-pub struct ResolvedServiceEndpointListIter {
-    _owner: IFabricResolvedServicePartitionResult,
-    count: u32, // total
-    index: u32,
-    curr: *const FABRIC_RESOLVED_SERVICE_ENDPOINT,
-}
+type ResolvedServiceEndpointListIter<'a> = FabricIter<
+    'a,
+    FABRIC_RESOLVED_SERVICE_ENDPOINT,
+    ResolvedServiceEndpoint,
+    ResolvedServiceEndpointList,
+>;
 
-impl ResolvedServiceEndpointListIter {
-    fn new(com: IFabricResolvedServicePartitionResult) -> Self {
-        let raw = unsafe { com.get_Partition().as_ref().unwrap() };
-        let count = raw.EndpointCount;
-        let item = raw.Endpoints;
+impl From<&FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpoint {
+    fn from(value: &FABRIC_RESOLVED_SERVICE_ENDPOINT) -> Self {
+        let raw = value;
         Self {
-            _owner: com,
-            count,
-            index: 0,
-            curr: item,
-        }
-    }
-}
-
-impl Iterator for ResolvedServiceEndpointListIter {
-    type Item = ResolvedServiceEndpoint;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.index >= self.count {
-            return None;
-        }
-        // get the curr out
-        let raw = unsafe { self.curr.as_ref().unwrap() };
-        let res = Self::Item {
             address: HSTRING::from_wide(unsafe { raw.Address.as_wide() }).unwrap(),
             role: raw.Role.into(),
-        };
-        self.index += 1;
-        self.curr = unsafe { self.curr.offset(1) };
-        Some(res)
+        }
     }
 }
 

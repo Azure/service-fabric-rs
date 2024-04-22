@@ -19,13 +19,15 @@ use windows::core::implement;
 use windows_core::{Error, Interface, HSTRING, PCWSTR};
 
 use self::{
-    executor::Executor, stateful::StatefulServiceFactory,
+    config::ConfigurationPackage, executor::Executor, stateful::StatefulServiceFactory,
     stateful_bridge::StatefulServiceFactoryBridge, stateless::StatelessServiceFactory,
     stateless_bridge::StatelessServiceFactoryBridge,
 };
 
+pub mod config;
 pub mod error;
 pub mod executor;
+mod iter;
 pub mod node_context;
 pub mod stateful;
 pub mod stateful_bridge;
@@ -147,6 +149,14 @@ impl ActivationContext {
         let res_ref = unsafe { rs.as_ref().unwrap() };
         let desc = EndpointResourceDesc::from(res_ref);
         Ok(desc)
+    }
+
+    pub fn get_configuration_package(
+        &self,
+        configpackagename: &HSTRING,
+    ) -> windows_core::Result<ConfigurationPackage> {
+        let c = unsafe { self.com_impl.GetConfigurationPackage(configpackagename) }?;
+        Ok(ConfigurationPackage::from_com(c))
     }
 
     pub fn get_com(&self) -> IFabricCodePackageActivationContext {

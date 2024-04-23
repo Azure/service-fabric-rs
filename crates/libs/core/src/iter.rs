@@ -1,5 +1,5 @@
 // iterator implementation
-// Iter infrastruction to convert Fabric raw list into rust safe wrappers.
+// Iter infrastructure to convert Fabric raw list into rust safe wrappers.
 // Raw lists needs to be wrapped in FabricListAccessor, and raw item needs to
 // implement From<T> trait to convert to rust safe struct, then the FabricIter
 // enables the mechanism to convert item one by one while iterating.

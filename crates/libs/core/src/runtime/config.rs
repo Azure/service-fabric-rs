@@ -1,14 +1,15 @@
 use mssf_com::{
     FabricCommon::FabricRuntime::IFabricConfigurationPackage, FABRIC_CONFIGURATION_PARAMETER,
-    FABRIC_CONFIGURATION_PARAMETER_LIST, FABRIC_CONFIGURATION_SECTION,
-    FABRIC_CONFIGURATION_SECTION_LIST,
+    FABRIC_CONFIGURATION_PARAMETER_EX1, FABRIC_CONFIGURATION_PARAMETER_LIST,
+    FABRIC_CONFIGURATION_SECTION, FABRIC_CONFIGURATION_SECTION_LIST,
 };
 use windows::Win32::Foundation::{BOOLEAN, E_POINTER};
 use windows_core::HSTRING;
 
-use crate::{unsafe_pwstr_to_hstring, HSTRINGWrap, IFabricStringResultToHString};
-
-use super::iter::{FabricIter, FabricListAccessor};
+use crate::{
+    iter::{FabricIter, FabricListAccessor},
+    unsafe_pwstr_to_hstring, HSTRINGWrap, IFabricStringResultToHString,
+};
 
 pub struct ConfigurationPackage {
     com: IFabricConfigurationPackage,
@@ -178,15 +179,22 @@ pub struct ConfigurationParameter {
     pub must_overrride: bool,
     pub name: HSTRING,
     pub value: HSTRING,
+    pub r#type: HSTRING,
 }
 
 impl From<&FABRIC_CONFIGURATION_PARAMETER> for ConfigurationParameter {
     fn from(value: &FABRIC_CONFIGURATION_PARAMETER) -> Self {
+        let raw1 = unsafe {
+            (value.Reserved as *const FABRIC_CONFIGURATION_PARAMETER_EX1)
+                .as_ref()
+                .unwrap()
+        };
         Self {
             name: HSTRINGWrap::from(value.Name).into(),
             is_encrypted: value.IsEncrypted.as_bool(),
             must_overrride: value.MustOverride.as_bool(),
             value: HSTRINGWrap::from(value.Value).into(),
+            r#type: HSTRINGWrap::from(raw1.Type).into(),
         }
     }
 }

@@ -1,4 +1,8 @@
 // iterator implementation
+// Iter infrastructure to convert Fabric raw list into rust safe wrappers.
+// Raw lists needs to be wrapped in FabricListAccessor, and raw item needs to
+// implement From<T> trait to convert to rust safe struct, then the FabricIter
+// enables the mechanism to convert item one by one while iterating.
 
 use std::marker::PhantomData;
 
@@ -9,6 +13,10 @@ pub trait FabricListAccessor<T> {
     fn get_first_item(&self) -> *const T;
 }
 
+// T is the raw fabric type
+// R is the safe type to convert to
+// O is the memory owner reference
+// R can be converted to T using the From trait
 pub struct FabricIter<'b, T, R, O>
 where
     R: for<'a> std::convert::From<&'a T>,

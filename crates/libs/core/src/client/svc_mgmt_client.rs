@@ -14,6 +14,8 @@ use mssf_com::{
 };
 use windows_core::{HSTRING, PCWSTR};
 
+use crate::iter::{FabricIter, FabricListAccessor};
+
 use super::gen::svc::IFabricServiceManagementClient6Wrap;
 
 // Service Management Client
@@ -32,9 +34,9 @@ impl ServiceManagementClient {
 
     fn resolve_service_partition_internal(
         &self,
-        name: &u16,
+        name: &[u16],
         partitionKeyType: FABRIC_PARTITION_KEY_TYPE,
-        partitionKey: &::core::ffi::c_void,
+        partitionKey: Option<*const ::core::ffi::c_void>,
         previousResult: Option<&IFabricResolvedServicePartitionResult>, // This is different from generated code
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricResolvedServicePartitionResult>>
@@ -46,9 +48,9 @@ impl ServiceManagementClient {
         });
         let ctx = unsafe {
             self.com.BeginResolveServicePartition(
-                name,
+                name.as_ptr(),
                 partitionKeyType,
-                partitionKey,
+                partitionKey.unwrap_or(std::ptr::null()),
                 previousResult,
                 timeoutMilliseconds,
                 &callback,
@@ -71,17 +73,16 @@ impl ServiceManagementClient {
         prev: Option<&ResolvedServicePartition>,
         timeout: Duration,
     ) -> windows_core::Result<ResolvedServicePartition> {
-        let uri = unsafe { name.as_ptr().as_ref().unwrap() };
+        let uri = name.as_wide();
         // supply prev as null if not present
         let prev_opt = prev.map(|x| &x.com);
 
-        let part_key_raw_ptr = key_type.get_raw();
-        let part_key_raw = unsafe { &*part_key_raw_ptr };
+        let part_key_opt = key_type.get_raw_opt();
 
         let fu = self.resolve_service_partition_internal(
             uri,
             key_type.into(),
-            part_key_raw,
+            part_key_opt,
             prev_opt,
             timeout.as_millis().try_into().unwrap(),
         );
@@ -134,13 +135,15 @@ impl From<&PartitionKeyType> for FABRIC_PARTITION_KEY_TYPE {
 
 impl PartitionKeyType {
     // get raw ptr to pass in com api
-    fn get_raw(&self) -> *const c_void {
+    fn get_raw_opt(&self) -> Option<*const c_void> {
         match self {
             // Not sure if this is ok for i64
-            PartitionKeyType::Int64(x) => x as *const i64 as *const c_void,
-            PartitionKeyType::Invalid => std::ptr::null(),
-            PartitionKeyType::None => std::ptr::null(),
-            PartitionKeyType::String(x) => PCWSTR::from_raw(x.as_ptr()).as_ptr() as *const c_void,
+            PartitionKeyType::Int64(x) => Some(x as *const i64 as *const c_void),
+            PartitionKeyType::Invalid => None,
+            PartitionKeyType::None => None,
+            PartitionKeyType::String(x) => {
+                Some(PCWSTR::from_raw(x.as_ptr()).as_ptr() as *const c_void)
+            }
         }
     }
 }
@@ -266,7 +269,19 @@ impl ResolvedServiceEndpointList {
     }
     // Get iterator for the list
     pub fn iter(&self) -> ResolvedServiceEndpointListIter {
-        ResolvedServiceEndpointListIter::new(self.com.clone())
+        ResolvedServiceEndpointListIter::new(self, self)
+    }
+}
+
+impl FabricListAccessor<FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpointList {
+    fn get_count(&self) -> u32 {
+        let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
+        raw.EndpointCount
+    }
+
+    fn get_first_item(&self) -> *const FABRIC_RESOLVED_SERVICE_ENDPOINT {
+        let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
+        raw.Endpoints
     }
 }
 
@@ -276,43 +291,20 @@ pub struct ResolvedServiceEndpoint {
     pub role: ServiceEndpointRole,
 }
 
-pub struct ResolvedServiceEndpointListIter {
-    _owner: IFabricResolvedServicePartitionResult,
-    count: u32, // total
-    index: u32,
-    curr: *const FABRIC_RESOLVED_SERVICE_ENDPOINT,
-}
+type ResolvedServiceEndpointListIter<'a> = FabricIter<
+    'a,
+    FABRIC_RESOLVED_SERVICE_ENDPOINT,
+    ResolvedServiceEndpoint,
+    ResolvedServiceEndpointList,
+>;
 
-impl ResolvedServiceEndpointListIter {
-    fn new(com: IFabricResolvedServicePartitionResult) -> Self {
-        let raw = unsafe { com.get_Partition().as_ref().unwrap() };
-        let count = raw.EndpointCount;
-        let item = raw.Endpoints;
+impl From<&FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpoint {
+    fn from(value: &FABRIC_RESOLVED_SERVICE_ENDPOINT) -> Self {
+        let raw = value;
         Self {
-            _owner: com,
-            count,
-            index: 0,
-            curr: item,
-        }
-    }
-}
-
-impl Iterator for ResolvedServiceEndpointListIter {
-    type Item = ResolvedServiceEndpoint;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.index >= self.count {
-            return None;
-        }
-        // get the curr out
-        let raw = unsafe { self.curr.as_ref().unwrap() };
-        let res = Self::Item {
             address: HSTRING::from_wide(unsafe { raw.Address.as_wide() }).unwrap(),
             role: raw.Role.into(),
-        };
-        self.index += 1;
-        self.curr = unsafe { self.curr.offset(1) };
-        Some(res)
+        }
     }
 }
 
@@ -326,13 +318,13 @@ mod tests {
     fn test_conversion_int() {
         let k = PartitionKeyType::Int64(99);
         // check the raw ptr is ok
-        let raw = k.get_raw();
-        let i = unsafe { (raw as *const i64).as_ref().unwrap() };
+        let raw = k.get_raw_opt();
+        let i = unsafe { (raw.unwrap() as *const i64).as_ref().unwrap() };
         assert_eq!(*i, 99);
 
         let service_type = ServicePartitionKind::Int64Range;
         // restore the key
-        let k2 = PartitionKeyType::from_raw_svc_part(service_type, raw);
+        let k2 = PartitionKeyType::from_raw_svc_part(service_type, raw.unwrap());
         assert_eq!(k, k2);
     }
 
@@ -341,14 +333,15 @@ mod tests {
         let src = HSTRING::from("mystr");
         let k = PartitionKeyType::String(src.clone());
         // check the raw ptr is ok
-        let raw = k.get_raw();
+        let raw = k.get_raw_opt();
         let s =
-            HSTRING::from_wide(unsafe { PCWSTR::from_raw(raw as *const u16).as_wide() }).unwrap();
+            HSTRING::from_wide(unsafe { PCWSTR::from_raw(raw.unwrap() as *const u16).as_wide() })
+                .unwrap();
         assert_eq!(s, src);
 
         let service_type = ServicePartitionKind::Named;
         // restore the key
-        let k2 = PartitionKeyType::from_raw_svc_part(service_type, raw);
+        let k2 = PartitionKeyType::from_raw_svc_part(service_type, raw.unwrap());
         assert_eq!(k, k2);
     }
 }

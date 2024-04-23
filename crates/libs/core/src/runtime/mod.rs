@@ -27,7 +27,6 @@ use self::{
 pub mod config;
 pub mod error;
 pub mod executor;
-mod iter;
 pub mod node_context;
 pub mod stateful;
 pub mod stateful_bridge;

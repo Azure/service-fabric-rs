@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 log = "0.4"
 env_logger = "*"
+serde = "*"
+serde_derive = "*"
 tokio = { version = "1", features = ["full"] }
 windows-core = "0.56"
 

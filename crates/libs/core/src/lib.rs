@@ -8,6 +8,7 @@
 // lib that contains all common extensions for the raw fabric apis.
 
 pub mod client;
+pub mod conf;
 pub mod debug;
 mod iter;
 pub mod runtime;

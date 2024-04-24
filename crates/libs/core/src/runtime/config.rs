@@ -11,6 +11,7 @@ use crate::{
     unsafe_pwstr_to_hstring, HSTRINGWrap, IFabricStringResultToHString,
 };
 
+#[derive(Debug, Clone)]
 pub struct ConfigurationPackage {
     com: IFabricConfigurationPackage,
 }

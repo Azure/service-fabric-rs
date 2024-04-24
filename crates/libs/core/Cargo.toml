@@ -21,7 +21,7 @@ windows-core = "0.56"
 ctrlc = { version = "3.0", features = ["termination"] }
 trait-variant = "0.1.1"
 bitflags = "2.5.0"
-config = "0.14.0"
+config = { version = "0.14.0",  default-features = false}
 
 [dev-dependencies]
 paste = "1.0"

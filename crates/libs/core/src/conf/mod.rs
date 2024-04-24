@@ -1,5 +1,12 @@
-// Integrating service fabric config package with config-rs
-//
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
+// Integrating service fabric config package with config-rs.
+// Wraps the SF ConfigurationPackage as a Source for config-rs.
+// config-rs can load from SF and user can use all higher level
+// features of config-rs.
 
 use config::{ConfigError, Source};
 use log::info;

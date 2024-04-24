@@ -8,17 +8,12 @@ use crate::runtime::config::ConfigurationPackage;
 pub use config::Config;
 
 /// Integrate with config-rs
-/// # Examples
-/// ```
+/// Example:
 /// let source = FabricConfigSource::new(config);
-/// let s = Config::builder()
+/// let s = config::Config::builder()
 /// .add_source(source)
-/// .build()
-/// .inspect_err(|e| info!("config build failed: {}", e))
-/// .unwrap();
+/// .build()?
 ///
-/// let settings = s.try_deserialize::<MySettings>().unwrap();
-/// ```
 #[derive(Debug, Clone)]
 pub struct FabricConfigSource {
     inner: ConfigurationPackage,

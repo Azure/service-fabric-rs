@@ -15,7 +15,7 @@ use mssf_com::{
 };
 use windows_core::{Interface, HSTRING};
 
-use crate::IFabricStringResultToHString;
+use crate::strings::HSTRINGWrap;
 
 use super::{
     stateful::{PrimaryReplicator, Replicator, StatefulServicePartition, StatefulServiceReplica},
@@ -72,7 +72,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
 
         let _ = unsafe { self.com_impl.BeginChangeRole(newrole.into(), &callback)? };
         let addr = rx.await.unwrap()?;
-        Ok(IFabricStringResultToHString(&addr))
+        Ok(HSTRINGWrap::from(&addr).into())
     }
     async fn close(&self) -> windows::core::Result<()> {
         info!("StatefulServiceReplicaProxy::close");
@@ -117,7 +117,7 @@ impl Replicator for ReplicatorProxy {
         });
         let _ = unsafe { self.com_impl.BeginOpen(&callback)? };
         let addr = rx.await.unwrap()?;
-        Ok(IFabricStringResultToHString(&addr))
+        Ok(HSTRINGWrap::from(&addr).into())
     }
     async fn close(&self) -> ::windows_core::Result<()> {
         info!("ReplicatorProxy::close");

@@ -20,12 +20,11 @@ use mssf_com::FabricCommon::FabricRuntime::{
 use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricStringResult,
 };
-use mssf_core::{AsyncContext, StringResult};
+use mssf_core::{strings::HSTRINGWrap, AsyncContext};
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
 use windows::core::w;
 use windows_core::HSTRING;
-//use windows_core::Error as WError;
 
 mod echo;
 
@@ -125,7 +124,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
         info!("AppFabricReplicator::EndOpen");
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
         info!("AppFabricReplicator::EndOpen {}", addr);
-        let str_res: IFabricStringResult = StringResult::new(HSTRING::from(addr)).into();
+        let str_res: IFabricStringResult = HSTRINGWrap::from(HSTRING::from(addr)).into();
         Ok(str_res)
     }
 
@@ -439,7 +438,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         info!("AppInstance::EndChangeRole");
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
         info!("AppInstance::EndChangeRole {}", addr);
-        let str_res: IFabricStringResult = StringResult::new(HSTRING::from(addr)).into();
+        let str_res: IFabricStringResult = HSTRINGWrap::from(HSTRING::from(addr)).into();
         Ok(str_res)
     }
 }

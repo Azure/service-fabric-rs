@@ -6,7 +6,7 @@ use mssf_com::FabricCommon::FabricRuntime::{
 };
 use windows_core::{Interface, HSTRING};
 
-use crate::{unsafe_pwstr_to_hstring, IFabricStringResultToHString};
+use crate::strings::HSTRINGWrap;
 
 pub fn get_com_node_context(
     timeoutMilliseconds: u32,
@@ -64,9 +64,9 @@ impl NodeContext {
         let raw_ref = unsafe { raw.as_ref() }.unwrap();
         Self {
             com: com.clone(),
-            node_name: unsafe_pwstr_to_hstring(raw_ref.NodeName),
-            node_type: unsafe_pwstr_to_hstring(raw_ref.NodeType),
-            ip_address_or_fqdn: unsafe_pwstr_to_hstring(raw_ref.IPAddressOrFQDN),
+            node_name: HSTRINGWrap::from(raw_ref.NodeName).into(),
+            node_type: HSTRINGWrap::from(raw_ref.NodeType).into(),
+            ip_address_or_fqdn: HSTRINGWrap::from(raw_ref.IPAddressOrFQDN).into(),
             node_instance_id: raw_ref.NodeInstanceId,
             node_id: NodeId {
                 low: raw_ref.NodeId.Low,
@@ -79,6 +79,6 @@ impl NodeContext {
     pub fn get_directory(&self, logical_directory_name: &HSTRING) -> windows_core::Result<HSTRING> {
         let com2 = self.com.cast::<IFabricNodeContextResult2>()?;
         let dir = unsafe { com2.GetDirectory(logical_directory_name) }?;
-        Ok(IFabricStringResultToHString(&dir))
+        Ok(HSTRINGWrap::from(&dir).into())
     }
 }

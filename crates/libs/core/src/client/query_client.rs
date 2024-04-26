@@ -3,7 +3,7 @@ use std::{ffi::c_void, time::Duration};
 use crate::{
     client::IFabricQueryClient10Wrap,
     iter::{FabricIter, FabricListAccessor},
-    unsafe_pwstr_to_hstring,
+    strings::HSTRINGWrap,
 };
 use bitflags::bitflags;
 use mssf_com::{
@@ -98,7 +98,7 @@ pub struct PagingStatus {
 impl From<&FABRIC_PAGING_STATUS> for PagingStatus {
     fn from(value: &FABRIC_PAGING_STATUS) -> Self {
         Self {
-            continuation_token: unsafe_pwstr_to_hstring(value.ContinuationToken),
+            continuation_token: HSTRINGWrap::from(value.ContinuationToken).into(),
         }
     }
 }
@@ -209,14 +209,14 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for Node {
         };
         Node {
             name: HSTRING::from_wide(unsafe { raw.NodeName.as_wide() }).unwrap(),
-            ip_address_or_fqdn: unsafe_pwstr_to_hstring(raw.IpAddressOrFQDN),
-            node_type: unsafe_pwstr_to_hstring(raw.NodeType),
-            code_version: unsafe_pwstr_to_hstring(raw.CodeVersion),
-            config_version: unsafe_pwstr_to_hstring(raw.ConfigVersion),
+            ip_address_or_fqdn: HSTRINGWrap::from(raw.IpAddressOrFQDN).into(),
+            node_type: HSTRINGWrap::from(raw.NodeType).into(),
+            code_version: HSTRINGWrap::from(raw.CodeVersion).into(),
+            config_version: HSTRINGWrap::from(raw.ConfigVersion).into(),
             node_up_time_in_seconds: raw.NodeUpTimeInSeconds,
             is_seed_node: raw.IsSeedNode.as_bool(),
-            upgrade_domain: unsafe_pwstr_to_hstring(raw.UpgradeDomain),
-            fault_domain: unsafe_pwstr_to_hstring(windows_core::PCWSTR(raw.FaultDomain)),
+            upgrade_domain: HSTRINGWrap::from(raw.UpgradeDomain).into(),
+            fault_domain: HSTRINGWrap::from(windows_core::PCWSTR(raw.FaultDomain)).into(),
             node_instance_id: raw2.NodeInstanceId,
         }
     }

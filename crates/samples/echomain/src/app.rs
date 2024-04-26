@@ -19,7 +19,7 @@ use mssf_com::FabricCommon::FabricRuntime::{
 use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricStringResult,
 };
-use mssf_core::{AsyncContext, StringResult};
+use mssf_core::{strings::HSTRINGWrap, AsyncContext};
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
 use windows::core::w;
@@ -156,7 +156,7 @@ impl IFabricStatelessServiceInstance_Impl for AppInstance {
 
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
 
-        let str_res: IFabricStringResult = StringResult::new(HSTRING::from(addr)).into();
+        let str_res: IFabricStringResult = HSTRINGWrap::from(HSTRING::from(addr)).into();
         Ok(str_res)
     }
 

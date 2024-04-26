@@ -31,7 +31,7 @@ use crate::{
         stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, Role},
         BridgeContext,
     },
-    StringResult,
+    strings::HSTRINGWrap,
 };
 
 use super::{
@@ -164,7 +164,7 @@ where
             unsafe { context.unwrap().as_impl() };
         let content = ctx_bridge.consume_content()?;
         info!("IFabricReplicatorBridge::EndOpen addr {}", content);
-        Ok(StringResult::new(content).into())
+        Ok(HSTRINGWrap::from(content).into())
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
@@ -675,7 +675,7 @@ where
             unsafe { context.unwrap().as_impl() };
         let addr = ctx_bridge.consume_content()?;
         info!("IFabricStatefulReplicaBridge::EndChangeRole: addr {}", addr);
-        Ok(StringResult::new(addr).into())
+        Ok(HSTRINGWrap::from(addr).into())
     }
 
     fn BeginClose(

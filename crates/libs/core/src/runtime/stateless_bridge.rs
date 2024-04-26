@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use crate::{
     runtime::{stateless::StatelessServicePartition, BridgeContext},
-    StringResult,
+    strings::HSTRINGWrap,
 };
 use log::info;
 use mssf_com::FabricCommon::{
@@ -153,7 +153,7 @@ where
             unsafe { context.unwrap().as_impl() };
 
         let content = ctx_bridge.consume_content()?;
-        Ok(StringResult::new(content).into())
+        Ok(HSTRINGWrap::from(content).into())
     }
 
     fn BeginClose(

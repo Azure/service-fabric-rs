@@ -1,3 +1,8 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 // iterator implementation
 // Iter infrastructure to convert Fabric raw list into rust safe wrappers.
 // Raw lists needs to be wrapped in FabricListAccessor, and raw item needs to

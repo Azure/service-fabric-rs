@@ -8,10 +8,10 @@
 use std::io::Error;
 
 use log::info;
+use mssf_core::HSTRING;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::oneshot::Receiver;
-use windows::core::HSTRING;
 
 pub fn get_addr(port: u32, hostname: HSTRING) -> String {
     let mut addr = String::new();
@@ -57,7 +57,6 @@ async fn echo_loop(listener: TcpListener) -> Result<(), Error> {
     }
 }
 
-#[tokio::main()]
 pub async fn start_echo(rx: Receiver<()>, port: u32, hostname: HSTRING) -> Result<(), Error> {
     let addr = get_addr(port, hostname);
 

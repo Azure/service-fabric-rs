@@ -15,9 +15,7 @@ endif(WIN32)
 add_custom_command(TARGET build_rust_sample_echomain POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root}
     COMMAND ${CMAKE_COMMAND} 
-        -E copy_if_different ${_pkg_src}/manifests/ApplicationManifest.xml ${_pkg_root}
+        -E copy_directory ${_pkg_src}/manifests/ ${_pkg_root}
     COMMAND ${CMAKE_COMMAND} 
-        -E copy_if_different ${_pkg_exe} ${_pkg_root}/EchoAppServicePackage/Code/echomain.exe # note the rename
-    COMMAND ${CMAKE_COMMAND} 
-        -E copy_if_different ${_pkg_src}/manifests/ServiceManifest.xml ${_pkg_root}/EchoAppServicePackage/ServiceManifest.xml
+        -E copy_if_different ${_pkg_exe} ${_pkg_root}/EchoAppServicePackage/Code/echomain.exe
 )

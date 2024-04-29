@@ -24,6 +24,9 @@ use mssf_com::FabricCommon::{
 };
 use windows::core::implement;
 
+// re-export some windows types
+pub use windows_core::{Error, Result, GUID, HSTRING, PCWSTR};
+
 #[derive(Debug)]
 #[implement(IFabricAsyncOperationCallback)]
 pub struct WaitableCallback {

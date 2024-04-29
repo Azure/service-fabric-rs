@@ -8,22 +8,8 @@ log = "0.4"
 env_logger = "*"
 ctrlc = { version = "3.0", features = ["termination"] }
 tokio = { version = "1", features = ["full"] }
-windows-core = "0.56"
-
-[dependencies.windows]
-version = "0.56"
-features = [
-    "implement"
-]
-
-[dependencies.mssf-com]
-path = "../../libs/com"
-features = [
-    "implement",
-    "ServiceFabric",
-    "ServiceFabric_FabricCommon",
-    "ServiceFabric_FabricCommon_FabricRuntime"
-]
+serde = "*"
+serde_derive = "*"
 
 [dependencies.mssf-core]
 path = "../../libs/core"

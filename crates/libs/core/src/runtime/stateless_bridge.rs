@@ -189,6 +189,7 @@ where
     }
 
     fn Abort(&self) {
-        info!("IFabricStatelessServiceInstanceBridge::Abort")
+        info!("IFabricStatelessServiceInstanceBridge::Abort");
+        self.inner.abort()
     }
 }

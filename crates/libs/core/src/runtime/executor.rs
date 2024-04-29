@@ -11,13 +11,37 @@ use tokio::{runtime::Handle, sync::mpsc::channel};
 // Executor is used by rs to post jobs to execute in the background
 // Sync is needed due to we use the executor across await boundary.
 pub trait Executor: Clone + Sync + Send + 'static {
+    // Required functions
+
     // spawns the task to run in background
     fn spawn<F>(&self, future: F)
     where
         F: Future + Send + 'static;
 
-    // run the executor until the ctrl-c os signal
-    fn run_until_ctrl_c(&self);
+    // run the future on the executor until completion.
+    fn block_on<F: Future>(&self, future: F) -> F::Output;
+
+    // provided functions
+
+    // Run the executor and block the current thread until ctrl-c event is
+    // Received.
+    fn run_until_ctrl_c(&self) {
+        info!("DefaultExecutor: setting up ctrl-c event.");
+        // set ctrc event
+        let (tx, mut rx) = channel(1);
+        let handler = move || {
+            tx.blocking_send(())
+                .expect("Could not send signal on channel.")
+        };
+        ctrlc::set_handler(handler).expect("Error setting Ctrl-C handler");
+
+        // wait for ctrl-c signal.
+        self.block_on(async move {
+            info!("DefaultExecutor: Waiting for Ctrl-C...");
+            rx.recv().await.expect("Could not receive from channel.");
+            info!("DefaultExecutor: Got Ctrl-C! Exiting...");
+        });
+    }
 }
 
 #[derive(Clone)]
@@ -30,16 +54,6 @@ impl DefaultExecutor {
         DefaultExecutor { rt }
     }
 }
-
-// TODO: rt obj needs to be hold somewhere outside of handle
-// impl Default for DefaultExecutor {
-//     fn default() -> Self {
-//         let rt = tokio::runtime::Runtime::new().unwrap();
-//         Self {
-//             rt: rt.handle().clone(),
-//         }
-//     }
-// }
 
 impl Executor for DefaultExecutor {
     fn spawn<F>(&self, future: F)
@@ -66,22 +80,8 @@ impl Executor for DefaultExecutor {
         });
     }
 
-    fn run_until_ctrl_c(&self) {
-        info!("DefaultExecutor: setting up ctrl-c event.");
-        // set ctrc event
-        let (tx, mut rx) = channel(1);
-        let handler = move || {
-            tx.blocking_send(())
-                .expect("Could not send signal on channel.")
-        };
-        ctrlc::set_handler(handler).expect("Error setting Ctrl-C handler");
-
-        // wait for ctrl-c signal.
-        self.rt.block_on(async move {
-            info!("DefaultExecutor: Waiting for Ctrl-C...");
-            rx.recv().await.expect("Could not receive from channel.");
-            info!("DefaultExecutor: Got Ctrl-C! Exiting...");
-        });
+    fn block_on<F: Future>(&self, future: F) -> F::Output {
+        self.rt.block_on(future)
     }
 }
 

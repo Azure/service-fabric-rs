@@ -8,7 +8,7 @@ use windows_core::HSTRING;
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
-    unsafe_pwstr_to_hstring, HSTRINGWrap, IFabricStringResultToHString,
+    strings::HSTRINGWrap,
 };
 
 #[derive(Debug, Clone)]
@@ -64,10 +64,10 @@ impl ConfigurationPackage {
         let raw = unsafe { self.com.get_Description().as_ref().unwrap() };
 
         ConfigurationPackageDesc {
-            name: unsafe_pwstr_to_hstring(raw.Name),
-            ServiceManifestName: unsafe_pwstr_to_hstring(raw.ServiceManifestName),
-            ServiceManifestVersion: unsafe_pwstr_to_hstring(raw.ServiceManifestVersion),
-            Version: unsafe_pwstr_to_hstring(raw.Version),
+            name: HSTRINGWrap::from(raw.Name).into(),
+            ServiceManifestName: HSTRINGWrap::from(raw.ServiceManifestName).into(),
+            ServiceManifestVersion: HSTRINGWrap::from(raw.ServiceManifestVersion).into(),
+            Version: HSTRINGWrap::from(raw.Version).into(),
         }
     }
 
@@ -118,7 +118,7 @@ impl ConfigurationPackage {
 
     pub fn decrypt_value(&self, encryptedvalue: &HSTRING) -> windows_core::Result<HSTRING> {
         let s = unsafe { self.com.DecryptValue(encryptedvalue) }?;
-        Ok(IFabricStringResultToHString(&s))
+        Ok(HSTRINGWrap::from(&s).into())
     }
 }
 

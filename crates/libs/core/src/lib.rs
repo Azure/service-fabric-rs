@@ -12,6 +12,7 @@ pub mod conf;
 pub mod debug;
 mod iter;
 pub mod runtime;
+pub mod strings;
 pub mod sync;
 
 use std::sync::{Arc, Condvar, Mutex};
@@ -19,11 +20,9 @@ use std::sync::{Arc, Condvar, Mutex};
 use log::info;
 use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
-    IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
-    IFabricStringResult_Impl,
+    IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl,
 };
 use windows::core::implement;
-use windows_core::{HSTRING, PCWSTR};
 
 #[derive(Debug)]
 #[implement(IFabricAsyncOperationCallback)]
@@ -122,85 +121,5 @@ impl IFabricAsyncOperationContext_Impl for AsyncContext {
     fn Cancel(&self) -> windows::core::Result<()> {
         info!("AsyncContext::Cancel");
         Ok(())
-    }
-}
-
-// Basic implementation of fabric string result
-// usually used as string return value to fabric runtime.
-#[derive(Debug)]
-#[implement(IFabricStringResult)]
-pub struct StringResult {
-    data: HSTRING,
-}
-
-impl StringResult {
-    pub fn new(data: HSTRING) -> StringResult {
-        StringResult { data }
-    }
-}
-
-impl IFabricStringResult_Impl for StringResult {
-    fn get_String(&self) -> windows::core::PCWSTR {
-        // This is some hack to get the raw pointer out.
-        windows::core::PCWSTR::from_raw(self.data.as_ptr())
-    }
-}
-
-pub fn IFabricStringResultToHString(s: &IFabricStringResult) -> HSTRING {
-    let content = unsafe { s.get_String() };
-    HSTRING::from_wide(unsafe { content.as_wide() }).unwrap()
-}
-
-// better wrapping conversion utilities
-// If nullptr returns empty string
-fn unsafe_pwstr_to_hstring(raw: PCWSTR) -> HSTRING {
-    if raw.is_null() {
-        return HSTRING::new();
-    }
-    HSTRING::from_wide(unsafe { raw.as_wide() }).unwrap()
-}
-
-struct HSTRINGWrap {
-    h: HSTRING,
-}
-
-impl From<PCWSTR> for HSTRINGWrap {
-    fn from(value: PCWSTR) -> Self {
-        let h = unsafe_pwstr_to_hstring(value);
-        Self { h }
-    }
-}
-
-impl From<HSTRINGWrap> for HSTRING {
-    fn from(val: HSTRINGWrap) -> Self {
-        val.h
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::{IFabricStringResultToHString, StringResult};
-    use mssf_com::FabricCommon::IFabricStringResult;
-    use windows_core::HSTRING;
-
-    #[test]
-    fn test_str_addr() {
-        // Test the addr returned to SF is right.
-        let addr = "1.2.3.4:1234";
-
-        // Check hstring len.
-        let haddr = HSTRING::from(addr);
-        let haddr_slice = haddr.as_wide();
-        assert_eq!(haddr_slice.len(), 12);
-
-        // check StringResult len.
-        let com_addr: IFabricStringResult = StringResult::new(haddr.clone()).into();
-        let raw = unsafe { com_addr.get_String() };
-        let slice = unsafe { raw.as_wide() };
-        assert_eq!(slice.len(), 12);
-
-        // check StringResult conversion is right
-        let haddr2 = IFabricStringResultToHString(&com_addr);
-        assert_eq!(haddr, haddr2);
     }
 }

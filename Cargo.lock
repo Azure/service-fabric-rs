@@ -514,32 +514,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "samples_echo2"
-version = "0.1.0"
-dependencies = [
- "env_logger",
- "log",
- "mssf-com",
- "mssf-core",
- "serde",
- "serde_derive",
- "tokio",
- "windows",
- "windows-core",
-]
-
-[[package]]
 name = "samples_echomain"
 version = "0.0.1"
 dependencies = [
  "ctrlc",
  "env_logger",
  "log",
- "mssf-com",
  "mssf-core",
+ "serde",
+ "serde_derive",
  "tokio",
- "windows",
- "windows-core",
 ]
 
 [[package]]

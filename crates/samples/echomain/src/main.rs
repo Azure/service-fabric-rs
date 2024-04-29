@@ -3,60 +3,113 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-// This example app shows how to use SF com API (unsafe)
+// This example app shows how to use SF safe API (mssf_core)
 // to create a SF stateless application.
 
-use log::info;
-use mssf_com::FabricCommon::FabricRuntime::IFabricRuntime;
-use mssf_core::runtime::create_com_runtime;
+use log::{error, info};
+use mssf_core::conf::{Config, FabricConfigSource};
+use mssf_core::debug::wait_for_debugger;
+use mssf_core::runtime::executor::{DefaultExecutor, Executor};
 use mssf_core::runtime::node_context::NodeContext;
 use mssf_core::runtime::ActivationContext;
-use std::sync::mpsc::channel;
+use mssf_core::HSTRING;
 use std::time::Duration;
-use windows::core::HSTRING;
+
+use crate::config::MySettings;
 pub mod app;
+pub mod config;
+pub mod echo;
 
-fn main() -> windows::core::Result<()> {
+fn has_debug_arg() -> bool {
+    let args: Vec<String> = std::env::args().collect();
+    for arg in args {
+        if arg == "-WaitForDebugger" {
+            return true;
+        }
+    }
+    false
+}
+
+fn main() -> mssf_core::Result<()> {
     env_logger::init();
-    // set ctrc event
-    let (tx, rx) = channel();
-    ctrlc::set_handler(move || tx.send(()).expect("Could not send signal on channel."))
-        .expect("Error setting Ctrl-C handler");
-
     info!("echomain start");
-    // hack to wait for debugger
-    // std::thread::sleep(std::time::Duration::from_secs(90));
-    // info!("sleep ended");
+    if has_debug_arg() {
+        wait_for_debugger();
+    }
+    let actctx = ActivationContext::create().inspect_err(|e| {
+        error!("Fail to create activation context: {e}");
+    })?;
+    validate_configs(&actctx);
 
-    let runtime = create_com_runtime().expect("cannot create runtime");
+    // get listening port
+    let endpoint = actctx
+        .get_endpoint_resource(&HSTRING::from("ServiceEndpoint1"))
+        .unwrap();
+    info!("Get ServiceEndpoint1: {:?}", endpoint);
+    let port = endpoint.Port;
 
-    let activation_ctx = ActivationContext::create().expect("Cannot get activation ctx");
+    // get hostname
+    let ctx = NodeContext::get_sync(Duration::from_secs(1)).unwrap();
+    info!("NodeContext: {:?}", ctx);
+    let hostname = ctx.ip_address_or_fqdn;
 
-    run_app(&runtime, &activation_ctx);
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    let e = DefaultExecutor::new(rt.handle().clone());
 
-    info!("Waiting for Ctrl-C...");
-    rx.recv().expect("Could not receive from channel.");
-    info!("Got it! Exiting...");
+    let runtime = mssf_core::runtime::Runtime::create(e.clone()).unwrap();
+    let factory = app::Factory::new(port, hostname, rt.handle().clone());
+    runtime
+        .register_stateless_service_factory(&HSTRING::from("EchoAppService"), factory)
+        .unwrap();
+
+    e.run_until_ctrl_c();
     Ok(())
 }
 
-fn run_app(runtime: &IFabricRuntime, activation_ctx: &ActivationContext) {
-    let port = get_port(activation_ctx);
-    let hostname = get_hostname();
-    app::run(runtime, port, hostname);
-}
-
-fn get_port(activation_ctx: &ActivationContext) -> u32 {
-    info!("trying to get port");
-    let endpoint = activation_ctx
-        .get_endpoint_resource(&HSTRING::from("ServiceEndpoint1"))
+// validates the configs in the config package have the right values.
+fn validate_configs(actctx: &ActivationContext) {
+    // loop and print all configs
+    let config = actctx
+        .get_configuration_package(&HSTRING::from("Config"))
         .unwrap();
-    info!("Endpoint: {:?}", endpoint);
-    endpoint.Port
-}
+    let settings = config.get_settings();
+    settings
+        .sections
+        .iter()
+        .enumerate()
+        .for_each(|(_, section)| {
+            info!("Section: {}", section.name);
+            section
+                .parameters
+                .iter()
+                .enumerate()
+                .for_each(|(_, p)| info!("Param: {:?}", p))
+        });
 
-fn get_hostname() -> HSTRING {
-    let ctx = NodeContext::get_sync(Duration::from_secs(1)).unwrap();
-    info!("NodeContext: {:?}", ctx);
-    ctx.ip_address_or_fqdn
+    // get the required config
+    let (v, encrypt) = config
+        .get_value(
+            &HSTRING::from("my_config_section"),
+            &HSTRING::from("my_string"),
+        )
+        .unwrap();
+    assert_eq!(v, "Value1");
+    assert!(!encrypt);
+
+    // Use the config framework
+    let source = FabricConfigSource::new(config);
+    let s = Config::builder()
+        .add_source(source)
+        .build()
+        .inspect_err(|e| info!("config build failed: {}", e))
+        .unwrap();
+    let val = s.get::<String>("my_config_section.my_string").unwrap();
+    info!("entry: {}", val);
+    // note that the config name lookup is case sensitive for struct fields.
+    let settings = s.try_deserialize::<MySettings>().unwrap();
+    info!("settings: {:?}", settings);
+    let sect = settings.my_config_section;
+    assert_eq!(sect.my_string, "Value1");
+    assert!(sect.my_bool);
+    assert_eq!(sect.my_int, 99);
 }

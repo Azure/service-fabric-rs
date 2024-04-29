@@ -87,6 +87,5 @@ add_subdirectory(crates/samples/echomain-stateful2)
 add_subdirectory(crates/samples/echomain-stateful)
 
 if(WIN32) #linux is not tested
-    add_subdirectory(crates/samples/echo2)
     add_subdirectory(crates/samples/kvstore)
 endif(WIN32)

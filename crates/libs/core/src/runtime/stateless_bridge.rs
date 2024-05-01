@@ -12,14 +12,17 @@ use crate::{
     strings::HSTRINGWrap,
 };
 use log::info;
-use mssf_com::{FabricCommon::{
-    FabricRuntime::{
-        IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
-        IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
-        IFabricStatelessServicePartition,
+use mssf_com::{
+    FabricCommon::{
+        FabricRuntime::{
+            IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
+            IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
+            IFabricStatelessServicePartition,
+        },
+        IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
     },
-    IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
-}, FABRIC_URI};
+    FABRIC_URI,
+};
 use windows::core::implement;
 use windows_core::{AsImpl, Error, HSTRING};
 

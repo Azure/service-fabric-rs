@@ -5,8 +5,8 @@ project(service-fabric-rs LANGUAGES)
 message(STATUS "fetching fabric_metadata")
 include(FetchContent)
 FetchContent_Declare(fabric_metadata
-    GIT_REPOSITORY https://github.com/Azure/service-fabric-metadata.git
-    GIT_TAG 87041e9790edb7f87dbf6ca8c1ca0f40db8c82dd
+    GIT_REPOSITORY https://github.com/youyuanwu/service-fabric-metadata-fork.git
+    GIT_TAG 3eb3371db3dac10a3afe6397d23fa29718bb35de
 )
 FetchContent_GetProperties(fabric_metadata)
 if(NOT fabric_metadata_POPULATED)

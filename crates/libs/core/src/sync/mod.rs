@@ -158,7 +158,7 @@ mod tests {
             IFabricAsyncOperationContext,
         },
         FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION, FABRIC_CLUSTER_HEALTH_POLICY,
-        FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM,
+        FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM, FABRIC_URI,
     };
 
     use tokio::sync::oneshot::Sender;
@@ -296,21 +296,6 @@ mod tests {
             mssf_com::FABRIC_CLUSTER_HEALTH_POLICY,
             mssf_com::FabricCommon::FabricClient::IFabricNodeHealthResult,
             HSTRING
-        );
-        // the u16 is likely wrong. Maybe need to write a url type and convert to const ptr.
-        myasyncfunc!(
-            get_application_health,
-            GetApplicationHealth,
-            mssf_com::FABRIC_APPLICATION_HEALTH_POLICY,
-            mssf_com::FabricCommon::FabricClient::IFabricApplicationHealthResult,
-            u16 // applicationName
-        );
-        myasyncfunc!(
-            get_service_health,
-            GetServiceHealth,
-            mssf_com::FABRIC_APPLICATION_HEALTH_POLICY,
-            mssf_com::FabricCommon::FabricClient::IFabricServiceHealthResult,
-            u16 // serviceName
         );
     }
 

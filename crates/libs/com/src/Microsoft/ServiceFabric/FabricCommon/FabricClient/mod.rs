@@ -329,19 +329,20 @@ impl IFabricApplicationManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginGetApplicationUpgradeProgress<P0>(
+    pub unsafe fn BeginGetApplicationUpgradeProgress<P0, P1>(
         &self,
-        applicationname: *const u16,
+        applicationname: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetApplicationUpgradeProgress)(
             windows_core::Interface::as_raw(self),
-            applicationname,
+            applicationname.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -396,19 +397,20 @@ impl IFabricApplicationManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginDeleteApplication<P0>(
+    pub unsafe fn BeginDeleteApplication<P0, P1>(
         &self,
-        applicationname: *const u16,
+        applicationname: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginDeleteApplication)(
             windows_core::Interface::as_raw(self),
-            applicationname,
+            applicationname.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -499,7 +501,7 @@ pub struct IFabricApplicationManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginGetApplicationUpgradeProgress: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -524,7 +526,7 @@ pub struct IFabricApplicationManagementClient_Vtbl {
         -> windows_core::HRESULT,
     pub BeginDeleteApplication: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -673,21 +675,22 @@ impl IFabricApplicationManagementClient2 {
         )
         .and_then(|| windows_core::Type::from_abi(result__))
     }
-    pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1>(
+    pub unsafe fn BeginMoveNextApplicationUpgradeDomain2<P0, P1, P2>(
         &self,
-        applicationname: *const u16,
-        nextupgradedomain: P0,
+        applicationname: P0,
+        nextupgradedomain: P1,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginMoveNextApplicationUpgradeDomain2)(
             windows_core::Interface::as_raw(self),
-            applicationname,
+            applicationname.param().abi(),
             nextupgradedomain.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
@@ -729,7 +732,7 @@ pub struct IFabricApplicationManagementClient2_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginMoveNextApplicationUpgradeDomain2: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         u32,
         *mut core::ffi::c_void,
@@ -995,19 +998,20 @@ windows_core::imp::interface_hierarchy!(
     IFabricApplicationManagementClient4
 );
 impl IFabricApplicationManagementClient5 {
-    pub unsafe fn BeginRollbackApplicationUpgrade<P0>(
+    pub unsafe fn BeginRollbackApplicationUpgrade<P0, P1>(
         &self,
-        applicationname: *const u16,
+        applicationname: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginRollbackApplicationUpgrade)(
             windows_core::Interface::as_raw(self),
-            applicationname,
+            applicationname.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -1032,7 +1036,7 @@ pub struct IFabricApplicationManagementClient5_Vtbl {
     pub base__: IFabricApplicationManagementClient4_Vtbl,
     pub BeginRollbackApplicationUpgrade: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -1352,7 +1356,7 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricApplicationUpgradeProgressResult {
-    pub unsafe fn get_ApplicationName(&self) -> *mut u16 {
+    pub unsafe fn get_ApplicationName(&self) -> super::super::FABRIC_URI {
         (windows_core::Interface::vtable(self).get_ApplicationName)(
             windows_core::Interface::as_raw(self),
         )
@@ -1407,7 +1411,8 @@ unsafe impl Sync for IFabricApplicationUpgradeProgressResult {}
 #[repr(C)]
 pub struct IFabricApplicationUpgradeProgressResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    pub get_ApplicationName: unsafe extern "system" fn(*mut core::ffi::c_void) -> *mut u16,
+    pub get_ApplicationName:
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> super::super::FABRIC_URI,
     pub get_ApplicationTypeName:
         unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
     pub get_TargetApplicationTypeVersion:
@@ -2395,19 +2400,20 @@ impl IFabricClusterManagementClient2 {
         )
         .ok()
     }
-    pub unsafe fn BeginRecoverServicePartitions<P0>(
+    pub unsafe fn BeginRecoverServicePartitions<P0, P1>(
         &self,
-        servicename: *const u16,
+        servicename: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginRecoverServicePartitions)(
             windows_core::Interface::as_raw(self),
-            servicename,
+            servicename.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -2572,7 +2578,7 @@ pub struct IFabricClusterManagementClient2_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginRecoverServicePartitions: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -5303,20 +5309,21 @@ impl IFabricHealthClient {
         .and_then(|| windows_core::Type::from_abi(result__))
     }
     #[cfg(feature = "Win32_Foundation")]
-    pub unsafe fn BeginGetApplicationHealth<P0>(
+    pub unsafe fn BeginGetApplicationHealth<P0, P1>(
         &self,
-        applicationname: *const u16,
+        applicationname: P0,
         healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetApplicationHealth)(
             windows_core::Interface::as_raw(self),
-            applicationname,
+            applicationname.param().abi(),
             healthpolicy,
             timeoutmilliseconds,
             callback.param().abi(),
@@ -5340,20 +5347,21 @@ impl IFabricHealthClient {
         .and_then(|| windows_core::Type::from_abi(result__))
     }
     #[cfg(feature = "Win32_Foundation")]
-    pub unsafe fn BeginGetServiceHealth<P0>(
+    pub unsafe fn BeginGetServiceHealth<P0, P1>(
         &self,
-        servicename: *const u16,
+        servicename: P0,
         healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetServiceHealth)(
             windows_core::Interface::as_raw(self),
-            servicename,
+            servicename.param().abi(),
             healthpolicy,
             timeoutmilliseconds,
             callback.param().abi(),
@@ -5453,22 +5461,23 @@ impl IFabricHealthClient {
         .and_then(|| windows_core::Type::from_abi(result__))
     }
     #[cfg(feature = "Win32_Foundation")]
-    pub unsafe fn BeginGetDeployedApplicationHealth<P0, P1>(
+    pub unsafe fn BeginGetDeployedApplicationHealth<P0, P1, P2>(
         &self,
-        applicationname: *const u16,
-        nodename: P0,
+        applicationname: P0,
+        nodename: P1,
         healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetDeployedApplicationHealth)(
             windows_core::Interface::as_raw(self),
-            applicationname,
+            applicationname.param().abi(),
             nodename.param().abi(),
             healthpolicy,
             timeoutmilliseconds,
@@ -5493,24 +5502,25 @@ impl IFabricHealthClient {
         .and_then(|| windows_core::Type::from_abi(result__))
     }
     #[cfg(feature = "Win32_Foundation")]
-    pub unsafe fn BeginGetDeployedServicePackageHealth<P0, P1, P2>(
+    pub unsafe fn BeginGetDeployedServicePackageHealth<P0, P1, P2, P3>(
         &self,
-        applicationname: *const u16,
-        servicemanifestname: P0,
-        nodename: P1,
+        applicationname: P0,
+        servicemanifestname: P1,
+        nodename: P2,
         healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
         timeoutmilliseconds: u32,
-        callback: P2,
+        callback: P3,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
         P1: windows_core::Param<windows_core::PCWSTR>,
-        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P2: windows_core::Param<windows_core::PCWSTR>,
+        P3: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetDeployedServicePackageHealth)(
             windows_core::Interface::as_raw(self),
-            applicationname,
+            applicationname.param().abi(),
             servicemanifestname.param().abi(),
             nodename.param().abi(),
             healthpolicy,
@@ -5579,7 +5589,7 @@ pub struct IFabricHealthClient_Vtbl {
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetApplicationHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
         u32,
         *mut core::ffi::c_void,
@@ -5595,7 +5605,7 @@ pub struct IFabricHealthClient_Vtbl {
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetServiceHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
         u32,
         *mut core::ffi::c_void,
@@ -5644,7 +5654,7 @@ pub struct IFabricHealthClient_Vtbl {
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetDeployedApplicationHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
         u32,
@@ -5661,7 +5671,7 @@ pub struct IFabricHealthClient_Vtbl {
     #[cfg(feature = "Win32_Foundation")]
     pub BeginGetDeployedServicePackageHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         windows_core::PCWSTR,
         *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
@@ -6239,21 +6249,22 @@ impl std::ops::Deref for IFabricInfrastructureServiceClient {
 }
 windows_core::imp::interface_hierarchy!(IFabricInfrastructureServiceClient, windows_core::IUnknown);
 impl IFabricInfrastructureServiceClient {
-    pub unsafe fn BeginInvokeInfrastructureCommand<P0, P1>(
+    pub unsafe fn BeginInvokeInfrastructureCommand<P0, P1, P2>(
         &self,
-        servicename: *const u16,
-        command: P0,
+        servicename: P0,
+        command: P1,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginInvokeInfrastructureCommand)(
             windows_core::Interface::as_raw(self),
-            servicename,
+            servicename.param().abi(),
             command.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
@@ -6276,21 +6287,22 @@ impl IFabricInfrastructureServiceClient {
         )
         .and_then(|| windows_core::Type::from_abi(result__))
     }
-    pub unsafe fn BeginInvokeInfrastructureQuery<P0, P1>(
+    pub unsafe fn BeginInvokeInfrastructureQuery<P0, P1, P2>(
         &self,
-        servicename: *const u16,
-        command: P0,
+        servicename: P0,
+        command: P1,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginInvokeInfrastructureQuery)(
             windows_core::Interface::as_raw(self),
-            servicename,
+            servicename.param().abi(),
             command.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
@@ -6321,7 +6333,7 @@ pub struct IFabricInfrastructureServiceClient_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub BeginInvokeInfrastructureCommand: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         u32,
         *mut core::ffi::c_void,
@@ -6334,7 +6346,7 @@ pub struct IFabricInfrastructureServiceClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginInvokeInfrastructureQuery: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         u32,
         *mut core::ffi::c_void,
@@ -6417,7 +6429,10 @@ impl IFabricNameEnumerationResult {
             windows_core::Interface::as_raw(self),
         )
     }
-    pub unsafe fn GetNames(&self, itemcount: *mut u32) -> windows_core::Result<*mut *mut u16> {
+    pub unsafe fn GetNames(
+        &self,
+        itemcount: *mut u32,
+    ) -> windows_core::Result<*mut super::super::FABRIC_URI> {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).GetNames)(
             windows_core::Interface::as_raw(self),
@@ -6439,7 +6454,7 @@ pub struct IFabricNameEnumerationResult_Vtbl {
     pub GetNames: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         *mut u32,
-        *mut *mut *mut u16,
+        *mut *mut super::super::FABRIC_URI,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -7143,19 +7158,20 @@ impl std::ops::Deref for IFabricPropertyManagementClient {
 }
 windows_core::imp::interface_hierarchy!(IFabricPropertyManagementClient, windows_core::IUnknown);
 impl IFabricPropertyManagementClient {
-    pub unsafe fn BeginCreateName<P0>(
+    pub unsafe fn BeginCreateName<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginCreateName)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -7172,19 +7188,20 @@ impl IFabricPropertyManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginDeleteName<P0>(
+    pub unsafe fn BeginDeleteName<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginDeleteName)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -7201,19 +7218,20 @@ impl IFabricPropertyManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginNameExists<P0>(
+    pub unsafe fn BeginNameExists<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginNameExists)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -7233,23 +7251,24 @@ impl IFabricPropertyManagementClient {
         .map(|| result__)
     }
     #[cfg(feature = "Win32_Foundation")]
-    pub unsafe fn BeginEnumerateSubNames<P0, P1, P2>(
+    pub unsafe fn BeginEnumerateSubNames<P0, P1, P2, P3>(
         &self,
-        name: *const u16,
-        previousresult: P0,
-        recursive: P1,
+        name: P0,
+        previousresult: P1,
+        recursive: P2,
         timeoutmilliseconds: u32,
-        callback: P2,
+        callback: P3,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<IFabricNameEnumerationResult>,
-        P1: windows_core::Param<windows::Win32::Foundation::BOOLEAN>,
-        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<IFabricNameEnumerationResult>,
+        P2: windows_core::Param<windows::Win32::Foundation::BOOLEAN>,
+        P3: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginEnumerateSubNames)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             previousresult.param().abi(),
             recursive.param().abi(),
             timeoutmilliseconds,
@@ -7273,22 +7292,23 @@ impl IFabricPropertyManagementClient {
         )
         .and_then(|| windows_core::Type::from_abi(result__))
     }
-    pub unsafe fn BeginPutPropertyBinary<P0, P1>(
+    pub unsafe fn BeginPutPropertyBinary<P0, P1, P2>(
         &self,
-        name: *const u16,
-        propertyname: P0,
+        name: P0,
+        propertyname: P1,
         data: &[u8],
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginPutPropertyBinary)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             propertyname.param().abi(),
             data.len().try_into().unwrap(),
             core::mem::transmute(data.as_ptr()),
@@ -7308,22 +7328,23 @@ impl IFabricPropertyManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginPutPropertyInt64<P0, P1>(
+    pub unsafe fn BeginPutPropertyInt64<P0, P1, P2>(
         &self,
-        name: *const u16,
-        propertyname: P0,
+        name: P0,
+        propertyname: P1,
         data: i64,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginPutPropertyInt64)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             propertyname.param().abi(),
             data,
             timeoutmilliseconds,
@@ -7342,22 +7363,23 @@ impl IFabricPropertyManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginPutPropertyDouble<P0, P1>(
+    pub unsafe fn BeginPutPropertyDouble<P0, P1, P2>(
         &self,
-        name: *const u16,
-        propertyname: P0,
+        name: P0,
+        propertyname: P1,
         data: f64,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginPutPropertyDouble)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             propertyname.param().abi(),
             data,
             timeoutmilliseconds,
@@ -7376,23 +7398,24 @@ impl IFabricPropertyManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginPutPropertyWString<P0, P1, P2>(
+    pub unsafe fn BeginPutPropertyWString<P0, P1, P2, P3>(
         &self,
-        name: *const u16,
-        propertyname: P0,
-        data: P1,
+        name: P0,
+        propertyname: P1,
+        data: P2,
         timeoutmilliseconds: u32,
-        callback: P2,
+        callback: P3,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
         P1: windows_core::Param<windows_core::PCWSTR>,
-        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P2: windows_core::Param<windows_core::PCWSTR>,
+        P3: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginPutPropertyWString)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             propertyname.param().abi(),
             data.param().abi(),
             timeoutmilliseconds,
@@ -7411,22 +7434,23 @@ impl IFabricPropertyManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginPutPropertyGuid<P0, P1>(
+    pub unsafe fn BeginPutPropertyGuid<P0, P1, P2>(
         &self,
-        name: *const u16,
-        propertyname: P0,
+        name: P0,
+        propertyname: P1,
         data: *const windows_core::GUID,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginPutPropertyGuid)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             propertyname.param().abi(),
             data,
             timeoutmilliseconds,
@@ -7445,21 +7469,22 @@ impl IFabricPropertyManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginDeleteProperty<P0, P1>(
+    pub unsafe fn BeginDeleteProperty<P0, P1, P2>(
         &self,
-        name: *const u16,
-        propertyname: P0,
+        name: P0,
+        propertyname: P1,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginDeleteProperty)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             propertyname.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
@@ -7477,21 +7502,22 @@ impl IFabricPropertyManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginGetPropertyMetadata<P0, P1>(
+    pub unsafe fn BeginGetPropertyMetadata<P0, P1, P2>(
         &self,
-        name: *const u16,
-        propertyname: P0,
+        name: P0,
+        propertyname: P1,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetPropertyMetadata)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             propertyname.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
@@ -7514,21 +7540,22 @@ impl IFabricPropertyManagementClient {
         )
         .and_then(|| windows_core::Type::from_abi(result__))
     }
-    pub unsafe fn BeginGetProperty<P0, P1>(
+    pub unsafe fn BeginGetProperty<P0, P1, P2>(
         &self,
-        name: *const u16,
-        propertyname: P0,
+        name: P0,
+        propertyname: P1,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows_core::PCWSTR>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetProperty)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             propertyname.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
@@ -7551,20 +7578,21 @@ impl IFabricPropertyManagementClient {
         )
         .and_then(|| windows_core::Type::from_abi(result__))
     }
-    pub unsafe fn BeginSubmitPropertyBatch<P0>(
+    pub unsafe fn BeginSubmitPropertyBatch<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         operations: &[super::super::FABRIC_PROPERTY_BATCH_OPERATION],
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginSubmitPropertyBatch)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             operations.len().try_into().unwrap(),
             core::mem::transmute(operations.as_ptr()),
             timeoutmilliseconds,
@@ -7591,23 +7619,24 @@ impl IFabricPropertyManagementClient {
         .and_then(|| windows_core::Type::from_abi(result__))
     }
     #[cfg(feature = "Win32_Foundation")]
-    pub unsafe fn BeginEnumerateProperties<P0, P1, P2>(
+    pub unsafe fn BeginEnumerateProperties<P0, P1, P2, P3>(
         &self,
-        name: *const u16,
-        includevalues: P0,
-        previousresult: P1,
+        name: P0,
+        includevalues: P1,
+        previousresult: P2,
         timeoutmilliseconds: u32,
-        callback: P2,
+        callback: P3,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows::Win32::Foundation::BOOLEAN>,
-        P1: windows_core::Param<IFabricPropertyEnumerationResult>,
-        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<windows::Win32::Foundation::BOOLEAN>,
+        P2: windows_core::Param<IFabricPropertyEnumerationResult>,
+        P3: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginEnumerateProperties)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             includevalues.param().abi(),
             previousresult.param().abi(),
             timeoutmilliseconds,
@@ -7639,7 +7668,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub BeginCreateName: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -7650,7 +7679,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginDeleteName: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -7661,7 +7690,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginNameExists: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -7674,7 +7703,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     #[cfg(feature = "Win32_Foundation")]
     pub BeginEnumerateSubNames: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         *mut core::ffi::c_void,
         windows::Win32::Foundation::BOOLEAN,
         u32,
@@ -7690,7 +7719,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginPutPropertyBinary: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         u32,
         *const u8,
@@ -7704,7 +7733,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginPutPropertyInt64: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         i64,
         u32,
@@ -7717,7 +7746,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginPutPropertyDouble: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         f64,
         u32,
@@ -7730,7 +7759,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginPutPropertyWString: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         windows_core::PCWSTR,
         u32,
@@ -7743,7 +7772,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginPutPropertyGuid: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         *const windows_core::GUID,
         u32,
@@ -7756,7 +7785,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginDeleteProperty: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         u32,
         *mut core::ffi::c_void,
@@ -7768,7 +7797,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginGetPropertyMetadata: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         u32,
         *mut core::ffi::c_void,
@@ -7781,7 +7810,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginGetProperty: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         u32,
         *mut core::ffi::c_void,
@@ -7794,7 +7823,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginSubmitPropertyBatch: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *const super::super::FABRIC_PROPERTY_BATCH_OPERATION,
         u32,
@@ -7810,7 +7839,7 @@ pub struct IFabricPropertyManagementClient_Vtbl {
     #[cfg(feature = "Win32_Foundation")]
     pub BeginEnumerateProperties: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         windows::Win32::Foundation::BOOLEAN,
         *mut core::ffi::c_void,
         u32,
@@ -7842,20 +7871,21 @@ windows_core::imp::interface_hierarchy!(
     IFabricPropertyManagementClient
 );
 impl IFabricPropertyManagementClient2 {
-    pub unsafe fn BeginPutCustomPropertyOperation<P0>(
+    pub unsafe fn BeginPutCustomPropertyOperation<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         propertyoperation: *const super::super::FABRIC_PUT_CUSTOM_PROPERTY_OPERATION,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginPutCustomPropertyOperation)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             propertyoperation,
             timeoutmilliseconds,
             callback.param().abi(),
@@ -7881,7 +7911,7 @@ pub struct IFabricPropertyManagementClient2_Vtbl {
     pub base__: IFabricPropertyManagementClient_Vtbl,
     pub BeginPutCustomPropertyOperation: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         *const super::super::FABRIC_PUT_CUSTOM_PROPERTY_OPERATION,
         u32,
         *mut core::ffi::c_void,
@@ -10558,19 +10588,20 @@ impl IFabricServiceGroupManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginDeleteServiceGroup<P0>(
+    pub unsafe fn BeginDeleteServiceGroup<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginDeleteServiceGroup)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -10587,19 +10618,20 @@ impl IFabricServiceGroupManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginGetServiceGroupDescription<P0>(
+    pub unsafe fn BeginGetServiceGroupDescription<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetServiceGroupDescription)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -10640,7 +10672,7 @@ pub struct IFabricServiceGroupManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginDeleteServiceGroup: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -10651,7 +10683,7 @@ pub struct IFabricServiceGroupManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginGetServiceGroupDescription: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -10679,20 +10711,21 @@ windows_core::imp::interface_hierarchy!(
     IFabricServiceGroupManagementClient
 );
 impl IFabricServiceGroupManagementClient2 {
-    pub unsafe fn BeginUpdateServiceGroup<P0>(
+    pub unsafe fn BeginUpdateServiceGroup<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         servicegroupupdatedescription: *const super::super::FABRIC_SERVICE_GROUP_UPDATE_DESCRIPTION,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginUpdateServiceGroup)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             servicegroupupdatedescription,
             timeoutmilliseconds,
             callback.param().abi(),
@@ -10718,7 +10751,7 @@ pub struct IFabricServiceGroupManagementClient2_Vtbl {
     pub base__: IFabricServiceGroupManagementClient_Vtbl,
     pub BeginUpdateServiceGroup: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         *const super::super::FABRIC_SERVICE_GROUP_UPDATE_DESCRIPTION,
         u32,
         *mut core::ffi::c_void,
@@ -10747,24 +10780,26 @@ windows_core::imp::interface_hierarchy!(
     IFabricServiceGroupManagementClient2
 );
 impl IFabricServiceGroupManagementClient3 {
-    pub unsafe fn BeginCreateServiceGroupFromTemplate<P0, P1>(
+    pub unsafe fn BeginCreateServiceGroupFromTemplate<P0, P1, P2, P3>(
         &self,
-        applicationname: *const u16,
-        servicename: *const u16,
-        servicetypename: P0,
+        applicationname: P0,
+        servicename: P1,
+        servicetypename: P2,
         initializationdata: &[u8],
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P3,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::super::FABRIC_URI>,
+        P2: windows_core::Param<windows_core::PCWSTR>,
+        P3: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginCreateServiceGroupFromTemplate)(
             windows_core::Interface::as_raw(self),
-            applicationname,
-            servicename,
+            applicationname.param().abi(),
+            servicename.param().abi(),
             servicetypename.param().abi(),
             initializationdata.len().try_into().unwrap(),
             core::mem::transmute(initializationdata.as_ptr()),
@@ -10795,8 +10830,8 @@ pub struct IFabricServiceGroupManagementClient3_Vtbl {
     pub base__: IFabricServiceGroupManagementClient2_Vtbl,
     pub BeginCreateServiceGroupFromTemplate: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
-        *const u16,
+        super::super::FABRIC_URI,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         u32,
         *const u8,
@@ -10955,24 +10990,26 @@ impl IFabricServiceManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginCreateServiceFromTemplate<P0, P1>(
+    pub unsafe fn BeginCreateServiceFromTemplate<P0, P1, P2, P3>(
         &self,
-        applicationname: *const u16,
-        servicename: *const u16,
-        servicetypename: P0,
+        applicationname: P0,
+        servicename: P1,
+        servicetypename: P2,
         initializationdata: &[u8],
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P3,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::super::FABRIC_URI>,
+        P2: windows_core::Param<windows_core::PCWSTR>,
+        P3: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginCreateServiceFromTemplate)(
             windows_core::Interface::as_raw(self),
-            applicationname,
-            servicename,
+            applicationname.param().abi(),
+            servicename.param().abi(),
             servicetypename.param().abi(),
             initializationdata.len().try_into().unwrap(),
             core::mem::transmute(initializationdata.as_ptr()),
@@ -10992,19 +11029,20 @@ impl IFabricServiceManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginDeleteService<P0>(
+    pub unsafe fn BeginDeleteService<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginDeleteService)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -11021,19 +11059,20 @@ impl IFabricServiceManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginGetServiceDescription<P0>(
+    pub unsafe fn BeginGetServiceDescription<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetServiceDescription)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             timeoutmilliseconds,
             callback.param().abi(),
             &mut result__,
@@ -11055,20 +11094,21 @@ impl IFabricServiceManagementClient {
         )
         .and_then(|| windows_core::Type::from_abi(result__))
     }
-    pub unsafe fn RegisterServicePartitionResolutionChangeHandler<P0>(
+    pub unsafe fn RegisterServicePartitionResolutionChangeHandler<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         keytype: super::super::FABRIC_PARTITION_KEY_TYPE,
         partitionkey: *const core::ffi::c_void,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<i64>
     where
-        P0: windows_core::Param<IFabricServicePartitionResolutionChangeHandler>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<IFabricServicePartitionResolutionChangeHandler>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).RegisterServicePartitionResolutionChangeHandler)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             keytype,
             partitionkey,
             callback.param().abi(),
@@ -11086,23 +11126,24 @@ impl IFabricServiceManagementClient {
         )
         .ok()
     }
-    pub unsafe fn BeginResolveServicePartition<P0, P1>(
+    pub unsafe fn BeginResolveServicePartition<P0, P1, P2>(
         &self,
-        name: *const u16,
+        name: P0,
         partitionkeytype: super::super::FABRIC_PARTITION_KEY_TYPE,
         partitionkey: *const core::ffi::c_void,
-        previousresult: P0,
+        previousresult: P1,
         timeoutmilliseconds: u32,
-        callback: P1,
+        callback: P2,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<IFabricResolvedServicePartitionResult>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<IFabricResolvedServicePartitionResult>,
+        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginResolveServicePartition)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             partitionkeytype,
             partitionkey,
             previousresult.param().abi(),
@@ -11146,8 +11187,8 @@ pub struct IFabricServiceManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginCreateServiceFromTemplate: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
-        *const u16,
+        super::super::FABRIC_URI,
+        super::super::FABRIC_URI,
         windows_core::PCWSTR,
         u32,
         *const u8,
@@ -11161,7 +11202,7 @@ pub struct IFabricServiceManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginDeleteService: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -11172,7 +11213,7 @@ pub struct IFabricServiceManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginGetServiceDescription: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -11185,7 +11226,7 @@ pub struct IFabricServiceManagementClient_Vtbl {
     pub RegisterServicePartitionResolutionChangeHandler:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
-            *const u16,
+            super::super::FABRIC_URI,
             super::super::FABRIC_PARTITION_KEY_TYPE,
             *const core::ffi::c_void,
             *mut core::ffi::c_void,
@@ -11195,7 +11236,7 @@ pub struct IFabricServiceManagementClient_Vtbl {
         unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
     pub BeginResolveServicePartition: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         super::super::FABRIC_PARTITION_KEY_TYPE,
         *const core::ffi::c_void,
         *mut core::ffi::c_void,
@@ -11267,20 +11308,21 @@ impl IFabricServiceManagementClient2 {
         )
         .and_then(|| windows_core::Type::from_abi(result__))
     }
-    pub unsafe fn BeginUpdateService<P0>(
+    pub unsafe fn BeginUpdateService<P0, P1>(
         &self,
-        name: *const u16,
+        name: P0,
         serviceupdatedescription: *const super::super::FABRIC_SERVICE_UPDATE_DESCRIPTION,
         timeoutmilliseconds: u32,
-        callback: P0,
+        callback: P1,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginUpdateService)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             serviceupdatedescription,
             timeoutmilliseconds,
             callback.param().abi(),
@@ -11320,7 +11362,7 @@ pub struct IFabricServiceManagementClient2_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginUpdateService: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         *const super::super::FABRIC_SERVICE_UPDATE_DESCRIPTION,
         u32,
         *mut core::ffi::c_void,

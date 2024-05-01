@@ -12,14 +12,14 @@ use crate::{
     strings::HSTRINGWrap,
 };
 use log::info;
-use mssf_com::FabricCommon::{
+use mssf_com::{FabricCommon::{
     FabricRuntime::{
         IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
         IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
         IFabricStatelessServicePartition,
     },
     IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
-};
+}, FABRIC_URI};
 use windows::core::implement;
 use windows_core::{AsImpl, Error, HSTRING};
 
@@ -57,14 +57,14 @@ where
     fn CreateInstance(
         &self,
         servicetypename: &::windows_core::PCWSTR,
-        servicename: *const u16,
+        servicename: FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &::windows_core::GUID,
         instanceid: i64,
     ) -> ::windows_core::Result<IFabricStatelessServiceInstance> {
         info!("StatelessServiceFactoryBridge::CreateInstance");
-        let p_servicename = ::windows_core::PCWSTR::from_raw(servicename);
+        let p_servicename = ::windows_core::PCWSTR::from_raw(servicename.0);
         let h_servicename = HSTRING::from_wide(unsafe { p_servicename.as_wide() }).unwrap();
         let h_servicetypename = HSTRING::from_wide(unsafe { servicetypename.as_wide() }).unwrap();
         let data = unsafe {

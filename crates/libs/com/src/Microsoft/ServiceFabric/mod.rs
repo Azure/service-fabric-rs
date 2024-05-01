@@ -3339,7 +3339,7 @@ impl Default for FABRIC_APPLICATION_CAPACITY_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_DESCRIPTION {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ApplicationTypeName: windows_core::PCWSTR,
     pub ApplicationTypeVersion: windows_core::PCWSTR,
     pub ApplicationParameters: *const FABRIC_APPLICATION_PARAMETER_LIST,
@@ -3416,7 +3416,7 @@ impl Default for FABRIC_APPLICATION_DESCRIPTION_EX1 {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_APPLICATION_HEALTH {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
     pub HealthEvents: *const FABRIC_HEALTH_EVENT_LIST,
     pub DeployedApplicationHealthStates: *const FABRIC_DEPLOYED_APPLICATION_HEALTH_STATE_LIST,
@@ -3473,7 +3473,7 @@ impl Default for FABRIC_APPLICATION_HEALTH {
 #[repr(C)]
 pub struct FABRIC_APPLICATION_HEALTH_EVALUATION {
     pub Description: windows_core::PCWSTR,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
     pub UnhealthyEvaluations: *const FABRIC_HEALTH_EVALUATION_LIST,
     pub Reserved: *mut core::ffi::c_void,
@@ -3684,7 +3684,7 @@ impl Default for FABRIC_APPLICATION_HEALTH_POLICY_MAP {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_APPLICATION_HEALTH_POLICY_MAP_ITEM {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub HealthPolicy: *const FABRIC_APPLICATION_HEALTH_POLICY,
 }
 #[cfg(feature = "Win32_Foundation")]
@@ -3725,7 +3725,7 @@ impl Default for FABRIC_APPLICATION_HEALTH_POLICY_MAP_ITEM {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_APPLICATION_HEALTH_QUERY_DESCRIPTION {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub HealthPolicy: *const FABRIC_APPLICATION_HEALTH_POLICY,
     pub EventsFilter: *const FABRIC_HEALTH_EVENTS_FILTER,
     pub ServicesFilter: *const FABRIC_SERVICE_HEALTH_STATES_FILTER,
@@ -3824,7 +3824,7 @@ impl Default for FABRIC_APPLICATION_HEALTH_QUERY_DESCRIPTION_EX1 {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_APPLICATION_HEALTH_REPORT {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub HealthInformation: *const FABRIC_HEALTH_INFORMATION,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -3868,7 +3868,7 @@ impl Default for FABRIC_APPLICATION_HEALTH_REPORT {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_HEALTH_STATE {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -3938,7 +3938,7 @@ impl Default for FABRIC_APPLICATION_HEALTH_STATES_FILTER {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_HEALTH_STATE_CHUNK {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub HealthState: FABRIC_HEALTH_STATE,
     pub ServiceHealthStateChunks: *const FABRIC_SERVICE_HEALTH_STATE_CHUNK_LIST,
     pub DeployedApplicationHealthStateChunks:
@@ -3986,7 +3986,7 @@ impl Default for FABRIC_APPLICATION_HEALTH_STATE_CHUNK {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_HEALTH_STATE_CHUNK_EX1 {
-    pub ApplicationTypeName: *mut u16,
+    pub ApplicationTypeName: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_APPLICATION_HEALTH_STATE_CHUNK_EX1 {}
@@ -4060,7 +4060,7 @@ impl Default for FABRIC_APPLICATION_HEALTH_STATE_CHUNK_LIST {
 #[repr(C)]
 pub struct FABRIC_APPLICATION_HEALTH_STATE_FILTER {
     pub HealthStateFilter: u32,
-    pub ApplicationNameFilter: *mut u16,
+    pub ApplicationNameFilter: FABRIC_URI,
     pub ServiceFilters: *const FABRIC_SERVICE_HEALTH_STATE_FILTER_LIST,
     pub DeployedApplicationFilters: *const FABRIC_DEPLOYED_APPLICATION_HEALTH_STATE_FILTER_LIST,
     pub Reserved: *mut core::ffi::c_void,
@@ -4485,7 +4485,7 @@ impl Default for FABRIC_APPLICATION_METRIC_LIST {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_NAME_QUERY_DESCRIPTION {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_APPLICATION_NAME_QUERY_DESCRIPTION {}
@@ -4518,7 +4518,7 @@ impl Default for FABRIC_APPLICATION_NAME_QUERY_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_NAME_QUERY_RESULT {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_APPLICATION_NAME_QUERY_RESULT {}
@@ -4551,7 +4551,7 @@ impl Default for FABRIC_APPLICATION_NAME_QUERY_RESULT {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_NETWORK_QUERY_DESCRIPTION {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub PagingDescription: *const FABRIC_QUERY_PAGING_DESCRIPTION,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -4757,7 +4757,7 @@ impl Default for FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_QUERY_DESCRIPTION {
-    pub ApplicationNameFilter: *mut u16,
+    pub ApplicationNameFilter: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_APPLICATION_QUERY_DESCRIPTION {}
@@ -4941,7 +4941,7 @@ impl Default for FABRIC_APPLICATION_QUERY_DESCRIPTION_EX4 {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_QUERY_RESULT_ITEM {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ApplicationTypeName: windows_core::PCWSTR,
     pub ApplicationTypeVersion: windows_core::PCWSTR,
     pub Status: FABRIC_APPLICATION_STATUS,
@@ -5399,7 +5399,7 @@ impl Default for FABRIC_APPLICATION_TYPE_QUERY_RESULT_LIST {
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_APPLICATION_UPDATE_DESCRIPTION {
     pub Flags: u32,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub RemoveApplicationCapacity: windows::Win32::Foundation::BOOLEAN,
     pub MaximumNodes: u32,
     pub MinimumNodes: u32,
@@ -5454,7 +5454,7 @@ impl Default for FABRIC_APPLICATION_UPDATE_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_UPGRADE_DESCRIPTION {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub TargetApplicationTypeVersion: windows_core::PCWSTR,
     pub ApplicationParameters: *mut FABRIC_APPLICATION_PARAMETER_LIST,
     pub UpgradeKind: FABRIC_APPLICATION_UPGRADE_KIND,
@@ -5655,7 +5655,7 @@ impl Default for FABRIC_APPLICATION_UPGRADE_PROGRESS_EX2 {
 }
 #[repr(C)]
 pub struct FABRIC_APPLICATION_UPGRADE_UPDATE_DESCRIPTION {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub UpgradeKind: FABRIC_APPLICATION_UPGRADE_KIND,
     pub UpdateFlags: u32,
     pub UpgradePolicyDescription: *mut core::ffi::c_void,
@@ -8663,7 +8663,7 @@ impl Default for FABRIC_DATA_PACKAGE_DESCRIPTION_LIST {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_DELETE_APPLICATION_DESCRIPTION {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ForceDelete: windows::Win32::Foundation::BOOLEAN,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -8774,7 +8774,7 @@ impl Default for FABRIC_DELETE_PROPERTY_OPERATION {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_DELETE_SERVICE_DESCRIPTION {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub ForceDelete: windows::Win32::Foundation::BOOLEAN,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -8924,7 +8924,7 @@ impl Default for FABRIC_DEPLOYED_APPLICATIONS_HEALTH_EVALUATION {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_DEPLOYED_APPLICATION_HEALTH {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub NodeName: windows_core::PCWSTR,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
     pub HealthEvents: *const FABRIC_HEALTH_EVENT_LIST,
@@ -8982,7 +8982,7 @@ impl Default for FABRIC_DEPLOYED_APPLICATION_HEALTH {
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_APPLICATION_HEALTH_EVALUATION {
     pub Description: windows_core::PCWSTR,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub NodeName: windows_core::PCWSTR,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
     pub UnhealthyEvaluations: *const FABRIC_HEALTH_EVALUATION_LIST,
@@ -9094,7 +9094,7 @@ impl Default for FABRIC_DEPLOYED_APPLICATION_HEALTH_EX2 {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub NodeName: windows_core::PCWSTR,
     pub HealthPolicy: *const FABRIC_APPLICATION_HEALTH_POLICY,
     pub EventsFilter: *const FABRIC_HEALTH_EVENTS_FILTER,
@@ -9193,7 +9193,7 @@ impl Default for FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION_EX1 {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub NodeName: windows_core::PCWSTR,
     pub HealthInformation: *const FABRIC_HEALTH_INFORMATION,
     pub Reserved: *mut core::ffi::c_void,
@@ -9240,7 +9240,7 @@ impl Default for FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT {
 }
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_APPLICATION_HEALTH_STATE {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub NodeName: windows_core::PCWSTR,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
     pub Reserved: *mut core::ffi::c_void,
@@ -9551,7 +9551,7 @@ impl Default for FABRIC_DEPLOYED_APPLICATION_HEALTH_STATISTICS_FILTER {
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION {
     pub NodeName: windows_core::PCWSTR,
-    pub ApplicationNameFilter: *mut u16,
+    pub ApplicationNameFilter: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION {}
@@ -9587,7 +9587,7 @@ impl Default for FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ApplicationTypeName: windows_core::PCWSTR,
     pub DeployedApplicationStatus: FABRIC_DEPLOYMENT_STATUS,
     pub Reserved: *mut core::ffi::c_void,
@@ -9734,7 +9734,7 @@ impl Default for FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_LIST {
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_DESCRIPTION {
     pub NodeName: windows_core::PCWSTR,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestNameFilter: windows_core::PCWSTR,
     pub CodePackageNameFilter: windows_core::PCWSTR,
     pub Reserved: *mut core::ffi::c_void,
@@ -9921,7 +9921,7 @@ impl Default for FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_LIST {
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_CODE_PACKAGE_RESULT {
     pub NodeName: windows_core::PCWSTR,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestName: windows_core::PCWSTR,
     pub CodePackageName: windows_core::PCWSTR,
     pub CodePackageInstanceId: i64,
@@ -10005,7 +10005,7 @@ impl Default for FABRIC_DEPLOYED_CODE_PACKAGE_RESULT_EX1 {
 pub struct FABRIC_DEPLOYED_NETWORK_CODE_PACKAGE_QUERY_DESCRIPTION {
     pub NodeName: windows_core::PCWSTR,
     pub NetworkName: windows_core::PCWSTR,
-    pub ApplicationNameFilter: *mut u16,
+    pub ApplicationNameFilter: FABRIC_URI,
     pub ServiceManifestNameFilter: windows_core::PCWSTR,
     pub CodePackageNameFilter: windows_core::PCWSTR,
     pub PagingDescription: *const FABRIC_QUERY_PAGING_DESCRIPTION,
@@ -10052,7 +10052,7 @@ impl Default for FABRIC_DEPLOYED_NETWORK_CODE_PACKAGE_QUERY_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_NETWORK_CODE_PACKAGE_QUERY_RESULT_ITEM {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub NetworkName: windows_core::PCWSTR,
     pub CodePackageName: windows_core::PCWSTR,
     pub CodePackageVersion: windows_core::PCWSTR,
@@ -10290,7 +10290,7 @@ impl Default for FABRIC_DEPLOYED_SERVICE_PACKAGES_HEALTH_EVALUATION {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestName: windows_core::PCWSTR,
     pub NodeName: windows_core::PCWSTR,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
@@ -10344,7 +10344,7 @@ impl Default for FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH {
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_EVALUATION {
     pub Description: windows_core::PCWSTR,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestName: windows_core::PCWSTR,
     pub NodeName: windows_core::PCWSTR,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
@@ -10500,7 +10500,7 @@ impl Default for FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_EX2 {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_QUERY_DESCRIPTION {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub NodeName: windows_core::PCWSTR,
     pub ServiceManifestName: windows_core::PCWSTR,
     pub HealthPolicy: *const FABRIC_APPLICATION_HEALTH_POLICY,
@@ -10591,7 +10591,7 @@ impl Default for FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_QUERY_DESCRIPTION_EX1 {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestName: windows_core::PCWSTR,
     pub NodeName: windows_core::PCWSTR,
     pub HealthInformation: *const FABRIC_HEALTH_INFORMATION,
@@ -10678,7 +10678,7 @@ impl Default for FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT_EX1 {
 }
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_STATE {
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestName: windows_core::PCWSTR,
     pub NodeName: windows_core::PCWSTR,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
@@ -11046,7 +11046,7 @@ impl Default for FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_STATE_LIST {
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION {
     pub NodeName: windows_core::PCWSTR,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestNameFilter: windows_core::PCWSTR,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -11272,7 +11272,7 @@ impl Default for FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM {
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_SERVICE_REPLICA_QUERY_DESCRIPTION {
     pub NodeName: windows_core::PCWSTR,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestNameFilter: windows_core::PCWSTR,
     pub PartitionIdFilter: windows_core::GUID,
     pub Reserved: *mut core::ffi::c_void,
@@ -11381,7 +11381,7 @@ impl Default for FABRIC_DEPLOYED_SERVICE_REPLICA_QUERY_RESULT_LIST {
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_SERVICE_TYPE_QUERY_DESCRIPTION {
     pub NodeName: windows_core::PCWSTR,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestNameFilter: windows_core::PCWSTR,
     pub ServiceTypeNameFilter: windows_core::PCWSTR,
     pub Reserved: *mut core::ffi::c_void,
@@ -11537,7 +11537,7 @@ impl Default for FABRIC_DEPLOYED_SERVICE_TYPE_QUERY_RESULT_LIST {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionId: windows_core::GUID,
     pub ReplicaId: i64,
     pub CurrentServiceOperation: FABRIC_QUERY_SERVICE_OPERATION_NAME,
@@ -11682,7 +11682,7 @@ impl Default for FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_IT
 }
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub ServiceTypeName: windows_core::PCWSTR,
     pub ServiceManifestVersion: windows_core::PCWSTR,
     pub CodePackageName: windows_core::PCWSTR,
@@ -11859,7 +11859,7 @@ impl Default for FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM_EX3 
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_DETAIL_QUERY_RESULT_ITEM {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionId: windows_core::GUID,
     pub InstanceId: i64,
     pub CurrentServiceOperation: FABRIC_QUERY_SERVICE_OPERATION_NAME,
@@ -11956,7 +11956,7 @@ impl Default for FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_DETAIL_QUERY_RESULT_
 }
 #[repr(C)]
 pub struct FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub ServiceTypeName: windows_core::PCWSTR,
     pub ServiceManifestVersion: windows_core::PCWSTR,
     pub CodePackageName: windows_core::PCWSTR,
@@ -14870,7 +14870,7 @@ impl Default for FABRIC_MOVE_PRIMARY_DESCRIPTION2 {
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_MOVE_PRIMARY_DESCRIPTION_USING_NODE_NAME {
     pub NodeName: windows_core::PCWSTR,
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionId: windows_core::GUID,
     pub IgnoreConstraints: windows::Win32::Foundation::BOOLEAN,
     pub Reserved: *mut core::ffi::c_void,
@@ -14920,7 +14920,7 @@ impl Default for FABRIC_MOVE_PRIMARY_DESCRIPTION_USING_NODE_NAME {
 #[repr(C)]
 pub struct FABRIC_MOVE_PRIMARY_RESULT {
     pub NodeName: windows_core::PCWSTR,
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionId: windows_core::GUID,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -14995,7 +14995,7 @@ impl Default for FABRIC_MOVE_SECONDARY_DESCRIPTION2 {
 pub struct FABRIC_MOVE_SECONDARY_DESCRIPTION_USING_NODE_NAME {
     pub CurrentNodeName: windows_core::PCWSTR,
     pub NewNodeName: windows_core::PCWSTR,
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionId: windows_core::GUID,
     pub IgnoreConstraints: windows::Win32::Foundation::BOOLEAN,
     pub Reserved: *mut core::ffi::c_void,
@@ -15048,7 +15048,7 @@ impl Default for FABRIC_MOVE_SECONDARY_DESCRIPTION_USING_NODE_NAME {
 pub struct FABRIC_MOVE_SECONDARY_RESULT {
     pub CurrentNodeName: windows_core::PCWSTR,
     pub NewNodeName: windows_core::PCWSTR,
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionId: windows_core::GUID,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -15212,7 +15212,7 @@ pub struct FABRIC_NAMED_PROPERTY_METADATA {
     pub ValueSize: i32,
     pub SequenceNumber: i64,
     pub LastModifiedUtc: windows::Win32::Foundation::FILETIME,
-    pub Name: *mut u16,
+    pub Name: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 #[cfg(feature = "Win32_Foundation")]
@@ -15340,7 +15340,7 @@ impl Default for FABRIC_NAMED_REPARTITION_DESCRIPTION {
 #[repr(C)]
 pub struct FABRIC_NETWORK_APPLICATION_QUERY_DESCRIPTION {
     pub NetworkName: windows_core::PCWSTR,
-    pub ApplicationNameFilter: *mut u16,
+    pub ApplicationNameFilter: FABRIC_URI,
     pub PagingDescription: *const FABRIC_QUERY_PAGING_DESCRIPTION,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -16861,7 +16861,7 @@ pub struct FABRIC_NODE_QUERY_RESULT_ITEM {
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
     pub IsSeedNode: windows::Win32::Foundation::BOOLEAN,
     pub UpgradeDomain: windows_core::PCWSTR,
-    pub FaultDomain: *mut u16,
+    pub FaultDomain: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 #[cfg(feature = "Win32_Foundation")]
@@ -17760,7 +17760,7 @@ impl Default for FABRIC_PACKAGE_SHARING_POLICY_LIST {
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_PAGED_DEPLOYED_APPLICATION_QUERY_DESCRIPTION {
     pub NodeName: windows_core::PCWSTR,
-    pub ApplicationNameFilter: *mut u16,
+    pub ApplicationNameFilter: FABRIC_URI,
     pub IncludeHealthState: windows::Win32::Foundation::BOOLEAN,
     pub PagingDescription: *const FABRIC_QUERY_PAGING_DESCRIPTION,
     pub Reserved: *mut core::ffi::c_void,
@@ -18821,7 +18821,7 @@ impl Default for FABRIC_PARTITION_SAFETY_CHECK {
 }
 #[repr(C)]
 pub struct FABRIC_PARTITION_SELECTOR {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionSelectorType: FABRIC_PARTITION_SELECTOR_TYPE,
     pub PartitionKey: windows_core::PCWSTR,
     pub Reserved: *mut core::ffi::c_void,
@@ -21757,7 +21757,7 @@ pub struct FABRIC_RESOLVED_SERVICE_PARTITION {
     pub Info: FABRIC_SERVICE_PARTITION_INFORMATION,
     pub EndpointCount: u32,
     pub Endpoints: *mut FABRIC_RESOLVED_SERVICE_ENDPOINT,
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_RESOLVED_SERVICE_PARTITION {}
@@ -21798,7 +21798,7 @@ impl Default for FABRIC_RESOLVED_SERVICE_PARTITION {
 #[repr(C)]
 pub struct FABRIC_RESTART_DEPLOYED_CODE_PACKAGE_DESCRIPTION {
     pub NodeName: windows_core::PCWSTR,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestName: windows_core::PCWSTR,
     pub CodePackageName: windows_core::PCWSTR,
     pub CodePackageInstanceId: i64,
@@ -21877,7 +21877,7 @@ impl Default for FABRIC_RESTART_DEPLOYED_CODE_PACKAGE_DESCRIPTION2 {
 #[repr(C)]
 pub struct FABRIC_RESTART_DEPLOYED_CODE_PACKAGE_DESCRIPTION_USING_NODE_NAME {
     pub NodeName: windows_core::PCWSTR,
-    pub ApplicationName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
     pub ServiceManifestName: windows_core::PCWSTR,
     pub CodePackageName: windows_core::PCWSTR,
     pub CodePackageInstanceId: i64,
@@ -23272,7 +23272,7 @@ impl Default for FABRIC_SEED_NODE_SAFETY_CHECK {
 }
 #[repr(C)]
 pub struct FABRIC_SELECTED_PARTITION {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionId: windows_core::GUID,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -23361,7 +23361,7 @@ impl Default for FABRIC_SERVICES_HEALTH_EVALUATION {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_CORRELATION_DESCRIPTION {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub Scheme: FABRIC_SERVICE_CORRELATION_SCHEME,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -23431,8 +23431,8 @@ impl Default for FABRIC_SERVICE_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_FROM_TEMPLATE_DESCRIPTION {
-    pub ApplicationName: *mut u16,
-    pub ServiceName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
+    pub ServiceName: FABRIC_URI,
     pub ServiceDnsName: windows_core::PCWSTR,
     pub ServiceTypeName: windows_core::PCWSTR,
     pub ServicePackageActivationMode: FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE,
@@ -23526,8 +23526,8 @@ impl Default for FABRIC_SERVICE_GROUP_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_GROUP_FROM_TEMPLATE_DESCRIPTION {
-    pub ApplicationName: *mut u16,
-    pub ServiceName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
+    pub ServiceName: FABRIC_URI,
     pub ServiceTypeName: windows_core::PCWSTR,
     pub ServicePackageActivationMode: FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE,
     pub InitializationDataSize: u32,
@@ -23579,7 +23579,7 @@ impl Default for FABRIC_SERVICE_GROUP_FROM_TEMPLATE_DESCRIPTION {
 #[repr(C)]
 pub struct FABRIC_SERVICE_GROUP_MEMBER_DESCRIPTION {
     pub ServiceType: windows_core::PCWSTR,
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub InitializationDataSize: u32,
     pub InitializationData: *const u8,
     pub MetricCount: u32,
@@ -23628,7 +23628,7 @@ impl Default for FABRIC_SERVICE_GROUP_MEMBER_DESCRIPTION {
 #[repr(C)]
 pub struct FABRIC_SERVICE_GROUP_MEMBER_MEMBER_QUERY_RESULT_ITEM {
     pub ServiceType: windows_core::PCWSTR,
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_SERVICE_GROUP_MEMBER_MEMBER_QUERY_RESULT_ITEM {}
@@ -23697,8 +23697,8 @@ impl Default for FABRIC_SERVICE_GROUP_MEMBER_MEMBER_QUERY_RESULT_LIST {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_GROUP_MEMBER_QUERY_DESCRIPTION {
-    pub ApplicationName: *mut u16,
-    pub ServiceNameFilter: *mut u16,
+    pub ApplicationName: FABRIC_URI,
+    pub ServiceNameFilter: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_SERVICE_GROUP_MEMBER_QUERY_DESCRIPTION {}
@@ -23734,7 +23734,7 @@ impl Default for FABRIC_SERVICE_GROUP_MEMBER_QUERY_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_GROUP_MEMBER_QUERY_RESULT_ITEM {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub Members: *mut FABRIC_SERVICE_GROUP_MEMBER_MEMBER_QUERY_RESULT_LIST,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -24116,7 +24116,7 @@ impl Default for FABRIC_SERVICE_GROUP_UPDATE_DESCRIPTION {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_SERVICE_HEALTH {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
     pub HealthEvents: *const FABRIC_HEALTH_EVENT_LIST,
     pub PartitionHealthStates: *const FABRIC_PARTITION_HEALTH_STATE_LIST,
@@ -24167,7 +24167,7 @@ impl Default for FABRIC_SERVICE_HEALTH {
 #[repr(C)]
 pub struct FABRIC_SERVICE_HEALTH_EVALUATION {
     pub Description: windows_core::PCWSTR,
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
     pub UnhealthyEvaluations: *const FABRIC_HEALTH_EVALUATION_LIST,
     pub Reserved: *mut core::ffi::c_void,
@@ -24276,7 +24276,7 @@ impl Default for FABRIC_SERVICE_HEALTH_EX2 {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub HealthPolicy: *const FABRIC_APPLICATION_HEALTH_POLICY,
     pub EventsFilter: *const FABRIC_HEALTH_EVENTS_FILTER,
     pub PartitionsFilter: *const FABRIC_PARTITION_HEALTH_STATES_FILTER,
@@ -24369,7 +24369,7 @@ impl Default for FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION_EX1 {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_SERVICE_HEALTH_REPORT {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub HealthInformation: *const FABRIC_HEALTH_INFORMATION,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -24413,7 +24413,7 @@ impl Default for FABRIC_SERVICE_HEALTH_REPORT {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_HEALTH_STATE {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -24483,7 +24483,7 @@ impl Default for FABRIC_SERVICE_HEALTH_STATES_FILTER {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_HEALTH_STATE_CHUNK {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub HealthState: FABRIC_HEALTH_STATE,
     pub PartitionHealthStateChunks: *const FABRIC_PARTITION_HEALTH_STATE_CHUNK_LIST,
     pub Reserved: *mut core::ffi::c_void,
@@ -24567,7 +24567,7 @@ impl Default for FABRIC_SERVICE_HEALTH_STATE_CHUNK_LIST {
 #[repr(C)]
 pub struct FABRIC_SERVICE_HEALTH_STATE_FILTER {
     pub HealthStateFilter: u32,
-    pub ServiceNameFilter: *mut u16,
+    pub ServiceNameFilter: FABRIC_URI,
     pub PartitionFilters: *const FABRIC_PARTITION_HEALTH_STATE_FILTER_LIST,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -24823,7 +24823,7 @@ impl Default for FABRIC_SERVICE_NAME_QUERY_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_NAME_QUERY_RESULT {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_SERVICE_NAME_QUERY_RESULT {}
@@ -24856,7 +24856,7 @@ impl Default for FABRIC_SERVICE_NAME_QUERY_RESULT {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_NOTIFICATION {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionId: windows_core::GUID,
     pub EndpointCount: u32,
     pub Endpoints: *mut FABRIC_RESOLVED_SERVICE_ENDPOINT,
@@ -24902,7 +24902,7 @@ impl Default for FABRIC_SERVICE_NOTIFICATION {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION {
-    pub Name: *mut u16,
+    pub Name: FABRIC_URI,
     pub Flags: FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -24970,7 +24970,7 @@ impl Default for FABRIC_SERVICE_PARTITION_INFORMATION {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionIdFilter: windows_core::GUID,
     pub Reserved: *mut core::ffi::c_void,
 }
@@ -25172,8 +25172,8 @@ impl Default for FABRIC_SERVICE_PLACEMENT_POLICY_LIST {
 }
 #[repr(C)]
 pub struct FABRIC_SERVICE_QUERY_DESCRIPTION {
-    pub ApplicationName: *mut u16,
-    pub ServiceNameFilter: *mut u16,
+    pub ApplicationName: FABRIC_URI,
+    pub ServiceNameFilter: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_SERVICE_QUERY_DESCRIPTION {}
@@ -26632,8 +26632,8 @@ impl Default for FABRIC_START_UPGRADE_DESCRIPTION_EX1 {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_STATEFUL_SERVICE_DESCRIPTION {
-    pub ApplicationName: *mut u16,
-    pub ServiceName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
+    pub ServiceName: FABRIC_URI,
     pub ServiceTypeName: windows_core::PCWSTR,
     pub InitializationDataSize: u32,
     pub InitializationData: *mut u8,
@@ -27049,7 +27049,7 @@ impl Default for FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX1 {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub ServiceTypeName: windows_core::PCWSTR,
     pub ServiceManifestVersion: windows_core::PCWSTR,
     pub HasPersistedState: windows::Win32::Foundation::BOOLEAN,
@@ -27767,8 +27767,8 @@ impl Default for FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5 {
 }
 #[repr(C)]
 pub struct FABRIC_STATELESS_SERVICE_DESCRIPTION {
-    pub ApplicationName: *mut u16,
-    pub ServiceName: *mut u16,
+    pub ApplicationName: FABRIC_URI,
+    pub ServiceName: FABRIC_URI,
     pub ServiceTypeName: windows_core::PCWSTR,
     pub InitializationDataSize: u32,
     pub InitializationData: *mut u8,
@@ -28298,7 +28298,7 @@ impl Default for FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM {
 }
 #[repr(C)]
 pub struct FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub ServiceTypeName: windows_core::PCWSTR,
     pub ServiceManifestVersion: windows_core::PCWSTR,
     pub HealthState: FABRIC_HEALTH_STATE,
@@ -29029,7 +29029,7 @@ impl Default for FABRIC_SYSTEM_APPLICATION_HEALTH_EVALUATION {
 }
 #[repr(C)]
 pub struct FABRIC_SYSTEM_SERVICE_QUERY_DESCRIPTION {
-    pub SystemServiceNameFilter: *mut u16,
+    pub SystemServiceNameFilter: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Copy for FABRIC_SYSTEM_SERVICE_QUERY_DESCRIPTION {}
@@ -29185,7 +29185,7 @@ impl Default for FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION {
 }
 #[repr(C)]
 pub struct FABRIC_UNPLACED_REPLICA_INFORMATION {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionId: windows_core::GUID,
     pub UnplacedReplicaReasons: *const FABRIC_STRING_LIST,
     pub Reserved: *mut core::ffi::c_void,
@@ -29259,7 +29259,7 @@ impl Default for FABRIC_UNPLACED_REPLICA_INFORMATION_LIST {
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]
 pub struct FABRIC_UNPLACED_REPLICA_INFORMATION_QUERY_DESCRIPTION {
-    pub ServiceName: *mut u16,
+    pub ServiceName: FABRIC_URI,
     pub PartitionId: windows_core::GUID,
     pub OnlyQueryPrimaries: windows::Win32::Foundation::BOOLEAN,
     pub Reserved: *mut core::ffi::c_void,
@@ -29995,6 +29995,33 @@ impl Default for FABRIC_UPGRADE_UPDATE_DESCRIPTION {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
+}
+#[repr(transparent)]
+#[derive(PartialEq, Eq)]
+pub struct FABRIC_URI(pub *mut u16);
+impl FABRIC_URI {
+    pub fn is_invalid(&self) -> bool {
+        self.0.is_null()
+    }
+}
+impl Default for FABRIC_URI {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+impl Clone for FABRIC_URI {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+impl Copy for FABRIC_URI {}
+impl core::fmt::Debug for FABRIC_URI {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("FABRIC_URI").field(&self.0).finish()
+    }
+}
+impl windows_core::TypeKind for FABRIC_URI {
+    type TypeKind = windows_core::CopyType;
 }
 #[repr(C)]
 #[cfg(feature = "Win32_Foundation")]

@@ -66,7 +66,7 @@ pub trait IFabricApplicationManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginGetApplicationUpgradeProgress(
         &self,
-        applicationname: *const u16,
+        applicationname: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -86,7 +86,7 @@ pub trait IFabricApplicationManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginDeleteApplication(
         &self,
-        applicationname: *const u16,
+        applicationname: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -245,7 +245,7 @@ impl IFabricApplicationManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            applicationname: *const u16,
+            applicationname: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -335,7 +335,7 @@ impl IFabricApplicationManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            applicationname: *const u16,
+            applicationname: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -558,7 +558,7 @@ pub trait IFabricApplicationManagementClient2_Impl:
     ) -> windows_core::Result<super::IFabricStringResult>;
     fn BeginMoveNextApplicationUpgradeDomain2(
         &self,
-        applicationname: *const u16,
+        applicationname: super::super::FABRIC_URI,
         nextupgradedomain: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -631,7 +631,7 @@ impl IFabricApplicationManagementClient2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            applicationname: *const u16,
+            applicationname: super::super::FABRIC_URI,
             nextupgradedomain: windows_core::PCWSTR,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
@@ -971,7 +971,7 @@ pub trait IFabricApplicationManagementClient5_Impl:
 {
     fn BeginRollbackApplicationUpgrade(
         &self,
-        applicationname: *const u16,
+        applicationname: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -993,7 +993,7 @@ impl IFabricApplicationManagementClient5_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            applicationname: *const u16,
+            applicationname: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -1382,7 +1382,7 @@ impl IFabricApplicationManagementClient9_Vtbl {
     }
 }
 pub trait IFabricApplicationUpgradeProgressResult_Impl: Sized {
-    fn get_ApplicationName(&self) -> *mut u16;
+    fn get_ApplicationName(&self) -> super::super::FABRIC_URI;
     fn get_ApplicationTypeName(&self) -> windows_core::PCWSTR;
     fn get_TargetApplicationTypeVersion(&self) -> windows_core::PCWSTR;
     fn get_UpgradeState(&self) -> super::super::FABRIC_APPLICATION_UPGRADE_STATE;
@@ -1409,7 +1409,7 @@ impl IFabricApplicationUpgradeProgressResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut u16 {
+        ) -> super::super::FABRIC_URI {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricApplicationUpgradeProgressResult_Impl::get_ApplicationName(this)
@@ -2326,7 +2326,7 @@ pub trait IFabricClusterManagementClient2_Impl:
     ) -> windows_core::Result<()>;
     fn BeginRecoverServicePartitions(
         &self,
-        servicename: *const u16,
+        servicename: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -2791,7 +2791,7 @@ impl IFabricClusterManagementClient2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            servicename: *const u16,
+            servicename: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -5928,7 +5928,7 @@ pub trait IFabricHealthClient_Impl: Sized {
     ) -> windows_core::Result<IFabricNodeHealthResult>;
     fn BeginGetApplicationHealth(
         &self,
-        applicationname: *const u16,
+        applicationname: super::super::FABRIC_URI,
         healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -5939,7 +5939,7 @@ pub trait IFabricHealthClient_Impl: Sized {
     ) -> windows_core::Result<IFabricApplicationHealthResult>;
     fn BeginGetServiceHealth(
         &self,
-        servicename: *const u16,
+        servicename: super::super::FABRIC_URI,
         healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -5973,7 +5973,7 @@ pub trait IFabricHealthClient_Impl: Sized {
     ) -> windows_core::Result<IFabricReplicaHealthResult>;
     fn BeginGetDeployedApplicationHealth(
         &self,
-        applicationname: *const u16,
+        applicationname: super::super::FABRIC_URI,
         nodename: &windows_core::PCWSTR,
         healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
         timeoutmilliseconds: u32,
@@ -5985,7 +5985,7 @@ pub trait IFabricHealthClient_Impl: Sized {
     ) -> windows_core::Result<IFabricDeployedApplicationHealthResult>;
     fn BeginGetDeployedServicePackageHealth(
         &self,
-        applicationname: *const u16,
+        applicationname: super::super::FABRIC_URI,
         servicemanifestname: &windows_core::PCWSTR,
         nodename: &windows_core::PCWSTR,
         healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
@@ -6123,7 +6123,7 @@ impl IFabricHealthClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            applicationname: *const u16,
+            applicationname: super::super::FABRIC_URI,
             healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
@@ -6173,7 +6173,7 @@ impl IFabricHealthClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            servicename: *const u16,
+            servicename: super::super::FABRIC_URI,
             healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
@@ -6325,7 +6325,7 @@ impl IFabricHealthClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            applicationname: *const u16,
+            applicationname: super::super::FABRIC_URI,
             nodename: windows_core::PCWSTR,
             healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
             timeoutmilliseconds: u32,
@@ -6377,7 +6377,7 @@ impl IFabricHealthClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            applicationname: *const u16,
+            applicationname: super::super::FABRIC_URI,
             servicemanifestname: windows_core::PCWSTR,
             nodename: windows_core::PCWSTR,
             healthpolicy: *const super::super::FABRIC_APPLICATION_HEALTH_POLICY,
@@ -7115,7 +7115,7 @@ impl IFabricHealthClient4_Vtbl {
 pub trait IFabricInfrastructureServiceClient_Impl: Sized {
     fn BeginInvokeInfrastructureCommand(
         &self,
-        servicename: *const u16,
+        servicename: super::super::FABRIC_URI,
         command: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -7126,7 +7126,7 @@ pub trait IFabricInfrastructureServiceClient_Impl: Sized {
     ) -> windows_core::Result<super::IFabricStringResult>;
     fn BeginInvokeInfrastructureQuery(
         &self,
-        servicename: *const u16,
+        servicename: super::super::FABRIC_URI,
         command: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -7149,7 +7149,7 @@ impl IFabricInfrastructureServiceClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            servicename: *const u16,
+            servicename: super::super::FABRIC_URI,
             command: windows_core::PCWSTR,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
@@ -7199,7 +7199,7 @@ impl IFabricInfrastructureServiceClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            servicename: *const u16,
+            servicename: super::super::FABRIC_URI,
             command: windows_core::PCWSTR,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
@@ -7321,7 +7321,7 @@ impl IFabricMoveSecondaryResult_Vtbl {
 }
 pub trait IFabricNameEnumerationResult_Impl: Sized {
     fn get_EnumerationStatus(&self) -> super::super::FABRIC_ENUMERATION_STATUS;
-    fn GetNames(&self, itemcount: *mut u32) -> windows_core::Result<*mut *mut u16>;
+    fn GetNames(&self, itemcount: *mut u32) -> windows_core::Result<*mut super::super::FABRIC_URI>;
 }
 impl windows_core::RuntimeName for IFabricNameEnumerationResult {}
 impl IFabricNameEnumerationResult_Vtbl {
@@ -7348,7 +7348,7 @@ impl IFabricNameEnumerationResult_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             itemcount: *mut u32,
-            buffereditems: *mut *mut *mut u16,
+            buffereditems: *mut *mut super::super::FABRIC_URI,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -8200,7 +8200,7 @@ impl IFabricPropertyEnumerationResult_Vtbl {
 pub trait IFabricPropertyManagementClient_Impl: Sized {
     fn BeginCreateName(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -8210,7 +8210,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginDeleteName(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -8220,7 +8220,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginNameExists(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -8230,7 +8230,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<u8>;
     fn BeginEnumerateSubNames(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         previousresult: Option<&IFabricNameEnumerationResult>,
         recursive: windows::Win32::Foundation::BOOLEAN,
         timeoutmilliseconds: u32,
@@ -8242,7 +8242,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<IFabricNameEnumerationResult>;
     fn BeginPutPropertyBinary(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         datalength: u32,
         data: *const u8,
@@ -8255,7 +8255,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginPutPropertyInt64(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         data: i64,
         timeoutmilliseconds: u32,
@@ -8267,7 +8267,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginPutPropertyDouble(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         data: f64,
         timeoutmilliseconds: u32,
@@ -8279,7 +8279,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginPutPropertyWString(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         data: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
@@ -8291,7 +8291,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginPutPropertyGuid(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         data: *const windows_core::GUID,
         timeoutmilliseconds: u32,
@@ -8303,7 +8303,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginDeleteProperty(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -8314,7 +8314,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginGetPropertyMetadata(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -8325,7 +8325,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<IFabricPropertyMetadataResult>;
     fn BeginGetProperty(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -8336,7 +8336,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<IFabricPropertyValueResult>;
     fn BeginSubmitPropertyBatch(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         operationcount: u32,
         operations: *const super::super::FABRIC_PROPERTY_BATCH_OPERATION,
         timeoutmilliseconds: u32,
@@ -8349,7 +8349,7 @@ pub trait IFabricPropertyManagementClient_Impl: Sized {
     ) -> windows_core::Result<IFabricPropertyBatchResult>;
     fn BeginEnumerateProperties(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         includevalues: windows::Win32::Foundation::BOOLEAN,
         previousresult: Option<&IFabricPropertyEnumerationResult>,
         timeoutmilliseconds: u32,
@@ -8375,7 +8375,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -8417,7 +8417,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -8459,7 +8459,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -8507,7 +8507,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             previousresult: *mut core::ffi::c_void,
             recursive: windows::Win32::Foundation::BOOLEAN,
             timeoutmilliseconds: u32,
@@ -8559,7 +8559,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             propertyname: windows_core::PCWSTR,
             datalength: u32,
             data: *const u8,
@@ -8607,7 +8607,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             propertyname: windows_core::PCWSTR,
             data: i64,
             timeoutmilliseconds: u32,
@@ -8653,7 +8653,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             propertyname: windows_core::PCWSTR,
             data: f64,
             timeoutmilliseconds: u32,
@@ -8699,7 +8699,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             propertyname: windows_core::PCWSTR,
             data: windows_core::PCWSTR,
             timeoutmilliseconds: u32,
@@ -8745,7 +8745,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             propertyname: windows_core::PCWSTR,
             data: *const windows_core::GUID,
             timeoutmilliseconds: u32,
@@ -8791,7 +8791,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             propertyname: windows_core::PCWSTR,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
@@ -8835,7 +8835,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             propertyname: windows_core::PCWSTR,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
@@ -8885,7 +8885,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             propertyname: windows_core::PCWSTR,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
@@ -8935,7 +8935,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             operationcount: u32,
             operations: *const super::super::FABRIC_PROPERTY_BATCH_OPERATION,
             timeoutmilliseconds: u32,
@@ -8989,7 +8989,7 @@ impl IFabricPropertyManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             includevalues: windows::Win32::Foundation::BOOLEAN,
             previousresult: *mut core::ffi::c_void,
             timeoutmilliseconds: u32,
@@ -9077,7 +9077,7 @@ pub trait IFabricPropertyManagementClient2_Impl:
 {
     fn BeginPutCustomPropertyOperation(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         propertyoperation: *const super::super::FABRIC_PUT_CUSTOM_PROPERTY_OPERATION,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -9102,7 +9102,7 @@ impl IFabricPropertyManagementClient2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             propertyoperation: *const super::super::FABRIC_PUT_CUSTOM_PROPERTY_OPERATION,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
@@ -12459,7 +12459,7 @@ pub trait IFabricServiceGroupManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginDeleteServiceGroup(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -12469,7 +12469,7 @@ pub trait IFabricServiceGroupManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginGetServiceGroupDescription(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -12533,7 +12533,7 @@ impl IFabricServiceGroupManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -12575,7 +12575,7 @@ impl IFabricServiceGroupManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -12640,7 +12640,7 @@ pub trait IFabricServiceGroupManagementClient2_Impl:
 {
     fn BeginUpdateServiceGroup(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         servicegroupupdatedescription: *const super::super::FABRIC_SERVICE_GROUP_UPDATE_DESCRIPTION,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -12663,7 +12663,7 @@ impl IFabricServiceGroupManagementClient2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             servicegroupupdatedescription : *const super::super:: FABRIC_SERVICE_GROUP_UPDATE_DESCRIPTION,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
@@ -12717,8 +12717,8 @@ pub trait IFabricServiceGroupManagementClient3_Impl:
 {
     fn BeginCreateServiceGroupFromTemplate(
         &self,
-        applicationname: *const u16,
-        servicename: *const u16,
+        applicationname: super::super::FABRIC_URI,
+        servicename: super::super::FABRIC_URI,
         servicetypename: &windows_core::PCWSTR,
         initializationdatasize: u32,
         initializationdata: *const u8,
@@ -12743,8 +12743,8 @@ impl IFabricServiceGroupManagementClient3_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            applicationname: *const u16,
-            servicename: *const u16,
+            applicationname: super::super::FABRIC_URI,
+            servicename: super::super::FABRIC_URI,
             servicetypename: windows_core::PCWSTR,
             initializationdatasize: u32,
             initializationdata: *const u8,
@@ -12937,8 +12937,8 @@ pub trait IFabricServiceManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginCreateServiceFromTemplate(
         &self,
-        applicationname: *const u16,
-        servicename: *const u16,
+        applicationname: super::super::FABRIC_URI,
+        servicename: super::super::FABRIC_URI,
         servicetypename: &windows_core::PCWSTR,
         initializationdatasize: u32,
         initializationdata: *const u8,
@@ -12951,7 +12951,7 @@ pub trait IFabricServiceManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginDeleteService(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -12961,7 +12961,7 @@ pub trait IFabricServiceManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginGetServiceDescription(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
@@ -12971,7 +12971,7 @@ pub trait IFabricServiceManagementClient_Impl: Sized {
     ) -> windows_core::Result<IFabricServiceDescriptionResult>;
     fn RegisterServicePartitionResolutionChangeHandler(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         keytype: super::super::FABRIC_PARTITION_KEY_TYPE,
         partitionkey: *const core::ffi::c_void,
         callback: Option<&IFabricServicePartitionResolutionChangeHandler>,
@@ -12982,7 +12982,7 @@ pub trait IFabricServiceManagementClient_Impl: Sized {
     ) -> windows_core::Result<()>;
     fn BeginResolveServicePartition(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         partitionkeytype: super::super::FABRIC_PARTITION_KEY_TYPE,
         partitionkey: *const core::ffi::c_void,
         previousresult: Option<&IFabricResolvedServicePartitionResult>,
@@ -13049,8 +13049,8 @@ impl IFabricServiceManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            applicationname: *const u16,
-            servicename: *const u16,
+            applicationname: super::super::FABRIC_URI,
+            servicename: super::super::FABRIC_URI,
             servicetypename: windows_core::PCWSTR,
             initializationdatasize: u32,
             initializationdata: *const u8,
@@ -13099,7 +13099,7 @@ impl IFabricServiceManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -13141,7 +13141,7 @@ impl IFabricServiceManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -13189,7 +13189,7 @@ impl IFabricServiceManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             keytype: super::super::FABRIC_PARTITION_KEY_TYPE,
             partitionkey: *const core::ffi::c_void,
             callback: *mut core::ffi::c_void,
@@ -13221,7 +13221,7 @@ impl IFabricServiceManagementClient_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             partitionkeytype: super::super::FABRIC_PARTITION_KEY_TYPE,
             partitionkey: *const core::ffi::c_void,
             previousresult: *mut core::ffi::c_void,
@@ -13308,7 +13308,7 @@ pub trait IFabricServiceManagementClient2_Impl:
     ) -> windows_core::Result<super::IFabricStringResult>;
     fn BeginUpdateService(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         serviceupdatedescription: *const super::super::FABRIC_SERVICE_UPDATE_DESCRIPTION,
         timeoutmilliseconds: u32,
         callback: Option<&super::IFabricAsyncOperationCallback>,
@@ -13383,7 +13383,7 @@ impl IFabricServiceManagementClient2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             serviceupdatedescription: *const super::super::FABRIC_SERVICE_UPDATE_DESCRIPTION,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,

@@ -987,7 +987,7 @@ impl IFabricCodePackageActivationContext_Vtbl {
 pub trait IFabricCodePackageActivationContext2_Impl:
     Sized + IFabricCodePackageActivationContext_Impl
 {
-    fn get_ApplicationName(&self) -> *mut u16;
+    fn get_ApplicationName(&self) -> super::super::FABRIC_URI;
     fn get_ApplicationTypeName(&self) -> windows_core::PCWSTR;
     fn GetServiceManifestName(&self) -> windows_core::Result<super::IFabricStringResult>;
     fn GetServiceManifestVersion(&self) -> windows_core::Result<super::IFabricStringResult>;
@@ -1007,7 +1007,7 @@ impl IFabricCodePackageActivationContext2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut u16 {
+        ) -> super::super::FABRIC_URI {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricCodePackageActivationContext2_Impl::get_ApplicationName(this)
@@ -5079,7 +5079,7 @@ impl IFabricServiceGroupFactoryBuilder_Vtbl {
 pub trait IFabricServiceGroupPartition_Impl: Sized {
     fn ResolveMember(
         &self,
-        name: *const u16,
+        name: super::super::FABRIC_URI,
         riid: *const windows_core::GUID,
     ) -> windows_core::Result<*mut core::ffi::c_void>;
 }
@@ -5096,7 +5096,7 @@ impl IFabricServiceGroupPartition_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: *const u16,
+            name: super::super::FABRIC_URI,
             riid: *const windows_core::GUID,
             member: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
@@ -5504,7 +5504,7 @@ pub trait IFabricStatefulServiceFactory_Impl: Sized {
     fn CreateReplica(
         &self,
         servicetypename: &windows_core::PCWSTR,
-        servicename: *const u16,
+        servicename: super::super::FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &windows_core::GUID,
@@ -5525,7 +5525,7 @@ impl IFabricStatefulServiceFactory_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             servicetypename: windows_core::PCWSTR,
-            servicename: *const u16,
+            servicename: super::super::FABRIC_URI,
             initializationdatalength: u32,
             initializationdata: *const u8,
             partitionid: windows_core::GUID,
@@ -6099,7 +6099,7 @@ pub trait IFabricStatelessServiceFactory_Impl: Sized {
     fn CreateInstance(
         &self,
         servicetypename: &windows_core::PCWSTR,
-        servicename: *const u16,
+        servicename: super::super::FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &windows_core::GUID,
@@ -6120,7 +6120,7 @@ impl IFabricStatelessServiceFactory_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             servicetypename: windows_core::PCWSTR,
-            servicename: *const u16,
+            servicename: super::super::FABRIC_URI,
             initializationdatalength: u32,
             initializationdata: *const u8,
             partitionid: windows_core::GUID,

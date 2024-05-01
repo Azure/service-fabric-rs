@@ -253,23 +253,24 @@ where
 }
 #[cfg(feature = "Win32_Foundation")]
 #[inline]
-pub unsafe fn FabricCreateKeyValueStoreReplica4<P0, P1, P2>(
+pub unsafe fn FabricCreateKeyValueStoreReplica4<P0, P1, P2, P3>(
     riid: *const windows_core::GUID,
     storename: P0,
     partitionid: windows_core::GUID,
     replicaid: i64,
-    servicename: *const u16,
+    servicename: P1,
     replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
     localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
     localstoresettings: *const core::ffi::c_void,
-    storeeventhandler: P1,
-    secondaryeventhandler: P2,
+    storeeventhandler: P2,
+    secondaryeventhandler: P3,
     notificationmode: super::super::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
 ) -> windows_core::Result<*mut core::ffi::c_void>
 where
     P0: windows_core::Param<windows_core::PCWSTR>,
-    P1: windows_core::Param<IFabricStoreEventHandler>,
-    P2: windows_core::Param<IFabricSecondaryEventHandler>,
+    P1: windows_core::Param<super::super::FABRIC_URI>,
+    P2: windows_core::Param<IFabricStoreEventHandler>,
+    P3: windows_core::Param<IFabricSecondaryEventHandler>,
 {
     #[link(name = "FabricRuntime")]
     extern "system" {
@@ -278,7 +279,7 @@ where
             storename: windows_core::PCWSTR,
             partitionid: windows_core::GUID,
             replicaid: i64,
-            servicename: *const u16,
+            servicename: super::super::FABRIC_URI,
             replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
             localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
             localstoresettings: *const core::ffi::c_void,
@@ -294,7 +295,7 @@ where
         storename.param().abi(),
         core::mem::transmute(partitionid),
         replicaid,
-        servicename,
+        servicename.param().abi(),
         replicatorsettings,
         localstorekind,
         localstoresettings,
@@ -307,23 +308,24 @@ where
 }
 #[cfg(feature = "Win32_Foundation")]
 #[inline]
-pub unsafe fn FabricCreateKeyValueStoreReplica5<P0, P1, P2>(
+pub unsafe fn FabricCreateKeyValueStoreReplica5<P0, P1, P2, P3>(
     riid: *const windows_core::GUID,
     storename: P0,
     partitionid: windows_core::GUID,
     replicaid: i64,
-    servicename: *const u16,
+    servicename: P1,
     replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
     kvssettings: *const super::super::FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS,
     localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
     localstoresettings: *const core::ffi::c_void,
-    storeeventhandler: P1,
-    secondaryeventhandler: P2,
+    storeeventhandler: P2,
+    secondaryeventhandler: P3,
 ) -> windows_core::Result<*mut core::ffi::c_void>
 where
     P0: windows_core::Param<windows_core::PCWSTR>,
-    P1: windows_core::Param<IFabricStoreEventHandler>,
-    P2: windows_core::Param<IFabricSecondaryEventHandler>,
+    P1: windows_core::Param<super::super::FABRIC_URI>,
+    P2: windows_core::Param<IFabricStoreEventHandler>,
+    P3: windows_core::Param<IFabricSecondaryEventHandler>,
 {
     #[link(name = "FabricRuntime")]
     extern "system" {
@@ -332,7 +334,7 @@ where
             storename: windows_core::PCWSTR,
             partitionid: windows_core::GUID,
             replicaid: i64,
-            servicename: *const u16,
+            servicename: super::super::FABRIC_URI,
             replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
             kvssettings: *const super::super::FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS,
             localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
@@ -348,7 +350,7 @@ where
         storename.param().abi(),
         core::mem::transmute(partitionid),
         replicaid,
-        servicename,
+        servicename.param().abi(),
         replicatorsettings,
         kvssettings,
         localstorekind,
@@ -1305,7 +1307,7 @@ windows_core::imp::interface_hierarchy!(
     IFabricCodePackageActivationContext
 );
 impl IFabricCodePackageActivationContext2 {
-    pub unsafe fn get_ApplicationName(&self) -> *mut u16 {
+    pub unsafe fn get_ApplicationName(&self) -> super::super::FABRIC_URI {
         (windows_core::Interface::vtable(self).get_ApplicationName)(
             windows_core::Interface::as_raw(self),
         )
@@ -1341,7 +1343,8 @@ unsafe impl Sync for IFabricCodePackageActivationContext2 {}
 #[repr(C)]
 pub struct IFabricCodePackageActivationContext2_Vtbl {
     pub base__: IFabricCodePackageActivationContext_Vtbl,
-    pub get_ApplicationName: unsafe extern "system" fn(*mut core::ffi::c_void) -> *mut u16,
+    pub get_ApplicationName:
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> super::super::FABRIC_URI,
     pub get_ApplicationTypeName:
         unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
     pub GetServiceManifestName: unsafe extern "system" fn(
@@ -4696,15 +4699,18 @@ impl std::ops::Deref for IFabricServiceGroupPartition {
 }
 windows_core::imp::interface_hierarchy!(IFabricServiceGroupPartition, windows_core::IUnknown);
 impl IFabricServiceGroupPartition {
-    pub unsafe fn ResolveMember(
+    pub unsafe fn ResolveMember<P0>(
         &self,
-        name: *const u16,
+        name: P0,
         riid: *const windows_core::GUID,
-    ) -> windows_core::Result<*mut core::ffi::c_void> {
+    ) -> windows_core::Result<*mut core::ffi::c_void>
+    where
+        P0: windows_core::Param<super::super::FABRIC_URI>,
+    {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).ResolveMember)(
             windows_core::Interface::as_raw(self),
-            name,
+            name.param().abi(),
             riid,
             &mut result__,
         )
@@ -4718,7 +4724,7 @@ pub struct IFabricServiceGroupPartition_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub ResolveMember: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const u16,
+        super::super::FABRIC_URI,
         *const windows_core::GUID,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
@@ -5022,22 +5028,23 @@ impl std::ops::Deref for IFabricStatefulServiceFactory {
 }
 windows_core::imp::interface_hierarchy!(IFabricStatefulServiceFactory, windows_core::IUnknown);
 impl IFabricStatefulServiceFactory {
-    pub unsafe fn CreateReplica<P0>(
+    pub unsafe fn CreateReplica<P0, P1>(
         &self,
         servicetypename: P0,
-        servicename: *const u16,
+        servicename: P1,
         initializationdata: &[u8],
         partitionid: windows_core::GUID,
         replicaid: i64,
     ) -> windows_core::Result<IFabricStatefulServiceReplica>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
+        P1: windows_core::Param<super::super::FABRIC_URI>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).CreateReplica)(
             windows_core::Interface::as_raw(self),
             servicetypename.param().abi(),
-            servicename,
+            servicename.param().abi(),
             initializationdata.len().try_into().unwrap(),
             core::mem::transmute(initializationdata.as_ptr()),
             core::mem::transmute(partitionid),
@@ -5055,7 +5062,7 @@ pub struct IFabricStatefulServiceFactory_Vtbl {
     pub CreateReplica: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         windows_core::PCWSTR,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *const u8,
         windows_core::GUID,
@@ -5510,22 +5517,23 @@ impl std::ops::Deref for IFabricStatelessServiceFactory {
 }
 windows_core::imp::interface_hierarchy!(IFabricStatelessServiceFactory, windows_core::IUnknown);
 impl IFabricStatelessServiceFactory {
-    pub unsafe fn CreateInstance<P0>(
+    pub unsafe fn CreateInstance<P0, P1>(
         &self,
         servicetypename: P0,
-        servicename: *const u16,
+        servicename: P1,
         initializationdata: &[u8],
         partitionid: windows_core::GUID,
         instanceid: i64,
     ) -> windows_core::Result<IFabricStatelessServiceInstance>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
+        P1: windows_core::Param<super::super::FABRIC_URI>,
     {
         let mut result__ = std::mem::zeroed();
         (windows_core::Interface::vtable(self).CreateInstance)(
             windows_core::Interface::as_raw(self),
             servicetypename.param().abi(),
-            servicename,
+            servicename.param().abi(),
             initializationdata.len().try_into().unwrap(),
             core::mem::transmute(initializationdata.as_ptr()),
             core::mem::transmute(partitionid),
@@ -5543,7 +5551,7 @@ pub struct IFabricStatelessServiceFactory_Vtbl {
     pub CreateInstance: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         windows_core::PCWSTR,
-        *const u16,
+        super::super::FABRIC_URI,
         u32,
         *const u8,
         windows_core::GUID,

@@ -381,7 +381,7 @@ impl IFabricClusterManagementClient10Wrap {
     }
     pub fn RecoverServicePartitions(
         &self,
-        serviceName: &u16,
+        serviceName: ::mssf_com::Microsoft::ServiceFabric::FABRIC_URI,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
         let (tx, rx) = crate::sync::oneshot_channel();

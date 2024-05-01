@@ -15,7 +15,7 @@ use mssf_com::{
     FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE, FABRIC_SERVICE_PARTITION_KIND_INVALID,
     FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
     FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
-    FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS,
+    FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
 };
 use windows_core::{HSTRING, PCWSTR};
 
@@ -39,7 +39,7 @@ impl ServiceManagementClient {
 
     fn resolve_service_partition_internal(
         &self,
-        name: &[u16],
+        name: FABRIC_URI,
         partitionKeyType: FABRIC_PARTITION_KEY_TYPE,
         partitionKey: Option<*const ::core::ffi::c_void>,
         previousResult: Option<&IFabricResolvedServicePartitionResult>, // This is different from generated code
@@ -53,7 +53,7 @@ impl ServiceManagementClient {
         });
         let ctx = unsafe {
             self.com.BeginResolveServicePartition(
-                name.as_ptr(),
+                name,
                 partitionKeyType,
                 partitionKey.unwrap_or(std::ptr::null()),
                 previousResult,
@@ -78,7 +78,7 @@ impl ServiceManagementClient {
         prev: Option<&ResolvedServicePartition>,
         timeout: Duration,
     ) -> windows_core::Result<ResolvedServicePartition> {
-        let uri = name.as_wide();
+        let uri = FABRIC_URI(name.as_ptr() as *mut u16);
         // supply prev as null if not present
         let prev_opt = prev.map(|x| &x.com);
 
@@ -212,7 +212,7 @@ impl ResolvedServicePartition {
     pub fn get_info(&self) -> ResolvedServicePartitionInfo {
         let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
         let service_name =
-            HSTRING::from_wide(unsafe { PCWSTR::from_raw(raw.ServiceName).as_wide() }).unwrap();
+            HSTRING::from_wide(unsafe { PCWSTR::from_raw(raw.ServiceName.0).as_wide() }).unwrap();
         let kind_raw = raw.Info.Kind;
         let val = raw.Info.Value;
         let service_partition_kind: ServicePartitionKind = kind_raw.into();

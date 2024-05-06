@@ -68,7 +68,7 @@ where
         let h_servicename = HSTRING::from_wide(unsafe { p_servicename.as_wide() }).unwrap();
         let h_servicetypename = HSTRING::from_wide(unsafe { servicetypename.as_wide() }).unwrap();
         let data = unsafe {
-            if initializationdata != std::ptr::null() {
+            if !initializationdata.is_null() {
                 std::slice::from_raw_parts(initializationdata, initializationdatalength as usize)
             } else {
                 &[]

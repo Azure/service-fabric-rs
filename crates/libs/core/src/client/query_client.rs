@@ -216,7 +216,7 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for Node {
             node_up_time_in_seconds: raw.NodeUpTimeInSeconds,
             is_seed_node: raw.IsSeedNode.as_bool(),
             upgrade_domain: HSTRINGWrap::from(raw.UpgradeDomain).into(),
-            fault_domain: HSTRINGWrap::from(windows_core::PCWSTR(raw.FaultDomain)).into(),
+            fault_domain: HSTRINGWrap::from(windows_core::PCWSTR(raw.FaultDomain.0)).into(),
             node_instance_id: raw2.NodeInstanceId,
         }
     }

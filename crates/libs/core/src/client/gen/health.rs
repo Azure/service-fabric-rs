@@ -14,7 +14,7 @@ impl IFabricHealthClient4Wrap {
         com: ::mssf_com::Microsoft::ServiceFabric::FabricCommon::FabricClient::IFabricHealthClient4,
     ) -> IFabricHealthClient4Wrap {
         IFabricHealthClient4Wrap { com }
-    }    pub fn GetApplicationHealth (& self , applicationName : & u16 , healthPolicy : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationHealthResult >>{
+    }    pub fn GetApplicationHealth (& self , applicationName : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_URI , healthPolicy : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationHealthResult >>{
         let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetApplicationHealth(ctx) };
@@ -103,7 +103,7 @@ impl IFabricHealthClient4Wrap {
         } else {
             rx
         }
-    }    pub fn GetDeployedApplicationHealth (& self , applicationName : & u16 , nodeName : :: windows_core :: PCWSTR , healthPolicy : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedApplicationHealthResult >>{
+    }    pub fn GetDeployedApplicationHealth (& self , applicationName : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_URI , nodeName : :: windows_core :: PCWSTR , healthPolicy : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedApplicationHealthResult >>{
         let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetDeployedApplicationHealth(ctx) };
@@ -145,7 +145,7 @@ impl IFabricHealthClient4Wrap {
         } else {
             rx
         }
-    }    pub fn GetDeployedServicePackageHealth (& self , applicationName : & u16 , serviceManifestName : :: windows_core :: PCWSTR , nodeName : :: windows_core :: PCWSTR , healthPolicy : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedServicePackageHealthResult >>{
+    }    pub fn GetDeployedServicePackageHealth (& self , applicationName : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_URI , serviceManifestName : :: windows_core :: PCWSTR , nodeName : :: windows_core :: PCWSTR , healthPolicy : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricDeployedServicePackageHealthResult >>{
         let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetDeployedServicePackageHealth(ctx) };
@@ -299,7 +299,7 @@ impl IFabricHealthClient4Wrap {
         } else {
             rx
         }
-    }    pub fn GetServiceHealth (& self , serviceName : & u16 , healthPolicy : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceHealthResult >>{
+    }    pub fn GetServiceHealth (& self , serviceName : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_URI , healthPolicy : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_APPLICATION_HEALTH_POLICY , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceHealthResult >>{
         let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetServiceHealth(ctx) };

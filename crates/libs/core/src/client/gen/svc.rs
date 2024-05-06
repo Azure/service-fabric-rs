@@ -62,7 +62,7 @@ impl IFabricServiceManagementClient6Wrap {
     }
     pub fn DeleteService(
         &self,
-        name: &u16,
+        name: ::mssf_com::Microsoft::ServiceFabric::FABRIC_URI,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
         let (tx, rx) = crate::sync::oneshot_channel();
@@ -103,7 +103,7 @@ impl IFabricServiceManagementClient6Wrap {
         } else {
             rx
         }
-    }    pub fn GetServiceDescription (& self , name : & u16 , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceDescriptionResult >>{
+    }    pub fn GetServiceDescription (& self , name : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_URI , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceDescriptionResult >>{
         let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetServiceDescription(ctx) };
@@ -200,7 +200,7 @@ impl IFabricServiceManagementClient6Wrap {
         } else {
             rx
         }
-    }    pub fn ResolveServicePartition (& self , name : & u16 , partitionKeyType : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_PARTITION_KEY_TYPE , partitionKey : & :: core :: ffi :: c_void , previousResult : & :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricResolvedServicePartitionResult , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricResolvedServicePartitionResult >>{
+    }    pub fn ResolveServicePartition (& self , name : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_URI , partitionKeyType : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_PARTITION_KEY_TYPE , partitionKey : & :: core :: ffi :: c_void , previousResult : & :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricResolvedServicePartitionResult , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricResolvedServicePartitionResult >>{
         let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndResolveServicePartition(ctx) };
@@ -273,7 +273,7 @@ impl IFabricServiceManagementClient6Wrap {
     }
     pub fn UpdateService(
         &self,
-        name: &u16,
+        name: ::mssf_com::Microsoft::ServiceFabric::FABRIC_URI,
         serviceUpdateDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_UPDATE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {

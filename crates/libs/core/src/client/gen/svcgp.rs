@@ -62,7 +62,7 @@ impl IFabricServiceGroupManagementClient4Wrap {
     }
     pub fn DeleteServiceGroup(
         &self,
-        name: &u16,
+        name: ::mssf_com::Microsoft::ServiceFabric::FABRIC_URI,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
         let (tx, rx) = crate::sync::oneshot_channel();
@@ -81,7 +81,7 @@ impl IFabricServiceGroupManagementClient4Wrap {
         } else {
             rx
         }
-    }    pub fn GetServiceGroupDescription (& self , name : & u16 , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceGroupDescriptionResult >>{
+    }    pub fn GetServiceGroupDescription (& self , name : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_URI , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricServiceGroupDescriptionResult >>{
         let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetServiceGroupDescription(ctx) };
@@ -101,7 +101,7 @@ impl IFabricServiceGroupManagementClient4Wrap {
     }
     pub fn UpdateServiceGroup(
         &self,
-        name: &u16,
+        name: ::mssf_com::Microsoft::ServiceFabric::FABRIC_URI,
         serviceGroupUpdateDescription : & :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_SERVICE_GROUP_UPDATE_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {

@@ -37,7 +37,7 @@ impl IFabricApplicationManagementClient10Wrap {
     }
     pub fn DeleteApplication(
         &self,
-        applicationName: &u16,
+        applicationName: ::mssf_com::Microsoft::ServiceFabric::FABRIC_URI,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
         let (tx, rx) = crate::sync::oneshot_channel();
@@ -142,7 +142,7 @@ impl IFabricApplicationManagementClient10Wrap {
         } else {
             rx
         }
-    }    pub fn GetApplicationUpgradeProgress (& self , applicationName : & u16 , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationUpgradeProgressResult2 >>{
+    }    pub fn GetApplicationUpgradeProgress (& self , applicationName : :: mssf_com :: Microsoft :: ServiceFabric :: FABRIC_URI , timeoutMilliseconds : u32) -> crate :: sync :: FabricReceiver < :: windows_core :: Result < :: mssf_com :: Microsoft :: ServiceFabric :: FabricCommon :: FabricClient :: IFabricApplicationUpgradeProgressResult2 >>{
         let (tx, rx) = crate::sync::oneshot_channel();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             let res = unsafe { self.com.EndGetApplicationUpgradeProgress(ctx) };
@@ -187,7 +187,7 @@ impl IFabricApplicationManagementClient10Wrap {
     }
     pub fn MoveNextApplicationUpgradeDomain2(
         &self,
-        applicationName: &u16,
+        applicationName: ::mssf_com::Microsoft::ServiceFabric::FABRIC_URI,
         nextUpgradeDomain: ::windows_core::PCWSTR,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
@@ -308,7 +308,7 @@ impl IFabricApplicationManagementClient10Wrap {
     }
     pub fn RollbackApplicationUpgrade(
         &self,
-        applicationName: &u16,
+        applicationName: ::mssf_com::Microsoft::ServiceFabric::FABRIC_URI,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<()>> {
         let (tx, rx) = crate::sync::oneshot_channel();

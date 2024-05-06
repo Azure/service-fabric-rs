@@ -22,7 +22,7 @@ use mssf_com::{
         IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
     },
     FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_ROLE,
-    FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_MODE,
+    FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_MODE, FABRIC_URI,
 };
 
 use crate::{
@@ -68,14 +68,14 @@ where
     fn CreateReplica(
         &self,
         servicetypename: &::windows_core::PCWSTR,
-        servicename: *const u16,
+        servicename: FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &::windows_core::GUID,
         replicaid: i64,
     ) -> ::windows_core::Result<IFabricStatefulServiceReplica> {
         info!("StatefulServiceFactoryBridge::CreateReplica");
-        let p_servicename = ::windows_core::PCWSTR::from_raw(servicename);
+        let p_servicename = ::windows_core::PCWSTR::from_raw(servicename.0);
         let h_servicename = HSTRING::from_wide(unsafe { p_servicename.as_wide() }).unwrap();
         let h_servicetypename = HSTRING::from_wide(unsafe { servicetypename.as_wide() }).unwrap();
         let data = unsafe {

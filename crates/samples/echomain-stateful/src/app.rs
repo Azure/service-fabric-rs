@@ -20,6 +20,7 @@ use mssf_com::FabricCommon::FabricRuntime::{
 use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricStringResult,
 };
+use mssf_com::FABRIC_URI;
 use mssf_core::{strings::HSTRINGWrap, AsyncContext};
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
@@ -58,7 +59,7 @@ impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory {
     fn CreateReplica(
         &self,
         servicetypename: &::windows::core::PCWSTR,
-        servicename: *const u16,
+        servicename: FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &::windows::core::GUID,

@@ -14,7 +14,7 @@ use mssf_core::{
         executor::{DefaultExecutor, Executor},
         ActivationContext,
     },
-    WaitableCallback,
+    sync::wait::WaitableCallback,
 };
 use windows::core::Interface;
 use windows_core::HSTRING;

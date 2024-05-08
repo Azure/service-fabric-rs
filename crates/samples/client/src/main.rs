@@ -5,7 +5,7 @@
 
 use mssf_com::FabricCommon::{FabricClient::*, IFabricAsyncOperationCallback};
 use mssf_com::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
-use mssf_core::WaitableCallback;
+use mssf_core::sync::wait::WaitableCallback;
 use windows_core::Interface;
 
 fn main() -> windows::core::Result<()> {

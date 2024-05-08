@@ -21,7 +21,7 @@ use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricStringResult,
 };
 use mssf_com::FABRIC_URI;
-use mssf_core::{strings::HSTRINGWrap, AsyncContext};
+use mssf_core::{strings::HSTRINGWrap, sync::wait::AsyncContext};
 use tokio::sync::oneshot::{self, Sender};
 use windows::core::implement;
 use windows::core::w;

@@ -21,6 +21,8 @@ use tokio::sync::oneshot::Receiver;
 use windows::core::implement;
 use windows_core::Interface;
 
+pub mod wait;
+
 // fabric code begins here
 
 // Creates the local client

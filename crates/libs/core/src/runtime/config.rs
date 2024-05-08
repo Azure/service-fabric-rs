@@ -1,3 +1,8 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 use mssf_com::{
     FabricCommon::FabricRuntime::IFabricConfigurationPackage, FABRIC_CONFIGURATION_PARAMETER,
     FABRIC_CONFIGURATION_PARAMETER_EX1, FABRIC_CONFIGURATION_PARAMETER_LIST,

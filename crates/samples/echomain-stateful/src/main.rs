@@ -10,7 +10,7 @@ use mssf_com::FabricCommon::FabricRuntime::{
     IFabricRuntime,
 };
 use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
-use mssf_core::WaitableCallback;
+use mssf_core::sync::wait::WaitableCallback;
 use std::sync::mpsc::channel;
 use windows::core::w;
 use windows::core::{Interface, HSTRING};

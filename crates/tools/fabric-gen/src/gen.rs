@@ -205,7 +205,7 @@ impl InterfaceLayout {
     // remove functions
     pub fn exclude_funcs(&mut self, fs: &Vec<&str>) {
         for f in fs {
-            let ok = self.func_pairs.remove(&f.to_string());
+            let ok = self.func_pairs.remove(*f);
             assert!(ok.is_some());
         }
     }

@@ -21,7 +21,7 @@ jobs:
     - name: Install rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: 1.77.0
+        toolchain: 1.78.0
         components: rustfmt, clippy
     
     - name: Run cargo check
@@ -91,7 +91,7 @@ jobs:
     - name: Install rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: 1.77.0
+        toolchain: 1.78.0
         components: rustfmt, clippy
     
     - name: Run cargo check

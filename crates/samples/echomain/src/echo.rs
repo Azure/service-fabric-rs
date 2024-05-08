@@ -7,11 +7,11 @@
 
 use std::io::Error;
 
-use log::info;
 use mssf_core::HSTRING;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::oneshot::Receiver;
+use tracing::info;
 
 pub fn get_addr(port: u32, hostname: HSTRING) -> String {
     let mut addr = String::new();

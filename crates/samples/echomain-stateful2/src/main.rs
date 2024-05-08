@@ -4,7 +4,6 @@
 // ------------------------------------------------------------
 
 use crate::statefulstore::Factory;
-use log::info;
 use mssf_com::FabricCommon::{
     FabricRuntime::{FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricNodeContextResult},
     IFabricAsyncOperationCallback,
@@ -16,13 +15,14 @@ use mssf_core::{
     },
     sync::wait::WaitableCallback,
 };
+use tracing::info;
 use windows::core::Interface;
 use windows_core::HSTRING;
 
 mod statefulstore;
 
 fn main() -> windows::core::Result<()> {
-    env_logger::init();
+    tracing_subscriber::fmt().init();
     info!("main start");
 
     let rt = tokio::runtime::Runtime::new().unwrap();

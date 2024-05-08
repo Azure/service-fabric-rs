@@ -10,7 +10,6 @@ use std::convert::TryInto;
 use std::io::Error;
 use std::thread::JoinHandle;
 
-use log::info;
 use mssf_com::FabricCommon::FabricRuntime::{
     IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl, IFabricReplicator,
     IFabricReplicator_Impl, IFabricRuntime, IFabricStatefulServiceFactory,
@@ -23,6 +22,7 @@ use mssf_com::FabricCommon::{
 use mssf_com::FABRIC_URI;
 use mssf_core::{strings::HSTRINGWrap, sync::wait::AsyncContext};
 use tokio::sync::oneshot::{self, Sender};
+use tracing::info;
 use windows::core::implement;
 use windows::core::w;
 use windows_core::HSTRING;

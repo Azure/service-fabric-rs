@@ -5,8 +5,8 @@
 
 use std::future::Future;
 
-use log::info;
 use tokio::{runtime::Handle, sync::mpsc::channel};
+use tracing::info;
 
 // Executor is used by rs to post jobs to execute in the background
 // Sync is needed due to we use the executor across await boundary.

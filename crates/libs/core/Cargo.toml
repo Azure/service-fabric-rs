@@ -14,8 +14,7 @@ include = [
 ]
 
 [dependencies]
-log = "0.4"
-env_logger = "0.10.1"
+tracing.workspace = true
 tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros"] }
 windows-core = "0.56"
 ctrlc = { version = "3.0", features = ["termination"] }

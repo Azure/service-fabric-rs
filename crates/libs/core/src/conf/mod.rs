@@ -9,7 +9,7 @@
 // features of config-rs.
 
 use config::{ConfigError, Source};
-use log::info;
+use tracing::info;
 
 use crate::runtime::config::ConfigurationPackage;
 pub use config::Config;

@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use log::info;
 use mssf_com::FabricCommon::FabricRuntime::{
     FabricBeginGetNodeContext, FabricCreateRuntime, FabricEndGetNodeContext,
     FabricGetActivationContext, IFabricCodePackageActivationContext, IFabricNodeContextResult,
@@ -12,12 +11,13 @@ use mssf_com::FabricCommon::FabricRuntime::{
 use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
 use mssf_core::sync::wait::WaitableCallback;
 use std::sync::mpsc::channel;
+use tracing::info;
 use windows::core::w;
 use windows::core::{Interface, HSTRING};
 pub mod app;
 
 fn main() -> windows::core::Result<()> {
-    env_logger::init();
+    tracing_subscriber::fmt().init();
     // set ctrc event
     let (tx, rx) = channel();
     ctrlc::set_handler(move || tx.send(()).expect("Could not send signal on channel."))

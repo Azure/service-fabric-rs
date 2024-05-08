@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use log::info;
 use mssf_com::FABRIC_REPLICATOR_ADDRESS;
 use mssf_core::runtime::{
     executor::DefaultExecutor,
@@ -16,6 +15,7 @@ use mssf_core::runtime::{
 };
 use std::{cell::Cell, sync::Mutex};
 use tokio::sync::oneshot::{self, Sender};
+use tracing::info;
 use windows_core::{Error, HSTRING};
 mod echo;
 

@@ -5,7 +5,6 @@
 
 use std::cell::Cell;
 
-use log::info;
 use mssf_core::runtime::stateless::{
     PartitionKind, StatelessServiceFactory, StatelessServiceInstance, StatelessServicePartition,
 };
@@ -14,6 +13,7 @@ use tokio::runtime::Handle;
 use tokio::sync::oneshot::{self, Sender};
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
+use tracing::info;
 
 use crate::echo;
 

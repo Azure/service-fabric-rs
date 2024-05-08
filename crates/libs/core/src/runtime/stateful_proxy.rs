@@ -6,13 +6,13 @@
 // stateful_proxy is a wrapper layer around com api,
 // making manipulating com simple.
 
-use log::info;
 use mssf_com::{
     FabricCommon::FabricRuntime::{
         IFabricPrimaryReplicator, IFabricReplicator, IFabricStatefulServiceReplica,
     },
     FABRIC_EPOCH,
 };
+use tracing::info;
 use windows_core::{Interface, HSTRING};
 
 use crate::strings::HSTRINGWrap;

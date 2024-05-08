@@ -27,9 +27,9 @@ use mssf_com::{
 
 use crate::{
     runtime::{
+        bridge::BridgeContext,
         stateful::StatefulServicePartition,
         stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, Role},
-        BridgeContext,
     },
     strings::HSTRINGWrap,
 };

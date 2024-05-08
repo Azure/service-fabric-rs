@@ -8,7 +8,7 @@
 use std::sync::Arc;
 
 use crate::{
-    runtime::{stateless::StatelessServicePartition, BridgeContext},
+    runtime::{bridge::BridgeContext, stateless::StatelessServicePartition},
     strings::HSTRINGWrap,
 };
 use log::info;

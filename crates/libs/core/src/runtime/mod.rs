@@ -10,12 +10,9 @@ use mssf_com::{
             IFabricRuntime, IFabricStatefulServiceFactory, IFabricStatelessServiceFactory,
         },
         IFabricAsyncOperationCallback, IFabricAsyncOperationContext,
-        IFabricAsyncOperationContext_Impl,
     },
     FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
 };
-use std::cell::Cell;
-use windows::core::implement;
 use windows_core::{Error, Interface, HSTRING, PCWSTR};
 
 use self::{
@@ -24,6 +21,7 @@ use self::{
     stateless_bridge::StatelessServiceFactoryBridge,
 };
 
+mod bridge;
 pub mod config;
 pub mod error;
 pub mod executor;
@@ -160,68 +158,5 @@ impl ActivationContext {
 
     pub fn get_com(&self) -> IFabricCodePackageActivationContext {
         self.com_impl.clone()
-    }
-}
-
-#[implement(IFabricAsyncOperationContext)]
-struct BridgeContext<T> {
-    content: Cell<Option<T>>,
-    is_completed: Cell<bool>,
-    is_completed_synchronously: bool,
-    callback: IFabricAsyncOperationCallback,
-}
-
-impl<T> BridgeContext<T> {
-    fn new(callback: IFabricAsyncOperationCallback) -> BridgeContext<T> {
-        BridgeContext {
-            content: Cell::new(None),
-            is_completed: Cell::new(false),
-            is_completed_synchronously: false,
-            callback,
-        }
-    }
-
-    // fn new_i(callback: IFabricAsyncOperationCallback) -> IFabricAsyncOperationContext {
-    //     Self::new(callback).into()
-    // }
-
-    fn set_content(&self, content: T) {
-        let prev = self.content.replace(Some(content));
-        assert!(prev.is_none())
-    }
-
-    fn consume_content(&self) -> T {
-        self.content.take().unwrap()
-    }
-
-    fn set_complete(&self) {
-        self.is_completed.swap(&Cell::new(true));
-    }
-
-    // This as access violation. The com layout is not safe
-    // fn invoke(&mut self, ctx: &IFabricAsyncOperationContext) {
-    //     assert!(!self.is_completed);
-    //     self.is_completed = true;
-    //     info!("callback invoke");
-    //     unsafe { self.callback.Invoke(ctx) };
-    // }
-}
-
-impl<T> IFabricAsyncOperationContext_Impl for BridgeContext<T> {
-    fn IsCompleted(&self) -> ::windows::Win32::Foundation::BOOLEAN {
-        self.is_completed.get().into()
-    }
-
-    fn CompletedSynchronously(&self) -> ::windows::Win32::Foundation::BOOLEAN {
-        self.is_completed_synchronously.into()
-    }
-
-    fn Callback(&self) -> ::windows_core::Result<IFabricAsyncOperationCallback> {
-        let cp = self.callback.clone();
-        Ok(cp)
-    }
-
-    fn Cancel(&self) -> ::windows_core::Result<()> {
-        Ok(())
     }
 }

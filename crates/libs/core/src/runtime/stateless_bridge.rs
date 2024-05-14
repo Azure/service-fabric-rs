@@ -11,7 +11,6 @@ use crate::{
     runtime::{bridge::BridgeContext, stateless::StatelessServicePartition},
     strings::HSTRINGWrap,
 };
-use log::info;
 use mssf_com::{
     FabricCommon::{
         FabricRuntime::{
@@ -23,6 +22,7 @@ use mssf_com::{
     },
     FABRIC_URI,
 };
+use tracing::info;
 use windows::core::implement;
 use windows_core::{AsImpl, Error, HSTRING};
 

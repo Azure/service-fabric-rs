@@ -3,13 +3,13 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use log::info;
 use mssf_com::{
     FabricCommon::FabricRuntime::{
         IFabricKeyValueStoreItemResult, IFabricKeyValueStoreReplica2, IFabricTransaction,
     },
     FABRIC_KEY_VALUE_STORE_ITEM, FABRIC_KEY_VALUE_STORE_ITEM_METADATA,
 };
+use tracing::info;
 use windows_core::PCWSTR;
 
 use super::store_types::TransactionIsolationLevel;

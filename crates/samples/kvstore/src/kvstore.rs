@@ -1,28 +1,32 @@
 use std::{cell::Cell, sync::Mutex};
 
-use log::info;
 use mssf_com::{
     FabricCommon::FabricRuntime::{
         IFabricKeyValueStoreReplica2, IFabricStatefulServiceReplica, IFabricStoreEventHandler,
     },
     FABRIC_REPLICATOR_ADDRESS,
 };
-use mssf_core::runtime::{
-    executor::{DefaultExecutor, Executor},
-    stateful::{
-        PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition, StatefulServiceReplica,
+use mssf_core::{
+    runtime::{
+        executor::{DefaultExecutor, Executor},
+        stateful::{
+            PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition,
+            StatefulServiceReplica,
+        },
+        stateful_proxy::StatefulServiceReplicaProxy,
+        stateful_types::{OpenMode, Role},
+        store::{create_com_key_value_store_replica, DummyStoreEventHandler},
+        store_proxy::KVStoreProxy,
+        store_types::ReplicatorSettings,
     },
-    stateful_proxy::StatefulServiceReplicaProxy,
-    stateful_types::{OpenMode, Role},
-    store::{create_com_key_value_store_replica, DummyStoreEventHandler},
-    store_proxy::KVStoreProxy,
-    store_types::ReplicatorSettings,
+    Error, GUID, HSTRING,
 };
 use tokio::{
     select,
     sync::oneshot::{self, Sender},
 };
-use windows_core::{Error, Interface, HSTRING};
+use tracing::info;
+use windows_core::Interface;
 
 pub struct Factory {
     replication_port: u32,
@@ -49,10 +53,10 @@ fn get_addr(port: u32, hostname: HSTRING) -> String {
 impl StatefulServiceFactory for Factory {
     fn create_replica(
         &self,
-        servicetypename: &windows_core::HSTRING,
-        servicename: &windows_core::HSTRING,
+        servicetypename: &HSTRING,
+        servicename: &HSTRING,
         initializationdata: &[u8],
-        partitionid: &windows::core::GUID,
+        partitionid: &GUID,
         replicaid: i64,
     ) -> Result<impl StatefulServiceReplica, Error> {
         info!(
@@ -155,7 +159,7 @@ impl Service {
         }
     }
 
-    async fn run_single(kv: &KVStoreProxy) -> windows_core::Result<()> {
+    async fn run_single(kv: &KVStoreProxy) -> mssf_core::Result<()> {
         // add kv
         let seq;
         {
@@ -182,12 +186,12 @@ impl StatefulServiceReplica for Replica {
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
-    ) -> windows::core::Result<impl PrimaryReplicator> {
+    ) -> mssf_core::Result<impl PrimaryReplicator> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
         self.kv.open(openmode, partition).await
     }
-    async fn change_role(&self, newrole: Role) -> ::windows_core::Result<HSTRING> {
+    async fn change_role(&self, newrole: Role) -> mssf_core::Result<HSTRING> {
         info!("Replica::change_role {:?}", newrole);
         let addr = self.kv.change_role(newrole.clone()).await?;
         if newrole == Role::Primary {
@@ -195,7 +199,7 @@ impl StatefulServiceReplica for Replica {
         }
         Ok(addr)
     }
-    async fn close(&self) -> windows::core::Result<()> {
+    async fn close(&self) -> mssf_core::Result<()> {
         info!("Replica::close");
         self.svc.stop();
         self.kv.close().await

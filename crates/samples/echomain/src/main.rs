@@ -6,7 +6,6 @@
 // This example app shows how to use SF safe API (mssf_core)
 // to create a SF stateless application.
 
-use log::{error, info};
 use mssf_core::conf::{Config, FabricConfigSource};
 use mssf_core::debug::wait_for_debugger;
 use mssf_core::runtime::executor::{DefaultExecutor, Executor};
@@ -14,6 +13,7 @@ use mssf_core::runtime::node_context::NodeContext;
 use mssf_core::runtime::ActivationContext;
 use mssf_core::HSTRING;
 use std::time::Duration;
+use tracing::{error, info};
 
 use crate::config::MySettings;
 pub mod app;
@@ -31,7 +31,7 @@ fn has_debug_arg() -> bool {
 }
 
 fn main() -> mssf_core::Result<()> {
-    env_logger::init();
+    tracing_subscriber::fmt().init();
     info!("echomain start");
     if has_debug_arg() {
         wait_for_debugger();

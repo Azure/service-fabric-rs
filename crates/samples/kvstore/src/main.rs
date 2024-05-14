@@ -1,4 +1,4 @@
-use log::info;
+use mssf_core::HSTRING;
 use mssf_core::{
     debug::wait_for_debugger,
     runtime::{
@@ -6,7 +6,7 @@ use mssf_core::{
         ActivationContext,
     },
 };
-use windows_core::HSTRING;
+use tracing::info;
 
 use crate::kvstore::Factory;
 
@@ -22,8 +22,8 @@ fn has_debug_arg() -> bool {
     false
 }
 
-fn main() -> windows::core::Result<()> {
-    env_logger::init();
+fn main() -> mssf_core::Result<()> {
+    tracing_subscriber::fmt().init();
     info!("main start");
     if has_debug_arg() {
         wait_for_debugger();

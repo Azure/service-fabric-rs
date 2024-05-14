@@ -5,7 +5,6 @@
 
 use std::ffi::c_void;
 
-use log::info;
 use mssf_com::{
     FabricCommon::FabricRuntime::{
         FabricCreateKeyValueStoreReplica, IFabricKeyValueStoreReplica2, IFabricStoreEventHandler,
@@ -13,6 +12,7 @@ use mssf_com::{
     },
     FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND,
 };
+use tracing::info;
 use windows::core::implement;
 use windows_core::{Error, Interface, HSTRING, PCWSTR};
 

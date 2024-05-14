@@ -7,7 +7,7 @@
 
 use std::sync::Arc;
 
-use log::info;
+use tracing::info;
 use windows::core::implement;
 use windows_core::{AsImpl, Error, Interface, HSTRING};
 

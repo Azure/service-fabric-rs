@@ -6,11 +6,11 @@
 // Sync implementation for SF Callback and Contexts.
 use std::sync::{Arc, Condvar, Mutex};
 
-use log::info;
 use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
     IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl,
 };
+use tracing::info;
 use windows::core::implement;
 
 #[derive(Debug)]

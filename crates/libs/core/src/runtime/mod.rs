@@ -161,8 +161,7 @@ impl ActivationContext {
     }
 }
 
-impl From<IFabricCodePackageActivationContext> for ActivationContext
-{
+impl From<IFabricCodePackageActivationContext> for ActivationContext {
     fn from(value: IFabricCodePackageActivationContext) -> Self {
         ActivationContext { com_impl: value }
     }

@@ -131,7 +131,7 @@ pub struct ActivationContext {
 impl ActivationContext {
     pub fn create() -> Result<ActivationContext, Error> {
         let com = get_com_activation_context()?;
-        Ok(ActivationContext { com_impl: com })
+        Ok(Self::from(com))
     }
 
     pub fn get_endpoint_resource(
@@ -158,5 +158,11 @@ impl ActivationContext {
 
     pub fn get_com(&self) -> IFabricCodePackageActivationContext {
         self.com_impl.clone()
+    }
+}
+
+impl From<IFabricCodePackageActivationContext> for ActivationContext {
+    fn from(value: IFabricCodePackageActivationContext) -> Self {
+        ActivationContext { com_impl: value }
     }
 }

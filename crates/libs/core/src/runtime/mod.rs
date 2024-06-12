@@ -4,18 +4,20 @@
 // ------------------------------------------------------------
 
 use mssf_com::{
-    FabricCommon::{
-        FabricRuntime::{
+    FabricCommon::FabricRuntime::{
             FabricCreateRuntime, FabricGetActivationContext, IFabricCodePackageActivationContext,
             IFabricRuntime,
         },
-        IFabricAsyncOperationCallback, IFabricAsyncOperationContext,
-    },
     FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
 };
 use windows_core::{Error, Interface, HSTRING, PCWSTR};
+    
+#[cfg(feature = "tokio")]
+use mssf_com::FabricCommon::{
+        IFabricAsyncOperationCallback, IFabricAsyncOperationContext,
+    };
 
-use self::{config::ConfigurationPackage, stateless::StatelessServiceFactory};
+use self::config::ConfigurationPackage;
 
 #[cfg(feature = "tokio")]
 pub use self::runtime::Runtime;

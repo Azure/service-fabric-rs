@@ -15,8 +15,9 @@ include = [
 
 [features]
 default = ["config_source", "tokio"]
-# Required for a lot of callback functionality
-tokio = ["dep:tokio"]
+# Required for a lot of callback functionality.
+# Also requires ctrlc for signal handling
+tokio = ["dep:tokio", "ctrlc"]
 # Config crate required to implement its interface. 
 config_source = ["config"]
 
@@ -24,7 +25,7 @@ config_source = ["config"]
 tracing.workspace = true
 tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros"], optional = true }
 windows-core = "0.56"
-ctrlc = { version = "3.0", features = ["termination"] }
+ctrlc = { version = "3.0", features = ["termination"], optional = true }
 trait-variant = "0.1.1"
 bitflags = "2.5.0"
 config = { version = "0.14.0",  default-features = false, optional = true }

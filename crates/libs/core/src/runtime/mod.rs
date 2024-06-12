@@ -7,7 +7,7 @@ use mssf_com::{
     FabricCommon::{
         FabricRuntime::{
             FabricCreateRuntime, FabricGetActivationContext, IFabricCodePackageActivationContext,
-            IFabricRuntime, IFabricStatefulServiceFactory, IFabricStatelessServiceFactory,
+            IFabricRuntime,
         },
         IFabricAsyncOperationCallback, IFabricAsyncOperationContext,
     },
@@ -18,10 +18,7 @@ use windows_core::{Error, Interface, HSTRING, PCWSTR};
 use self::{config::ConfigurationPackage, stateless::StatelessServiceFactory};
 
 #[cfg(feature = "tokio")]
-use self::{
-    executor::Executor, runtime::Runtime, stateful::StatefulServiceFactory,
-    stateful_bridge::StatefulServiceFactoryBridge, stateless_bridge::StatelessServiceFactoryBridge,
-};
+pub use self::runtime::Runtime;
 
 #[cfg(feature = "tokio")]
 mod bridge;

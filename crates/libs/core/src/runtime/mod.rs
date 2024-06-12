@@ -18,7 +18,7 @@ use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperatio
 use self::config::ConfigurationPackage;
 
 #[cfg(feature = "tokio_async")]
-pub use self::runtime::Runtime;
+pub use self::runtime_wrapper::Runtime;
 
 #[cfg(feature = "tokio_async")]
 mod bridge;
@@ -29,7 +29,7 @@ pub mod executor;
 #[cfg(feature = "tokio_async")]
 pub mod node_context;
 #[cfg(feature = "tokio_async")]
-pub mod runtime;
+pub mod runtime_wrapper;
 pub mod stateful;
 #[cfg(feature = "tokio_async")]
 pub mod stateful_bridge;

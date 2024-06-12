@@ -27,3 +27,7 @@ features = [
 
 [dependencies.mssf-core]
 path = "../../libs/core"
+# We don't showcase config integration in this particular example
+default-features = false
+features = ["tokio_async"]
+

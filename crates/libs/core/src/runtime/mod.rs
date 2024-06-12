@@ -5,17 +5,15 @@
 
 use mssf_com::{
     FabricCommon::FabricRuntime::{
-            FabricCreateRuntime, FabricGetActivationContext, IFabricCodePackageActivationContext,
-            IFabricRuntime,
-        },
+        FabricCreateRuntime, FabricGetActivationContext, IFabricCodePackageActivationContext,
+        IFabricRuntime,
+    },
     FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
 };
 use windows_core::{Error, Interface, HSTRING, PCWSTR};
-    
+
 #[cfg(feature = "tokio")]
-use mssf_com::FabricCommon::{
-        IFabricAsyncOperationCallback, IFabricAsyncOperationContext,
-    };
+use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
 
 use self::config::ConfigurationPackage;
 

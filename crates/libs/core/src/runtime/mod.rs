@@ -15,20 +15,13 @@ use mssf_com::{
 };
 use windows_core::{Error, Interface, HSTRING, PCWSTR};
 
-use self::{
-    config::ConfigurationPackage,  stateless::StatelessServiceFactory,
-};
-
+use self::{config::ConfigurationPackage, stateless::StatelessServiceFactory};
 
 #[cfg(feature = "tokio")]
-use self::
-{
-    executor::Executor, stateful::StatefulServiceFactory,
-    stateful_bridge::StatefulServiceFactoryBridge,
-    stateless_bridge::StatelessServiceFactoryBridge,
-    runtime::Runtime
+use self::{
+    executor::Executor, runtime::Runtime, stateful::StatefulServiceFactory,
+    stateful_bridge::StatefulServiceFactoryBridge, stateless_bridge::StatelessServiceFactoryBridge,
 };
-
 
 #[cfg(feature = "tokio")]
 mod bridge;
@@ -38,6 +31,8 @@ pub mod error;
 pub mod executor;
 #[cfg(feature = "tokio")]
 pub mod node_context;
+#[cfg(feature = "tokio")]
+pub mod runtime;
 pub mod stateful;
 #[cfg(feature = "tokio")]
 pub mod stateful_bridge;
@@ -51,8 +46,6 @@ pub mod store;
 #[cfg(feature = "tokio")]
 pub mod store_proxy;
 pub mod store_types;
-#[cfg(feature = "tokio")]
-pub mod runtime;
 
 // creates fabric runtime
 pub fn create_com_runtime() -> ::windows_core::Result<IFabricRuntime> {
@@ -69,7 +62,6 @@ pub fn get_com_activation_context() -> ::windows_core::Result<IFabricCodePackage
         unsafe { IFabricCodePackageActivationContext::from_raw(raw_activation_ctx) };
     Ok(activation_ctx)
 }
-
 
 #[derive(Debug)]
 pub struct EndpointResourceDesc {

@@ -9,11 +9,11 @@
 //! - when you are using the lower-level COM API to do something more custom
 //! You might not need all of the functionality that the mssf-core crate provides
 //! In this case, you can configure only what you need to reduce dependencies and compile times.
-//! 
-//! * ** config_source **  - 
+//!
+//! * ** config_source **  -
 //!     Provides an implementation of config::Source. Requires config_rs crate
-//! 
-//! * ** Tokio **  - 
+//!
+//! * ** Tokio **  -
 //!     A lot of the sophoisticated functionality in this crate requires Tokio.
 //!     However, even without tokio, some of the higher level wrappers over COM types have utility.
 #![allow(non_snake_case)]

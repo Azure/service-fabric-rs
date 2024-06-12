@@ -14,10 +14,10 @@ include = [
 ]
 
 [features]
-default = ["config_source", "tokio"]
+default = ["config_source", "tokio_async"]
 # Required for a lot of callback functionality.
 # Also requires ctrlc for signal handling
-tokio = ["dep:tokio", "ctrlc"]
+tokio_async = ["dep:tokio", "ctrlc"]
 # Config crate required to implement its interface. 
 config_source = ["config"]
 

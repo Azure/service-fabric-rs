@@ -20,7 +20,7 @@
 
 // lib that contains all common extensions for the raw fabric apis.
 
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 pub mod client;
 #[cfg(feature = "config_source")]
 pub mod conf;
@@ -28,7 +28,7 @@ pub mod debug;
 mod iter;
 pub mod runtime;
 pub mod strings;
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 pub mod sync;
 
 // re-export some windows types

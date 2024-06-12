@@ -12,35 +12,35 @@ use mssf_com::{
 };
 use windows_core::{Error, Interface, HSTRING, PCWSTR};
 
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
 
 use self::config::ConfigurationPackage;
 
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 pub use self::runtime::Runtime;
 
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 mod bridge;
 pub mod config;
 pub mod error;
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 pub mod executor;
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 pub mod node_context;
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 pub mod runtime;
 pub mod stateful;
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 pub mod stateful_bridge;
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 pub mod stateful_proxy;
 pub mod stateful_types;
 pub mod stateless;
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 pub mod stateless_bridge;
 pub mod store;
-#[cfg(feature = "tokio")]
+#[cfg(feature = "tokio_async")]
 pub mod store_proxy;
 pub mod store_types;
 

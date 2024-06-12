@@ -28,7 +28,6 @@ features = [
 [dependencies.mssf-core]
 path = "../../libs/core"
 # We don't showcase config integration in this particular example
-# And since it's using the lower level COM API for service registration et cetera
-# We don't actually need mssf-core to use tokio, even though this particular example does use it.
 default-features = false
+features = ["tokio_async"]
 

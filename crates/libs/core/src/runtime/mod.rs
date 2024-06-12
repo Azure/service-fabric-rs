@@ -16,25 +16,43 @@ use mssf_com::{
 use windows_core::{Error, Interface, HSTRING, PCWSTR};
 
 use self::{
-    config::ConfigurationPackage, executor::Executor, stateful::StatefulServiceFactory,
-    stateful_bridge::StatefulServiceFactoryBridge, stateless::StatelessServiceFactory,
-    stateless_bridge::StatelessServiceFactoryBridge,
+    config::ConfigurationPackage,  stateless::StatelessServiceFactory,
 };
 
+
+#[cfg(feature = "tokio")]
+use self::
+{
+    executor::Executor, stateful::StatefulServiceFactory,
+    stateful_bridge::StatefulServiceFactoryBridge,
+    stateless_bridge::StatelessServiceFactoryBridge,
+    runtime::Runtime
+};
+
+
+#[cfg(feature = "tokio")]
 mod bridge;
 pub mod config;
 pub mod error;
+#[cfg(feature = "tokio")]
 pub mod executor;
+#[cfg(feature = "tokio")]
 pub mod node_context;
 pub mod stateful;
+#[cfg(feature = "tokio")]
 pub mod stateful_bridge;
+#[cfg(feature = "tokio")]
 pub mod stateful_proxy;
 pub mod stateful_types;
 pub mod stateless;
+#[cfg(feature = "tokio")]
 pub mod stateless_bridge;
 pub mod store;
+#[cfg(feature = "tokio")]
 pub mod store_proxy;
 pub mod store_types;
+#[cfg(feature = "tokio")]
+pub mod runtime;
 
 // creates fabric runtime
 pub fn create_com_runtime() -> ::windows_core::Result<IFabricRuntime> {
@@ -52,55 +70,6 @@ pub fn get_com_activation_context() -> ::windows_core::Result<IFabricCodePackage
     Ok(activation_ctx)
 }
 
-// safe wrapping for runtime
-pub struct Runtime<E>
-where
-    E: Executor,
-{
-    com_impl: IFabricRuntime,
-    rt: E,
-}
-
-impl<E> Runtime<E>
-where
-    E: Executor,
-{
-    pub fn create(rt: E) -> ::windows_core::Result<Runtime<E>> {
-        let com = create_com_runtime()?;
-        Ok(Runtime { com_impl: com, rt })
-    }
-
-    pub fn register_stateless_service_factory<F>(
-        &self,
-        servicetypename: &HSTRING,
-        factory: F,
-    ) -> windows_core::Result<()>
-    where
-        F: StatelessServiceFactory,
-    {
-        let rt_cp = self.rt.clone();
-        let bridge: IFabricStatelessServiceFactory =
-            StatelessServiceFactoryBridge::create(factory, rt_cp).into();
-        unsafe {
-            self.com_impl
-                .RegisterStatelessServiceFactory(servicetypename, &bridge)
-        }
-    }
-
-    pub fn register_stateful_service_factory(
-        &self,
-        servicetypename: &HSTRING,
-        factory: impl StatefulServiceFactory,
-    ) -> windows_core::Result<()> {
-        let rt_cp = self.rt.clone();
-        let bridge: IFabricStatefulServiceFactory =
-            StatefulServiceFactoryBridge::create(factory, rt_cp).into();
-        unsafe {
-            self.com_impl
-                .RegisterStatefulServiceFactory(servicetypename, &bridge)
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct EndpointResourceDesc {

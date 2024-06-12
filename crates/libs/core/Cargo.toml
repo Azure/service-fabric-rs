@@ -13,14 +13,21 @@ include = [
     "Cargo.toml",
 ]
 
+[features]
+default = ["config_source", "tokio"]
+# Required for a lot of callback functionality
+tokio = ["dep:tokio"]
+# Config crate required to implement its interface. 
+config_source = ["config"]
+
 [dependencies]
 tracing.workspace = true
-tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros"] }
+tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros"], optional = true }
 windows-core = "0.56"
 ctrlc = { version = "3.0", features = ["termination"] }
 trait-variant = "0.1.1"
 bitflags = "2.5.0"
-config = { version = "0.14.0",  default-features = false}
+config = { version = "0.14.0",  default-features = false, optional = true }
 
 [dev-dependencies]
 paste = "1.0"

@@ -238,7 +238,7 @@ impl ResolvedServicePartition {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ServiceEndpointRole {
     Invalid,
     StatefulPrimary,

@@ -5,9 +5,11 @@
 
 // stateful_types contains type wrappers for sf stateful raw types
 
+use std::ffi::c_void;
+
 use mssf_com::{
-    FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_OPEN_MODE,
-    FABRIC_REPLICA_OPEN_MODE_EXISTING, FABRIC_REPLICA_OPEN_MODE_INVALID,
+    FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1,
+    FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_OPEN_MODE_EXISTING, FABRIC_REPLICA_OPEN_MODE_INVALID,
     FABRIC_REPLICA_OPEN_MODE_NEW, FABRIC_REPLICA_ROLE, FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY,
     FABRIC_REPLICA_ROLE_IDLE_SECONDARY, FABRIC_REPLICA_ROLE_NONE, FABRIC_REPLICA_ROLE_PRIMARY,
     FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_ALL,
@@ -131,12 +133,11 @@ impl From<FABRIC_REPLICA_STATUS> for ReplicaStatus {
 
 #[derive(Debug)]
 pub struct ReplicaSetConfig {
-    //pub ReplicaCount: u32,
-    //pub Replicas: *const FABRIC_REPLICA_INFORMATION,
     pub Replicas: Vec<ReplicaInfo>,
     pub WriteQuorum: u32,
-    // pub Reserved: *mut ::core::ffi::c_void,
+    // fast return for raw types needed by COM
     replica_raw_cache: Vec<FABRIC_REPLICA_INFORMATION>,
+    replica_ex1_cache: Vec<Box<FABRIC_REPLICA_INFORMATION_EX1>>,
 }
 
 impl From<&FABRIC_REPLICA_SET_CONFIGURATION> for ReplicaSetConfig {
@@ -145,6 +146,7 @@ impl From<&FABRIC_REPLICA_SET_CONFIGURATION> for ReplicaSetConfig {
             Replicas: vec![],
             WriteQuorum: r.WriteQuorum,
             replica_raw_cache: vec![],
+            replica_ex1_cache: vec![],
         };
         // fill the vec
         for i in 0..r.ReplicaCount {
@@ -152,6 +154,7 @@ impl From<&FABRIC_REPLICA_SET_CONFIGURATION> for ReplicaSetConfig {
             let replica_ref = unsafe { replica.as_ref().unwrap() };
             res.Replicas.push(ReplicaInfo::from(replica_ref))
         }
+        // populate the raw cache for fast return get_raw() for COM
         res.fill_cache_copy();
         res
     }
@@ -170,7 +173,12 @@ impl ReplicaSetConfig {
     fn fill_cache_copy(&mut self) {
         self.replica_raw_cache.clear();
         for replica in &self.Replicas {
-            self.replica_raw_cache.push(replica.get_raw());
+            let (mut info, ex1) = replica.get_raw();
+            // make on heap and fix reserved ptr for info
+            let box_ex1 = Box::new(ex1);
+            info.Reserved = &*box_ex1 as *const FABRIC_REPLICA_INFORMATION_EX1 as *mut c_void;
+            self.replica_raw_cache.push(info);
+            self.replica_ex1_cache.push(box_ex1);
         }
     }
 }
@@ -183,11 +191,18 @@ pub struct ReplicaInfo {
     pub ReplicatorAddress: ::windows_core::HSTRING,
     pub CurrentProgress: i64,
     pub CatchUpCapability: i64,
-    //pub Reserved: *mut ::core::ffi::c_void,
+    pub MustCatchUp: bool,
 }
 
 impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
     fn from(r: &FABRIC_REPLICA_INFORMATION) -> Self {
+        let ex1 = r.Reserved as *const FABRIC_REPLICA_INFORMATION_EX1;
+        let mut must_catchup = false;
+        if !ex1.is_null() {
+            if let Some(ex1ref) = unsafe { ex1.as_ref() } {
+                must_catchup = ex1ref.MustCatchup.as_bool();
+            }
+        }
         ReplicaInfo {
             Id: r.Id,
             Role: r.Role.into(),
@@ -196,13 +211,17 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
                 .unwrap(),
             CurrentProgress: r.CurrentProgress,
             CatchUpCapability: r.CatchUpCapability,
+            MustCatchUp: must_catchup,
         }
     }
 }
 
 impl ReplicaInfo {
-    pub fn get_raw(&self) -> FABRIC_REPLICA_INFORMATION {
-        FABRIC_REPLICA_INFORMATION {
+    // returns parts of the raw structs
+    // caller is responsible for stitch them together with reserved field before
+    // passing to COM api.
+    pub fn get_raw(&self) -> (FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1) {
+        let info = FABRIC_REPLICA_INFORMATION {
             Id: self.Id,
             Role: self.Role.clone().into(),
             Status: self.Status.clone().into(),
@@ -210,7 +229,12 @@ impl ReplicaInfo {
             CurrentProgress: self.CurrentProgress,
             CatchUpCapability: self.CatchUpCapability,
             Reserved: std::ptr::null_mut(),
-        }
+        };
+        let ex1 = FABRIC_REPLICA_INFORMATION_EX1 {
+            MustCatchup: self.MustCatchUp.into(),
+            Reserved: std::ptr::null_mut(),
+        };
+        (info, ex1)
     }
 }
 

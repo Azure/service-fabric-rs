@@ -6,6 +6,8 @@
 // stateful_proxy is a wrapper layer around com api,
 // making manipulating com simple.
 
+use std::ffi::c_void;
+
 use mssf_com::{
     FabricCommon::FabricRuntime::{
         IFabricPrimaryReplicator, IFabricReplicator, IFabricStatefulServiceReplica,
@@ -279,10 +281,9 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
             }
         });
         {
-            let _ = unsafe {
-                self.com_impl
-                    .BeginBuildReplica(&replica.get_raw(), &callback)?
-            };
+            let (mut info, ex1) = replica.get_raw();
+            info.Reserved = std::ptr::addr_of!(ex1) as *mut c_void;
+            let _ = unsafe { self.com_impl.BeginBuildReplica(&info, &callback)? };
         }
         rx.await.unwrap()
     }

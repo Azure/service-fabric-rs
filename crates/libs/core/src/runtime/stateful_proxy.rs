@@ -237,9 +237,12 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         previousconfiguration: &ReplicaSetConfig,
     ) -> ::windows_core::Result<()> {
         info!("PrimaryReplicatorProxy::update_catch_up_replica_set_configuration");
-        let cc = currentconfiguration.get_raw();
-        let pc = previousconfiguration.get_raw();
-        unsafe { self.com_impl.UpdateCatchUpReplicaSetConfiguration(&cc, &pc) }
+        let cc_view = currentconfiguration.get_view();
+        let pc_view = previousconfiguration.get_view();
+        unsafe {
+            self.com_impl
+                .UpdateCatchUpReplicaSetConfiguration(cc_view.get_raw(), pc_view.get_raw())
+        }
     }
     async fn wait_for_catch_up_quorum(
         &self,
@@ -268,7 +271,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         info!("PrimaryReplicatorProxy::update_current_replica_set_configuration");
         unsafe {
             self.com_impl
-                .UpdateCurrentReplicaSetConfiguration(&currentconfiguration.get_raw())
+                .UpdateCurrentReplicaSetConfiguration(currentconfiguration.get_view().get_raw())
         }
     }
     async fn build_replica(&self, replica: &ReplicaInfo) -> ::windows_core::Result<()> {
@@ -281,7 +284,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
             }
         });
         {
-            let (mut info, ex1) = replica.get_raw();
+            let (mut info, ex1) = replica.get_raw_parts();
             info.Reserved = std::ptr::addr_of!(ex1) as *mut c_void;
             let _ = unsafe { self.com_impl.BeginBuildReplica(&info, &callback)? };
         }

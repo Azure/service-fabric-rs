@@ -135,9 +135,6 @@ impl From<FABRIC_REPLICA_STATUS> for ReplicaStatus {
 pub struct ReplicaSetConfig {
     pub Replicas: Vec<ReplicaInfo>,
     pub WriteQuorum: u32,
-    // fast return for raw types needed by COM
-    replica_raw_cache: Vec<FABRIC_REPLICA_INFORMATION>,
-    replica_ex1_cache: Vec<Box<FABRIC_REPLICA_INFORMATION_EX1>>,
 }
 
 impl From<&FABRIC_REPLICA_SET_CONFIGURATION> for ReplicaSetConfig {
@@ -145,8 +142,6 @@ impl From<&FABRIC_REPLICA_SET_CONFIGURATION> for ReplicaSetConfig {
         let mut res = ReplicaSetConfig {
             Replicas: vec![],
             WriteQuorum: r.WriteQuorum,
-            replica_raw_cache: vec![],
-            replica_ex1_cache: vec![],
         };
         // fill the vec
         for i in 0..r.ReplicaCount {
@@ -154,32 +149,57 @@ impl From<&FABRIC_REPLICA_SET_CONFIGURATION> for ReplicaSetConfig {
             let replica_ref = unsafe { replica.as_ref().unwrap() };
             res.Replicas.push(ReplicaInfo::from(replica_ref))
         }
-        // populate the raw cache for fast return get_raw() for COM
-        res.fill_cache_copy();
         res
     }
 }
 
 impl ReplicaSetConfig {
-    pub fn get_raw(&self) -> FABRIC_REPLICA_SET_CONFIGURATION {
-        FABRIC_REPLICA_SET_CONFIGURATION {
-            ReplicaCount: self.replica_raw_cache.len() as u32,
-            Replicas: self.replica_raw_cache.as_ptr(),
+    // view has the lifetime as self
+    pub fn get_view(&self) -> ReplicaSetConfigView {
+        // fast return for raw types needed by COM
+        let mut replica_raw_cache: Vec<FABRIC_REPLICA_INFORMATION> = vec![];
+        let mut replica_ex1_cache: Vec<FABRIC_REPLICA_INFORMATION_EX1> = vec![];
+        // prepare vec cache
+        for replica in &self.Replicas {
+            let (info, ex1) = replica.get_raw_parts();
+            replica_raw_cache.push(info);
+            replica_ex1_cache.push(ex1);
+        }
+
+        // stitch the raw parts together
+        let info_iter = replica_raw_cache.iter_mut();
+        let mut ex1_iter = replica_ex1_cache.iter();
+        for i in info_iter {
+            // 2 vec has the same length, this cannot fail
+            let ex = ex1_iter.next().unwrap();
+            i.Reserved = ex as *const FABRIC_REPLICA_INFORMATION_EX1 as *mut c_void;
+        }
+
+        let config = FABRIC_REPLICA_SET_CONFIGURATION {
+            ReplicaCount: replica_raw_cache.len() as u32,
+            Replicas: replica_raw_cache.as_ptr(),
             WriteQuorum: self.WriteQuorum,
             Reserved: std::ptr::null_mut(),
+        };
+
+        ReplicaSetConfigView {
+            _replica_raw_vec: replica_raw_cache,
+            _replica_ex1_vec: replica_ex1_cache,
+            raw: config,
         }
     }
+}
 
-    fn fill_cache_copy(&mut self) {
-        self.replica_raw_cache.clear();
-        for replica in &self.Replicas {
-            let (mut info, ex1) = replica.get_raw();
-            // make on heap and fix reserved ptr for info
-            let box_ex1 = Box::new(ex1);
-            info.Reserved = &*box_ex1 as *const FABRIC_REPLICA_INFORMATION_EX1 as *mut c_void;
-            self.replica_raw_cache.push(info);
-            self.replica_ex1_cache.push(box_ex1);
-        }
+pub struct ReplicaSetConfigView {
+    _replica_raw_vec: Vec<FABRIC_REPLICA_INFORMATION>,
+    _replica_ex1_vec: Vec<FABRIC_REPLICA_INFORMATION_EX1>,
+    raw: FABRIC_REPLICA_SET_CONFIGURATION,
+}
+
+impl ReplicaSetConfigView {
+    // returns the config that can be passed to SF com api.
+    pub fn get_raw(&self) -> &FABRIC_REPLICA_SET_CONFIGURATION {
+        &self.raw
     }
 }
 
@@ -193,6 +213,15 @@ pub struct ReplicaInfo {
     pub CatchUpCapability: i64,
     pub MustCatchUp: bool,
 }
+
+// Intermidiate type holding parts of the raw and extenstion structs together.
+// This is used for passing raw structs into SF api.
+// pub struct ReplicaInfoView(FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1);
+// impl ReplicaInfoView {
+//     pub fn get_raw(&self) -> &FABRIC_REPLICA_INFORMATION {
+//         &self.0
+//     }
+// }
 
 impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
     fn from(r: &FABRIC_REPLICA_INFORMATION) -> Self {
@@ -217,10 +246,9 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
 }
 
 impl ReplicaInfo {
-    // returns parts of the raw structs
-    // caller is responsible for stitch them together with reserved field before
-    // passing to COM api.
-    pub fn get_raw(&self) -> (FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1) {
+    // The parts has the same lifetime as self.
+    // Caller needs to stitch the parts together.
+    pub fn get_raw_parts(&self) -> (FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1) {
         let info = FABRIC_REPLICA_INFORMATION {
             Id: self.Id,
             Role: self.Role.clone().into(),

@@ -15,7 +15,8 @@ extern crate windows;
     clippy::missing_safety_doc,
     clippy::too_many_arguments,
     clippy::extra_unused_lifetimes,
-    clippy::useless_transmute
+    clippy::useless_transmute,
+    clippy::missing_transmute_annotations // winbindgen needs to fix this
 )]
 pub mod Microsoft;
 

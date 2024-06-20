@@ -5,7 +5,7 @@
 
 // stateful_types contains type wrappers for sf stateful raw types
 
-use std::ffi::c_void;
+use std::{ffi::c_void, marker::PhantomData};
 
 use mssf_com::{
     FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1,
@@ -17,7 +17,9 @@ use mssf_com::{
     FABRIC_REPLICA_SET_WRITE_QUORUM, FABRIC_REPLICA_STATUS, FABRIC_REPLICA_STATUS_DOWN,
     FABRIC_REPLICA_STATUS_INVALID, FABRIC_REPLICA_STATUS_UP,
 };
-use windows_core::{HSTRING, PCWSTR};
+use windows_core::PCWSTR;
+
+use crate::strings::HSTRINGWrap;
 
 #[derive(Debug)]
 pub enum OpenMode {
@@ -103,7 +105,7 @@ impl From<Role> for FABRIC_REPLICA_ROLE {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ReplicaStatus {
     Invalid,
     Down,
@@ -131,6 +133,7 @@ impl From<FABRIC_REPLICA_STATUS> for ReplicaStatus {
     }
 }
 
+// Safe wrapping for FABRIC_REPLICA_SET_CONFIGURATION
 #[derive(Debug)]
 pub struct ReplicaSetConfig {
     pub Replicas: Vec<ReplicaInfo>,
@@ -186,24 +189,29 @@ impl ReplicaSetConfig {
             _replica_raw_vec: replica_raw_cache,
             _replica_ex1_vec: replica_ex1_cache,
             raw: config,
+            _phantom: PhantomData,
         }
     }
 }
 
-pub struct ReplicaSetConfigView {
+// View is not movable because it has raw pointer links in it.
+// And it has the same lifetime as the config.
+pub struct ReplicaSetConfigView<'a> {
     _replica_raw_vec: Vec<FABRIC_REPLICA_INFORMATION>,
     _replica_ex1_vec: Vec<FABRIC_REPLICA_INFORMATION_EX1>,
     raw: FABRIC_REPLICA_SET_CONFIGURATION,
+    _phantom: PhantomData<&'a ReplicaSetConfig>,
 }
 
-impl ReplicaSetConfigView {
+impl ReplicaSetConfigView<'_> {
     // returns the config that can be passed to SF com api.
     pub fn get_raw(&self) -> &FABRIC_REPLICA_SET_CONFIGURATION {
         &self.raw
     }
 }
 
-#[derive(Debug)]
+// Safe wrapping for FABRIC_REPLICA_INFORMATION
+#[derive(Debug, PartialEq, Clone)]
 pub struct ReplicaInfo {
     pub Id: i64,
     pub Role: Role,
@@ -213,15 +221,6 @@ pub struct ReplicaInfo {
     pub CatchUpCapability: i64,
     pub MustCatchUp: bool,
 }
-
-// Intermidiate type holding parts of the raw and extenstion structs together.
-// This is used for passing raw structs into SF api.
-// pub struct ReplicaInfoView(FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1);
-// impl ReplicaInfoView {
-//     pub fn get_raw(&self) -> &FABRIC_REPLICA_INFORMATION {
-//         &self.0
-//     }
-// }
 
 impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
     fn from(r: &FABRIC_REPLICA_INFORMATION) -> Self {
@@ -236,8 +235,7 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
             Id: r.Id,
             Role: r.Role.into(),
             Status: r.Status.into(),
-            ReplicatorAddress: HSTRING::from_wide(unsafe { r.ReplicatorAddress.as_wide() })
-                .unwrap(),
+            ReplicatorAddress: HSTRINGWrap::from(r.ReplicatorAddress).into(),
             CurrentProgress: r.CurrentProgress,
             CatchUpCapability: r.CatchUpCapability,
             MustCatchUp: must_catchup,
@@ -291,5 +289,91 @@ impl From<ReplicaSetQuarumMode> for FABRIC_REPLICA_SET_QUORUM_MODE {
             ReplicaSetQuarumMode::Invalid => FABRIC_REPLICA_SET_QUORUM_INVALID,
             ReplicaSetQuarumMode::Write => FABRIC_REPLICA_SET_WRITE_QUORUM,
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::ffi::c_void;
+
+    use mssf_com::{FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1};
+    use windows_core::HSTRING;
+
+    use super::{ReplicaInfo, ReplicaSetConfig};
+
+    // caller needs to stitch the reserved ptr.
+    fn create_test_data(id: i64) -> (FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1) {
+        let ex1 = FABRIC_REPLICA_INFORMATION_EX1 {
+            MustCatchup: true.into(),
+            Reserved: std::ptr::null_mut(),
+        };
+        let info = FABRIC_REPLICA_INFORMATION {
+            Id: id,
+            Role: mssf_com::FABRIC_REPLICA_ROLE_PRIMARY,
+            Status: mssf_com::FABRIC_REPLICA_STATUS_UP,
+            ReplicatorAddress: windows_core::PCWSTR::null(),
+            CurrentProgress: 123,
+            CatchUpCapability: 123,
+            Reserved: std::ptr::null_mut(),
+        };
+        (info, ex1)
+    }
+
+    #[test]
+    fn test_replica_info_conv() {
+        let (mut info, ex1) = create_test_data(123);
+        info.Reserved = std::ptr::addr_of!(ex1) as *mut c_void;
+
+        // test raw -> wrap
+        let wrap = ReplicaInfo::from(&info);
+        assert_eq!(wrap.Id, 123);
+        assert!(wrap.MustCatchUp);
+
+        // test wrap -> raw
+        let (info_b, ex1_b) = wrap.get_raw_parts();
+        assert_eq!(info.CurrentProgress, info_b.CurrentProgress);
+        assert_eq!(ex1.MustCatchup, ex1_b.MustCatchup);
+    }
+
+    #[test]
+    fn test_replica_set_config_conv() {
+        let replica1 = ReplicaInfo {
+            Id: 1,
+            Role: super::Role::Primary,
+            Status: super::ReplicaStatus::Up,
+            ReplicatorAddress: HSTRING::from("addr1"),
+            CurrentProgress: 123,
+            CatchUpCapability: 123,
+            MustCatchUp: true,
+        };
+
+        let replica2 = ReplicaInfo {
+            Id: 2,
+            Role: super::Role::ActiveSecondary,
+            Status: super::ReplicaStatus::Up,
+            ReplicatorAddress: HSTRING::from("addr2"),
+            CurrentProgress: 120,
+            CatchUpCapability: 120,
+            MustCatchUp: false,
+        };
+
+        let config_a = ReplicaSetConfig {
+            Replicas: vec![replica1.clone(), replica2.clone()],
+            WriteQuorum: 2,
+        };
+
+        // test wrap -> raw type conversion
+        let view = config_a.get_view();
+        let raw = view.get_raw();
+        assert_eq!(raw.ReplicaCount, 2);
+        assert_eq!(raw.WriteQuorum, 2);
+
+        // test raw type -> wrap conversion
+        let config_b = ReplicaSetConfig::from(raw);
+        assert_eq!(config_b.Replicas.len(), 2);
+        let replica1_b = &config_b.Replicas[0];
+        let replica2_b = &config_b.Replicas[1];
+        assert_eq!(&replica1, replica1_b);
+        assert_eq!(&replica2, replica2_b);
     }
 }

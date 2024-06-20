@@ -244,8 +244,9 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
 }
 
 impl ReplicaInfo {
-    // The parts has the same lifetime as self.
-    // Caller needs to stitch the parts together.
+    // The parts have the same lifetime as self.
+    // Caller needs to stitch the parts together, i.e.
+    // FABRIC_REPLICA_INFORMATION::Reserved needs to point at FABRIC_REPLICA_INFORMATION_EX1
     pub fn get_raw_parts(&self) -> (FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1) {
         let info = FABRIC_REPLICA_INFORMATION {
             Id: self.Id,

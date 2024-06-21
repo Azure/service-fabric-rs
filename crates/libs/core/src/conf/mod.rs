@@ -9,7 +9,7 @@
 // features of config-rs.
 
 use config::{ConfigError, Source};
-use tracing::info;
+use tracing::debug;
 
 use crate::runtime::config::ConfigurationPackage;
 pub use config::Config;
@@ -41,25 +41,19 @@ impl Source for FabricConfigSource {
         let uri_origion = String::from("fabric source");
         let mut res = config::Map::new();
         let settings = self.inner.get_settings();
-        settings
-            .sections
-            .iter()
-            .enumerate()
-            .for_each(|(_, section)| {
-                let section_name = section.name.to_string();
-                info!("Section: {}", section_name);
-                section.parameters.iter().enumerate().for_each(|(_, p)| {
-                    let param_name = p.name.to_string();
-                    let param_val = p.value.to_string();
-                    info!("Param: {:?}", param_name);
-                    let val = config::Value::new(
-                        Some(&uri_origion),
-                        config::ValueKind::String(param_val),
-                    );
-                    // section and param is separated by a dot.
-                    res.insert(section_name.clone() + "." + &param_name, val);
-                })
-            });
+        settings.sections.iter().for_each(|section| {
+            let section_name = section.name.to_string();
+            debug!("Section: {}", section_name);
+            section.parameters.iter().for_each(|p| {
+                let param_name = p.name.to_string();
+                let param_val = p.value.to_string();
+                debug!("Param: {} Val: {}", param_name, param_val);
+                let val =
+                    config::Value::new(Some(&uri_origion), config::ValueKind::String(param_val));
+                // section and param is separated by a dot.
+                res.insert(section_name.clone() + "." + &param_name, val);
+            })
+        });
         Ok(res)
     }
 }

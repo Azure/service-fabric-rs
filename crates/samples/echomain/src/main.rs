@@ -73,18 +73,13 @@ fn validate_configs(actctx: &ActivationContext) {
         .get_configuration_package(&HSTRING::from("Config"))
         .unwrap();
     let settings = config.get_settings();
-    settings
-        .sections
-        .iter()
-        .enumerate()
-        .for_each(|(_, section)| {
-            info!("Section: {}", section.name);
-            section
-                .parameters
-                .iter()
-                .enumerate()
-                .for_each(|(_, p)| info!("Param: {:?}", p))
-        });
+    settings.sections.iter().for_each(|section| {
+        info!("Section: {}", section.name);
+        section
+            .parameters
+            .iter()
+            .for_each(|p| info!("Param: {:?}", p))
+    });
 
     // get the required config
     let (v, encrypt) = config

@@ -21,20 +21,14 @@ use windows_core::{HSTRING, PCWSTR};
 
 use crate::iter::{FabricIter, FabricListAccessor};
 
-use super::gen::svc::IFabricServiceManagementClient6Wrap;
-
 // Service Management Client
 pub struct ServiceManagementClient {
     com: IFabricServiceManagementClient6,
-    _gen_wrap: IFabricServiceManagementClient6Wrap,
 }
 
 impl ServiceManagementClient {
     pub fn from_com(com: IFabricServiceManagementClient6) -> Self {
-        Self {
-            com: com.clone(),
-            _gen_wrap: IFabricServiceManagementClient6Wrap::from_com(com),
-        }
+        Self { com: com.clone() }
     }
 
     fn resolve_service_partition_internal(

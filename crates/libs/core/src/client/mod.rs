@@ -8,14 +8,7 @@ use mssf_com::FabricCommon::FabricClient::{
 };
 use windows_core::Interface;
 
-use self::{
-    gen::{property::IFabricPropertyManagementClient2Wrap, query::IFabricQueryClient10Wrap},
-    query_client::QueryClient,
-    svc_mgmt_client::ServiceManagementClient,
-};
-
-// TODO: make private. Currently exposed for backward compat
-pub mod gen;
+use self::{query_client::QueryClient, svc_mgmt_client::ServiceManagementClient};
 
 pub mod query_client;
 pub mod svc_mgmt_client;
@@ -66,9 +59,6 @@ impl FabricClient {
     pub fn get_property_manager(&self) -> PropertyManagementClient {
         PropertyManagementClient {
             _com: self.com_property_client.clone(),
-            _gen_wrap: IFabricPropertyManagementClient2Wrap::from_com(
-                self.com_property_client.clone(),
-            ),
         }
     }
 
@@ -85,5 +75,4 @@ impl FabricClient {
 
 pub struct PropertyManagementClient {
     _com: IFabricPropertyManagementClient2,
-    _gen_wrap: IFabricPropertyManagementClient2Wrap,
 }

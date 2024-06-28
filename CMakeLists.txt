@@ -39,11 +39,6 @@ add_custom_target(generate_rust
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_custom_target(generate_client
-    COMMAND ${cargo_exe} run -p tools_fabric_gen
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
 add_custom_target(build_rust
     COMMAND ${cargo_exe} build
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

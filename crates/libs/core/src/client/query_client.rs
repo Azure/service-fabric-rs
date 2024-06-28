@@ -1,7 +1,6 @@
 use std::{ffi::c_void, time::Duration};
 
 use crate::{
-    client::IFabricQueryClient10Wrap,
     iter::{FabricIter, FabricListAccessor},
     strings::HSTRINGWrap,
 };
@@ -21,15 +20,11 @@ use windows_core::{HSTRING, PCWSTR};
 
 pub struct QueryClient {
     com: IFabricQueryClient10,
-    _gen_wrap: IFabricQueryClient10Wrap,
 }
 
 impl QueryClient {
     pub fn from_com(com: IFabricQueryClient10) -> Self {
-        Self {
-            com: com.clone(),
-            _gen_wrap: IFabricQueryClient10Wrap::from_com(com),
-        }
+        Self { com: com.clone() }
     }
 
     // manually wrapping the com call since this is a irregular api.

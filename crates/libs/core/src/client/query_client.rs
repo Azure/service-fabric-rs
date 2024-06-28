@@ -6,15 +6,18 @@ use crate::{
 };
 use bitflags::bitflags;
 use mssf_com::{
-    FabricCommon::FabricClient::{IFabricGetNodeListResult2, IFabricQueryClient10},
-    FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION_EX1,
-    FABRIC_NODE_QUERY_DESCRIPTION_EX2, FABRIC_NODE_QUERY_DESCRIPTION_EX3,
-    FABRIC_NODE_QUERY_RESULT_ITEM, FABRIC_NODE_QUERY_RESULT_ITEM_EX1,
-    FABRIC_NODE_QUERY_RESULT_ITEM_EX2, FABRIC_PAGING_STATUS, FABRIC_QUERY_NODE_STATUS_FILTER_ALL,
-    FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT, FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED,
-    FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING, FABRIC_QUERY_NODE_STATUS_FILTER_DOWN,
-    FABRIC_QUERY_NODE_STATUS_FILTER_ENABLING, FABRIC_QUERY_NODE_STATUS_FILTER_REMOVED,
-    FABRIC_QUERY_NODE_STATUS_FILTER_UNKNOWN, FABRIC_QUERY_NODE_STATUS_FILTER_UP,
+    FabricClient::{IFabricGetNodeListResult2, IFabricQueryClient10},
+    FabricTypes::{
+        FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION_EX1,
+        FABRIC_NODE_QUERY_DESCRIPTION_EX2, FABRIC_NODE_QUERY_DESCRIPTION_EX3,
+        FABRIC_NODE_QUERY_RESULT_ITEM, FABRIC_NODE_QUERY_RESULT_ITEM_EX1,
+        FABRIC_NODE_QUERY_RESULT_ITEM_EX2, FABRIC_PAGING_STATUS,
+        FABRIC_QUERY_NODE_STATUS_FILTER_ALL, FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT,
+        FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED, FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING,
+        FABRIC_QUERY_NODE_STATUS_FILTER_DOWN, FABRIC_QUERY_NODE_STATUS_FILTER_ENABLING,
+        FABRIC_QUERY_NODE_STATUS_FILTER_REMOVED, FABRIC_QUERY_NODE_STATUS_FILTER_UNKNOWN,
+        FABRIC_QUERY_NODE_STATUS_FILTER_UP,
+    },
 };
 use windows_core::{HSTRING, PCWSTR};
 
@@ -34,9 +37,10 @@ impl QueryClient {
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricGetNodeListResult2>> {
         let (tx, rx) = crate::sync::oneshot_channel();
+        let com_cp = self.com.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
             // Note we use the v2 api
-            let res = unsafe { self.com.EndGetNodeList2(ctx) };
+            let res = unsafe { com_cp.EndGetNodeList2(ctx) };
             tx.send(res);
         });
         let ctx = unsafe {

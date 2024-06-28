@@ -36,6 +36,7 @@ find_program (
 
 add_custom_target(generate_rust
     COMMAND ${cargo_exe} run -p tools_api
+    COMMAND ${cargo_exe} fmt -p mssf-com # format the generated crate
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

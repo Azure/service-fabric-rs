@@ -1,6 +1,6 @@
 use crate::HSTRING;
 /// safe wrapping for runtime
-use mssf_com::FabricCommon::FabricRuntime::{
+use mssf_com::FabricRuntime::{
     IFabricRuntime, IFabricStatefulServiceFactory, IFabricStatelessServiceFactory,
 };
 
@@ -32,7 +32,7 @@ where
         factory: F,
     ) -> windows_core::Result<()>
     where
-        F: StatelessServiceFactory,
+        F: StatelessServiceFactory + 'static,
     {
         let rt_cp = self.rt.clone();
         let bridge: IFabricStatelessServiceFactory =
@@ -46,7 +46,7 @@ where
     pub fn register_stateful_service_factory(
         &self,
         servicetypename: &HSTRING,
-        factory: impl StatefulServiceFactory,
+        factory: impl StatefulServiceFactory + 'static,
     ) -> windows_core::Result<()> {
         let rt_cp = self.rt.clone();
         let bridge: IFabricStatefulServiceFactory =

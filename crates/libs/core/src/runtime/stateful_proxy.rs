@@ -9,10 +9,8 @@
 use std::ffi::c_void;
 
 use mssf_com::{
-    FabricCommon::FabricRuntime::{
-        IFabricPrimaryReplicator, IFabricReplicator, IFabricStatefulServiceReplica,
-    },
-    FABRIC_EPOCH,
+    FabricRuntime::{IFabricPrimaryReplicator, IFabricReplicator, IFabricStatefulServiceReplica},
+    FabricTypes::FABRIC_EPOCH,
 };
 use tracing::info;
 use windows_core::{Interface, HSTRING};
@@ -43,8 +41,9 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         info!("StatefulServiceReplicaProxy::open with mode {:?}", openmode);
         // replicator address
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndOpen(ctx) };
+            let res = unsafe { com_cp.EndOpen(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }
@@ -65,8 +64,9 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         // replica address
         info!("StatefulServiceReplicaProxy::change_role {:?}", newrole);
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndChangeRole(ctx) };
+            let res = unsafe { com_cp.EndChangeRole(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }
@@ -79,8 +79,9 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
     async fn close(&self) -> windows::core::Result<()> {
         info!("StatefulServiceReplicaProxy::close");
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndClose(ctx) };
+            let res = unsafe { com_cp.EndClose(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }
@@ -111,8 +112,9 @@ impl Replicator for ReplicatorProxy {
         info!("ReplicatorProxy::open");
         // replicator address
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndOpen(ctx) };
+            let res = unsafe { com_cp.EndOpen(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }
@@ -124,8 +126,9 @@ impl Replicator for ReplicatorProxy {
     async fn close(&self) -> ::windows_core::Result<()> {
         info!("ReplicatorProxy::close");
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndClose(ctx) };
+            let res = unsafe { com_cp.EndClose(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }
@@ -136,8 +139,9 @@ impl Replicator for ReplicatorProxy {
     async fn change_role(&self, epoch: &Epoch, role: &Role) -> ::windows_core::Result<()> {
         info!("ReplicatorProxy::change_role");
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndChangeRole(ctx) };
+            let res = unsafe { com_cp.EndChangeRole(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }
@@ -154,8 +158,9 @@ impl Replicator for ReplicatorProxy {
     async fn update_epoch(&self, epoch: &Epoch) -> ::windows_core::Result<()> {
         info!("ReplicatorProxy::update_epoch");
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndUpdateEpoch(ctx) };
+            let res = unsafe { com_cp.EndUpdateEpoch(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }
@@ -220,8 +225,9 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     async fn on_data_loss(&self) -> ::windows_core::Result<u8> {
         info!("PrimaryReplicatorProxy::on_data_loss");
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndOnDataLoss(ctx) };
+            let res = unsafe { com_cp.EndOnDataLoss(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }
@@ -250,8 +256,9 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     ) -> ::windows_core::Result<()> {
         info!("PrimaryReplicatorProxy::wait_for_catch_up_quorum");
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndWaitForCatchUpQuorum(ctx) };
+            let res = unsafe { com_cp.EndWaitForCatchUpQuorum(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }
@@ -277,8 +284,9 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     async fn build_replica(&self, replica: &ReplicaInfo) -> ::windows_core::Result<()> {
         info!("PrimaryReplicatorProxy::build_replica");
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndBuildReplica(ctx) };
+            let res = unsafe { com_cp.EndBuildReplica(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }

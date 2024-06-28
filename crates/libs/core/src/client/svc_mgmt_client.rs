@@ -6,16 +6,17 @@
 use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{
-    FabricCommon::FabricClient::{
-        IFabricResolvedServicePartitionResult, IFabricServiceManagementClient6,
+    FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient6},
+    FabricTypes::{
+        FABRIC_PARTITION_KEY_TYPE, FABRIC_PARTITION_KEY_TYPE_INT64,
+        FABRIC_PARTITION_KEY_TYPE_INVALID, FABRIC_PARTITION_KEY_TYPE_NONE,
+        FABRIC_PARTITION_KEY_TYPE_STRING, FABRIC_RESOLVED_SERVICE_ENDPOINT,
+        FABRIC_SERVICE_ENDPOINT_ROLE, FABRIC_SERVICE_PARTITION_KIND,
+        FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE, FABRIC_SERVICE_PARTITION_KIND_INVALID,
+        FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
+        FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
+        FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
     },
-    FABRIC_PARTITION_KEY_TYPE, FABRIC_PARTITION_KEY_TYPE_INT64, FABRIC_PARTITION_KEY_TYPE_INVALID,
-    FABRIC_PARTITION_KEY_TYPE_NONE, FABRIC_PARTITION_KEY_TYPE_STRING,
-    FABRIC_RESOLVED_SERVICE_ENDPOINT, FABRIC_SERVICE_ENDPOINT_ROLE, FABRIC_SERVICE_PARTITION_KIND,
-    FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE, FABRIC_SERVICE_PARTITION_KIND_INVALID,
-    FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
-    FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
-    FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
 };
 use windows_core::{HSTRING, PCWSTR};
 
@@ -41,8 +42,9 @@ impl ServiceManagementClient {
     ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricResolvedServicePartitionResult>>
     {
         let (tx, rx) = crate::sync::oneshot_channel();
+        let com_cp = self.com.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com.EndResolveServicePartition(ctx) };
+            let res = unsafe { com_cp.EndResolveServicePartition(ctx) };
             tx.send(res);
         });
         let ctx = unsafe {

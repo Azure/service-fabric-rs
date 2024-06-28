@@ -3,8 +3,9 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FabricCommon::{FabricClient::*, IFabricAsyncOperationCallback};
-use mssf_com::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
+use mssf_com::FabricClient::{FabricCreateLocalClient, IFabricQueryClient};
+use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
+use mssf_com::FabricTypes::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
 use mssf_core::sync::wait::WaitableCallback;
 use windows_core::Interface;
 

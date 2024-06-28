@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FabricCommon::FabricClient::{
+use mssf_com::FabricClient::{
     IFabricPropertyManagementClient2, IFabricQueryClient10, IFabricServiceManagementClient6,
 };
 use windows_core::Interface;
@@ -21,7 +21,7 @@ mod tests;
 // https://github.com/microsoft/service-fabric/blob/master/src/prod/src/managed/Api/src/System/Fabric/FabricClient.cs
 
 pub struct FabricClient {
-    com_property_client: IFabricPropertyManagementClient2,
+    _com_property_client: IFabricPropertyManagementClient2,
     com_service_client: IFabricServiceManagementClient6,
     com_query_client: IFabricQueryClient10,
 }
@@ -49,7 +49,7 @@ impl FabricClient {
             .unwrap();
         let com_query_client = com.clone().cast::<IFabricQueryClient10>().unwrap();
         Self {
-            com_property_client,
+            _com_property_client: com_property_client,
             com_service_client,
             com_query_client,
         }
@@ -58,7 +58,7 @@ impl FabricClient {
     // Get the client for managing Fabric Properties in Naming Service
     pub fn get_property_manager(&self) -> PropertyManagementClient {
         PropertyManagementClient {
-            _com: self.com_property_client.clone(),
+            _com: self._com_property_client.clone(),
         }
     }
 

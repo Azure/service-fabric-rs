@@ -1,10 +1,10 @@
 use std::{cell::Cell, sync::Mutex};
 
 use mssf_com::{
-    FabricCommon::FabricRuntime::{
+    FabricRuntime::{
         IFabricKeyValueStoreReplica2, IFabricStatefulServiceReplica, IFabricStoreEventHandler,
     },
-    FABRIC_REPLICATOR_ADDRESS,
+    FabricTypes::FABRIC_REPLICATOR_ADDRESS,
 };
 use mssf_core::{
     runtime::{

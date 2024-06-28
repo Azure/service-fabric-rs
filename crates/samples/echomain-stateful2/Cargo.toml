@@ -9,23 +9,17 @@ edition = "2021"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 tokio = { version = "1", features = ["full"] }
-windows-core = "0.56"
+windows-core = "0.57"
 trait-variant = "0.1.1"
 
 [dependencies.windows]
-version = "0.56"
+version = "0.57"
 features = [
     "implement"
 ]
 
 [dependencies.mssf-com]
 path = "../../libs/com"
-features = [
-    "implement",
-    "ServiceFabric",
-    "ServiceFabric_FabricCommon",
-    "ServiceFabric_FabricCommon_FabricRuntime"
-]
 
 [dependencies.mssf-core]
 path = "../../libs/core"

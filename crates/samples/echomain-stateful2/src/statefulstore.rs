@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FABRIC_REPLICATOR_ADDRESS;
+use mssf_com::FabricTypes::FABRIC_REPLICATOR_ADDRESS;
 use mssf_core::runtime::{
     executor::DefaultExecutor,
     stateful::{

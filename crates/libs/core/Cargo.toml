@@ -24,7 +24,7 @@ config_source = ["config"]
 [dependencies]
 tracing.workspace = true
 tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros"], optional = true }
-windows-core = "0.56"
+windows-core = "0.57"
 ctrlc = { version = "3.0", features = ["termination"], optional = true }
 trait-variant = "0.1.1"
 bitflags = "2.5.0"
@@ -34,7 +34,7 @@ config = { version = "0.14.0",  default-features = false, optional = true }
 paste = "1.0"
 
 [dependencies.windows]
-version = "0.56"
+version = "0.57"
 features = [
     "implement",
     "Win32_System_Com",
@@ -46,15 +46,6 @@ features = [
 [dependencies.mssf-com]
 path = "../com"
 version = "0.0.6"
-features = [
-    "implement",
-    "Foundation",
-    "Win32_Foundation",
-    "ServiceFabric",
-    "ServiceFabric_FabricCommon",
-    "ServiceFabric_FabricCommon_FabricClient",
-    "ServiceFabric_FabricCommon_FabricRuntime"
-]
 
 # requires return impl trait feature
 [package.metadata]

@@ -13,9 +13,12 @@ use std::{
     task::{Context, Poll},
 };
 
-use mssf_com::FabricCommon::{
-    FabricClient::FabricCreateLocalClient, IFabricAsyncOperationCallback,
-    IFabricAsyncOperationCallback_Impl, IFabricAsyncOperationContext,
+use mssf_com::{
+    FabricClient::FabricCreateLocalClient,
+    FabricCommon::{
+        IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
+        IFabricAsyncOperationContext,
+    },
 };
 use tokio::sync::oneshot::Receiver;
 use windows::core::implement;
@@ -30,8 +33,11 @@ pub fn CreateLocalClient<T: Interface>() -> T {
     unsafe { T::from_raw(FabricCreateLocalClient(&T::IID).expect("cannot get localclient")) }
 }
 
-pub trait Callback: FnOnce(::core::option::Option<&IFabricAsyncOperationContext>) {}
-impl<T: FnOnce(::core::option::Option<&IFabricAsyncOperationContext>)> Callback for T {}
+pub trait Callback:
+    FnOnce(::core::option::Option<&IFabricAsyncOperationContext>) + 'static
+{
+}
+impl<T: FnOnce(::core::option::Option<&IFabricAsyncOperationContext>) + 'static> Callback for T {}
 
 // TODO: rename.
 // Fabric Callback that wraps an arbitrary Fn closure.
@@ -152,15 +158,17 @@ mod tests {
     use std::cell::Cell;
 
     use mssf_com::{
+        FabricClient::{
+            IFabricClusterManagementClient3, IFabricGetNodeListResult, IFabricQueryClient,
+        },
         FabricCommon::{
-            FabricClient::{
-                IFabricClusterManagementClient3, IFabricGetNodeListResult, IFabricQueryClient,
-            },
             IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
             IFabricAsyncOperationContext,
         },
-        FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION, FABRIC_CLUSTER_HEALTH_POLICY,
-        FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM,
+        FabricTypes::{
+            FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION, FABRIC_CLUSTER_HEALTH_POLICY,
+            FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM,
+        },
     };
 
     use tokio::sync::oneshot::Sender;
@@ -205,34 +213,34 @@ mod tests {
     type AwaitableToken = super::FabricReceiver<()>;
 
     macro_rules! beginmyclient {
-    ($name: ident) => {
-        paste::item! {
-        pub struct $name {
-            com: mssf_com::FabricCommon::FabricClient::[<I $name>],
-        }
-        }
-
-        // both are needed. But should be safe because COM ptr always lives on heap.
-        unsafe impl Send for $name {}
-        unsafe impl Sync for $name {}
-
-        impl Default for $name {
-            fn default() -> Self {
-                Self::new()
+        ($name: ident) => {
+            paste::item! {
+            pub struct $name {
+                com: mssf_com::FabricClient::[<I $name>],
             }
-        }
-
-        impl $name {
-            pub fn new() -> $name {
-                return $name {
-                    com: paste::item! {
-                            crate::sync::CreateLocalClient::<mssf_com::FabricCommon::FabricClient::[<I $name>]>()
-                        }
-                };
             }
-        } // impl
-    };
-}
+
+            // both are needed. But should be safe because COM ptr always lives on heap.
+            unsafe impl Send for $name {}
+            unsafe impl Sync for $name {}
+
+            impl Default for $name {
+                fn default() -> Self {
+                    Self::new()
+                }
+            }
+
+            impl $name {
+                pub fn new() -> $name {
+                    return $name {
+                        com: paste::item! {
+                            crate::sync::CreateLocalClient::<mssf_com::FabricClient::[<I $name>]>()
+                        },
+                    };
+                }
+            } // impl
+        };
+    }
 
     // macros for impl async fn
     macro_rules! myasyncfunc {
@@ -288,15 +296,15 @@ mod tests {
         myasyncfunc!(
             get_cluster_health,
             GetClusterHealth,
-            mssf_com::FABRIC_CLUSTER_HEALTH_POLICY,
-            mssf_com::FabricCommon::FabricClient::IFabricClusterHealthResult,
+            mssf_com::FabricTypes::FABRIC_CLUSTER_HEALTH_POLICY,
+            mssf_com::FabricClient::IFabricClusterHealthResult,
         );
         // get node health does not work because it requires node id as additional argument
         myasyncfunc!(
             get_node_health,
             GetNodeHealth,
-            mssf_com::FABRIC_CLUSTER_HEALTH_POLICY,
-            mssf_com::FabricCommon::FabricClient::IFabricNodeHealthResult,
+            mssf_com::FabricTypes::FABRIC_CLUSTER_HEALTH_POLICY,
+            mssf_com::FabricClient::IFabricNodeHealthResult,
             HSTRING
         );
     }
@@ -328,15 +336,15 @@ mod tests {
         myasyncfunc!(
             get_application_type_list,
             GetApplicationTypeList,
-            mssf_com::FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION,
-            mssf_com::FabricCommon::FabricClient::IFabricGetApplicationTypeListResult,
+            mssf_com::FabricTypes::FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION,
+            mssf_com::FabricClient::IFabricGetApplicationTypeListResult,
         );
 
         myasyncfunc!(
             get_service_type_list,
             GetServiceTypeList,
-            mssf_com::FABRIC_SERVICE_TYPE_QUERY_DESCRIPTION,
-            mssf_com::FabricCommon::FabricClient::IFabricGetServiceTypeListResult,
+            mssf_com::FabricTypes::FABRIC_SERVICE_TYPE_QUERY_DESCRIPTION,
+            mssf_com::FabricClient::IFabricGetServiceTypeListResult,
         );
         // example of not using macro.
         // param is SBox because it crosses await boundary.
@@ -369,8 +377,9 @@ mod tests {
         ) -> FabricReceiver<::windows::core::Result<IFabricGetNodeListResult>> {
             let (tx, rx) = oneshot_channel();
 
+            let com_cp = self.com.clone();
             let callback = AwaitableCallback2::i_new(move |ctx| {
-                let res = unsafe { self.com.EndGetNodeList(ctx) };
+                let res = unsafe { com_cp.EndGetNodeList(ctx) };
                 tx.send(res);
             });
             let ctx = unsafe { self.com.BeginGetNodeList(querydescription, 1000, &callback) };

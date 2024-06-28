@@ -13,14 +13,14 @@ use crate::{
 };
 use mssf_com::{
     FabricCommon::{
-        FabricRuntime::{
-            IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
-            IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
-            IFabricStatelessServicePartition,
-        },
         IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
     },
-    FABRIC_URI,
+    FabricRuntime::{
+        IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
+        IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
+        IFabricStatelessServicePartition,
+    },
+    FabricTypes::FABRIC_URI,
 };
 use tracing::info;
 use windows::core::implement;
@@ -34,8 +34,8 @@ use super::{
 #[implement(IFabricStatelessServiceFactory)]
 pub struct StatelessServiceFactoryBridge<E, F>
 where
-    E: Executor,
-    F: StatelessServiceFactory,
+    E: Executor + 'static,
+    F: StatelessServiceFactory + 'static,
 {
     inner: F,
     rt: E,

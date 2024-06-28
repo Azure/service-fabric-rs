@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::{
+use mssf_com::FabricTypes::{
     FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND, FABRIC_LOCAL_STORE_KIND_ESE,
     FABRIC_LOCAL_STORE_KIND_INVALID, FABRIC_REPLICATOR_SETTINGS,
     FABRIC_TRANSACTION_ISOLATION_LEVEL, FABRIC_TRANSACTION_ISOLATION_LEVEL_DEFAULT,

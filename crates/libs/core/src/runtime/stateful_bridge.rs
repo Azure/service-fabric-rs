@@ -13,16 +13,18 @@ use windows_core::{AsImpl, Error, Interface, HSTRING};
 
 use mssf_com::{
     FabricCommon::{
-        FabricRuntime::{
-            IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl, IFabricReplicator,
-            IFabricReplicator_Impl, IFabricStatefulServiceFactory,
-            IFabricStatefulServiceFactory_Impl, IFabricStatefulServicePartition,
-            IFabricStatefulServiceReplica, IFabricStatefulServiceReplica_Impl,
-        },
         IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
     },
-    FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_ROLE,
-    FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_MODE, FABRIC_URI,
+    FabricRuntime::{
+        IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl, IFabricReplicator,
+        IFabricReplicator_Impl, IFabricStatefulServiceFactory, IFabricStatefulServiceFactory_Impl,
+        IFabricStatefulServicePartition, IFabricStatefulServiceReplica,
+        IFabricStatefulServiceReplica_Impl,
+    },
+    FabricTypes::{
+        FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_ROLE,
+        FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_MODE, FABRIC_URI,
+    },
 };
 
 use crate::{
@@ -42,8 +44,8 @@ use super::{
 #[implement(IFabricStatefulServiceFactory)]
 pub struct StatefulServiceFactoryBridge<E, F>
 where
-    E: Executor,
-    F: StatefulServiceFactory,
+    E: Executor + 'static,
+    F: StatefulServiceFactory + 'static,
 {
     inner: F,
     rt: E,

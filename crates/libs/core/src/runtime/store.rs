@@ -6,11 +6,11 @@
 use std::ffi::c_void;
 
 use mssf_com::{
-    FabricCommon::FabricRuntime::{
+    FabricRuntime::{
         FabricCreateKeyValueStoreReplica, IFabricKeyValueStoreReplica2, IFabricStoreEventHandler,
         IFabricStoreEventHandler_Impl,
     },
-    FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND,
+    FabricTypes::{FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND},
 };
 use tracing::info;
 use windows::core::implement;

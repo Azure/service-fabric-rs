@@ -1,4 +1,4 @@
-# fabric_base
+# mssf-com
 
 * This crate is generated from ServiceFabric winmd file by windows-bindgen.
   * [ServiceFabric.winmd](https://github.com/youyuanwu/fabric-metadata/tree/main/.windows/winmd)

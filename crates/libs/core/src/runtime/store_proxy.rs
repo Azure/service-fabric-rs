@@ -4,10 +4,10 @@
 // ------------------------------------------------------------
 
 use mssf_com::{
-    FabricCommon::FabricRuntime::{
+    FabricRuntime::{
         IFabricKeyValueStoreItemResult, IFabricKeyValueStoreReplica2, IFabricTransaction,
     },
-    FABRIC_KEY_VALUE_STORE_ITEM, FABRIC_KEY_VALUE_STORE_ITEM_METADATA,
+    FabricTypes::{FABRIC_KEY_VALUE_STORE_ITEM, FABRIC_KEY_VALUE_STORE_ITEM_METADATA},
 };
 use tracing::info;
 use windows_core::PCWSTR;
@@ -115,8 +115,9 @@ impl TransactionProxy {
         info!("TransactionProxy::commit");
         // replicator address
         let (tx, rx) = tokio::sync::oneshot::channel();
+        let com_cp = self.com_impl.clone();
         let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { self.com_impl.EndCommit(ctx) };
+            let res = unsafe { com_cp.EndCommit(ctx) };
             if tx.send(res).is_err() {
                 debug_assert!(false, "Receiver is dropped.");
             }

@@ -14,7 +14,10 @@ use windows_core::implement;
 // Begin to End operation, when implementing Rust async to COM api
 // exposed to SF COM layer.
 #[implement(IFabricAsyncOperationContext)]
-pub struct BridgeContext<T> {
+pub struct BridgeContext<T>
+where
+    T: 'static,
+{
     content: Cell<Option<T>>,
     is_completed: Cell<bool>,
     is_completed_synchronously: bool,

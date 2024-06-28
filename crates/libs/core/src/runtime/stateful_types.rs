@@ -7,7 +7,7 @@
 
 use std::{ffi::c_void, marker::PhantomData};
 
-use mssf_com::{
+use mssf_com::FabricTypes::{
     FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1,
     FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_OPEN_MODE_EXISTING, FABRIC_REPLICA_OPEN_MODE_INVALID,
     FABRIC_REPLICA_OPEN_MODE_NEW, FABRIC_REPLICA_ROLE, FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY,
@@ -297,7 +297,10 @@ impl From<ReplicaSetQuarumMode> for FABRIC_REPLICA_SET_QUORUM_MODE {
 mod test {
     use std::ffi::c_void;
 
-    use mssf_com::{FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1};
+    use mssf_com::FabricTypes::{
+        FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1, FABRIC_REPLICA_ROLE_PRIMARY,
+        FABRIC_REPLICA_STATUS_UP,
+    };
     use windows_core::HSTRING;
 
     use super::{ReplicaInfo, ReplicaSetConfig};
@@ -310,8 +313,8 @@ mod test {
         };
         let info = FABRIC_REPLICA_INFORMATION {
             Id: id,
-            Role: mssf_com::FABRIC_REPLICA_ROLE_PRIMARY,
-            Status: mssf_com::FABRIC_REPLICA_STATUS_UP,
+            Role: FABRIC_REPLICA_ROLE_PRIMARY,
+            Status: FABRIC_REPLICA_STATUS_UP,
             ReplicatorAddress: windows_core::PCWSTR::null(),
             CurrentProgress: 123,
             CatchUpCapability: 123,

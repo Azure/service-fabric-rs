@@ -5,7 +5,7 @@
 
 // stateful contains rs definition of stateful traits that user needs to implement
 
-use mssf_com::FabricCommon::FabricRuntime::IFabricStatefulServicePartition;
+use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
 use windows_core::{Error, HSTRING};
 
 use super::stateful_types::{

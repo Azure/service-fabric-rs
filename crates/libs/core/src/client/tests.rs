@@ -7,7 +7,7 @@
 
 use std::time::Duration;
 
-use mssf_com::{FABRIC_E_SERVICE_DOES_NOT_EXIST, FABRIC_NODE_QUERY_DESCRIPTION};
+use mssf_com::FabricTypes::FABRIC_E_SERVICE_DOES_NOT_EXIST;
 use windows_core::HSTRING;
 
 use crate::client::{
@@ -84,7 +84,9 @@ async fn test_fabric_client() {
                     assert!(
                         e.code() == windows_core::HRESULT(FABRIC_E_SERVICE_DOES_NOT_EXIST.0)
                             || e.code()
-                                == windows_core::HRESULT(mssf_com::FABRIC_E_SERVICE_OFFLINE.0)
+                                == windows_core::HRESULT(
+                                    mssf_com::FabricTypes::FABRIC_E_SERVICE_OFFLINE.0
+                                )
                     );
                 } else {
                     assert_eq!(

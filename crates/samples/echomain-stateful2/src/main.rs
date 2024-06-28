@@ -4,9 +4,9 @@
 // ------------------------------------------------------------
 
 use crate::statefulstore::Factory;
-use mssf_com::FabricCommon::{
+use mssf_com::{
+    FabricCommon::IFabricAsyncOperationCallback,
     FabricRuntime::{FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricNodeContextResult},
-    IFabricAsyncOperationCallback,
 };
 use mssf_core::{
     runtime::{

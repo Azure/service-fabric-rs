@@ -4,24 +4,15 @@
 // ------------------------------------------------------------
 
 #![doc(html_no_source)]
+// extern crate windows;
+#![allow(non_snake_case)]
+pub mod ServiceFabric;
 
-extern crate windows;
+// expose mod directly
+pub use ServiceFabric::*;
 
-#[allow(
-    non_camel_case_types,
-    non_snake_case,
-    non_upper_case_globals,
-    clippy::derivable_impls,
-    clippy::missing_safety_doc,
-    clippy::too_many_arguments,
-    clippy::extra_unused_lifetimes,
-    clippy::useless_transmute,
-    clippy::missing_transmute_annotations // winbindgen needs to fix this
-)]
-pub mod Microsoft;
-
-#[cfg(feature = "ServiceFabric")]
-pub use Microsoft::ServiceFabric::*;
+// hack to make generated code link together
+use ServiceFabric::FabricTypes::*;
 
 #[cfg(target_os = "windows")]
 pub use mssf_metadata;

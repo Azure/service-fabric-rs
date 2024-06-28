@@ -3,12 +3,12 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FabricCommon::FabricRuntime::{
+use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
+use mssf_com::FabricRuntime::{
     FabricBeginGetNodeContext, FabricCreateRuntime, FabricEndGetNodeContext,
     FabricGetActivationContext, IFabricCodePackageActivationContext, IFabricNodeContextResult,
     IFabricRuntime,
 };
-use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
 use mssf_core::sync::wait::WaitableCallback;
 use std::sync::mpsc::channel;
 use tracing::info;

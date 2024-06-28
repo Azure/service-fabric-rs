@@ -29,7 +29,7 @@ pub fn fill_fabric_error(e: Error) -> Error {
 #[cfg(test)]
 #[cfg(windows)] // linux error propagate is not working yet
 mod test {
-    use mssf_com::FABRIC_E_GATEWAY_NOT_REACHABLE;
+    use mssf_com::FabricTypes::FABRIC_E_GATEWAY_NOT_REACHABLE;
     use windows_core::{Error, HSTRING};
 
     #[test]

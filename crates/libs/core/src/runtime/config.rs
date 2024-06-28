@@ -4,9 +4,12 @@
 // ------------------------------------------------------------
 
 use mssf_com::{
-    FabricCommon::FabricRuntime::IFabricConfigurationPackage, FABRIC_CONFIGURATION_PARAMETER,
-    FABRIC_CONFIGURATION_PARAMETER_EX1, FABRIC_CONFIGURATION_PARAMETER_LIST,
-    FABRIC_CONFIGURATION_SECTION, FABRIC_CONFIGURATION_SECTION_LIST,
+    FabricRuntime::IFabricConfigurationPackage,
+    FabricTypes::{
+        FABRIC_CONFIGURATION_PARAMETER, FABRIC_CONFIGURATION_PARAMETER_EX1,
+        FABRIC_CONFIGURATION_PARAMETER_LIST, FABRIC_CONFIGURATION_SECTION,
+        FABRIC_CONFIGURATION_SECTION_LIST,
+    },
 };
 use windows::Win32::Foundation::{BOOLEAN, E_POINTER};
 use windows_core::HSTRING;

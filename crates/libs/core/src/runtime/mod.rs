@@ -4,11 +4,11 @@
 // ------------------------------------------------------------
 
 use mssf_com::{
-    FabricCommon::FabricRuntime::{
+    FabricRuntime::{
         FabricCreateRuntime, FabricGetActivationContext, IFabricCodePackageActivationContext,
         IFabricRuntime,
     },
-    FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
+    FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
 };
 use windows_core::{Error, Interface, HSTRING, PCWSTR};
 

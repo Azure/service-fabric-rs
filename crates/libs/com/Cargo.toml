@@ -27,22 +27,11 @@ mssf-metadata = "0.0.1"
 mssf-pal = { path = "../pal" , version = "0.0.6"}
 
 [dependencies]
-windows-core = "0.56"
+windows-core = "0.57"
 
 [dependencies.windows]
-version = "0.56"
+version = "0.57"
 features = [
     "Win32_Foundation",
     "implement"
 ]
-
-[features]
-implement = []
-Foundation = []
-Win32_Foundation = []
-# generated features
-ServiceFabric = ["Foundation"]
-ServiceFabric_FabricCommon = ["ServiceFabric"]
-ServiceFabric_FabricCommon_FabricClient = ["ServiceFabric_FabricCommon"]
-ServiceFabric_FabricCommon_FabricRuntime = ["ServiceFabric_FabricCommon"]
-ServiceFabric_FabricCommon_FabricTransport = ["ServiceFabric_FabricCommon"]

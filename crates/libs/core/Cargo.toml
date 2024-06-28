@@ -45,7 +45,7 @@ features = [
 
 [dependencies.mssf-com]
 path = "../com"
-version = "0.0.6"
+version = "0.0.7"
 
 # requires return impl trait feature
 [package.metadata]

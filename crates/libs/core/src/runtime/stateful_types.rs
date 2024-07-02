@@ -47,10 +47,37 @@ impl From<OpenMode> for FABRIC_REPLICA_OPEN_MODE {
     }
 }
 
-#[derive(Clone, Debug)]
+/// Represents the current version of the partition in Service Fabric.
+///
+/// An Epoch is a configuration number for the partition as a whole.
+/// When the configuration of the replica set changes, for example when the Primary replica changes,
+/// the operations that are replicated from the new Primary replica are said to be a new Epoch
+/// from the ones which were sent by the old Primary replica.
+/// The fact that the Primary has changed is not directly visible to Secondary replicas,
+/// which are usually unaffected by the failure that affected the original Primary replica.
+/// To track that the Primary replica has changed has to be communicated to the Secondary replica.
+///
+/// Most services can ignore the details of the inner fields of the Epoch as it is usually sufficient
+/// to know that the Epoch has changed and to compare Epochs to determine relative ordering of
+/// operations and events in the system. Comparison operations are provided for this purpose
+//
+// Following the c# implementation:
+// https://github.com/microsoft/service-fabric/blob/887a7e5bd2de155adab9d4a74c68faa9e691ee0f/src/prod/src/managed/Api/src/System/Fabric/Epoch.cs#L274
+// Ordering of epoch is exactly the order of default struct fields, i.e. data loss number is compared first,
+// and then configuration number. So the simple derive of Ord does the job.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Epoch {
     pub data_loss_number: i64,
     pub configuration_number: i64,
+}
+
+impl Epoch {
+    pub fn new(data_loss_number: i64, configuration_number: i64) -> Self {
+        Self {
+            data_loss_number,
+            configuration_number,
+        }
+    }
 }
 
 impl From<&FABRIC_EPOCH> for Epoch {
@@ -303,7 +330,7 @@ mod test {
     };
     use windows_core::HSTRING;
 
-    use super::{ReplicaInfo, ReplicaSetConfig};
+    use super::{Epoch, ReplicaInfo, ReplicaSetConfig};
 
     // caller needs to stitch the reserved ptr.
     fn create_test_data(id: i64) -> (FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1) {
@@ -379,5 +406,14 @@ mod test {
         let replica2_b = &config_b.Replicas[1];
         assert_eq!(&replica1, replica1_b);
         assert_eq!(&replica2, replica2_b);
+    }
+
+    #[test]
+    fn test_epoch_cmp() {
+        assert!(Epoch::new(1, 2) < Epoch::new(1, 3));
+        assert!(Epoch::new(1, 3) > Epoch::new(1, 2));
+        assert!(Epoch::new(1, 2) < Epoch::new(2, 1));
+        assert!(Epoch::new(2, 2) > Epoch::new(2, 1));
+        assert!(Epoch::new(2, 2) == Epoch::new(2, 2));
     }
 }

@@ -60,7 +60,12 @@ impl From<OpenMode> for FABRIC_REPLICA_OPEN_MODE {
 /// Most services can ignore the details of the inner fields of the Epoch as it is usually sufficient
 /// to know that the Epoch has changed and to compare Epochs to determine relative ordering of
 /// operations and events in the system. Comparison operations are provided for this purpose
-#[derive(Clone, Debug, PartialEq, Eq)]
+//
+// Following the c# implementation:
+// https://github.com/microsoft/service-fabric/blob/887a7e5bd2de155adab9d4a74c68faa9e691ee0f/src/prod/src/managed/Api/src/System/Fabric/Epoch.cs#L274
+// Ordering of epoch is exactly the order of default struct fields, i.e. data loss number is compared first,
+// and then configuration number. So the simple derive of Ord does the job.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Epoch {
     pub data_loss_number: i64,
     pub configuration_number: i64,
@@ -91,30 +96,6 @@ impl From<Epoch> for FABRIC_EPOCH {
             ConfigurationNumber: val.configuration_number,
             Reserved: std::ptr::null_mut(),
         }
-    }
-}
-
-// comp and order for Epoch
-// Following the c# implementation:
-// https://github.com/microsoft/service-fabric/blob/887a7e5bd2de155adab9d4a74c68faa9e691ee0f/src/prod/src/managed/Api/src/System/Fabric/Epoch.cs#L274
-impl Ord for Epoch {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        if self.eq(other) {
-            return Ordering::Equal;
-        }
-        if self.data_loss_number < other.data_loss_number
-            || (self.data_loss_number == other.data_loss_number
-                && self.configuration_number < other.configuration_number)
-        {
-            return Ordering::Less;
-        }
-        return Ordering::Greater;
-    }
-}
-
-impl PartialOrd for Epoch {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
     }
 }
 

@@ -5,7 +5,7 @@
 
 // stateful_types contains type wrappers for sf stateful raw types
 
-use std::{cmp::Ordering, ffi::c_void, marker::PhantomData};
+use std::{ffi::c_void, marker::PhantomData};
 
 use mssf_com::FabricTypes::{
     FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1,

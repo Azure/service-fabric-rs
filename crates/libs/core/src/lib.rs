@@ -32,4 +32,4 @@ pub mod strings;
 pub mod sync;
 
 // re-export some windows types
-pub use windows_core::{Error, Result, GUID, HSTRING, PCWSTR};
+pub use windows_core::{Error, Result, GUID, HRESULT, HSTRING, PCWSTR};

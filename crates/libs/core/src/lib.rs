@@ -25,6 +25,7 @@ pub mod client;
 #[cfg(feature = "config_source")]
 pub mod conf;
 pub mod debug;
+pub mod error;
 mod iter;
 pub mod runtime;
 pub mod strings;

@@ -1,6 +1,6 @@
 [package]
 name = "mssf-com"
-version = "0.0.7"
+version = "0.0.8"
 edition = "2021"
 license = "MIT"
 description = "Rust for Azure Service Fabric. The COM base layer."
@@ -24,7 +24,7 @@ targets = []
 mssf-metadata = "0.0.1"
 
 [target.'cfg(unix)'.dependencies]
-mssf-pal = { path = "../pal" , version = "0.0.7"}
+mssf-pal = { path = "../pal" , version = "0.0.8"}
 
 [dependencies]
 windows-core = "0.57"

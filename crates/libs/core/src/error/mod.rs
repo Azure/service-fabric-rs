@@ -9,9 +9,9 @@ use windows::Win32::Foundation::{
     E_ABORT, E_ACCESSDENIED, E_FAIL, E_INVALIDARG, E_NOTIMPL, E_OUTOFMEMORY, E_POINTER, S_OK,
 };
 
-// Make passing error code to SF api easier.
-// Provides conversion from windows errors or fabric error code
-// to windows_core::Error.
+/// Make passing error code to SF api easier.
+/// Provides conversion from windows errors or fabric error code
+/// to windows_core::Error.
 #[derive(Debug, Clone)]
 pub struct FabricError(super::HRESULT);
 
@@ -45,10 +45,10 @@ impl From<FabricError> for HRESULT {
     }
 }
 
-// SF uses win32 hresult code together with the fabric error code.
-// See: https://github.com/microsoft/service-fabric/blob/master/src/prod/src/Common/ErrorCodeValue.h
-// We provide the common win32 hresult code that SF uses. They are helpful
-// when returning from Rust back into SF com api.
+/// SF uses win32 hresult code together with the fabric error code.
+/// See: https://github.com/microsoft/service-fabric/blob/master/src/prod/src/Common/ErrorCodeValue.h
+/// We provide the common win32 hresult code that SF uses. They are helpful
+/// when returning from Rust back into SF com api.
 pub enum FabricErrorCode {
     Success = S_OK.0 as isize,
     InvalidArgument = E_INVALIDARG.0 as isize,

@@ -13,6 +13,8 @@ use self::{query_client::QueryClient, svc_mgmt_client::ServiceManagementClient};
 pub mod query_client;
 pub mod svc_mgmt_client;
 
+pub mod query_types;
+
 #[cfg(test)]
 mod tests;
 

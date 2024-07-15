@@ -11,7 +11,7 @@ use mssf_com::FabricTypes::FABRIC_E_SERVICE_DOES_NOT_EXIST;
 use windows_core::HSTRING;
 
 use crate::client::{
-    query_client::{NodeQueryDescription, NodeStatusFilter, PagedQueryDescription},
+    query_types::{NodeQueryDescription, NodeStatusFilter, PagedQueryDescription},
     svc_mgmt_client::PartitionKeyType,
     FabricClient,
 };

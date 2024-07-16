@@ -76,6 +76,14 @@ impl From<HSTRINGWrap> for IFabricStringResult {
     }
 }
 
+// note that hstring must be valid for pcwstr lifetime
+pub fn get_pcwstr_from_opt(opt: &Option<HSTRING>) -> PCWSTR {
+    match opt {
+        Some(x) => PCWSTR(x.as_ptr()),
+        None => PCWSTR::null(),
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::strings::HSTRINGWrap;

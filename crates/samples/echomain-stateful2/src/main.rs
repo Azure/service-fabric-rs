@@ -20,6 +20,10 @@ use windows::core::Interface;
 use windows_core::HSTRING;
 
 mod statefulstore;
+// Disable test for Linux ci for now due to SF app problem
+#[cfg(target_os = "windows")]
+#[cfg(test)]
+mod test;
 
 fn main() -> windows::core::Result<()> {
     tracing_subscriber::fmt().init();

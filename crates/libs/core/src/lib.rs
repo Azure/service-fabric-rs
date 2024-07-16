@@ -31,6 +31,7 @@ pub mod runtime;
 pub mod strings;
 #[cfg(feature = "tokio_async")]
 pub mod sync;
+pub mod types;
 
 // re-export some windows types
 pub use windows_core::{Error, Result, GUID, HRESULT, HSTRING, PCWSTR};

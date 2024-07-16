@@ -16,11 +16,12 @@ use mssf_com::{
     },
 };
 
-use crate::sync::{self, FabricReceiver};
-
-use super::query_types::{
-    get_pcwstr_from_opt, NodeList, NodeQueryDescription, ServicePartitionList,
-    ServicePartitionQueryDescription,
+use crate::{
+    strings::get_pcwstr_from_opt,
+    sync::{self, FabricReceiver},
+    types::{
+        NodeList, NodeQueryDescription, ServicePartitionList, ServicePartitionQueryDescription,
+    },
 };
 
 pub struct QueryClient {

@@ -3,8 +3,8 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-// This mod consists of type conversion of com api with safe rust wrappers.
-mod common;
-pub use common::*;
-mod client;
-pub use client::*;
+// This mod contains fabric client related types
+mod partition;
+pub use partition::*;
+mod node;
+pub use node::*;

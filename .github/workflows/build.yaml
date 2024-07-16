@@ -58,10 +58,10 @@ jobs:
     - name: provision apps and run tests
       shell: powershell
       run: |
-        .\scripts\echomain_stateful_ctl2.ps1 -Action Add
+        # The test will add and remove app
         .\tests\echo_script_test.ps1
-        # wait for apps to be up
-        Start-Sleep -Seconds 15
+        .\scripts\echomain_stateful_ctl2.ps1 -Action Add
+        .\scripts\echomain_ctl.ps1 -Action Add
 
     - name: Run cargo test
       run: cargo test --all -- --nocapture

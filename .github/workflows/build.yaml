@@ -56,9 +56,12 @@ jobs:
       run: Powershell.exe -File .\build\_deps\service_fabric_cpp-src\scripts\check_cluster_online.ps1
 
     - name: provision apps and run tests
+      shell: powershell
       run: |
-        Powershell.exe -File .\scripts\echomain_stateful_ctl2.ps1 -Action Add
-        Powershell.exe -File .\tests\echo_script_test.ps1
+        .\scripts\echomain_stateful_ctl2.ps1 -Action Add
+        .\tests\echo_script_test.ps1
+        # wait for apps to be up
+        Start-Sleep -Seconds 15
 
     - name: Run cargo test
       run: cargo test --all -- --nocapture

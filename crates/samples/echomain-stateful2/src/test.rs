@@ -7,12 +7,10 @@ use std::time::Duration;
 
 use mssf_core::{
     client::{
-        query_types::{
-            ServicePartition, ServicePartitionInformation, ServicePartitionQueryDescription,
-            ServicePartitionStatus,
-        },
+        query_types::{ServicePartition, ServicePartitionQueryDescription, ServicePartitionStatus},
         FabricClient,
     },
+    types::ServicePartitionInformation,
     GUID, HSTRING,
 };
 

@@ -6,8 +6,9 @@
 use std::cell::Cell;
 
 use mssf_core::runtime::stateless::{
-    PartitionKind, StatelessServiceFactory, StatelessServiceInstance, StatelessServicePartition,
+    StatelessServiceFactory, StatelessServiceInstance, StatelessServicePartition,
 };
+use mssf_core::types::ServicePartitionInformation;
 use mssf_core::HSTRING;
 use tokio::runtime::Handle;
 use tokio::sync::oneshot::{self, Sender};
@@ -79,7 +80,7 @@ impl StatelessServiceInstance for Instance {
     async fn open(&self, partition: &StatelessServicePartition) -> mssf_core::Result<HSTRING> {
         info!("Instance::open");
         let info = partition.get_partition_info().unwrap();
-        if let PartitionKind::Singleton(s) = info {
+        if let ServicePartitionInformation::Singleton(s) = info {
             info!("Instance::open parition id {:?}", s.id);
         } else {
             panic!("paritionkind not match manifeset: {:?}", info);

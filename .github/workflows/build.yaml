@@ -55,8 +55,10 @@ jobs:
     - name: start connection
       run: Powershell.exe -File .\build\_deps\service_fabric_cpp-src\scripts\check_cluster_online.ps1
 
-    - name: run echo example app
-      run: Powershell.exe -File .\tests\echo_script_test.ps1
+    - name: provision apps and run tests
+      run: |
+        Powershell.exe -File .\scripts\echomain_stateful_ctl2.ps1 -Action Add
+        Powershell.exe -File .\tests\echo_script_test.ps1
 
     - name: Run cargo test
       run: cargo test --all -- --nocapture

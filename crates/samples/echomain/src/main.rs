@@ -19,6 +19,8 @@ use crate::config::MySettings;
 pub mod app;
 pub mod config;
 pub mod echo;
+#[cfg(test)]
+mod test;
 
 fn has_debug_arg() -> bool {
     let args: Vec<String> = std::env::args().collect();

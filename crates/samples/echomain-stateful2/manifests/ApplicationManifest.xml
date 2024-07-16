@@ -4,16 +4,13 @@
   Experiment echo app
   </Description>
   <Parameters>
-    <Parameter Name="SF_MinReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="SF_PartitionCount" DefaultValue="1" />
-    <Parameter Name="SF_TargetReplicaSetSize" DefaultValue="3" />
   </Parameters>
   <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="EchoAppStatefulServicePackage" ServiceManifestVersion="1.0" />
   </ServiceManifestImport>
   <DefaultServices>
     <Service Name="StatefulEchoAppService">
-      <StatefulService ServiceTypeName="StatefulEchoAppService" TargetReplicaSetSize="3" MinReplicaSetSize="3">
+      <StatefulService ServiceTypeName="StatefulEchoAppService" TargetReplicaSetSize="3" MinReplicaSetSize="1">
         <SingletonPartition />
       </StatefulService>
     </Service>

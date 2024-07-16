@@ -1,14 +1,27 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{
-    FabricClient::{IFabricGetNodeListResult2, IFabricQueryClient10},
+    FabricClient::{
+        IFabricGetNodeListResult2, IFabricGetPartitionListResult2, IFabricQueryClient10,
+    },
     FabricTypes::{
         FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION_EX1,
         FABRIC_NODE_QUERY_DESCRIPTION_EX2, FABRIC_NODE_QUERY_DESCRIPTION_EX3,
+        FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
     },
 };
 
-use super::query_types::{get_pcwstr_from_opt, NodeList, NodeQueryDescription};
+use crate::sync::{self, FabricReceiver};
+
+use super::query_types::{
+    get_pcwstr_from_opt, NodeList, NodeQueryDescription, ServicePartitionList,
+    ServicePartitionQueryDescription,
+};
 
 pub struct QueryClient {
     com: IFabricQueryClient10,
@@ -36,6 +49,30 @@ impl QueryClient {
         };
         if ctx.is_err() {
             let (tx2, rx2) = crate::sync::oneshot_channel();
+            tx2.send(Err(ctx.err().unwrap()));
+            rx2
+        } else {
+            rx
+        }
+    }
+
+    fn get_partition_list_internal(
+        &self,
+        desc: &FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+    ) -> FabricReceiver<crate::Result<IFabricGetPartitionListResult2>> {
+        let (tx, rx) = sync::oneshot_channel();
+        let com_cp = self.com.clone();
+        let callback = sync::AwaitableCallback2::i_new(move |ctx| {
+            let res = unsafe { com_cp.EndGetPartitionList2(ctx) };
+            tx.send(res);
+        });
+        let ctx = unsafe {
+            self.com
+                .BeginGetPartitionList(desc, timeout_milliseconds, &callback)
+        };
+        if ctx.is_err() {
+            let (tx2, rx2) = sync::oneshot_channel();
             tx2.send(Err(ctx.err().unwrap()));
             rx2
         } else {
@@ -80,5 +117,16 @@ impl QueryClient {
         }
         let res = fu.await?;
         Ok(NodeList::from_com(res))
+    }
+
+    pub async fn get_partition_list(
+        &self,
+        desc: &ServicePartitionQueryDescription,
+        timeout: Duration,
+    ) -> crate::Result<ServicePartitionList> {
+        let raw: FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION = desc.into();
+        let mili = timeout.as_millis() as u32;
+        let com = self.get_partition_list_internal(&raw, mili).await?;
+        Ok(ServicePartitionList::new(com))
     }
 }

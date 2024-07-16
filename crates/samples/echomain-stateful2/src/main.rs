@@ -20,6 +20,8 @@ use windows::core::Interface;
 use windows_core::HSTRING;
 
 mod statefulstore;
+#[cfg(test)]
+mod test;
 
 fn main() -> windows::core::Result<()> {
     tracing_subscriber::fmt().init();

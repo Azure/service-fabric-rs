@@ -5,7 +5,7 @@
 
 use mssf_com::FabricTypes::{
     FABRIC_REPLICA_ROLE, FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY, FABRIC_REPLICA_ROLE_IDLE_SECONDARY,
-    FABRIC_REPLICA_ROLE_NONE, FABRIC_REPLICA_ROLE_PRIMARY,
+    FABRIC_REPLICA_ROLE_NONE, FABRIC_REPLICA_ROLE_PRIMARY, FABRIC_REPLICA_ROLE_UNKNOWN,
 };
 
 #[derive(PartialEq, Clone, Debug)]
@@ -36,7 +36,7 @@ impl From<&ReplicaRole> for FABRIC_REPLICA_ROLE {
             ReplicaRole::IdleSecondary => FABRIC_REPLICA_ROLE_IDLE_SECONDARY,
             ReplicaRole::None => FABRIC_REPLICA_ROLE_NONE,
             ReplicaRole::Primary => FABRIC_REPLICA_ROLE_PRIMARY,
-            ReplicaRole::Unknown => FABRIC_REPLICA_ROLE_NONE,
+            ReplicaRole::Unknown => FABRIC_REPLICA_ROLE_UNKNOWN,
         }
     }
 }

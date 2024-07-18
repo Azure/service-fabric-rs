@@ -9,10 +9,10 @@ use windows_core::{Interface, HSTRING};
 use crate::{strings::HSTRINGWrap, sync::fabric_begin_end_proxy};
 
 pub fn get_com_node_context(
-    timeoutMilliseconds: u32,
+    timeout_milliseconds: u32,
 ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricNodeContextResult>> {
     fabric_begin_end_proxy(
-        move |callback| unsafe { FabricBeginGetNodeContext(timeoutMilliseconds, callback) },
+        move |callback| unsafe { FabricBeginGetNodeContext(timeout_milliseconds, callback) },
         move |ctx| {
             unsafe { FabricEndGetNodeContext(ctx) }.map(|raw| {
                 assert!(!raw.is_null());

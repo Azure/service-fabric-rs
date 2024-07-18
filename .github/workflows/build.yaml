@@ -49,8 +49,9 @@ jobs:
     - name: check sf exist
       run: Powershell.exe -File .\build\_deps\service_fabric_cpp-src\scripts\check_sf_installed.ps1
 
+    # Creates a 5 node dev cluster
     - name: start sf cluster
-      run: Powershell.exe -File "C:\Program Files\Microsoft SDKs\Service Fabric\ClusterSetup\DevClusterSetup.ps1" -CreateOneNodeCluster
+      run: Powershell.exe -File "C:\Program Files\Microsoft SDKs\Service Fabric\ClusterSetup\DevClusterSetup.ps1"
 
     - name: start connection
       run: Powershell.exe -File .\build\_deps\service_fabric_cpp-src\scripts\check_cluster_online.ps1

@@ -14,11 +14,11 @@ use mssf_com::FabricRuntime::{
 use tracing::info;
 use windows_core::{Interface, HSTRING};
 
-use crate::{strings::HSTRINGWrap, sync::fabric_begin_end_proxy};
+use crate::{strings::HSTRINGWrap, sync::fabric_begin_end_proxy, types::ReplicaRole};
 
 use super::{
     stateful::{PrimaryReplicator, Replicator, StatefulServicePartition, StatefulServiceReplica},
-    stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode, Role},
+    stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode},
 };
 
 pub struct StatefulServiceReplicaProxy {
@@ -53,7 +53,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         let res = PrimaryReplicatorProxy::new(p_rplctr);
         Ok(res)
     }
-    async fn change_role(&self, newrole: Role) -> ::windows_core::Result<HSTRING> {
+    async fn change_role(&self, newrole: ReplicaRole) -> ::windows_core::Result<HSTRING> {
         // replica address
         info!("StatefulServiceReplicaProxy::change_role {:?}", newrole);
         let com1 = &self.com_impl;
@@ -115,7 +115,7 @@ impl Replicator for ReplicatorProxy {
         );
         rx.await
     }
-    async fn change_role(&self, epoch: &Epoch, role: &Role) -> ::windows_core::Result<()> {
+    async fn change_role(&self, epoch: &Epoch, role: &ReplicaRole) -> ::windows_core::Result<()> {
         info!("ReplicatorProxy::change_role");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -168,7 +168,7 @@ impl Replicator for PrimaryReplicatorProxy {
     async fn close(&self) -> ::windows_core::Result<()> {
         self.parent.close().await
     }
-    async fn change_role(&self, epoch: &Epoch, role: &Role) -> ::windows_core::Result<()> {
+    async fn change_role(&self, epoch: &Epoch, role: &ReplicaRole) -> ::windows_core::Result<()> {
         self.parent.change_role(epoch, role).await
     }
     async fn update_epoch(&self, epoch: &Epoch) -> ::windows_core::Result<()> {

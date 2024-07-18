@@ -4,14 +4,17 @@
 // ------------------------------------------------------------
 
 use mssf_com::FabricTypes::FABRIC_REPLICATOR_ADDRESS;
-use mssf_core::runtime::{
-    executor::DefaultExecutor,
-    stateful::{
-        PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServicePartition,
-        StatefulServiceReplica,
+use mssf_core::{
+    runtime::{
+        executor::DefaultExecutor,
+        stateful::{
+            PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServicePartition,
+            StatefulServiceReplica,
+        },
+        stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode},
+        store_types::ReplicatorSettings,
     },
-    stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode, Role},
-    store_types::ReplicatorSettings,
+    types::ReplicaRole,
 };
 use std::{cell::Cell, sync::Mutex};
 use tokio::sync::oneshot::{self, Sender};
@@ -71,7 +74,7 @@ impl Replicator for AppFabricReplicator {
         Ok(())
     }
 
-    async fn change_role(&self, _epoch: &Epoch, _role: &Role) -> windows::core::Result<()> {
+    async fn change_role(&self, _epoch: &Epoch, _role: &ReplicaRole) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::Replicator::change_role");
         Ok(())
     }
@@ -157,8 +160,8 @@ impl StatefulServiceFactory for Factory {
             replicaid
         );
         let settings = ReplicatorSettings {
-            Flags: FABRIC_REPLICATOR_ADDRESS.0 as u32,
-            ReplicatorAddress: HSTRING::from(get_addr(
+            flags: FABRIC_REPLICATOR_ADDRESS.0 as u32,
+            replicator_address: HSTRING::from(get_addr(
                 self.replication_port,
                 self.hostname.clone(),
             )),
@@ -167,7 +170,7 @@ impl StatefulServiceFactory for Factory {
 
         info!(
             "Factory::create_replica using address {}",
-            settings.ReplicatorAddress
+            settings.replicator_address
         );
 
         let svc = Service::new(self.replication_port, self.hostname.clone());
@@ -236,9 +239,9 @@ impl StatefulServiceReplica for Replica {
         self.svc.start_loop();
         Ok(AppFabricReplicator::new(self.port_, self.hostname_.clone()))
     }
-    async fn change_role(&self, newrole: Role) -> ::windows_core::Result<HSTRING> {
+    async fn change_role(&self, newrole: ReplicaRole) -> ::windows_core::Result<HSTRING> {
         info!("Replica::change_role {:?}", newrole);
-        if newrole == Role::Primary {
+        if newrole == ReplicaRole::Primary {
             info!("primary {:?}", self.svc.port_);
         }
         // return the address

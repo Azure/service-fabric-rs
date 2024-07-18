@@ -16,7 +16,6 @@
 //! * ** Tokio **  -
 //!     A lot of the sophoisticated functionality in this crate requires Tokio.
 //!     However, even without tokio, some of the higher level wrappers over COM types have utility.
-#![allow(non_snake_case)]
 
 // lib that contains all common extensions for the raw fabric apis.
 

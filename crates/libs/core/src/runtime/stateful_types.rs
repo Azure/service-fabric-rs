@@ -10,16 +10,14 @@ use std::{ffi::c_void, marker::PhantomData};
 use mssf_com::FabricTypes::{
     FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1,
     FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_OPEN_MODE_EXISTING, FABRIC_REPLICA_OPEN_MODE_INVALID,
-    FABRIC_REPLICA_OPEN_MODE_NEW, FABRIC_REPLICA_ROLE, FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY,
-    FABRIC_REPLICA_ROLE_IDLE_SECONDARY, FABRIC_REPLICA_ROLE_NONE, FABRIC_REPLICA_ROLE_PRIMARY,
-    FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_ALL,
+    FABRIC_REPLICA_OPEN_MODE_NEW, FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_ALL,
     FABRIC_REPLICA_SET_QUORUM_INVALID, FABRIC_REPLICA_SET_QUORUM_MODE,
     FABRIC_REPLICA_SET_WRITE_QUORUM, FABRIC_REPLICA_STATUS, FABRIC_REPLICA_STATUS_DOWN,
     FABRIC_REPLICA_STATUS_INVALID, FABRIC_REPLICA_STATUS_UP,
 };
 use windows_core::PCWSTR;
 
-use crate::strings::HSTRINGWrap;
+use crate::{strings::HSTRINGWrap, types::ReplicaRole};
 
 #[derive(Debug)]
 pub enum OpenMode {
@@ -99,39 +97,6 @@ impl From<&Epoch> for FABRIC_EPOCH {
     }
 }
 
-#[derive(PartialEq, Clone, Debug)]
-pub enum Role {
-    ActiveSecondary,
-    IdleSecondary,
-    None,
-    Primary,
-    Unknown,
-}
-
-impl From<&FABRIC_REPLICA_ROLE> for Role {
-    fn from(r: &FABRIC_REPLICA_ROLE) -> Self {
-        match *r {
-            FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY => Role::ActiveSecondary,
-            FABRIC_REPLICA_ROLE_IDLE_SECONDARY => Role::IdleSecondary,
-            FABRIC_REPLICA_ROLE_NONE => Role::None,
-            FABRIC_REPLICA_ROLE_PRIMARY => Role::Primary,
-            _ => Role::Unknown,
-        }
-    }
-}
-
-impl From<&Role> for FABRIC_REPLICA_ROLE {
-    fn from(val: &Role) -> Self {
-        match *val {
-            Role::ActiveSecondary => FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY,
-            Role::IdleSecondary => FABRIC_REPLICA_ROLE_IDLE_SECONDARY,
-            Role::None => FABRIC_REPLICA_ROLE_NONE,
-            Role::Primary => FABRIC_REPLICA_ROLE_PRIMARY,
-            Role::Unknown => FABRIC_REPLICA_ROLE_NONE,
-        }
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub enum ReplicaStatus {
     Invalid,
@@ -163,21 +128,21 @@ impl From<FABRIC_REPLICA_STATUS> for ReplicaStatus {
 // Safe wrapping for FABRIC_REPLICA_SET_CONFIGURATION
 #[derive(Debug)]
 pub struct ReplicaSetConfig {
-    pub Replicas: Vec<ReplicaInfo>,
-    pub WriteQuorum: u32,
+    pub replicas: Vec<ReplicaInfo>,
+    pub write_quorum: u32,
 }
 
 impl From<&FABRIC_REPLICA_SET_CONFIGURATION> for ReplicaSetConfig {
     fn from(r: &FABRIC_REPLICA_SET_CONFIGURATION) -> Self {
         let mut res = ReplicaSetConfig {
-            Replicas: vec![],
-            WriteQuorum: r.WriteQuorum,
+            replicas: vec![],
+            write_quorum: r.WriteQuorum,
         };
         // fill the vec
         for i in 0..r.ReplicaCount {
             let replica = unsafe { r.Replicas.offset(i as isize) };
             let replica_ref = unsafe { replica.as_ref().unwrap() };
-            res.Replicas.push(ReplicaInfo::from(replica_ref))
+            res.replicas.push(ReplicaInfo::from(replica_ref))
         }
         res
     }
@@ -190,7 +155,7 @@ impl ReplicaSetConfig {
         let mut replica_raw_cache: Vec<FABRIC_REPLICA_INFORMATION> = vec![];
         let mut replica_ex1_cache: Vec<FABRIC_REPLICA_INFORMATION_EX1> = vec![];
         // prepare vec cache
-        for replica in &self.Replicas {
+        for replica in &self.replicas {
             let (info, ex1) = replica.get_raw_parts();
             replica_raw_cache.push(info);
             replica_ex1_cache.push(ex1);
@@ -208,7 +173,7 @@ impl ReplicaSetConfig {
         let config = FABRIC_REPLICA_SET_CONFIGURATION {
             ReplicaCount: replica_raw_cache.len() as u32,
             Replicas: replica_raw_cache.as_ptr(),
-            WriteQuorum: self.WriteQuorum,
+            WriteQuorum: self.write_quorum,
             Reserved: std::ptr::null_mut(),
         };
 
@@ -240,13 +205,13 @@ impl ReplicaSetConfigView<'_> {
 // Safe wrapping for FABRIC_REPLICA_INFORMATION
 #[derive(Debug, PartialEq, Clone)]
 pub struct ReplicaInfo {
-    pub Id: i64,
-    pub Role: Role,
-    pub Status: ReplicaStatus,
-    pub ReplicatorAddress: ::windows_core::HSTRING,
-    pub CurrentProgress: i64,
-    pub CatchUpCapability: i64,
-    pub MustCatchUp: bool,
+    pub id: i64,
+    pub role: ReplicaRole,
+    pub status: ReplicaStatus,
+    pub replicator_address: ::windows_core::HSTRING,
+    pub current_progress: i64,
+    pub catch_up_capability: i64,
+    pub must_catch_up: bool,
 }
 
 impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
@@ -259,13 +224,13 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
             }
         }
         ReplicaInfo {
-            Id: r.Id,
-            Role: (&r.Role).into(),
-            Status: r.Status.into(),
-            ReplicatorAddress: HSTRINGWrap::from(r.ReplicatorAddress).into(),
-            CurrentProgress: r.CurrentProgress,
-            CatchUpCapability: r.CatchUpCapability,
-            MustCatchUp: must_catchup,
+            id: r.Id,
+            role: (&r.Role).into(),
+            status: r.Status.into(),
+            replicator_address: HSTRINGWrap::from(r.ReplicatorAddress).into(),
+            current_progress: r.CurrentProgress,
+            catch_up_capability: r.CatchUpCapability,
+            must_catch_up: must_catchup,
         }
     }
 }
@@ -276,16 +241,16 @@ impl ReplicaInfo {
     // FABRIC_REPLICA_INFORMATION::Reserved needs to point at FABRIC_REPLICA_INFORMATION_EX1
     pub fn get_raw_parts(&self) -> (FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1) {
         let info = FABRIC_REPLICA_INFORMATION {
-            Id: self.Id,
-            Role: (&self.Role).into(),
-            Status: self.Status.clone().into(),
-            ReplicatorAddress: PCWSTR::from_raw(self.ReplicatorAddress.as_ptr()),
-            CurrentProgress: self.CurrentProgress,
-            CatchUpCapability: self.CatchUpCapability,
+            Id: self.id,
+            Role: (&self.role).into(),
+            Status: self.status.clone().into(),
+            ReplicatorAddress: PCWSTR::from_raw(self.replicator_address.as_ptr()),
+            CurrentProgress: self.current_progress,
+            CatchUpCapability: self.catch_up_capability,
             Reserved: std::ptr::null_mut(),
         };
         let ex1 = FABRIC_REPLICA_INFORMATION_EX1 {
-            MustCatchup: self.MustCatchUp.into(),
+            MustCatchup: self.must_catch_up.into(),
             Reserved: std::ptr::null_mut(),
         };
         (info, ex1)
@@ -357,8 +322,8 @@ mod test {
 
         // test raw -> wrap
         let wrap = ReplicaInfo::from(&info);
-        assert_eq!(wrap.Id, 123);
-        assert!(wrap.MustCatchUp);
+        assert_eq!(wrap.id, 123);
+        assert!(wrap.must_catch_up);
 
         // test wrap -> raw
         let (info_b, ex1_b) = wrap.get_raw_parts();
@@ -369,28 +334,28 @@ mod test {
     #[test]
     fn test_replica_set_config_conv() {
         let replica1 = ReplicaInfo {
-            Id: 1,
-            Role: super::Role::Primary,
-            Status: super::ReplicaStatus::Up,
-            ReplicatorAddress: HSTRING::from("addr1"),
-            CurrentProgress: 123,
-            CatchUpCapability: 123,
-            MustCatchUp: true,
+            id: 1,
+            role: super::ReplicaRole::Primary,
+            status: super::ReplicaStatus::Up,
+            replicator_address: HSTRING::from("addr1"),
+            current_progress: 123,
+            catch_up_capability: 123,
+            must_catch_up: true,
         };
 
         let replica2 = ReplicaInfo {
-            Id: 2,
-            Role: super::Role::ActiveSecondary,
-            Status: super::ReplicaStatus::Up,
-            ReplicatorAddress: HSTRING::from("addr2"),
-            CurrentProgress: 120,
-            CatchUpCapability: 120,
-            MustCatchUp: false,
+            id: 2,
+            role: super::ReplicaRole::ActiveSecondary,
+            status: super::ReplicaStatus::Up,
+            replicator_address: HSTRING::from("addr2"),
+            current_progress: 120,
+            catch_up_capability: 120,
+            must_catch_up: false,
         };
 
         let config_a = ReplicaSetConfig {
-            Replicas: vec![replica1.clone(), replica2.clone()],
-            WriteQuorum: 2,
+            replicas: vec![replica1.clone(), replica2.clone()],
+            write_quorum: 2,
         };
 
         // test wrap -> raw type conversion
@@ -401,9 +366,9 @@ mod test {
 
         // test raw type -> wrap conversion
         let config_b = ReplicaSetConfig::from(raw);
-        assert_eq!(config_b.Replicas.len(), 2);
-        let replica1_b = &config_b.Replicas[0];
-        let replica2_b = &config_b.Replicas[1];
+        assert_eq!(config_b.replicas.len(), 2);
+        let replica1_b = &config_b.replicas[0];
+        let replica2_b = &config_b.replicas[1];
         assert_eq!(&replica1, replica1_b);
         assert_eq!(&replica2, replica2_b);
     }

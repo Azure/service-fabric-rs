@@ -26,9 +26,9 @@ pub struct ConfigurationPackage {
 
 pub struct ConfigurationPackageDesc {
     pub name: HSTRING,
-    pub ServiceManifestName: HSTRING,
-    pub ServiceManifestVersion: HSTRING,
-    pub Version: HSTRING,
+    pub service_manifest_name: HSTRING,
+    pub service_manifest_version: HSTRING,
+    pub version: HSTRING,
 }
 
 pub struct ConfigurationSettings {
@@ -73,9 +73,9 @@ impl ConfigurationPackage {
 
         ConfigurationPackageDesc {
             name: HSTRINGWrap::from(raw.Name).into(),
-            ServiceManifestName: HSTRINGWrap::from(raw.ServiceManifestName).into(),
-            ServiceManifestVersion: HSTRINGWrap::from(raw.ServiceManifestVersion).into(),
-            Version: HSTRINGWrap::from(raw.Version).into(),
+            service_manifest_name: HSTRINGWrap::from(raw.ServiceManifestName).into(),
+            service_manifest_version: HSTRINGWrap::from(raw.ServiceManifestVersion).into(),
+            version: HSTRINGWrap::from(raw.Version).into(),
         }
     }
 

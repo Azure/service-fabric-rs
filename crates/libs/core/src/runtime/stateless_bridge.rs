@@ -3,7 +3,8 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-#![deny(non_snake_case)] // this file is safe rust
+// windows::core::implement macro generates snake case types.
+#![allow(non_camel_case_types)]
 
 use std::sync::Arc;
 

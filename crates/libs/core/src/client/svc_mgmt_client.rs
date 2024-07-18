@@ -38,10 +38,10 @@ impl ServiceManagementClient {
     fn resolve_service_partition_internal(
         &self,
         name: FABRIC_URI,
-        partitionKeyType: FABRIC_PARTITION_KEY_TYPE,
-        partitionKey: Option<*const ::core::ffi::c_void>,
-        previousResult: Option<&IFabricResolvedServicePartitionResult>, // This is different from generated code
-        timeoutMilliseconds: u32,
+        partition_key_type: FABRIC_PARTITION_KEY_TYPE,
+        partition_key: Option<*const ::core::ffi::c_void>,
+        previous_result: Option<&IFabricResolvedServicePartitionResult>, // This is different from generated code
+        timeout_milliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricResolvedServicePartitionResult>>
     {
         let com1 = &self.com;
@@ -50,10 +50,10 @@ impl ServiceManagementClient {
             move |callback| unsafe {
                 com1.BeginResolveServicePartition(
                     name,
-                    partitionKeyType,
-                    partitionKey.unwrap_or(std::ptr::null()),
-                    previousResult,
-                    timeoutMilliseconds,
+                    partition_key_type,
+                    partition_key.unwrap_or(std::ptr::null()),
+                    previous_result,
+                    timeout_milliseconds,
                     callback,
                 )
             },

@@ -5,6 +5,9 @@
 
 // stateful bridge is to wrap rs types into com to expose to SF
 
+// windows::core::implement macro generates snake case types.
+#![allow(non_camel_case_types)]
+
 use std::sync::Arc;
 
 use tracing::info;
@@ -31,9 +34,10 @@ use crate::{
     runtime::{
         bridge::BridgeContext,
         stateful::StatefulServicePartition,
-        stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, Role},
+        stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig},
     },
     strings::HSTRINGWrap,
+    types::ReplicaRole,
 };
 
 use super::{
@@ -187,7 +191,7 @@ where
             BridgeContext::<Result<HSTRING, Error>>::new(callback_cp).into();
 
         let epoch2: Epoch = unsafe { epoch.as_ref().unwrap().into() };
-        let role2: Role = (&role).into();
+        let role2: ReplicaRole = (&role).into();
         info!(
             "IFabricReplicatorBridge::BeginChangeRole epoch {:?}, role {:?}",
             epoch2, role2
@@ -654,7 +658,7 @@ where
         let inner_cp = self.inner.clone();
         let callback_cp = callback.unwrap().clone();
 
-        let newrole2: Role = (&newrole).into();
+        let newrole2: ReplicaRole = (&newrole).into();
         info!(
             "IFabricStatefulReplicaBridge::BeginChangeRole: {:?}",
             newrole2

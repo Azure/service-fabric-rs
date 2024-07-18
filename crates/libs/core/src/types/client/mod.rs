@@ -8,3 +8,5 @@ mod partition;
 pub use partition::*;
 mod node;
 pub use node::*;
+mod replica;
+pub use replica::*;

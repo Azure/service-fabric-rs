@@ -14,11 +14,12 @@ use mssf_core::{
             StatefulServiceReplica,
         },
         stateful_proxy::StatefulServiceReplicaProxy,
-        stateful_types::{OpenMode, Role},
+        stateful_types::OpenMode,
         store::{create_com_key_value_store_replica, DummyStoreEventHandler},
         store_proxy::KVStoreProxy,
         store_types::ReplicatorSettings,
     },
+    types::ReplicaRole,
     Error, GUID, HSTRING,
 };
 use tokio::{
@@ -66,14 +67,14 @@ impl StatefulServiceFactory for Factory {
             initializationdata.len()
         );
         let settings = ReplicatorSettings {
-            Flags: FABRIC_REPLICATOR_ADDRESS.0 as u32,
-            ReplicatorAddress: HSTRING::from(get_addr(self.replication_port, "localhost".into())),
+            flags: FABRIC_REPLICATOR_ADDRESS.0 as u32,
+            replicator_address: HSTRING::from(get_addr(self.replication_port, "localhost".into())),
             ..Default::default()
         };
 
         info!(
             "Factory::create_replica using address {}",
-            settings.ReplicatorAddress
+            settings.replicator_address
         );
 
         let handler: IFabricStoreEventHandler = DummyStoreEventHandler {}.into();
@@ -191,10 +192,10 @@ impl StatefulServiceReplica for Replica {
         info!("Replica::open {:?}", openmode);
         self.kv.open(openmode, partition).await
     }
-    async fn change_role(&self, newrole: Role) -> mssf_core::Result<HSTRING> {
+    async fn change_role(&self, newrole: ReplicaRole) -> mssf_core::Result<HSTRING> {
         info!("Replica::change_role {:?}", newrole);
         let addr = self.kv.change_role(newrole.clone()).await?;
-        if newrole == Role::Primary {
+        if newrole == ReplicaRole::Primary {
             self.svc.start_loop();
         }
         Ok(addr)

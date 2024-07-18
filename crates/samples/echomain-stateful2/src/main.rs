@@ -38,7 +38,7 @@ fn main() -> windows::core::Result<()> {
         .unwrap();
     let hostname = get_hostname();
 
-    let factory = Factory::create(endpoint.Port, hostname, e.clone());
+    let factory = Factory::create(endpoint.port, hostname, e.clone());
     runtime
         .register_stateful_service_factory(&HSTRING::from("StatefulEchoAppService"), factory)
         .unwrap();

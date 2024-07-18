@@ -50,7 +50,7 @@ fn main() -> mssf_core::Result<()> {
         .get_endpoint_resource(&HSTRING::from("ServiceEndpoint1"))
         .unwrap();
     info!("Get ServiceEndpoint1: {:?}", endpoint);
-    let port = endpoint.Port;
+    let port = endpoint.port;
 
     // get hostname
     let ctx = NodeContext::get_sync(Duration::from_secs(1)).unwrap();

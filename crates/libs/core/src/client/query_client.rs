@@ -7,12 +7,13 @@ use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{
     FabricClient::{
-        IFabricGetNodeListResult2, IFabricGetPartitionListResult2, IFabricQueryClient10,
+        IFabricGetNodeListResult2, IFabricGetPartitionListResult2, IFabricGetReplicaListResult2,
+        IFabricQueryClient10,
     },
     FabricTypes::{
         FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION_EX1,
         FABRIC_NODE_QUERY_DESCRIPTION_EX2, FABRIC_NODE_QUERY_DESCRIPTION_EX3,
-        FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
+        FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION, FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
     },
 };
 
@@ -21,6 +22,7 @@ use crate::{
     sync::{fabric_begin_end_proxy, FabricReceiver},
     types::{
         NodeList, NodeQueryDescription, ServicePartitionList, ServicePartitionQueryDescription,
+        ServiceReplicaList, ServiceReplicaQueryDescription,
     },
 };
 
@@ -34,14 +36,14 @@ pub struct QueryClient {
 impl QueryClient {
     pub fn get_node_list_internal(
         &self,
-        queryDescription: &FABRIC_NODE_QUERY_DESCRIPTION,
-        timeoutMilliseconds: u32,
+        query_description: &FABRIC_NODE_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricGetNodeListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
             move |callback| unsafe {
-                com1.BeginGetNodeList(queryDescription, timeoutMilliseconds, callback)
+                com1.BeginGetNodeList(query_description, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndGetNodeList2(ctx) },
         )
@@ -59,6 +61,21 @@ impl QueryClient {
                 com1.BeginGetPartitionList(desc, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndGetPartitionList2(ctx) },
+        )
+    }
+
+    fn get_replica_list_internal(
+        &self,
+        desc: &FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+    ) -> FabricReceiver<crate::Result<IFabricGetReplicaListResult2>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetReplicaList(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetReplicaList2(ctx) },
         )
     }
 }
@@ -110,5 +127,16 @@ impl QueryClient {
         let mili = timeout.as_millis() as u32;
         let com = self.get_partition_list_internal(&raw, mili).await?;
         Ok(ServicePartitionList::new(com))
+    }
+
+    pub async fn get_replica_list(
+        &self,
+        desc: &ServiceReplicaQueryDescription,
+        timeout: Duration,
+    ) -> crate::Result<ServiceReplicaList> {
+        let raw: FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION = desc.into();
+        let mili = timeout.as_millis() as u32;
+        let com = self.get_replica_list_internal(&raw, mili).await?;
+        Ok(ServiceReplicaList::new(com))
     }
 }

@@ -8,9 +8,9 @@
 use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
 use windows_core::{Error, HSTRING};
 
-use super::stateful_types::{
-    Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode, Role,
-};
+use crate::types::ReplicaRole;
+
+use super::stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode};
 
 pub trait StatefulServiceFactory {
     fn create_replica(
@@ -38,7 +38,7 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
         openmode: OpenMode,
         partition: &StatefulServicePartition,
     ) -> windows::core::Result<impl PrimaryReplicator>;
-    async fn change_role(&self, newrole: Role) -> ::windows_core::Result<HSTRING>; // replica address
+    async fn change_role(&self, newrole: ReplicaRole) -> ::windows_core::Result<HSTRING>; // replica address
     async fn close(&self) -> windows::core::Result<()>;
     fn abort(&self);
 }
@@ -65,7 +65,7 @@ impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
 pub trait LocalReplicator: Send + Sync + 'static {
     async fn open(&self) -> ::windows_core::Result<HSTRING>; // replicator address
     async fn close(&self) -> ::windows_core::Result<()>;
-    async fn change_role(&self, epoch: &Epoch, role: &Role) -> ::windows_core::Result<()>;
+    async fn change_role(&self, epoch: &Epoch, role: &ReplicaRole) -> ::windows_core::Result<()>;
     async fn update_epoch(&self, epoch: &Epoch) -> ::windows_core::Result<()>;
     fn get_current_progress(&self) -> ::windows_core::Result<i64>;
     fn get_catch_up_capability(&self) -> ::windows_core::Result<i64>;

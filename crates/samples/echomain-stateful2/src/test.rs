@@ -8,8 +8,9 @@ use std::time::Duration;
 use mssf_core::{
     client::FabricClient,
     types::{
-        ServicePartition, ServicePartitionInformation, ServicePartitionQueryDescription,
-        ServicePartitionStatus,
+        QueryServiceReplicaStatus, ServicePartition, ServicePartitionInformation,
+        ServicePartitionQueryDescription, ServicePartitionStatus, ServiceReplicaQueryDescription,
+        ServiceReplicaQueryResult,
     },
     GUID, HSTRING,
 };
@@ -21,15 +22,14 @@ async fn test_partition_info() {
     let fc = FabricClient::new();
     let qc = fc.get_query_manager();
 
+    let timeout = Duration::from_secs(1);
+
     let desc = ServicePartitionQueryDescription {
         service_name: HSTRING::from("fabric:/StatefulEchoApp/StatefulEchoAppService"),
         partition_id_filter: None,
     };
 
-    let list = qc
-        .get_partition_list(&desc, Duration::from_secs(1))
-        .await
-        .unwrap();
+    let list = qc.get_partition_list(&desc, timeout).await.unwrap();
     // there is only one partition
     let p = list.iter().next().unwrap();
     let stateful = match p {
@@ -48,4 +48,26 @@ async fn test_partition_info() {
         _ => panic!("not singleton"),
     };
     assert_ne!(single.id, GUID::zeroed());
+
+    // test get replica info
+    let desc = ServiceReplicaQueryDescription {
+        partition_id: single.id,
+        replica_id_or_instance_id_filter: None,
+    };
+    let replicas = qc
+        .get_replica_list(&desc, timeout)
+        .await
+        .unwrap()
+        .iter()
+        .collect::<Vec<_>>();
+    {
+        assert_eq!(replicas.len(), 3);
+        let replica = &replicas[0];
+        let stateful = match replica {
+            ServiceReplicaQueryResult::Stateful(s) => s,
+            _ => panic!("not stateful"),
+        };
+        assert_eq!(stateful.replica_status, QueryServiceReplicaStatus::Ready);
+        assert_ne!(stateful.node_name, HSTRING::new());
+    }
 }

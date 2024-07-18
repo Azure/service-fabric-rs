@@ -16,15 +16,15 @@ use windows_core::PCWSTR;
 
 #[derive(Default)]
 pub struct ReplicatorSettings {
-    pub Flags: u32,
-    pub RetryIntervalMilliseconds: u32,
-    pub BatchAcknowledgementIntervalMilliseconds: u32,
-    pub ReplicatorAddress: ::windows_core::HSTRING,
-    pub RequireServiceAck: bool,
-    pub InitialReplicationQueueSize: u32,
-    pub MaxReplicationQueueSize: u32,
-    pub InitialCopyQueueSize: u32,
-    pub MaxCopyQueueSize: u32,
+    pub flags: u32,
+    pub retry_interval_milliseconds: u32,
+    pub batch_acknowledgement_interval_milliseconds: u32,
+    pub replicator_address: ::windows_core::HSTRING,
+    pub require_service_ack: bool,
+    pub initial_replication_queue_size: u32,
+    pub max_replication_queue_size: u32,
+    pub initial_copy_queue_size: u32,
+    pub max_copy_queue_size: u32,
     //pub SecurityCredentials: *const FABRIC_SECURITY_CREDENTIALS,
     //pub Reserved: *mut ::core::ffi::c_void,
 }
@@ -32,15 +32,16 @@ pub struct ReplicatorSettings {
 impl ReplicatorSettings {
     pub fn get_raw(&self) -> FABRIC_REPLICATOR_SETTINGS {
         FABRIC_REPLICATOR_SETTINGS {
-            Flags: self.Flags,
-            RetryIntervalMilliseconds: self.RetryIntervalMilliseconds,
-            BatchAcknowledgementIntervalMilliseconds: self.BatchAcknowledgementIntervalMilliseconds,
-            ReplicatorAddress: PCWSTR::from_raw(self.ReplicatorAddress.as_ptr()),
-            RequireServiceAck: self.RequireServiceAck.into(),
-            InitialReplicationQueueSize: self.InitialReplicationQueueSize,
-            MaxReplicationQueueSize: self.MaxReplicationQueueSize,
-            InitialCopyQueueSize: self.InitialCopyQueueSize,
-            MaxCopyQueueSize: self.MaxCopyQueueSize,
+            Flags: self.flags,
+            RetryIntervalMilliseconds: self.retry_interval_milliseconds,
+            BatchAcknowledgementIntervalMilliseconds: self
+                .batch_acknowledgement_interval_milliseconds,
+            ReplicatorAddress: PCWSTR::from_raw(self.replicator_address.as_ptr()),
+            RequireServiceAck: self.require_service_ack.into(),
+            InitialReplicationQueueSize: self.initial_replication_queue_size,
+            MaxReplicationQueueSize: self.max_replication_queue_size,
+            InitialCopyQueueSize: self.initial_copy_queue_size,
+            MaxCopyQueueSize: self.max_copy_queue_size,
             SecurityCredentials: std::ptr::null(),
             Reserved: std::ptr::null_mut(),
         }
@@ -64,24 +65,24 @@ impl From<LocalStoreKind> for FABRIC_LOCAL_STORE_KIND {
 #[derive(Default)]
 pub struct EseLocalStoreSettings {
     // FABRIC_ESE_LOCAL_STORE_SETTINGS
-    pub DbFolderPath: ::windows_core::HSTRING,
-    pub LogFileSizeInKB: i32,
-    pub LogBufferSizeInKB: i32,
-    pub MaxCursors: i32,
-    pub MaxVerPages: i32,
-    pub MaxAsyncCommitDelayInMilliseconds: i32,
+    pub db_folder_path: ::windows_core::HSTRING,
+    pub log_file_size_in_kb: i32,
+    pub log_buffer_size_in_kb: i32,
+    pub max_cursors: i32,
+    pub max_ver_pages: i32,
+    pub max_async_commit_delay_in_milliseconds: i32,
     // pub Reserved: *mut ::core::ffi::c_void,
 }
 
 impl EseLocalStoreSettings {
     pub fn get_raw(&self) -> FABRIC_ESE_LOCAL_STORE_SETTINGS {
         FABRIC_ESE_LOCAL_STORE_SETTINGS {
-            DbFolderPath: windows_core::PCWSTR::from_raw(self.DbFolderPath.as_ptr()),
-            LogFileSizeInKB: self.LogFileSizeInKB,
-            LogBufferSizeInKB: self.LogBufferSizeInKB,
-            MaxCursors: self.MaxCursors,
-            MaxVerPages: self.MaxVerPages,
-            MaxAsyncCommitDelayInMilliseconds: self.MaxAsyncCommitDelayInMilliseconds,
+            DbFolderPath: windows_core::PCWSTR::from_raw(self.db_folder_path.as_ptr()),
+            LogFileSizeInKB: self.log_file_size_in_kb,
+            LogBufferSizeInKB: self.log_buffer_size_in_kb,
+            MaxCursors: self.max_cursors,
+            MaxVerPages: self.max_ver_pages,
+            MaxAsyncCommitDelayInMilliseconds: self.max_async_commit_delay_in_milliseconds,
             Reserved: std::ptr::null_mut(),
         }
     }

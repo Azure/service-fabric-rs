@@ -37,7 +37,7 @@ fn main() -> mssf_core::Result<()> {
         .get_endpoint_resource(&HSTRING::from("KvReplicatorEndpoint"))
         .unwrap();
 
-    let factory = Factory::create(endpoint.Port, e.clone());
+    let factory = Factory::create(endpoint.port, e.clone());
     runtime
         .register_stateful_service_factory(&HSTRING::from("KvStoreService"), factory)
         .unwrap();

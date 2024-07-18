@@ -62,22 +62,22 @@ pub fn get_com_activation_context() -> ::windows_core::Result<IFabricCodePackage
 
 #[derive(Debug)]
 pub struct EndpointResourceDesc {
-    pub Name: ::windows_core::HSTRING,
-    pub Protocol: ::windows_core::HSTRING,
-    pub Type: ::windows_core::HSTRING,
-    pub Port: u32,
-    pub CertificateName: ::windows_core::HSTRING,
+    pub name: ::windows_core::HSTRING,
+    pub protocol: ::windows_core::HSTRING,
+    pub r#type: ::windows_core::HSTRING,
+    pub port: u32,
+    pub certificate_name: ::windows_core::HSTRING,
     //pub Reserved: *mut ::core::ffi::c_void,
 }
 
 impl From<&FABRIC_ENDPOINT_RESOURCE_DESCRIPTION> for EndpointResourceDesc {
     fn from(e: &FABRIC_ENDPOINT_RESOURCE_DESCRIPTION) -> Self {
         EndpointResourceDesc {
-            Name: HSTRING::from_wide(unsafe { e.Name.as_wide() }).unwrap(),
-            Protocol: HSTRING::from_wide(unsafe { e.Protocol.as_wide() }).unwrap(),
-            Type: HSTRING::from_wide(unsafe { e.Type.as_wide() }).unwrap(),
-            Port: e.Port,
-            CertificateName: HSTRING::from_wide(unsafe { e.CertificateName.as_wide() }).unwrap(),
+            name: HSTRING::from_wide(unsafe { e.Name.as_wide() }).unwrap(),
+            protocol: HSTRING::from_wide(unsafe { e.Protocol.as_wide() }).unwrap(),
+            r#type: HSTRING::from_wide(unsafe { e.Type.as_wide() }).unwrap(),
+            port: e.Port,
+            certificate_name: HSTRING::from_wide(unsafe { e.CertificateName.as_wide() }).unwrap(),
         }
     }
 }

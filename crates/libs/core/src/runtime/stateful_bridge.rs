@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 use tracing::info;
 use windows::core::implement;
-use windows_core::{AsImpl, Error, Interface, HSTRING};
+use windows_core::{Interface, HSTRING};
 
 use mssf_com::{
     FabricCommon::IFabricStringResult,
@@ -30,7 +30,6 @@ use mssf_com::{
 
 use crate::{
     runtime::{
-        bridge::BridgeContext,
         stateful::StatefulServicePartition,
         stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig},
     },
@@ -190,10 +189,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("IFabricReplicatorBridge::EndChangeRole");
-        let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { context.unwrap().as_impl() };
-
-        ctx_bridge.consume_content()?;
-        Ok(())
+        fabric_end_bridge(context)
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]

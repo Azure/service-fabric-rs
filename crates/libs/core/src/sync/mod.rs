@@ -30,6 +30,8 @@ pub use proxy::*;
 
 mod bridge;
 pub use bridge::*;
+// This is intentional private. User should directly use bridge mod.
+mod bridge_context;
 
 // fabric code begins here
 

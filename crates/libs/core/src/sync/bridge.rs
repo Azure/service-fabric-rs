@@ -9,8 +9,10 @@ use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl,
 };
 
-use crate::runtime::{bridge::BridgeContext, executor::Executor};
+use crate::runtime::executor::Executor;
 use windows_core::AsImpl;
+
+use super::bridge_context::BridgeContext;
 
 pub fn fabric_begin_bridge<F>(
     rt: &impl Executor,

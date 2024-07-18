@@ -18,7 +18,7 @@ use mssf_com::{
 
 use crate::{
     strings::get_pcwstr_from_opt,
-    sync::{self, FabricReceiver},
+    sync::{fabric_begin_end_proxy, FabricReceiver},
     types::{
         NodeList, NodeQueryDescription, ServicePartitionList, ServicePartitionQueryDescription,
     },
@@ -37,24 +37,14 @@ impl QueryClient {
         queryDescription: &FABRIC_NODE_QUERY_DESCRIPTION,
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricGetNodeListResult2>> {
-        let (tx, rx) = crate::sync::oneshot_channel();
-        let com_cp = self.com.clone();
-        let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            // Note we use the v2 api
-            let res = unsafe { com_cp.EndGetNodeList2(ctx) };
-            tx.send(res);
-        });
-        let ctx = unsafe {
-            self.com
-                .BeginGetNodeList(queryDescription, timeoutMilliseconds, &callback)
-        };
-        if ctx.is_err() {
-            let (tx2, rx2) = crate::sync::oneshot_channel();
-            tx2.send(Err(ctx.err().unwrap()));
-            rx2
-        } else {
-            rx
-        }
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetNodeList(queryDescription, timeoutMilliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetNodeList2(ctx) },
+        )
     }
 
     fn get_partition_list_internal(
@@ -62,23 +52,14 @@ impl QueryClient {
         desc: &FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
     ) -> FabricReceiver<crate::Result<IFabricGetPartitionListResult2>> {
-        let (tx, rx) = sync::oneshot_channel();
-        let com_cp = self.com.clone();
-        let callback = sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { com_cp.EndGetPartitionList2(ctx) };
-            tx.send(res);
-        });
-        let ctx = unsafe {
-            self.com
-                .BeginGetPartitionList(desc, timeout_milliseconds, &callback)
-        };
-        if ctx.is_err() {
-            let (tx2, rx2) = sync::oneshot_channel();
-            tx2.send(Err(ctx.err().unwrap()));
-            rx2
-        } else {
-            rx
-        }
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetPartitionList(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetPartitionList2(ctx) },
+        )
     }
 }
 

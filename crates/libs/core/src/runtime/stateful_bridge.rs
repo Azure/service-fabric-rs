@@ -187,7 +187,7 @@ where
             BridgeContext::<Result<HSTRING, Error>>::new(callback_cp).into();
 
         let epoch2: Epoch = unsafe { epoch.as_ref().unwrap().into() };
-        let role2: Role = role.into();
+        let role2: Role = (&role).into();
         info!(
             "IFabricReplicatorBridge::BeginChangeRole epoch {:?}, role {:?}",
             epoch2, role2
@@ -654,7 +654,7 @@ where
         let inner_cp = self.inner.clone();
         let callback_cp = callback.unwrap().clone();
 
-        let newrole2: Role = newrole.into();
+        let newrole2: Role = (&newrole).into();
         info!(
             "IFabricStatefulReplicaBridge::BeginChangeRole: {:?}",
             newrole2

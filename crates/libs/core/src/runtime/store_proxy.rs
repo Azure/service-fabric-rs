@@ -12,6 +12,8 @@ use mssf_com::{
 use tracing::info;
 use windows_core::PCWSTR;
 
+use crate::sync::fabric_begin_end_proxy;
+
 use super::store_types::TransactionIsolationLevel;
 
 // wrapp for kv store
@@ -113,18 +115,13 @@ impl TransactionProxy {
 
     pub async fn commit(&self, timeoutmilliseconds: u32) -> ::windows_core::Result<i64> {
         info!("TransactionProxy::commit");
-        // replicator address
-        let (tx, rx) = tokio::sync::oneshot::channel();
-        let com_cp = self.com_impl.clone();
-        let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { com_cp.EndCommit(ctx) };
-            if tx.send(res).is_err() {
-                debug_assert!(false, "Receiver is dropped.");
-            }
-        });
-
-        let _ = unsafe { self.com_impl.BeginCommit(timeoutmilliseconds, &callback)? };
-        rx.await.unwrap()
+        let com1 = &self.com_impl;
+        let com2 = self.com_impl.clone();
+        let rx = fabric_begin_end_proxy(
+            move |callback| unsafe { com1.BeginCommit(timeoutmilliseconds, callback) },
+            move |ctx| unsafe { com2.EndCommit(ctx) },
+        );
+        rx.await
     }
 
     pub fn rollback(&self) {

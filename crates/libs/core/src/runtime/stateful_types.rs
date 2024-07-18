@@ -89,8 +89,8 @@ impl From<&FABRIC_EPOCH> for Epoch {
     }
 }
 
-impl From<Epoch> for FABRIC_EPOCH {
-    fn from(val: Epoch) -> Self {
+impl From<&Epoch> for FABRIC_EPOCH {
+    fn from(val: &Epoch) -> Self {
         FABRIC_EPOCH {
             DataLossNumber: val.data_loss_number,
             ConfigurationNumber: val.configuration_number,
@@ -108,9 +108,9 @@ pub enum Role {
     Unknown,
 }
 
-impl From<FABRIC_REPLICA_ROLE> for Role {
-    fn from(r: FABRIC_REPLICA_ROLE) -> Self {
-        match r {
+impl From<&FABRIC_REPLICA_ROLE> for Role {
+    fn from(r: &FABRIC_REPLICA_ROLE) -> Self {
+        match *r {
             FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY => Role::ActiveSecondary,
             FABRIC_REPLICA_ROLE_IDLE_SECONDARY => Role::IdleSecondary,
             FABRIC_REPLICA_ROLE_NONE => Role::None,
@@ -120,9 +120,9 @@ impl From<FABRIC_REPLICA_ROLE> for Role {
     }
 }
 
-impl From<Role> for FABRIC_REPLICA_ROLE {
-    fn from(val: Role) -> Self {
-        match val {
+impl From<&Role> for FABRIC_REPLICA_ROLE {
+    fn from(val: &Role) -> Self {
+        match *val {
             Role::ActiveSecondary => FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY,
             Role::IdleSecondary => FABRIC_REPLICA_ROLE_IDLE_SECONDARY,
             Role::None => FABRIC_REPLICA_ROLE_NONE,
@@ -260,7 +260,7 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
         }
         ReplicaInfo {
             Id: r.Id,
-            Role: r.Role.into(),
+            Role: (&r.Role).into(),
             Status: r.Status.into(),
             ReplicatorAddress: HSTRINGWrap::from(r.ReplicatorAddress).into(),
             CurrentProgress: r.CurrentProgress,
@@ -277,7 +277,7 @@ impl ReplicaInfo {
     pub fn get_raw_parts(&self) -> (FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1) {
         let info = FABRIC_REPLICA_INFORMATION {
             Id: self.Id,
-            Role: self.Role.clone().into(),
+            Role: (&self.Role).into(),
             Status: self.Status.clone().into(),
             ReplicatorAddress: PCWSTR::from_raw(self.ReplicatorAddress.as_ptr()),
             CurrentProgress: self.CurrentProgress,

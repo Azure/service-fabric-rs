@@ -24,7 +24,9 @@ use tokio::sync::oneshot::Receiver;
 use windows::core::implement;
 use windows_core::Interface;
 
+mod proxy;
 pub mod wait;
+pub use proxy::*;
 
 // fabric code begins here
 

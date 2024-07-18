@@ -6,28 +6,20 @@ use mssf_com::FabricRuntime::{
 };
 use windows_core::{Interface, HSTRING};
 
-use crate::strings::HSTRINGWrap;
+use crate::{strings::HSTRINGWrap, sync::fabric_begin_end_proxy};
 
 pub fn get_com_node_context(
     timeoutMilliseconds: u32,
 ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricNodeContextResult>> {
-    let (tx, rx) = crate::sync::oneshot_channel();
-    let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-        let res = unsafe { FabricEndGetNodeContext(ctx) };
-        let mapped_res = res.map(|raw| {
-            assert!(!raw.is_null());
-            unsafe { IFabricNodeContextResult::from_raw(raw) }
-        });
-        tx.send(mapped_res);
-    });
-    let ctx = unsafe { FabricBeginGetNodeContext(timeoutMilliseconds, &callback) };
-    if ctx.is_err() {
-        let (tx2, rx2) = crate::sync::oneshot_channel();
-        tx2.send(Err(ctx.err().unwrap()));
-        rx2
-    } else {
-        rx
-    }
+    fabric_begin_end_proxy(
+        move |callback| unsafe { FabricBeginGetNodeContext(timeoutMilliseconds, callback) },
+        move |ctx| {
+            unsafe { FabricEndGetNodeContext(ctx) }.map(|raw| {
+                assert!(!raw.is_null());
+                unsafe { IFabricNodeContextResult::from_raw(raw) }
+            })
+        },
+    )
 }
 
 #[derive(Debug)]

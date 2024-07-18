@@ -20,7 +20,10 @@ use mssf_com::{
 };
 use windows_core::{HSTRING, PCWSTR};
 
-use crate::iter::{FabricIter, FabricListAccessor};
+use crate::{
+    iter::{FabricIter, FabricListAccessor},
+    sync::fabric_begin_end_proxy,
+};
 
 // Service Management Client
 pub struct ServiceManagementClient {
@@ -41,29 +44,21 @@ impl ServiceManagementClient {
         timeoutMilliseconds: u32,
     ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricResolvedServicePartitionResult>>
     {
-        let (tx, rx) = crate::sync::oneshot_channel();
-        let com_cp = self.com.clone();
-        let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-            let res = unsafe { com_cp.EndResolveServicePartition(ctx) };
-            tx.send(res);
-        });
-        let ctx = unsafe {
-            self.com.BeginResolveServicePartition(
-                name,
-                partitionKeyType,
-                partitionKey.unwrap_or(std::ptr::null()),
-                previousResult,
-                timeoutMilliseconds,
-                &callback,
-            )
-        };
-        if ctx.is_err() {
-            let (tx2, rx2) = crate::sync::oneshot_channel();
-            tx2.send(Err(ctx.err().unwrap()));
-            rx2
-        } else {
-            rx
-        }
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginResolveServicePartition(
+                    name,
+                    partitionKeyType,
+                    partitionKey.unwrap_or(std::ptr::null()),
+                    previousResult,
+                    timeoutMilliseconds,
+                    callback,
+                )
+            },
+            move |ctx| unsafe { com2.EndResolveServicePartition(ctx) },
+        )
     }
 
     // Resolve service partition

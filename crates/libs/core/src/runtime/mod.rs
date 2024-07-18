@@ -21,7 +21,7 @@ use self::config::ConfigurationPackage;
 pub use self::runtime_wrapper::Runtime;
 
 #[cfg(feature = "tokio_async")]
-mod bridge;
+pub mod bridge;
 pub mod config;
 pub mod error;
 #[cfg(feature = "tokio_async")]

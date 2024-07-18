@@ -28,6 +28,9 @@ mod proxy;
 pub mod wait;
 pub use proxy::*;
 
+mod bridge;
+pub use bridge::*;
+
 // fabric code begins here
 
 // Creates the local client

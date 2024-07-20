@@ -8,15 +8,15 @@ use std::time::Duration;
 use mssf_core::{
     client::FabricClient,
     types::{
-        QueryServiceReplicaStatus, ServicePartition, ServicePartitionInformation,
-        ServicePartitionQueryDescription, ServicePartitionStatus, ServiceReplicaQueryDescription,
-        ServiceReplicaQueryResult,
+        QueryServiceReplicaStatus, RestartReplicaDescription, ServicePartition,
+        ServicePartitionInformation, ServicePartitionQueryDescription, ServicePartitionStatus,
+        ServiceReplicaQueryDescription, ServiceReplicaQueryResult,
     },
     GUID, HSTRING,
 };
 
 // Requires app to be deployed on onebox.
-// Uses fabric client to to the app parition info.
+// Uses fabric client to perform various actions for this service.
 #[tokio::test]
 async fn test_partition_info() {
     let fc = FabricClient::new();
@@ -60,14 +60,23 @@ async fn test_partition_info() {
         .unwrap()
         .iter()
         .collect::<Vec<_>>();
-    {
-        assert_eq!(replicas.len(), 3);
-        let replica = &replicas[0];
-        let stateful = match replica {
-            ServiceReplicaQueryResult::Stateful(s) => s,
-            _ => panic!("not stateful"),
-        };
-        assert_eq!(stateful.replica_status, QueryServiceReplicaStatus::Ready);
-        assert_ne!(stateful.node_name, HSTRING::new());
-    }
+    assert_eq!(replicas.len(), 3);
+    let replica = &replicas[0];
+    let stateful_replica = match replica {
+        ServiceReplicaQueryResult::Stateful(s) => s,
+        _ => panic!("not stateful"),
+    };
+    assert_eq!(
+        stateful_replica.replica_status,
+        QueryServiceReplicaStatus::Ready
+    );
+    assert_ne!(stateful_replica.node_name, HSTRING::new());
+
+    let desc = RestartReplicaDescription {
+        node_name: stateful_replica.node_name.clone(),
+        partition_id: single.id,
+        replica_or_instance_id: stateful_replica.replica_id,
+    };
+    let mgmt = fc.get_service_manager();
+    mgmt.restart_replica(&desc, timeout).await.unwrap();
 }

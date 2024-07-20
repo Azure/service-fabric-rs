@@ -21,7 +21,7 @@ mod tests;
 // https://github.com/microsoft/service-fabric/blob/master/src/prod/src/managed/Api/src/System/Fabric/FabricClient.cs
 
 pub struct FabricClient {
-    _com_property_client: IFabricPropertyManagementClient2,
+    com_property_client: IFabricPropertyManagementClient2,
     com_service_client: IFabricServiceManagementClient6,
     com_query_client: IFabricQueryClient10,
 }
@@ -38,6 +38,11 @@ impl FabricClient {
         Self::from_com(com)
     }
 
+    // Get a copy of COM object
+    pub fn get_com(&self) -> IFabricPropertyManagementClient2 {
+        self.com_property_client.clone()
+    }
+
     // Creates from com directly. This gives the user freedom to create com from
     // custom code and pass it in.
     // For the final state of FabricClient, this function should be private.
@@ -49,7 +54,7 @@ impl FabricClient {
             .unwrap();
         let com_query_client = com.clone().cast::<IFabricQueryClient10>().unwrap();
         Self {
-            _com_property_client: com_property_client,
+            com_property_client,
             com_service_client,
             com_query_client,
         }
@@ -58,7 +63,7 @@ impl FabricClient {
     // Get the client for managing Fabric Properties in Naming Service
     pub fn get_property_manager(&self) -> PropertyManagementClient {
         PropertyManagementClient {
-            _com: self._com_property_client.clone(),
+            _com: self.com_property_client.clone(),
         }
     }
 

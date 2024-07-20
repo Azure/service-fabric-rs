@@ -11,18 +11,20 @@ use mssf_com::{
         FABRIC_PARTITION_KEY_TYPE, FABRIC_PARTITION_KEY_TYPE_INT64,
         FABRIC_PARTITION_KEY_TYPE_INVALID, FABRIC_PARTITION_KEY_TYPE_NONE,
         FABRIC_PARTITION_KEY_TYPE_STRING, FABRIC_RESOLVED_SERVICE_ENDPOINT,
-        FABRIC_SERVICE_ENDPOINT_ROLE, FABRIC_SERVICE_PARTITION_KIND,
-        FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE, FABRIC_SERVICE_PARTITION_KIND_INVALID,
-        FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
-        FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
-        FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
+        FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_ENDPOINT_ROLE,
+        FABRIC_SERVICE_PARTITION_KIND, FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE,
+        FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
+        FABRIC_SERVICE_PARTITION_KIND_SINGLETON, FABRIC_SERVICE_ROLE_INVALID,
+        FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY, FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY,
+        FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
     },
 };
 use windows_core::{HSTRING, PCWSTR};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
-    sync::fabric_begin_end_proxy,
+    sync::{fabric_begin_end_proxy, FabricReceiver},
+    types::RestartReplicaDescription,
 };
 
 // Service Management Client
@@ -30,11 +32,8 @@ pub struct ServiceManagementClient {
     com: IFabricServiceManagementClient6,
 }
 
+// internal implementation block
 impl ServiceManagementClient {
-    pub fn from_com(com: IFabricServiceManagementClient6) -> Self {
-        Self { com: com.clone() }
-    }
-
     fn resolve_service_partition_internal(
         &self,
         name: FABRIC_URI,
@@ -59,6 +58,28 @@ impl ServiceManagementClient {
             },
             move |ctx| unsafe { com2.EndResolveServicePartition(ctx) },
         )
+    }
+
+    fn restart_replica_internal(
+        &self,
+        desc: &FABRIC_RESTART_REPLICA_DESCRIPTION,
+        timeout_milliseconds: u32,
+    ) -> FabricReceiver<crate::Result<()>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginRestartReplica(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndRestartReplica(ctx) },
+        )
+    }
+}
+
+// public implementation block
+impl ServiceManagementClient {
+    pub fn from_com(com: IFabricServiceManagementClient6) -> Self {
+        Self { com: com.clone() }
     }
 
     // Resolve service partition
@@ -86,6 +107,20 @@ impl ServiceManagementClient {
         let com = fu.await?;
         let res = ResolvedServicePartition::from_com(com);
         Ok(res)
+    }
+
+    /// Simulates a service replica failure by restarting a persisted service replica,
+    /// closing the replica, and then reopening it. Use this to test your service for problems
+    /// along the replica reopen path. This helps simulate the report fault temporary path through client APIs.
+    /// This is only valid for replicas that belong to stateful persisted services.
+    pub async fn restart_replica(
+        &self,
+        desc: &RestartReplicaDescription,
+        timeout: Duration,
+    ) -> crate::Result<()> {
+        let raw: FABRIC_RESTART_REPLICA_DESCRIPTION = desc.into();
+        self.restart_replica_internal(&raw, timeout.as_millis() as u32)
+            .await
     }
 }
 

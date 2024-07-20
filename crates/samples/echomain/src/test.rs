@@ -16,12 +16,13 @@ use mssf_core::{
 };
 
 // Requires app to be deployed on onebox.
-// Uses fabric client to get the app parition and replica info.
+// Uses fabric client to perform various actions to the app.
 #[tokio::test]
-async fn test_partition_and_replica_info() {
+async fn test_fabric_client() {
     let fc = FabricClient::new();
     let qc = fc.get_query_manager();
 
+    // Get partition info
     let desc = ServicePartitionQueryDescription {
         service_name: HSTRING::from("fabric:/EchoApp/EchoAppService"),
         partition_id_filter: None,
@@ -47,21 +48,24 @@ async fn test_partition_and_replica_info() {
     };
     assert_ne!(single.id, GUID::zeroed());
 
-    // test get replica info
+    // Get replica info
     let desc = ServiceReplicaQueryDescription {
         partition_id: single.id,
         replica_id_or_instance_id_filter: None,
     };
     let replicas = qc.get_replica_list(&desc, timeout).await.unwrap();
-    {
-        let replica = replicas.iter().next().unwrap(); // only one replica
-        let stateless = match replica {
-            ServiceReplicaQueryResult::Stateless(s) => s,
-            _ => panic!("not stateless"),
-        };
-        // TODO: health is unknown
-        // assert_eq!(stateless.aggregated_health_state, HealthState::Ok);
-        assert_eq!(stateless.replica_status, QueryServiceReplicaStatus::Ready);
-        assert_ne!(stateless.node_name, HSTRING::new());
-    }
+    let replica = replicas.iter().next().unwrap(); // only one replica
+    let stateless_replica = match replica {
+        ServiceReplicaQueryResult::Stateless(s) => s,
+        _ => panic!("not stateless"),
+    };
+    // TODO: health is unknown
+    // assert_eq!(stateless.aggregated_health_state, HealthState::Ok);
+    assert_eq!(
+        stateless_replica.replica_status,
+        QueryServiceReplicaStatus::Ready
+    );
+    assert_ne!(stateless_replica.node_name, HSTRING::new());
+
+    // TODO: stateless restart should use remove-replica api.
 }

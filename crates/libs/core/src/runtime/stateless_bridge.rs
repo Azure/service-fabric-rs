@@ -9,13 +9,12 @@
 use std::sync::Arc;
 
 use crate::{
-    runtime::{bridge::BridgeContext, stateless::StatelessServicePartition},
+    runtime::stateless::StatelessServicePartition,
     strings::HSTRINGWrap,
+    sync::{fabric_begin_bridge, fabric_end_bridge},
 };
 use mssf_com::{
-    FabricCommon::{
-        IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
-    },
+    FabricCommon::IFabricStringResult,
     FabricRuntime::{
         IFabricStatelessServiceFactory, IFabricStatelessServiceFactory_Impl,
         IFabricStatelessServiceInstance, IFabricStatelessServiceInstance_Impl,
@@ -25,7 +24,7 @@ use mssf_com::{
 };
 use tracing::info;
 use windows::core::implement;
-use windows_core::{AsImpl, Error, HSTRING};
+use windows_core::HSTRING;
 
 use super::{
     executor::Executor,
@@ -133,23 +132,14 @@ where
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricStatelessServiceInstanceBridge::BeginOpen");
         let partition_cp = partition.unwrap().clone();
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<HSTRING, Error>>::new(callback_cp).into();
-
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            info!("IFabricStatelessServiceInstanceBridge::BeginOpen spawn");
-            let partition_bridge = StatelessServicePartition::new(partition_cp);
-            let ok = inner_cp.open(&partition_bridge).await;
-            let ctx_bridge: &BridgeContext<Result<HSTRING, Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        let partition_bridge = StatelessServicePartition::new(partition_cp);
+        let inner = self.inner.clone();
+        fabric_begin_bridge(&self.rt, callback, async move {
+            inner
+                .open(&partition_bridge)
+                .await
+                .map(|s| IFabricStringResult::from(HSTRINGWrap::from(s)))
+        })
     }
 
     fn EndOpen(
@@ -157,11 +147,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<IFabricStringResult> {
         info!("IFabricStatelessServiceInstanceBridge::EndOpen");
-        let ctx_bridge: &BridgeContext<Result<HSTRING, Error>> =
-            unsafe { context.unwrap().as_impl() };
-
-        let content = ctx_bridge.consume_content()?;
-        Ok(HSTRINGWrap::from(content).into())
+        fabric_end_bridge(context)
     }
 
     fn BeginClose(
@@ -169,21 +155,8 @@ where
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricStatelessServiceInstanceBridge::BeginClose");
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<(), Error>>::new(callback_cp).into();
-
-        let ctx_cpy: IFabricAsyncOperationContext = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.close().await;
-            let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        let inner = self.inner.clone();
+        fabric_begin_bridge(&self.rt, callback, async move { inner.close().await })
     }
 
     fn EndClose(
@@ -191,9 +164,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("IFabricStatelessServiceInstanceBridge::EndClose");
-        let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { context.unwrap().as_impl() };
-        ctx_bridge.consume_content()?;
-        Ok(())
+        fabric_end_bridge(context)
     }
 
     fn Abort(&self) {

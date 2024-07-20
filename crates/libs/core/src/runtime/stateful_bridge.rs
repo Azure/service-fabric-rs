@@ -12,12 +12,10 @@ use std::sync::Arc;
 
 use tracing::info;
 use windows::core::implement;
-use windows_core::{AsImpl, Error, Interface, HSTRING};
+use windows_core::{Interface, HSTRING};
 
 use mssf_com::{
-    FabricCommon::{
-        IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl, IFabricStringResult,
-    },
+    FabricCommon::IFabricStringResult,
     FabricRuntime::{
         IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl, IFabricReplicator,
         IFabricReplicator_Impl, IFabricStatefulServiceFactory, IFabricStatefulServiceFactory_Impl,
@@ -32,11 +30,11 @@ use mssf_com::{
 
 use crate::{
     runtime::{
-        bridge::BridgeContext,
         stateful::StatefulServicePartition,
         stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig},
     },
     strings::HSTRINGWrap,
+    sync::{fabric_begin_bridge, fabric_end_bridge},
     types::ReplicaRole,
 };
 
@@ -149,32 +147,21 @@ where
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricReplicatorBridge::BeginOpen");
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<HSTRING, Error>>::new(callback_cp).into();
-
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.open().await;
-            let ctx_bridge: &BridgeContext<Result<HSTRING, Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        let inner = self.inner.clone();
+        fabric_begin_bridge(&self.rt, callback, async move {
+            inner
+                .open()
+                .await
+                .map(|s| IFabricStringResult::from(HSTRINGWrap::from(s)))
+        })
     }
 
     fn EndOpen(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<IFabricStringResult> {
-        let ctx_bridge: &BridgeContext<Result<HSTRING, Error>> =
-            unsafe { context.unwrap().as_impl() };
-        let content = ctx_bridge.consume_content()?;
-        info!("IFabricReplicatorBridge::EndOpen addr {}", content);
-        Ok(HSTRINGWrap::from(content).into())
+        info!("IFabricReplicatorBridge::EndOpen");
+        fabric_end_bridge(context)
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
@@ -184,12 +171,7 @@ where
         role: FABRIC_REPLICA_ROLE,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<HSTRING, Error>>::new(callback_cp).into();
-
+        let inner = self.inner.clone();
         let epoch2: Epoch = unsafe { epoch.as_ref().unwrap().into() };
         let role2: ReplicaRole = (&role).into();
         info!(
@@ -197,15 +179,9 @@ where
             epoch2, role2
         );
 
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.change_role(&epoch2, &role2).await;
-            let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        fabric_begin_bridge(&self.rt, callback, async move {
+            inner.change_role(&epoch2, &role2).await
+        })
     }
 
     fn EndChangeRole(
@@ -213,10 +189,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("IFabricReplicatorBridge::EndChangeRole");
-        let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { context.unwrap().as_impl() };
-
-        ctx_bridge.consume_content()?;
-        Ok(())
+        fabric_end_bridge(context)
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
@@ -225,26 +198,15 @@ where
         epoch: *const FABRIC_EPOCH,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<(), Error>>::new(callback_cp).into();
+        let inner = self.inner.clone();
         let epoch2: Epoch = unsafe { epoch.as_ref().unwrap().into() };
         info!(
             "IFabricReplicatorBridge::BeginUpdateEpoch epoch {:?}",
             epoch2
         );
-
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.update_epoch(&epoch2).await;
-            let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        fabric_begin_bridge(&self.rt, callback, async move {
+            inner.update_epoch(&epoch2).await
+        })
     }
 
     fn EndUpdateEpoch(
@@ -252,10 +214,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("IFabricReplicatorBridge::BeginUpdateEpoch");
-        let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { context.unwrap().as_impl() };
-
-        ctx_bridge.consume_content()?;
-        Ok(())
+        fabric_end_bridge(context)
     }
 
     fn BeginClose(
@@ -263,21 +222,8 @@ where
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricReplicatorBridge::BeginClose");
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<(), Error>>::new(callback_cp).into();
-
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.close().await;
-            let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        let inner = self.inner.clone();
+        fabric_begin_bridge(&self.rt, callback, async move { inner.close().await })
     }
 
     fn EndClose(
@@ -285,10 +231,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("IFabricReplicatorBridge::EndClose");
-        let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { context.unwrap().as_impl() };
-
-        ctx_bridge.consume_content()?;
-        Ok(())
+        fabric_end_bridge(context)
     }
 
     fn Abort(&self) {
@@ -437,21 +380,13 @@ where
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricPrimaryReplicatorBridge::BeginOnDataLoss");
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
+        let inner = self.inner.clone();
 
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<(), Error>>::new(callback_cp).into();
-
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.on_data_loss().await;
-            let ctx_bridge: &BridgeContext<Result<u8, Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        fabric_begin_bridge(
+            &self.rt,
+            callback,
+            async move { inner.on_data_loss().await },
+        )
     }
 
     fn EndOnDataLoss(
@@ -459,9 +394,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<u8> {
         info!("IFabricPrimaryReplicatorBridge::EndOnDataLoss");
-        let ctx_bridge: &BridgeContext<Result<u8, Error>> = unsafe { context.unwrap().as_impl() };
-
-        ctx_bridge.consume_content()
+        fabric_end_bridge(context)
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
@@ -486,21 +419,10 @@ where
             "IFabricPrimaryReplicatorBridge::BeginWaitForCatchUpQuorum: mode {:?}",
             catchupmode
         );
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<(), Error>>::new(callback_cp).into();
-
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.wait_for_catch_up_quorum(catchupmode.into()).await;
-            let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        let inner = self.inner.clone();
+        fabric_begin_bridge(&self.rt, callback, async move {
+            inner.wait_for_catch_up_quorum(catchupmode.into()).await
+        })
     }
 
     fn EndWaitForCatchUpQuorum(
@@ -508,8 +430,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("IFabricPrimaryReplicatorBridge::BeginWaitForCatchUpQuorum");
-        let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { context.unwrap().as_impl() };
-        ctx_bridge.consume_content()
+        fabric_end_bridge(context)
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
@@ -531,24 +452,14 @@ where
         replica: *const FABRIC_REPLICA_INFORMATION,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<(), Error>>::new(callback_cp).into();
-
+        let inner = self.inner.clone();
         let r = ReplicaInfo::from(unsafe { replica.as_ref().unwrap() });
         info!("IFabricPrimaryReplicatorBridge::BeginBuildReplica: {:?}", r);
-
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.build_replica(&r).await;
-            let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        fabric_begin_bridge(
+            &self.rt,
+            callback,
+            async move { inner.build_replica(&r).await },
+        )
     }
 
     fn EndBuildReplica(
@@ -556,8 +467,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("IFabricPrimaryReplicatorBridge::EndBuildReplica");
-        let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { context.unwrap().as_impl() };
-        ctx_bridge.consume_content()
+        fabric_end_bridge(context)
     }
 
     fn RemoveReplica(&self, replicaid: i64) -> ::windows_core::Result<()> {
@@ -603,40 +513,21 @@ where
         partition: ::core::option::Option<&IFabricStatefulServicePartition>,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
+        let inner = self.inner.clone();
+        let rt_cp = self.rt.clone();
         let openmode2: OpenMode = openmode.into();
         let partition2: StatefulServicePartition = partition.unwrap().into();
         info!(
             "IFabricStatefulReplicaBridge::BeginOpen: mode {:?}",
             openmode2
         );
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<IFabricPrimaryReplicator, Error>>::new(callback_cp).into();
-        let ctx_cpy = ctx.clone();
-        let rt_cpy = self.rt.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.open(openmode2, &partition2).await;
-
-            let com = match ok {
-                Ok(rplctr) => {
-                    let bridge: IFabricPrimaryReplicator =
-                        IFabricPrimaryReplicatorBridge::create(rplctr, rt_cpy).into();
-                    Ok(bridge)
-                }
-                Err(e) => Err(e),
-            };
-
-            let ctx_bridge: &BridgeContext<Result<IFabricPrimaryReplicator, Error>> =
-                unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(com);
-            ctx_bridge.set_complete();
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        fabric_begin_bridge(&self.rt, callback, async move {
+            inner.open(openmode2, &partition2).await.map(|s| {
+                let bridge: IFabricPrimaryReplicator =
+                    IFabricPrimaryReplicatorBridge::create(s, rt_cp).into();
+                bridge.clone().cast::<IFabricReplicator>().unwrap()
+            })
+        })
     }
 
     fn EndOpen(
@@ -644,10 +535,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<IFabricReplicator> {
         info!("IFabricStatefulReplicaBridge::EndOpen");
-        let ctx_bridge: &BridgeContext<Result<IFabricPrimaryReplicator, Error>> =
-            unsafe { context.unwrap().as_impl() };
-        let rplctr = ctx_bridge.consume_content()?;
-        Ok(rplctr.clone().cast::<IFabricReplicator>().unwrap())
+        fabric_end_bridge(context)
     }
 
     fn BeginChangeRole(
@@ -655,37 +543,26 @@ where
         newrole: FABRIC_REPLICA_ROLE,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
+        let inner = self.inner.clone();
         let newrole2: ReplicaRole = (&newrole).into();
         info!(
             "IFabricStatefulReplicaBridge::BeginChangeRole: {:?}",
             newrole2
         );
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<HSTRING, Error>>::new(callback_cp).into();
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.change_role(newrole2).await;
-            let ctx_bridge: &BridgeContext<Result<HSTRING, Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        fabric_begin_bridge(&self.rt, callback, async move {
+            inner
+                .change_role(newrole2)
+                .await
+                .map(|s| IFabricStringResult::from(HSTRINGWrap::from(s)))
+        })
     }
 
     fn EndChangeRole(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<IFabricStringResult> {
-        let ctx_bridge: &BridgeContext<Result<HSTRING, Error>> =
-            unsafe { context.unwrap().as_impl() };
-        let addr = ctx_bridge.consume_content()?;
-        info!("IFabricStatefulReplicaBridge::EndChangeRole: addr {}", addr);
-        Ok(HSTRINGWrap::from(addr).into())
+        info!("IFabricStatefulReplicaBridge::EndChangeRole");
+        fabric_end_bridge(context)
     }
 
     fn BeginClose(
@@ -693,20 +570,8 @@ where
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricStatefulReplicaBridge::BeginClose");
-        let inner_cp = self.inner.clone();
-        let callback_cp = callback.unwrap().clone();
-
-        let ctx: IFabricAsyncOperationContext =
-            BridgeContext::<Result<(), Error>>::new(callback_cp).into();
-        let ctx_cpy = ctx.clone();
-        self.rt.spawn(async move {
-            let ok = inner_cp.close().await;
-            let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { ctx_cpy.as_impl() };
-            ctx_bridge.set_content(ok);
-            let cb = ctx_bridge.Callback().unwrap();
-            unsafe { cb.Invoke(&ctx_cpy) };
-        });
-        Ok(ctx)
+        let inner = self.inner.clone();
+        fabric_begin_bridge(&self.rt, callback, async move { inner.close().await })
     }
 
     fn EndClose(
@@ -714,9 +579,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("IFabricStatefulReplicaBridge::EndClose");
-        let ctx_bridge: &BridgeContext<Result<(), Error>> = unsafe { context.unwrap().as_impl() };
-        ctx_bridge.consume_content()?;
-        Ok(())
+        fabric_end_bridge(context)
     }
 
     fn Abort(&self) {

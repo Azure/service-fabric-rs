@@ -33,6 +33,8 @@ pub use bridge::*;
 // This is intentional private. User should directly use bridge mod.
 mod bridge_context;
 
+pub mod cancel;
+
 // fabric code begins here
 
 // Creates the local client

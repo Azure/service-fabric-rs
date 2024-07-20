@@ -260,6 +260,7 @@ dependencies = [
  "mssf-com",
  "paste",
  "tokio",
+ "tokio-util",
  "tracing",
  "trait-variant",
  "windows",

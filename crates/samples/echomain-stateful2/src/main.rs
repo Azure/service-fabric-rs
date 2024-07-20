@@ -19,6 +19,7 @@ use tracing::info;
 use windows::core::Interface;
 use windows_core::HSTRING;
 
+mod echo;
 mod statefulstore;
 // Disable test for Linux ci for now due to SF app problem
 #[cfg(target_os = "windows")]

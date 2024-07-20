@@ -10,7 +10,10 @@ use windows_core::{Error, HSTRING};
 
 use crate::types::ReplicaRole;
 
-use super::stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode};
+use super::{
+    metrics::{LoadMetric, LoadMetricListRef},
+    stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode},
+};
 
 pub trait StatefulServiceFactory {
     fn create_replica(
@@ -43,20 +46,28 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
     fn abort(&self);
 }
 
+#[derive(Debug, Clone)]
 pub struct StatefulServicePartition {
-    _com_impl: IFabricStatefulServicePartition,
+    com_impl: IFabricStatefulServicePartition,
 }
 
 impl StatefulServicePartition {
     pub fn get_com(&self) -> &IFabricStatefulServicePartition {
-        &self._com_impl
+        &self.com_impl
+    }
+
+    /// Reports load for the current replica in the partition.
+    pub fn report_load(&self, metrics: &[LoadMetric]) -> crate::Result<()> {
+        let metrics_ref = LoadMetricListRef::from_slice(metrics);
+        let raw = metrics_ref.as_raw_slice();
+        unsafe { self.com_impl.ReportLoad(raw) }
     }
 }
 
 impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
     fn from(e: &IFabricStatefulServicePartition) -> Self {
         StatefulServicePartition {
-            _com_impl: e.clone(),
+            com_impl: e.clone(),
         }
     }
 }

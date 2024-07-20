@@ -6,7 +6,7 @@
 use mssf_com::FabricTypes::FABRIC_REPLICATOR_ADDRESS;
 use mssf_core::{
     runtime::{
-        executor::DefaultExecutor,
+        executor::{DefaultExecutor, Executor},
         stateful::{
             PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServicePartition,
             StatefulServiceReplica,
@@ -17,15 +17,16 @@ use mssf_core::{
     types::ReplicaRole,
 };
 use std::{cell::Cell, sync::Mutex};
-use tokio::sync::oneshot::{self, Sender};
+use tokio_util::sync::CancellationToken;
 use tracing::info;
 use windows_core::{Error, HSTRING};
-mod echo;
+
+use crate::echo;
 
 pub struct Factory {
     replication_port: u32,
     hostname: HSTRING,
-    _rt: DefaultExecutor,
+    rt: DefaultExecutor,
 }
 
 impl Factory {
@@ -33,7 +34,7 @@ impl Factory {
         Factory {
             replication_port,
             hostname,
-            _rt: rt,
+            rt,
         }
     }
 }
@@ -173,7 +174,11 @@ impl StatefulServiceFactory for Factory {
             settings.replicator_address
         );
 
-        let svc = Service::new(self.replication_port, self.hostname.clone());
+        let svc = Service::new(
+            self.rt.clone(),
+            self.replication_port,
+            self.hostname.clone(),
+        );
         let replica = Replica::new(self.replication_port, self.hostname.clone(), svc);
         Ok(replica)
     }
@@ -195,35 +200,42 @@ impl Replica {
     }
 }
 pub struct Service {
-    port_: u32,
+    tcp_port: u32,
     hostname_: HSTRING,
-    tx_: Mutex<Cell<Option<Sender<()>>>>,
+
+    cancel: Mutex<Cell<Option<CancellationToken>>>,
+    rt: DefaultExecutor,
 }
 
 impl Service {
-    pub fn new(port: u32, hostname: HSTRING) -> Service {
+    pub fn new(rt: DefaultExecutor, tcp_port: u32, hostname: HSTRING) -> Service {
         Service {
-            port_: port,
+            tcp_port,
             hostname_: hostname,
-            tx_: Mutex::new(Cell::new(None)),
+            cancel: Mutex::new(Cell::new(None)),
+            rt,
         }
     }
 
-    pub fn start_loop(&self) {
-        let (tx, rx) = oneshot::channel::<()>();
+    pub fn start_loop_in_background(&self, partition: &StatefulServicePartition) {
+        info!("Service::start_loop_in_background");
         self.stop();
-        self.tx_.lock().unwrap().set(Some(tx));
-
-        let port_copy = self.port_;
+        let token = CancellationToken::new();
+        self.cancel.lock().unwrap().set(Some(token.clone()));
+        let port_copy = self.tcp_port;
         let hostname_copy = self.hostname_.clone();
-        // TODO: reuse the tokio runtime.
-        let _th = std::thread::spawn(move || echo::start_echo(rx, port_copy, hostname_copy));
+        let partition_cp = partition.clone();
+        // start the echo server in background
+        self.rt.spawn(async move {
+            info!("Service: start echo");
+            echo::start_echo(token, port_copy, hostname_copy, partition_cp).await
+        });
     }
 
     pub fn stop(&self) {
-        let mut op = self.tx_.lock().unwrap().take();
+        let mut op = self.cancel.lock().unwrap().take();
         if op.is_some() {
-            op.take().unwrap().send(()).unwrap()
+            op.take().unwrap().cancel()
         }
     }
 }
@@ -232,17 +244,17 @@ impl StatefulServiceReplica for Replica {
     async fn open(
         &self,
         openmode: OpenMode,
-        _partition: &StatefulServicePartition,
+        partition: &StatefulServicePartition,
     ) -> windows::core::Result<impl PrimaryReplicator + 'static> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
-        self.svc.start_loop();
+        self.svc.start_loop_in_background(partition);
         Ok(AppFabricReplicator::new(self.port_, self.hostname_.clone()))
     }
     async fn change_role(&self, newrole: ReplicaRole) -> ::windows_core::Result<HSTRING> {
         info!("Replica::change_role {:?}", newrole);
         if newrole == ReplicaRole::Primary {
-            info!("primary {:?}", self.svc.port_);
+            info!("primary {:?}", self.svc.tcp_port);
         }
         // return the address
         let addr = get_addr(self.port_, self.hostname_.clone());

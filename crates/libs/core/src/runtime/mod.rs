@@ -44,6 +44,8 @@ pub mod store;
 pub mod store_proxy;
 pub mod store_types;
 
+pub mod metrics;
+
 // creates fabric runtime
 pub fn create_com_runtime() -> ::windows_core::Result<IFabricRuntime> {
     let rawruntime = unsafe { FabricCreateRuntime(&IFabricRuntime::IID)? };

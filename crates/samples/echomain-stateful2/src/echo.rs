@@ -7,8 +7,8 @@
 
 use std::io::Error;
 
-use mssf_core::runtime::metrics::LoadMetric;
 use mssf_core::runtime::stateful::StatefulServicePartition;
+use mssf_core::types::LoadMetric;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::select;

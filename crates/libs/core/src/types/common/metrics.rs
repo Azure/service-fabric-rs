@@ -36,7 +36,7 @@ impl From<&LoadMetric> for FABRIC_LOAD_METRIC {
 /// passed into SF api.
 pub struct LoadMetricListRef<'a> {
     metrics: Vec<FABRIC_LOAD_METRIC>,
-    owner: PhantomData<&'a Vec<LoadMetric>>,
+    owner: PhantomData<&'a [LoadMetric]>,
 }
 
 impl<'a> LoadMetricListRef<'a> {

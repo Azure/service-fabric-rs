@@ -8,12 +8,9 @@
 use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
 use windows_core::{Error, HSTRING};
 
-use crate::types::ReplicaRole;
+use crate::types::{LoadMetric, LoadMetricListRef, ReplicaRole};
 
-use super::{
-    metrics::{LoadMetric, LoadMetricListRef},
-    stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode},
-};
+use super::stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode};
 
 pub trait StatefulServiceFactory {
     fn create_replica(

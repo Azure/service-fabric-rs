@@ -1,12 +1,14 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 // mod for handling fabric metrics
-
-// FABRIC_LOAD_METRIC
-
-use std::marker::PhantomData;
-
 use mssf_com::FabricTypes::FABRIC_LOAD_METRIC;
+use std::marker::PhantomData;
 use windows_core::{HSTRING, PCWSTR};
 
+// FABRIC_LOAD_METRIC
 pub struct LoadMetric {
     // TODO: support static string without heap allocation
     pub name: HSTRING,

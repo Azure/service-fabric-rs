@@ -19,7 +19,7 @@ use windows_core::{implement, AsImpl};
 use crate::{error::FabricErrorCode, runtime::executor::Executor};
 
 #[implement(IFabricAsyncOperationContext)]
-pub struct BridgeContext2<T>
+pub struct BridgeContext3<T>
 where
     T: 'static,
 {
@@ -30,12 +30,12 @@ where
     token: CancellationToken,
 }
 
-impl<T> BridgeContext2<T> {
-    pub fn new(
-        callback: IFabricAsyncOperationCallback,
-        token: CancellationToken,
-    ) -> BridgeContext2<T> {
-        BridgeContext2 {
+impl<T> BridgeContext3<T>
+where
+    T: Send,
+{
+    fn new(callback: IFabricAsyncOperationCallback, token: CancellationToken) -> Self {
+        Self {
             content: Cell::new(None),
             is_completed: Cell::new(false),
             is_completed_synchronously: false,
@@ -44,16 +44,52 @@ impl<T> BridgeContext2<T> {
         }
     }
 
+    pub fn make(callback: Option<&IFabricAsyncOperationCallback>) -> (Self, CancellationToken) {
+        let token = CancellationToken::new();
+        let ctx = Self::new(callback.unwrap().clone(), token.clone());
+        (ctx, token)
+    }
+
+    // TODO: access
+    // executes the future in background
+    pub fn execute<F>(
+        self,
+        rt: &impl Executor,
+        future: F,
+    ) -> crate::Result<IFabricAsyncOperationContext>
+    where
+        F: Future<Output = T> + Send + 'static,
+    {
+        let self_cp: IFabricAsyncOperationContext = self.into();
+        // extra clone is necessary to avoid access violation.
+        let self_cp3 = self_cp.clone();
+        let self_cp2 = self_cp.clone();
+        rt.spawn(async move {
+            let ok = future.await;
+            let self_impl: &BridgeContext3<T> = unsafe { self_cp3.as_impl() };
+            self_impl.set_content(ok);
+            self_impl.set_complete();
+            let cb = self_impl.Callback().unwrap();
+            unsafe { cb.Invoke(&self_cp) };
+        });
+        Ok(self_cp2)
+    }
+
+    pub fn result(context: Option<&IFabricAsyncOperationContext>) -> crate::Result<T> {
+        let self_impl: &BridgeContext3<T> = unsafe { context.unwrap().as_impl() };
+        self_impl.consume_content()
+    }
+
     // TODO: send and comsume is expected to happend accross threads.
     // Even though we use a oneshot channel to send the signal,
     // it might be safer to add another memory barrier here.
-    pub fn set_content(&self, content: T) {
+    fn set_content(&self, content: T) {
         let prev = self.content.replace(Some(content));
         assert!(prev.is_none())
     }
 
     // can only be called once after set content.
-    pub fn consume_content(&self) -> crate::Result<T> {
+    fn consume_content(&self) -> crate::Result<T> {
         let opt = self.content.take();
         match opt {
             Some(x) => Ok(x),
@@ -70,12 +106,12 @@ impl<T> BridgeContext2<T> {
         }
     }
 
-    pub fn set_complete(&self) {
+    fn set_complete(&self) {
         self.is_completed.swap(&Cell::new(true));
     }
 }
 
-impl<T> IFabricAsyncOperationContext_Impl for BridgeContext2<T> {
+impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3<T> {
     fn IsCompleted(&self) -> ::windows::Win32::Foundation::BOOLEAN {
         self.is_completed.get().into()
     }
@@ -94,37 +130,6 @@ impl<T> IFabricAsyncOperationContext_Impl for BridgeContext2<T> {
         self.token.cancel();
         Ok(())
     }
-}
-
-// such context returned supports cancel.
-pub fn fabric_begin_bridge2<F>(
-    rt: &impl Executor,
-    callback: Option<&IFabricAsyncOperationCallback>,
-    token: CancellationToken,
-    future: F,
-) -> crate::Result<IFabricAsyncOperationContext>
-where
-    F: Future + Send + 'static,
-{
-    let cb = callback.unwrap().clone();
-    let ctx: IFabricAsyncOperationContext = BridgeContext2::<F::Output>::new(cb, token).into();
-    let ctx_cpy = ctx.clone();
-    rt.spawn(async move {
-        let ok = future.await;
-        let ctx_bridge: &BridgeContext2<F::Output> = unsafe { ctx_cpy.as_impl() };
-        ctx_bridge.set_content(ok);
-        let cb = ctx_bridge.Callback().unwrap();
-        unsafe { cb.Invoke(&ctx_cpy) };
-    });
-    Ok(ctx)
-}
-
-pub fn fabric_end_bridge2<T>(context: Option<&IFabricAsyncOperationContext>) -> crate::Result<T>
-where
-    T: 'static,
-{
-    let ctx_bridge: &BridgeContext2<T> = unsafe { context.unwrap().as_impl() };
-    ctx_bridge.consume_content()
 }
 
 // proxy impl
@@ -292,10 +297,12 @@ mod test {
     use tokio_util::sync::CancellationToken;
 
     use crate::{
-        error::FabricErrorCode, runtime::executor::DefaultExecutor, sync::cancel::oneshot_channel,
+        error::FabricErrorCode,
+        runtime::executor::DefaultExecutor,
+        sync::cancel::{oneshot_channel, BridgeContext3},
     };
 
-    use super::{fabric_begin_bridge2, fabric_begin_end_proxy2, fabric_end_bridge2};
+    use super::fabric_begin_end_proxy2;
 
     #[tokio::test]
     async fn test_channel() {
@@ -417,18 +424,18 @@ mod test {
             callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
         ) -> crate::Result<IFabricAsyncOperationContext> {
             let inner = self.inner.clone();
-            let token = CancellationToken::new();
-            let token_cp = token.clone();
-            fabric_begin_bridge2(&self.rt, callback, token, async move {
-                inner.get_data(input, Some(token_cp)).await
-            })
+            let (ctx, token) = BridgeContext3::make(callback);
+            ctx.execute(
+                &self.rt,
+                async move { inner.get_data(input, Some(token)).await },
+            )
         }
 
         pub fn end_get_data(
             &self,
             context: ::core::option::Option<&IFabricAsyncOperationContext>,
         ) -> crate::Result<String> {
-            fabric_end_bridge2(context)?
+            BridgeContext3::result(context)?
         }
 
         pub fn begin_get_data_slow(
@@ -437,10 +444,9 @@ mod test {
             callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
         ) -> crate::Result<IFabricAsyncOperationContext> {
             let inner = self.inner.clone();
-            let token = CancellationToken::new();
-            let token_cp = token.clone();
-            fabric_begin_bridge2(&self.rt, callback, token, async move {
-                inner.get_data_slow(input, Some(token_cp)).await
+            let (ctx, token) = BridgeContext3::make(callback);
+            ctx.execute(&self.rt, async move {
+                inner.get_data_slow(input, Some(token)).await
             })
         }
 
@@ -448,7 +454,7 @@ mod test {
             &self,
             context: ::core::option::Option<&IFabricAsyncOperationContext>,
         ) -> crate::Result<String> {
-            fabric_end_bridge2(context)?
+            BridgeContext3::result(context)?
         }
     }
 

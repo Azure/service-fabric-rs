@@ -8,6 +8,8 @@ mod partition;
 pub use partition::*;
 mod stateful;
 pub use stateful::*;
+mod metrics;
+pub use metrics::*;
 
 use mssf_com::FabricTypes::{
     FABRIC_HEALTH_STATE, FABRIC_HEALTH_STATE_ERROR, FABRIC_HEALTH_STATE_INVALID,

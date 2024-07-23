@@ -9,3 +9,4 @@ members = [
 [workspace.dependencies]
 tracing = { version = "0.1.40", features = ["log"] }
 tracing-subscriber = { version = "0.3.18",  default-features = false, features = ["fmt"]}
+tokio-util = "0.7"

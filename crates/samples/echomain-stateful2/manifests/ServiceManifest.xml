@@ -2,7 +2,11 @@
 <ServiceManifest Name="EchoAppStatefulServicePackage" Version="1.0" xsi:schemaLocation="http://schemas.microsoft.com/2011/01/fabric ServiceFabricServiceModel.xsd" xmlns="http://schemas.microsoft.com/2011/01/fabric" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Description>EchoApp service</Description>
   <ServiceTypes>
-    <StatefulServiceType ServiceTypeName="StatefulEchoAppService"  HasPersistedState="true" />
+    <StatefulServiceType ServiceTypeName="StatefulEchoAppService" HasPersistedState="true">
+      <LoadMetrics>
+        <LoadMetric Name="MyLoad" Weight="Low" PrimaryDefaultLoad="0" SecondaryDefaultLoad="0" />
+      </LoadMetrics>
+    </StatefulServiceType>
   </ServiceTypes>
   <CodePackage Name="Code" Version="1.0">
     <EntryPoint>

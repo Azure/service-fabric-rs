@@ -61,12 +61,10 @@ where
         F: Future<Output = T> + Send + 'static,
     {
         let self_cp: IFabricAsyncOperationContext = self.into();
-        // extra clone is necessary to avoid access violation.
-        let self_cp3 = self_cp.clone();
         let self_cp2 = self_cp.clone();
         rt.spawn(async move {
             let ok = future.await;
-            let self_impl: &BridgeContext3<T> = unsafe { self_cp3.as_impl() };
+            let self_impl: &BridgeContext3<T> = unsafe { self_cp.as_impl() };
             self_impl.set_content(ok);
             self_impl.set_complete();
             let cb = self_impl.Callback().unwrap();

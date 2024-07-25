@@ -50,9 +50,8 @@ where
         (ctx, token)
     }
 
-    // TODO: access
     // executes the future in background
-    pub fn execute<F>(
+    pub fn spawn<F>(
         self,
         rt: &impl Executor,
         future: F,
@@ -170,28 +169,17 @@ impl<T> FabricReceiver2<T> {
     }
 }
 
-// The future differs from tokio oneshot that it will not error when awaited.
 // Returns error if cancelled.
 impl<T> Future for FabricReceiver2<T> {
+    // The error will only have error code OperationCanceled
     type Output = crate::Result<T>;
     fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
-        // if cancelled return error, and the sender will not send anything.
-
-        // try to poll cancel
-        if let Some(t) = &self.token {
-            // this is cancel safe so we can poll it once and discard?
-            let fu = t.cancelled();
-            let inner = std::pin::pin!(fu).poll(_cx);
-            match inner {
-                Poll::Ready(_) => {
-                    // operation cancelled
-                    return Poll::Ready(Err(FabricErrorCode::OperationCanceled.into()));
-                }
-                Poll::Pending => {
-                    // continue to poll rx
-                }
-            }
-        }
+        // Poll the receiver first, if ready then return the output,
+        // else poll the cancellation token, if cancelled return the error,
+        // else return pending.
+        // There can be the case that cancellation wakes the waker, but receiver
+        // then got the result. The next poll will return received output rather
+        // than cancelled error.
 
         // Try to receive the value from the sender
         let innner =
@@ -211,7 +199,23 @@ impl<T> Future for FabricReceiver2<T> {
                     }
                 }
             }
-            Poll::Pending => Poll::Pending,
+            Poll::Pending => {
+                // If the action is canceled we can safely stop and return canceled error.
+                if let Some(t) = &self.token {
+                    // this is cancel safe so we can poll it once and discard
+                    let fu = t.cancelled();
+                    let inner = std::pin::pin!(fu).poll(_cx);
+                    match inner {
+                        Poll::Ready(_) => {
+                            // operation cancelled
+                            Poll::Ready(Err(FabricErrorCode::OperationCanceled.into()))
+                        }
+                        Poll::Pending => Poll::Pending,
+                    }
+                } else {
+                    Poll::Pending
+                }
+            }
         }
     }
 }
@@ -288,7 +292,11 @@ where
 
 #[cfg(test)]
 mod test {
-    use std::sync::Arc;
+    use std::{
+        cell::Cell,
+        sync::{Arc, Mutex},
+        time::Duration,
+    };
 
     use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
     use tokio::{runtime::Handle, select};
@@ -310,25 +318,19 @@ mod test {
             tx.send(true);
             assert!(rx.await.unwrap());
         }
-        // receiver cancelled after send
+        // receiver cancelled after send, still received the result.
         {
             let (tx, rx) = oneshot_channel::<bool>(Some(CancellationToken::new()));
             tx.send(true);
             rx.cancel().unwrap();
-            assert_eq!(
-                rx.await.unwrap_err(),
-                FabricErrorCode::OperationCanceled.into()
-            );
+            assert!(rx.await.unwrap(),);
         }
-        // receiver cancelled before send
+        // receiver cancelled before send, still received the result.
         {
             let (tx, rx) = oneshot_channel::<bool>(Some(CancellationToken::new()));
             rx.cancel().unwrap();
             tx.send(true);
-            assert_eq!(
-                rx.await.unwrap_err(),
-                FabricErrorCode::OperationCanceled.into()
-            );
+            assert!(rx.await.unwrap(),);
         }
         // receiver cancelled and droped, send is no op
         {
@@ -349,22 +351,27 @@ mod test {
         }
     }
 
+    /// Test Obj for cancellation
     pub struct MyObj {
-        data: String,
-        rt: Handle,
+        data: Mutex<Cell<String>>,
     }
 
     impl MyObj {
-        pub fn new(rt: Handle, data: String) -> Self {
-            Self { data, rt }
+        pub fn new(data: String) -> Self {
+            Self {
+                data: Mutex::new(Cell::new(data)),
+            }
         }
-        // concat input with data.
-        // This operation is slow and use it to test cancel.
-        pub async fn get_data_slow(
+        // Get the data inside
+        // This operation will wait for duration of delay before performing work.
+        pub async fn get_data_delay(
             &self,
-            input: String,
+            delay: Duration,
             token: Option<CancellationToken>,
         ) -> crate::Result<String> {
+            if delay.is_zero() {
+                return Ok(self.get_data());
+            }
             match token {
                 Some(t) => {
                     select! {
@@ -372,31 +379,51 @@ mod test {
                             // The token was cancelled
                             Err(FabricErrorCode::OperationCanceled.into())
                         }
-                        _ = tokio::time::sleep(std::time::Duration::from_secs(10)) => {
-                            self.get_data(input, None).await
+                        _ = tokio::time::sleep(delay) => {
+                            Ok(self.get_data())
                         }
                     }
                 }
                 None => {
-                    tokio::time::sleep(std::time::Duration::from_secs(10)).await;
-                    self.get_data(input, None).await
+                    tokio::time::sleep(delay).await;
+                    Ok(self.get_data())
                 }
             }
         }
 
-        pub async fn get_data(
+        fn get_data(&self) -> String {
+            self.data.lock().unwrap().get_mut().clone()
+        }
+
+        fn set_data(&self, input: String) {
+            self.data.lock().unwrap().replace(input);
+        }
+
+        pub async fn set_data_delay(
             &self,
             input: String,
-            _: Option<CancellationToken>,
-        ) -> crate::Result<String> {
-            let data_cp = self.data.clone();
-            match self
-                .rt
-                .spawn(async move { format!("{}:{}", data_cp, input) })
-                .await
-            {
-                Ok(s) => Ok(s),
-                Err(_) => Err(FabricErrorCode::OperationFailed.into()),
+            delay: Duration,
+            token: Option<CancellationToken>,
+        ) -> crate::Result<()> {
+            if delay.is_zero() {
+                return Ok(self.set_data(input));
+            }
+            match token {
+                Some(t) => {
+                    select! {
+                        _ = t.cancelled() => {
+                            // The token was cancelled
+                            Err(FabricErrorCode::OperationCanceled.into())
+                        }
+                        _ = tokio::time::sleep(delay) => {
+                            Ok(self.set_data(input))
+                        }
+                    }
+                }
+                None => {
+                    tokio::time::sleep(delay).await;
+                    Ok(self.set_data(input))
+                }
             }
         }
     }
@@ -409,49 +436,49 @@ mod test {
 
     impl MyObjBridge {
         pub fn new(rt: Handle, data: String) -> Self {
-            let inner = Arc::new(MyObj::new(rt.clone(), data));
+            let inner = Arc::new(MyObj::new(data));
             Self {
                 inner,
                 rt: DefaultExecutor::new(rt),
             }
         }
 
-        pub fn begin_get_data(
+        pub fn begin_get_data_delay(
             &self,
-            input: String,
+            delay: Duration,
             callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
         ) -> crate::Result<IFabricAsyncOperationContext> {
             let inner = self.inner.clone();
             let (ctx, token) = BridgeContext3::make(callback);
-            ctx.execute(
-                &self.rt,
-                async move { inner.get_data(input, Some(token)).await },
-            )
+            ctx.spawn(&self.rt, async move {
+                inner.get_data_delay(delay, Some(token)).await
+            })
         }
 
-        pub fn end_get_data(
+        pub fn end_get_data_delay(
             &self,
             context: ::core::option::Option<&IFabricAsyncOperationContext>,
         ) -> crate::Result<String> {
             BridgeContext3::result(context)?
         }
 
-        pub fn begin_get_data_slow(
+        pub fn begin_set_data_delay(
             &self,
             input: String,
+            delay: Duration,
             callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
         ) -> crate::Result<IFabricAsyncOperationContext> {
             let inner = self.inner.clone();
             let (ctx, token) = BridgeContext3::make(callback);
-            ctx.execute(&self.rt, async move {
-                inner.get_data_slow(input, Some(token)).await
+            ctx.spawn(&self.rt, async move {
+                inner.set_data_delay(input, delay, Some(token)).await
             })
         }
 
-        pub fn end_get_data_slow(
+        pub fn end_set_data_delay(
             &self,
             context: ::core::option::Option<&IFabricAsyncOperationContext>,
-        ) -> crate::Result<String> {
+        ) -> crate::Result<()> {
             BridgeContext3::result(context)?
         }
     }
@@ -465,31 +492,32 @@ mod test {
             Self { com }
         }
 
-        pub async fn get_data(
+        pub async fn get_data_delay(
             &self,
-            input: String,
+            delay: Duration,
             token: Option<CancellationToken>,
         ) -> crate::Result<String> {
             let com1 = &self.com;
             let com2 = self.com.clone();
             fabric_begin_end_proxy2(
-                move |callback| com1.begin_get_data(input, callback),
-                move |context| com2.end_get_data(context),
+                move |callback| com1.begin_get_data_delay(delay, callback),
+                move |context| com2.end_get_data_delay(context),
                 token,
             )
             .await?
         }
 
-        pub async fn get_data_slow(
+        pub async fn set_data_delay(
             &self,
             input: String,
+            delay: Duration,
             token: Option<CancellationToken>,
-        ) -> crate::Result<String> {
+        ) -> crate::Result<()> {
             let com1 = &self.com;
             let com2 = self.com.clone();
             fabric_begin_end_proxy2(
-                move |callback| com1.begin_get_data_slow(input, callback),
-                move |context| com2.end_get_data_slow(context),
+                move |callback| com1.begin_set_data_delay(input, delay, callback),
+                move |context| com2.end_set_data_delay(context),
                 token,
             )
             .await?
@@ -499,25 +527,55 @@ mod test {
     #[tokio::test]
     async fn test_cancel() {
         let h = tokio::runtime::Handle::current();
-        let bridge = MyObjBridge::new(h, "mydata".to_string());
+        let expected_data1 = "mydata1";
+        let bridge = MyObjBridge::new(h, expected_data1.to_string());
         let proxy = MyObjProxy::new(bridge);
-
-        // no cancel
+        // get with no cancel
         {
             let token = CancellationToken::new();
             let out = proxy
-                .get_data("myinput".to_string(), Some(token))
+                .get_data_delay(Duration::ZERO, Some(token))
                 .await
                 .unwrap();
-            assert_eq!(out, "mydata:myinput");
+            assert_eq!(out, expected_data1);
         }
-        // cancel
+        // get with cancel
         {
             let token = CancellationToken::new();
-            let fu = proxy.get_data_slow("myinput".to_string(), Some(token.clone()));
+            let fu = proxy.get_data_delay(Duration::from_secs(5), Some(token.clone()));
             token.cancel();
             let err = fu.await.unwrap_err();
             assert_eq!(err, FabricErrorCode::OperationCanceled.into());
+        }
+        // set with cancel
+        {
+            let token = CancellationToken::new();
+            let fu = proxy.set_data_delay(
+                "random_data".to_string(),
+                Duration::from_secs(5),
+                Some(token.clone()),
+            );
+            token.cancel();
+            let err = fu.await.unwrap_err();
+            assert_eq!(err, FabricErrorCode::OperationCanceled.into());
+        }
+        // because of cancel, data should not be changed.
+        {
+            let out = proxy.get_data_delay(Duration::ZERO, None).await.unwrap();
+            assert_eq!(out, expected_data1);
+        }
+        let expected_data2 = "mydata2";
+        // set without cancel
+        {
+            proxy
+                .set_data_delay(expected_data2.to_string(), Duration::from_millis(1), None)
+                .await
+                .expect("fail to set data");
+        }
+        // read the set.
+        {
+            let out = proxy.get_data_delay(Duration::ZERO, None).await.unwrap();
+            assert_eq!(out, expected_data2);
         }
     }
 }

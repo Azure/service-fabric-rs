@@ -18,6 +18,7 @@ use windows_core::{implement, AsImpl};
 
 use crate::{error::FabricErrorCode, runtime::executor::Executor};
 
+/// Async operation context for bridging rust code into SF COM api that supports cancellation.
 #[implement(IFabricAsyncOperationContext)]
 pub struct BridgeContext3<T>
 where
@@ -44,13 +45,23 @@ where
         }
     }
 
+    /// Creates the context from callback, and returns a cancellation token that
+    /// can be used in rust code, and the cancellation token is hooked into self,
+    /// where Cancel() api cancels the operation.
     pub fn make(callback: Option<&IFabricAsyncOperationCallback>) -> (Self, CancellationToken) {
         let token = CancellationToken::new();
         let ctx = Self::new(callback.unwrap().clone(), token.clone());
         (ctx, token)
     }
 
-    // executes the future in background
+    /// Spawns the future on rt.
+    /// Returns a context that can be returned to SF runtime.
+    /// This is intended to be used in SF Begin COM api, where
+    /// rust code is spawned in background and the context is returned
+    /// to caller.
+    /// This api is in some sense unsafe, because the developer needs to ensure
+    /// the following:
+    /// * return type of the future needs to match SF COM api end return type.
     pub fn spawn<F>(
         self,
         rt: &impl Executor,
@@ -72,6 +83,13 @@ where
         Ok(self_cp2)
     }
 
+    /// Get the result from the context from the SF End COM api.
+    /// This api is in some sense unsafe, because the developer needs to ensure
+    /// the following:
+    /// * context impl type is `BridgeContext3`, and the T matches the SF end api
+    /// return type.
+    /// Note that if T is of Result<ICOM> type, the current function return type is
+    /// Result<Result<ICOM>>, so unwrap is needed.
     pub fn result(context: Option<&IFabricAsyncOperationContext>) -> crate::Result<T> {
         let self_impl: &BridgeContext3<T> = unsafe { context.unwrap().as_impl() };
         self_impl.consume_content()
@@ -137,6 +155,8 @@ impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3<T> {
 pub struct FabricReceiver2<T> {
     rx: tokio::sync::oneshot::Receiver<T>,
     token: Option<CancellationToken>,
+    // saved ctx from SF Begin COM api for cancalling.
+    ctx: Option<IFabricAsyncOperationContext>,
 }
 
 impl<T> FabricReceiver2<T> {
@@ -144,34 +164,52 @@ impl<T> FabricReceiver2<T> {
         rx: tokio::sync::oneshot::Receiver<T>,
         token: Option<CancellationToken>,
     ) -> FabricReceiver2<T> {
-        FabricReceiver2 { rx, token }
+        FabricReceiver2 {
+            rx,
+            token,
+            ctx: None,
+        }
     }
 
-    pub fn blocking_recv(self) -> crate::Result<T> {
-        if let Some(t) = self.token {
-            if t.is_cancelled() {
-                return Err(FabricErrorCode::OperationCanceled.into());
-            }
-        }
-        // sender must send stuff so that there is not error.
-        Ok(self.rx.blocking_recv().unwrap())
+    // This does not handle cancel. It is commented out because it is not used.
+    // pub fn blocking_recv(self) -> crate::Result<T> {
+    //     if let Some(t) = self.token {
+    //         if t.is_cancelled() {
+    //             return Err(FabricErrorCode::OperationCanceled.into());
+    //         }
+    //     }
+    //     // sender must send stuff so that there is not error.
+    //     Ok(self.rx.blocking_recv().unwrap())
+    // }
+
+    // Set the SF ctx to hook up cancellation.
+    fn set_ctx(&mut self, ctx: IFabricAsyncOperationContext) {
+        let prev = self.ctx.replace(ctx);
+        assert!(prev.is_none());
     }
 
-    // cancels the operation
-    pub fn cancel(&self) -> crate::Result<()> {
-        match &self.token {
-            Some(t) => {
-                t.cancel();
-                Ok(())
+    // Cancels the inner SF operation if exists, and reset the ctx.
+    fn cancel_inner_ctx(&mut self) -> crate::Result<()> {
+        if let Some(ctx) = &self.ctx {
+            if let Err(e) = unsafe { ctx.Cancel() } {
+                // fail to cancel inner operation.
+                return Err(e);
+            } else {
+                // clear the sf ctx to avoid cancel twice.
+                self.ctx.take();
             }
-            None => Err(FabricErrorCode::OperationNotSupported.into()),
         }
+        Ok(())
     }
 }
 
 // Returns error if cancelled.
+// If there is an inner SF ctx, cancellation signal will
+// trigger cancellation of the ctx.
 impl<T> Future for FabricReceiver2<T> {
-    // The error will only have error code OperationCanceled
+    // The error code should be OperationCanceled, unless cancellation
+    // of SF ctx returns other errors.
+    // (TODO: observe other error code from SF, maybe some code should be ignored).
     type Output = crate::Result<T>;
     fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
         // Poll the receiver first, if ready then return the output,
@@ -192,6 +230,10 @@ impl<T> Future for FabricReceiver2<T> {
                     Err(_) => {
                         if let Some(t) = self.token.as_ref() {
                             if t.is_cancelled() {
+                                // cancel the SF ctx
+                                if let Err(e) = self.cancel_inner_ctx() {
+                                    return Poll::Ready(Err(e));
+                                }
                                 return Poll::Ready(Err(FabricErrorCode::OperationCanceled.into()));
                             }
                         }
@@ -208,6 +250,9 @@ impl<T> Future for FabricReceiver2<T> {
                     match inner {
                         Poll::Ready(_) => {
                             // operation cancelled
+                            if let Err(e) = self.cancel_inner_ctx() {
+                                return Poll::Ready(Err(e));
+                            }
                             Poll::Ready(Err(FabricErrorCode::OperationCanceled.into()))
                         }
                         Poll::Pending => Poll::Pending,
@@ -251,7 +296,8 @@ impl<T> FabricSender2<T> {
     }
 }
 
-// Creates a fabric oneshot channel.
+/// Creates a fabric oneshot channel.
+/// Operation can be cancelled by cancelling the token.
 pub fn oneshot_channel<T>(
     token: Option<CancellationToken>,
 ) -> (FabricSender2<T>, FabricReceiver2<T>) {
@@ -262,6 +308,31 @@ pub fn oneshot_channel<T>(
     )
 }
 
+/// Wrapper function for turning SF Begin End style api into
+/// rust awaitable future.
+/// Cancellation token cancels the operation.
+/// begin is a function/closure taking a callback and returns the context.
+/// end is a function/closure taking a context and returns the result type.
+/// See example usage in FabricClient wrappers.
+///
+/// Remarks:
+/// The main work of the closures are for aligning the raw params and return values from SF api.
+/// Due to the complexity and irregularity of the begin and end function signatures,
+/// the begin and end closure needs to be manually written.
+///
+/// Begin closure is initiated/called, and FabricReceiver is returned to the user. FabricSender
+/// is supposed to send the async result obtaind from the end closure to the user.
+/// End closure is wrapped in an awaitable callback (together with a FabricSender),
+/// and such callback is passed to SF begin api and is invoked when
+/// the (begin) initiated operation completes.
+///
+/// Cancelling the token will in turn cancalling the fabric operation. Caller needs to
+/// poll/run the receiver future to completion (even if operation intends to cancel),
+/// or else cancellation signal might not propagate to SF.
+/// After cancellation is triggered, the receiver future should finish in a short time,
+/// with an error code opeartion cancelled, or other code if cancel failed.
+/// If the result is ready before the cancellation is triggered, the success result will
+/// be the output of the receiver future.
 pub fn fabric_begin_end_proxy2<BEGIN, END, T>(
     begin: BEGIN,
     end: END,
@@ -274,19 +345,24 @@ where
     END: FnOnce(Option<&IFabricAsyncOperationContext>) -> crate::Result<T> + 'static,
     T: 'static,
 {
-    let (tx, rx) = oneshot_channel(token);
+    let (tx, mut rx) = oneshot_channel(token);
 
     let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
         let res = end(ctx);
         tx.send(res);
     });
     let ctx = begin(Some(&callback));
-    if ctx.is_err() {
-        let (tx2, rx2) = oneshot_channel(None);
-        tx2.send(Err(ctx.err().unwrap()));
-        rx2
-    } else {
-        rx
+    match ctx {
+        Ok(c) => {
+            // attach the inner ctx to rx for cancellation integration.
+            rx.set_ctx(c);
+            rx
+        }
+        Err(e) => {
+            let (tx2, rx2) = oneshot_channel(None);
+            tx2.send(Err(e));
+            rx2
+        }
     }
 }
 
@@ -320,29 +396,33 @@ mod test {
         }
         // receiver cancelled after send, still received the result.
         {
-            let (tx, rx) = oneshot_channel::<bool>(Some(CancellationToken::new()));
+            let token = CancellationToken::new();
+            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
             tx.send(true);
-            rx.cancel().unwrap();
-            assert!(rx.await.unwrap(),);
+            token.cancel();
+            assert!(rx.await.unwrap());
         }
         // receiver cancelled before send, still received the result.
         {
-            let (tx, rx) = oneshot_channel::<bool>(Some(CancellationToken::new()));
-            rx.cancel().unwrap();
+            let token = CancellationToken::new();
+            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
+            token.cancel();
             tx.send(true);
             assert!(rx.await.unwrap(),);
         }
         // receiver cancelled and droped, send is no op
         {
-            let (tx, rx) = oneshot_channel::<bool>(Some(CancellationToken::new()));
-            rx.cancel().unwrap();
+            let token = CancellationToken::new();
+            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
+            token.cancel();
             std::mem::drop(rx);
             tx.send(true);
         }
         // receiver cancelled and sender dropped. receiver get error
         {
-            let (tx, rx) = oneshot_channel::<bool>(Some(CancellationToken::new()));
-            rx.cancel().unwrap();
+            let token = CancellationToken::new();
+            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
+            token.cancel();
             std::mem::drop(tx);
             assert_eq!(
                 rx.await.unwrap_err(),
@@ -552,7 +632,7 @@ mod test {
             let token = CancellationToken::new();
             let fu = proxy.set_data_delay(
                 "random_data".to_string(),
-                Duration::from_secs(5),
+                Duration::from_millis(15),
                 Some(token.clone()),
             );
             token.cancel();
@@ -561,6 +641,8 @@ mod test {
         }
         // because of cancel, data should not be changed.
         {
+            // sleep past the delay time to observe the final state
+            tokio::time::sleep(Duration::from_millis(20)).await;
             let out = proxy.get_data_delay(Duration::ZERO, None).await.unwrap();
             assert_eq!(out, expected_data1);
         }

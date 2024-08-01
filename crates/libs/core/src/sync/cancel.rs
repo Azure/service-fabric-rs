@@ -431,20 +431,33 @@ mod test {
         }
     }
 
+    // Test interface for cancellation
+    #[allow(dead_code)]
+    #[trait_variant::make(IMyObj: Send)]
+    pub trait LocalIMyObj: Send + Sync + 'static {
+        // Get the data inside
+        // This operation will wait for duration of delay before performing work.
+        async fn get_data_delay(
+            &self,
+            delay: Duration,
+            token: Option<CancellationToken>,
+        ) -> crate::Result<String>;
+
+        async fn set_data_delay(
+            &self,
+            input: String,
+            delay: Duration,
+            token: Option<CancellationToken>,
+        ) -> crate::Result<()>;
+    }
+
     /// Test Obj for cancellation
     pub struct MyObj {
         data: Mutex<Cell<String>>,
     }
 
-    impl MyObj {
-        pub fn new(data: String) -> Self {
-            Self {
-                data: Mutex::new(Cell::new(data)),
-            }
-        }
-        // Get the data inside
-        // This operation will wait for duration of delay before performing work.
-        pub async fn get_data_delay(
+    impl IMyObj for MyObj {
+        async fn get_data_delay(
             &self,
             delay: Duration,
             token: Option<CancellationToken>,
@@ -471,15 +484,7 @@ mod test {
             }
         }
 
-        fn get_data(&self) -> String {
-            self.data.lock().unwrap().get_mut().clone()
-        }
-
-        fn set_data(&self, input: String) {
-            self.data.lock().unwrap().replace(input);
-        }
-
-        pub async fn set_data_delay(
+        async fn set_data_delay(
             &self,
             input: String,
             delay: Duration,
@@ -508,17 +513,40 @@ mod test {
         }
     }
 
-    #[derive(Clone)]
-    pub struct MyObjBridge {
-        inner: Arc<MyObj>,
+    impl MyObj {
+        pub fn new(data: String) -> Self {
+            Self {
+                data: Mutex::new(Cell::new(data)),
+            }
+        }
+
+        fn get_data(&self) -> String {
+            self.data.lock().unwrap().get_mut().clone()
+        }
+
+        fn set_data(&self, input: String) {
+            self.data.lock().unwrap().replace(input);
+        }
+    }
+
+    pub struct MyObjBridge<T: IMyObj> {
+        inner: Arc<T>,
         rt: DefaultExecutor,
     }
 
-    impl MyObjBridge {
-        pub fn new(rt: Handle, data: String) -> Self {
-            let inner = Arc::new(MyObj::new(data));
+    impl<T: IMyObj> Clone for MyObjBridge<T> {
+        fn clone(&self) -> Self {
             Self {
-                inner,
+                inner: self.inner.clone(),
+                rt: self.rt.clone(),
+            }
+        }
+    }
+
+    impl<T: IMyObj> MyObjBridge<T> {
+        pub fn new(rt: Handle, inner: T) -> Self {
+            Self {
+                inner: Arc::new(inner),
                 rt: DefaultExecutor::new(rt),
             }
         }
@@ -563,16 +591,19 @@ mod test {
         }
     }
 
-    pub struct MyObjProxy {
-        com: MyObjBridge,
+    pub struct MyObjProxy<T: IMyObj> {
+        com: MyObjBridge<T>,
     }
 
-    impl MyObjProxy {
-        pub fn new(com: MyObjBridge) -> Self {
-            Self { com }
+    impl<T: IMyObj> MyObjProxy<T> {
+        pub fn new(rt: Handle, inner: T) -> Self {
+            let bridge = MyObjBridge::new(rt, inner);
+            Self { com: bridge }
         }
+    }
 
-        pub async fn get_data_delay(
+    impl<T: IMyObj> IMyObj for MyObjProxy<T> {
+        async fn get_data_delay(
             &self,
             delay: Duration,
             token: Option<CancellationToken>,
@@ -587,7 +618,7 @@ mod test {
             .await?
         }
 
-        pub async fn set_data_delay(
+        async fn set_data_delay(
             &self,
             input: String,
             delay: Duration,
@@ -608,21 +639,32 @@ mod test {
     async fn test_cancel() {
         let h = tokio::runtime::Handle::current();
         let expected_data1 = "mydata1";
-        let bridge = MyObjBridge::new(h, expected_data1.to_string());
-        let proxy = MyObjProxy::new(bridge);
+        // test the plain obj
+        let inner = MyObj::new(expected_data1.to_string());
+        test_cancel_interface(&inner, expected_data1).await;
+        let proxy = MyObjProxy::new(h.clone(), inner);
+        test_cancel_interface(&proxy, expected_data1).await;
+        // proxy in another layer
+        let proxy2 = MyObjProxy::new(h.clone(), proxy);
+        test_cancel_interface(&proxy2, expected_data1).await;
+        let proxy3 = MyObjProxy::new(h, proxy2);
+        test_cancel_interface(&proxy3, expected_data1).await;
+    }
+
+    async fn test_cancel_interface(obj: &impl IMyObj, init_data: &str) {
         // get with no cancel
         {
             let token = CancellationToken::new();
-            let out = proxy
+            let out = obj
                 .get_data_delay(Duration::ZERO, Some(token))
                 .await
                 .unwrap();
-            assert_eq!(out, expected_data1);
+            assert_eq!(out, init_data);
         }
         // get with cancel
         {
             let token = CancellationToken::new();
-            let fu = proxy.get_data_delay(Duration::from_secs(5), Some(token.clone()));
+            let fu = obj.get_data_delay(Duration::from_secs(5), Some(token.clone()));
             token.cancel();
             let err = fu.await.unwrap_err();
             assert_eq!(err, FabricErrorCode::OperationCanceled.into());
@@ -630,7 +672,7 @@ mod test {
         // set with cancel
         {
             let token = CancellationToken::new();
-            let fu = proxy.set_data_delay(
+            let fu = obj.set_data_delay(
                 "random_data".to_string(),
                 Duration::from_millis(15),
                 Some(token.clone()),
@@ -643,21 +685,29 @@ mod test {
         {
             // sleep past the delay time to observe the final state
             tokio::time::sleep(Duration::from_millis(20)).await;
-            let out = proxy.get_data_delay(Duration::ZERO, None).await.unwrap();
-            assert_eq!(out, expected_data1);
+            let out = obj.get_data_delay(Duration::ZERO, None).await.unwrap();
+            assert_eq!(out, init_data);
         }
         let expected_data2 = "mydata2";
         // set without cancel
         {
-            proxy
-                .set_data_delay(expected_data2.to_string(), Duration::from_millis(1), None)
+            obj.set_data_delay(expected_data2.to_string(), Duration::from_millis(1), None)
                 .await
                 .expect("fail to set data");
         }
         // read the set.
         {
-            let out = proxy.get_data_delay(Duration::ZERO, None).await.unwrap();
+            let out = obj.get_data_delay(Duration::ZERO, None).await.unwrap();
             assert_eq!(out, expected_data2);
+        }
+        // restore the data to the original data
+        // So that the next test can reuse the obj.
+        {
+            {
+                obj.set_data_delay(init_data.to_string(), Duration::ZERO, None)
+                    .await
+                    .expect("fail to set data");
+            }
         }
     }
 }

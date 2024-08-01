@@ -34,6 +34,7 @@ pub use bridge::*;
 mod bridge_context;
 
 pub mod cancel;
+pub use cancel::*;
 
 // fabric code begins here
 

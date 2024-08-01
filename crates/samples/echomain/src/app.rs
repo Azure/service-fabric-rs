@@ -8,6 +8,7 @@ use std::cell::Cell;
 use mssf_core::runtime::stateless::{
     StatelessServiceFactory, StatelessServiceInstance, StatelessServicePartition,
 };
+use mssf_core::sync::CancellationToken;
 use mssf_core::types::ServicePartitionInformation;
 use mssf_core::HSTRING;
 use tokio::runtime::Handle;
@@ -99,7 +100,7 @@ impl StatelessServiceInstance for Instance {
         let addr = echo::get_addr(self.port, self.hostname.clone());
         Ok(HSTRING::from(addr))
     }
-    async fn close(&self) -> mssf_core::Result<()> {
+    async fn close(&self, _: CancellationToken) -> mssf_core::Result<()> {
         info!("Instance::close");
         if let Some(sender) = self.tx_.lock().await.take() {
             info!("AppInstance:: Triggering shutdown");
@@ -131,7 +132,8 @@ impl StatelessServiceInstance for Instance {
         info!("Instance::abort");
         // It is ok to block since we are on a fabric thread.
         self.rt.block_on(async {
-            self.close().await.unwrap();
+            // never cancel
+            self.close(CancellationToken::new()).await.unwrap();
         });
     }
 }

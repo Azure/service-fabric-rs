@@ -68,6 +68,7 @@ pub struct NodeQueryDescription {
     pub paged_query: PagedQueryDescription,
 }
 
+#[derive(Debug)]
 pub struct NodeList {
     com: IFabricGetNodeListResult2,
 }

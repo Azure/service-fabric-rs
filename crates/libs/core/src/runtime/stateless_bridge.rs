@@ -11,7 +11,7 @@ use std::sync::Arc;
 use crate::{
     runtime::stateless::StatelessServicePartition,
     strings::HSTRINGWrap,
-    sync::{fabric_begin_bridge, fabric_end_bridge},
+    sync::{fabric_begin_bridge, fabric_end_bridge, BridgeContext3},
 };
 use mssf_com::{
     FabricCommon::IFabricStringResult,
@@ -156,7 +156,8 @@ where
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricStatelessServiceInstanceBridge::BeginClose");
         let inner = self.inner.clone();
-        fabric_begin_bridge(&self.rt, callback, async move { inner.close().await })
+        let (ctx, token) = BridgeContext3::make(callback);
+        ctx.spawn(&self.rt, async move { inner.close(token).await })
     }
 
     fn EndClose(
@@ -164,7 +165,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("IFabricStatelessServiceInstanceBridge::EndClose");
-        fabric_end_bridge(context)
+        BridgeContext3::result(context)?
     }
 
     fn Abort(&self) {

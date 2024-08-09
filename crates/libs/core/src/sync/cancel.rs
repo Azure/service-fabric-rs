@@ -386,6 +386,8 @@ mod test {
 
     use super::fabric_begin_end_proxy2;
 
+    /// Test various cancellation cases for the channel used
+    /// to send data in proxy layer.
     #[tokio::test]
     async fn test_channel() {
         // success send
@@ -431,7 +433,11 @@ mod test {
         }
     }
 
-    // Test interface for cancellation
+    /// Test trait for cancellation
+    /// The whole test focuses on testing cancelation propergation from SF api to rust api
+    /// and also from rust api to sf api.
+    /// The Proxy and Bridge layers all implementes this trait and the same test can run for
+    /// this trait. Proxy and Bridge layers can have arbitrary nesting.
     #[allow(dead_code)]
     #[trait_variant::make(IMyObj: Send)]
     pub trait LocalIMyObj: Send + Sync + 'static {
@@ -456,6 +462,7 @@ mod test {
         data: Mutex<Cell<String>>,
     }
 
+    // Implement the test trait
     impl IMyObj for MyObj {
         async fn get_data_delay(
             &self,
@@ -529,6 +536,8 @@ mod test {
         }
     }
 
+    /// This is a bridge to turn the test interface
+    /// into a SF Async Begin and End api.
     pub struct MyObjBridge<T: IMyObj> {
         inner: Arc<T>,
         rt: DefaultExecutor,
@@ -591,6 +600,8 @@ mod test {
         }
     }
 
+    /// This is a proxy to turn SF async Begin/End api
+    /// to the rust trait.
     pub struct MyObjProxy<T: IMyObj> {
         com: MyObjBridge<T>,
     }
@@ -602,6 +613,7 @@ mod test {
         }
     }
 
+    // The test trait implementation
     impl<T: IMyObj> IMyObj for MyObjProxy<T> {
         async fn get_data_delay(
             &self,
@@ -635,6 +647,9 @@ mod test {
         }
     }
 
+    /// Constructs various test trait objects of different
+    /// Bridge and Proxy nested wrapping and run cancellation tests
+    /// for each of them.
     #[tokio::test]
     async fn test_cancel() {
         let h = tokio::runtime::Handle::current();
@@ -651,6 +666,7 @@ mod test {
         test_cancel_interface(&proxy3, expected_data1).await;
     }
 
+    /// Given a test trait obj, run various cancellation tests on it.
     async fn test_cancel_interface(obj: &impl IMyObj, init_data: &str) {
         // get with no cancel
         {

@@ -8,9 +8,9 @@ use std::time::Duration;
 use mssf_core::{
     client::FabricClient,
     types::{
-        QueryServiceReplicaStatus, ServicePartition, ServicePartitionInformation,
-        ServicePartitionQueryDescription, ServicePartitionStatus, ServiceReplicaQueryDescription,
-        ServiceReplicaQueryResult,
+        QueryServiceReplicaStatus, RemoveReplicaDescription, ServicePartition,
+        ServicePartitionInformation, ServicePartitionQueryDescription, ServicePartitionStatus,
+        ServiceReplicaQueryDescription, ServiceReplicaQueryResult,
     },
     GUID, HSTRING,
 };
@@ -68,4 +68,13 @@ async fn test_fabric_client() {
     assert_ne!(stateless_replica.node_name, HSTRING::new());
 
     // TODO: stateless restart should use remove-replica api.
+    let mgmt = fc.get_service_manager();
+    let desc = RemoveReplicaDescription {
+        node_name: stateless_replica.node_name,
+        partition_id: single.id,
+        replica_or_instance_id: stateless_replica.instance_id,
+    };
+    mgmt.remove_replica(&desc, timeout)
+        .await
+        .expect("Failed to remove replica");
 }

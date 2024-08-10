@@ -67,7 +67,7 @@ async fn test_fabric_client() {
     );
     assert_ne!(stateless_replica.node_name, HSTRING::new());
 
-    // TODO: stateless restart should use remove-replica api.
+    // Restart the stateless instance by removing it.
     let mgmt = fc.get_service_manager();
     let desc = RemoveReplicaDescription {
         node_name: stateless_replica.node_name,

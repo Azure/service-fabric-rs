@@ -10,13 +10,13 @@ use mssf_com::{
     FabricTypes::{
         FABRIC_PARTITION_KEY_TYPE, FABRIC_PARTITION_KEY_TYPE_INT64,
         FABRIC_PARTITION_KEY_TYPE_INVALID, FABRIC_PARTITION_KEY_TYPE_NONE,
-        FABRIC_PARTITION_KEY_TYPE_STRING, FABRIC_RESOLVED_SERVICE_ENDPOINT,
-        FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_ENDPOINT_ROLE,
-        FABRIC_SERVICE_PARTITION_KIND, FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE,
-        FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
-        FABRIC_SERVICE_PARTITION_KIND_SINGLETON, FABRIC_SERVICE_ROLE_INVALID,
-        FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY, FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY,
-        FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
+        FABRIC_PARTITION_KEY_TYPE_STRING, FABRIC_REMOVE_REPLICA_DESCRIPTION,
+        FABRIC_RESOLVED_SERVICE_ENDPOINT, FABRIC_RESTART_REPLICA_DESCRIPTION,
+        FABRIC_SERVICE_ENDPOINT_ROLE, FABRIC_SERVICE_PARTITION_KIND,
+        FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE, FABRIC_SERVICE_PARTITION_KIND_INVALID,
+        FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
+        FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
+        FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
     },
 };
 use windows_core::{HSTRING, PCWSTR};
@@ -24,7 +24,7 @@ use windows_core::{HSTRING, PCWSTR};
 use crate::{
     iter::{FabricIter, FabricListAccessor},
     sync::{fabric_begin_end_proxy, FabricReceiver},
-    types::RestartReplicaDescription,
+    types::{RemoveReplicaDescription, RestartReplicaDescription},
 };
 
 // Service Management Client
@@ -74,6 +74,21 @@ impl ServiceManagementClient {
             move |ctx| unsafe { com2.EndRestartReplica(ctx) },
         )
     }
+
+    fn remove_replica_internal(
+        &self,
+        desc: &FABRIC_REMOVE_REPLICA_DESCRIPTION,
+        timeout_milliseconds: u32,
+    ) -> FabricReceiver<crate::Result<()>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginRemoveReplica(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndRemoveReplica(ctx) },
+        )
+    }
 }
 
 // public implementation block
@@ -120,6 +135,19 @@ impl ServiceManagementClient {
     ) -> crate::Result<()> {
         let raw: FABRIC_RESTART_REPLICA_DESCRIPTION = desc.into();
         self.restart_replica_internal(&raw, timeout.as_millis() as u32)
+            .await
+    }
+
+    /// This API gives a running replica the chance to cleanup its state and be gracefully shutdown.
+    /// WARNING: There are no safety checks performed when this API is used.
+    /// Incorrect use of this API can lead to data loss for stateful services.
+    pub async fn remove_replica(
+        &self,
+        desc: &RemoveReplicaDescription,
+        timeout: Duration,
+    ) -> crate::Result<()> {
+        let raw: FABRIC_REMOVE_REPLICA_DESCRIPTION = desc.into();
+        self.remove_replica_internal(&raw, timeout.as_millis() as u32)
             .await
     }
 }

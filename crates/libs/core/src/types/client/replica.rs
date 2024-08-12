@@ -4,9 +4,10 @@ use mssf_com::{
         FABRIC_QUERY_SERVICE_REPLICA_STATUS, FABRIC_QUERY_SERVICE_REPLICA_STATUS_DOWN,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED, FABRIC_QUERY_SERVICE_REPLICA_STATUS_INBUILD,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_INVALID, FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
-        FABRIC_QUERY_SERVICE_REPLICA_STATUS_STANDBY, FABRIC_RESTART_REPLICA_DESCRIPTION,
-        FABRIC_SERVICE_KIND_STATEFUL, FABRIC_SERVICE_KIND_STATELESS,
-        FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION, FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
+        FABRIC_QUERY_SERVICE_REPLICA_STATUS_STANDBY, FABRIC_REMOVE_REPLICA_DESCRIPTION,
+        FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_KIND_STATEFUL,
+        FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
+        FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
         FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM,
         FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
     },
@@ -189,6 +190,25 @@ pub struct RestartReplicaDescription {
 
 impl From<&RestartReplicaDescription> for FABRIC_RESTART_REPLICA_DESCRIPTION {
     fn from(value: &RestartReplicaDescription) -> Self {
+        Self {
+            NodeName: PCWSTR(value.node_name.as_ptr()),
+            PartitionId: value.partition_id,
+            ReplicaOrInstanceId: value.replica_or_instance_id,
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+// FABRIC_REMOVE_REPLICA_DESCRIPTION
+pub struct RemoveReplicaDescription {
+    pub node_name: HSTRING,
+    pub partition_id: GUID,
+    pub replica_or_instance_id: i64,
+    // TODO: support force flag
+}
+
+impl From<&RemoveReplicaDescription> for FABRIC_REMOVE_REPLICA_DESCRIPTION {
+    fn from(value: &RemoveReplicaDescription) -> Self {
         Self {
             NodeName: PCWSTR(value.node_name.as_ptr()),
             PartitionId: value.partition_id,

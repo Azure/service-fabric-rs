@@ -199,6 +199,7 @@ impl ServiceManagementClient {
     /// This will always return the endpoints in the client cache updated by the latest notification.
     /// The notification mechanism itself will keep the client cache updated when service endpoints change.
     /// TODO: explore the relation to IFabricServiceNotification.
+    /// This is observed to have 1~4 secs delay compared with brute force complaint based resolve.
     pub async fn register_service_notification_filter(
         &self,
         desc: &ServiceNotificationFilterDescription,
@@ -324,6 +325,7 @@ impl From<FABRIC_SERVICE_PARTITION_KIND> for ServicePartitionKind {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct ResolvedServicePartition {
     com: IFabricResolvedServicePartitionResult,
 }

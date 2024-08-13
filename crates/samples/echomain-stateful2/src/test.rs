@@ -8,7 +8,8 @@ use std::time::Duration;
 use mssf_core::{
     client::{
         svc_mgmt_client::{
-            PartitionKeyType, ResolvedServiceEndpoint, ServiceEndpointRole, ServicePartitionKind,
+            PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartition,
+            ServiceEndpointRole, ServicePartitionKind,
         },
         FabricClient,
     },
@@ -118,23 +119,24 @@ impl TestClient {
         ResolvedServiceEndpoint,
         ResolvedServiceEndpoint,
     )> {
-        let mgmt = self.fc.get_service_manager();
-        let resolved_partition = mgmt
-            .resolve_service_partition(
-                &self.service_uri,
-                &PartitionKeyType::None,
-                None,
-                self.timeout,
-            )
-            .await?;
-        let info = resolved_partition.get_info();
+        let resolved_partition = self.resolve_with_prev(None).await?;
+        self.convert_resolve_results(resolved_partition)
+    }
+
+    // converts the resolved partition to 3 endpoints and the first one is primary
+    fn convert_resolve_results(
+        &self,
+        partition: ResolvedServicePartition,
+    ) -> mssf_core::Result<(
+        ResolvedServiceEndpoint,
+        ResolvedServiceEndpoint,
+        ResolvedServiceEndpoint,
+    )> {
+        let info = partition.get_info();
         assert_eq!(info.partition_key_type, PartitionKeyType::None);
         assert_eq!(info.service_name, self.service_uri);
         assert_eq!(info.service_partition_kind, ServicePartitionKind::Singleton);
-        let endpoints = resolved_partition
-            .get_endpoint_list()
-            .iter()
-            .collect::<Vec<_>>();
+        let endpoints = partition.get_endpoint_list().iter().collect::<Vec<_>>();
         if endpoints.len() < 3 {
             // not available yet.
             return Err(FabricErrorCode::OperationFailed.into());
@@ -156,6 +158,68 @@ impl TestClient {
             secondary[0].clone(),
             secondary[1].clone(),
         ))
+    }
+
+    // helper to call resolve for this svc
+    async fn resolve_with_prev(
+        &self,
+        prev: Option<&ResolvedServicePartition>,
+    ) -> windows_core::Result<ResolvedServicePartition> {
+        let mgmt = self.fc.get_service_manager();
+        mgmt.resolve_service_partition(
+            &self.service_uri,
+            &PartitionKeyType::None,
+            prev,
+            self.timeout,
+        )
+        .await
+    }
+
+    async fn restart_primary_wait_for_replica_id_change(&self, partition_id: GUID) {
+        // test get replica info
+        let (p, _, _) = self.get_replicas(partition_id).await.unwrap();
+        assert_eq!(p.replica_status, QueryServiceReplicaStatus::Ready);
+        assert_ne!(p.node_name, HSTRING::new());
+
+        // restart primary
+        let desc = RestartReplicaDescription {
+            node_name: p.node_name.clone(),
+            partition_id: partition_id,
+            replica_or_instance_id: p.replica_id,
+        };
+        let mgmt = self.fc.get_service_manager();
+        mgmt.restart_replica(&desc, self.timeout).await.unwrap();
+
+        // get replica info to see primary has changed
+        let mut count = 0;
+        loop {
+            let res = self.get_replicas(partition_id).await;
+            let p2 = match res {
+                Ok((p2, _, _)) => p2,
+                Err(_) => {
+                    // replica not yet ready
+                    count += 1;
+                    tokio::time::sleep(Duration::from_secs(1)).await;
+                    continue;
+                }
+            };
+            if p2.node_name != p.node_name {
+                assert_ne!(p.replica_id, p2.replica_id);
+                println!("replica id updated after {} retries", count);
+                break;
+            } else {
+                // failover is not yet finished.
+                if count > 5 {
+                    panic!(
+                        "replica id not changed after retry. original {}, new {}",
+                        p.replica_id, p2.replica_id
+                    );
+                }
+                // replica has not changed yet.
+                tokio::time::sleep(Duration::from_secs(1)).await;
+            }
+            count += 1;
+        }
     }
 }
 
@@ -198,43 +262,8 @@ async fn test_partition_info() {
     let (p_endpoint, _, _) = tc.resolve().await.unwrap();
 
     // restart primary
-    let desc = RestartReplicaDescription {
-        node_name: p.node_name.clone(),
-        partition_id: single.id,
-        replica_or_instance_id: p.replica_id,
-    };
-    mgmt.restart_replica(&desc, timeout).await.unwrap();
-
-    // get replica info to see primary has changed
-    let mut count = 0;
-    loop {
-        let res = tc.get_replicas(single.id).await;
-        let p2 = match res {
-            Ok((p2, _, _)) => p2,
-            Err(_) => {
-                // replica not yet ready
-                count += 1;
-                tokio::time::sleep(Duration::from_secs(1)).await;
-                continue;
-            }
-        };
-        if p2.node_name != p.node_name {
-            assert_ne!(p.replica_id, p2.replica_id);
-            println!("replica id updated after {} retries", count);
-            break;
-        } else {
-            // failover is not yet finished.
-            if count > 5 {
-                panic!(
-                    "replica id not changed after retry. original {}, new {}",
-                    p.replica_id, p2.replica_id
-                );
-            }
-            // replica has not changed yet.
-            tokio::time::sleep(Duration::from_secs(1)).await;
-        }
-        count += 1;
-    }
+    tc.restart_primary_wait_for_replica_id_change(single.id)
+        .await;
 
     // resolve again the primary addr should change
     {
@@ -269,4 +298,49 @@ async fn test_partition_info() {
     mgmt.unregister_service_notification_filter(filter_handle, timeout)
         .await
         .unwrap();
+
+    // resolve new addr
+    let (p_endpoint, _, _) = tc.resolve().await.unwrap();
+    // restart primary again and use brute force resolve.
+    // This gives a comparison of perf of the notification based resolve and the brute force way.
+    tc.restart_primary_wait_for_replica_id_change(single.id)
+        .await;
+    {
+        let mut count = 0;
+        let mut prev: Option<ResolvedServicePartition> = None;
+        loop {
+            let res = tc.resolve_with_prev(prev.as_ref()).await;
+            let p2_endpoint_res = match res {
+                Ok(p_res) => {
+                    // save the prev result
+                    prev = Some(p_res.clone());
+                    tc.convert_resolve_results(p_res).map(|(p, _, _)| p)
+                }
+                Err(e) => Err(e),
+            };
+
+            match p2_endpoint_res {
+                Ok(p2_endpoint) => {
+                    if p2_endpoint.address != p_endpoint.address {
+                        println!("addr updated after {} retries", count);
+                        break;
+                    } else {
+                        // addr update might be slow.
+                        // This typically takes 8 seconds which includes service boot time.
+                        if count > 30 {
+                            panic!("addr for primary is not changed {}", p2_endpoint.address);
+                        }
+                    }
+                }
+                Err(_) => {
+                    // retry in next loop
+                    if count > 30 {
+                        panic!("retry max limit reached");
+                    }
+                }
+            }
+            tokio::time::sleep(Duration::from_secs(1)).await;
+            count += 1;
+        }
+    }
 }

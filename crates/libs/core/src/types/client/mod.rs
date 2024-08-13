@@ -44,6 +44,8 @@ pub struct ServiceNotificationFilterDescription {
 impl From<&ServiceNotificationFilterDescription>
     for FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION
 {
+    /// The lifetime of the SF raw type returned must match the
+    /// original struct.
     fn from(value: &ServiceNotificationFilterDescription) -> Self {
         Self {
             Name: FABRIC_URI(value.name.as_ptr() as *mut u16),

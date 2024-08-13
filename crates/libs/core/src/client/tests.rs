@@ -8,10 +8,12 @@
 use std::time::Duration;
 
 use mssf_com::FabricTypes::FABRIC_E_SERVICE_DOES_NOT_EXIST;
+use tokio_util::sync::CancellationToken;
 use windows_core::HSTRING;
 
 use crate::{
     client::{svc_mgmt_client::PartitionKeyType, FabricClient},
+    error::FabricErrorCode,
     types::{NodeQueryDescription, NodeStatusFilter, PagedQueryDescription},
 };
 
@@ -30,7 +32,7 @@ async fn test_fabric_client() {
             },
             ..Default::default()
         };
-        let list = qc.get_node_list(&desc, timeout).await.unwrap();
+        let list = qc.get_node_list(&desc, timeout, None).await.unwrap();
         paging_status = list.get_paging_status();
         let v = list.iter().collect::<Vec<_>>();
         assert_ne!(v.len(), 0);
@@ -48,11 +50,23 @@ async fn test_fabric_client() {
             },
             ..Default::default()
         };
-        let list = qc.get_node_list(&desc, timeout).await.unwrap();
+        let list = qc.get_node_list(&desc, timeout, None).await.unwrap();
         let v = list.iter().collect::<Vec<_>>();
         for n in v {
             println!("More Node: {:?}", n)
         }
+    }
+
+    // get node but cancel
+    {
+        let desc = NodeQueryDescription {
+            ..Default::default()
+        };
+        let token = CancellationToken::new();
+        let list = qc.get_node_list(&desc, timeout, Some(token.clone()));
+        token.cancel();
+        let err = list.await.expect_err("request should be cancelled");
+        assert_eq!(err, FabricErrorCode::OperationCanceled.into());
     }
 
     let smgr = c.get_service_manager();

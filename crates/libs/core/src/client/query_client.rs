@@ -19,7 +19,7 @@ use mssf_com::{
 
 use crate::{
     strings::get_pcwstr_from_opt,
-    sync::{fabric_begin_end_proxy, FabricReceiver},
+    sync::{fabric_begin_end_proxy, fabric_begin_end_proxy2, FabricReceiver},
     types::{
         NodeList, NodeQueryDescription, ServicePartitionList, ServicePartitionQueryDescription,
         ServiceReplicaList, ServiceReplicaQueryDescription,
@@ -38,14 +38,17 @@ impl QueryClient {
         &self,
         query_description: &FABRIC_NODE_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
-    ) -> crate::sync::FabricReceiver<::windows_core::Result<IFabricGetNodeListResult2>> {
+        cancellation_token: Option<crate::sync::CancellationToken>,
+    ) -> crate::sync::FabricReceiver2<::windows_core::Result<IFabricGetNodeListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy(
+
+        fabric_begin_end_proxy2(
             move |callback| unsafe {
                 com1.BeginGetNodeList(query_description, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndGetNodeList2(ctx) },
+            cancellation_token,
         )
     }
 
@@ -90,6 +93,7 @@ impl QueryClient {
         &self,
         desc: &NodeQueryDescription,
         timeout: Duration,
+        cancellation_token: Option<crate::sync::CancellationToken>,
     ) -> windows_core::Result<NodeList> {
         let fu;
         {
@@ -112,9 +116,13 @@ impl QueryClient {
                 NodeNameFilter: get_pcwstr_from_opt(&desc.node_name_filter),
                 Reserved: std::ptr::addr_of!(ex1) as *mut c_void,
             };
-            fu = self.get_node_list_internal(&arg, timeout.as_millis().try_into().unwrap());
+            fu = self.get_node_list_internal(
+                &arg,
+                timeout.as_millis().try_into().unwrap(),
+                cancellation_token,
+            );
         }
-        let res = fu.await?;
+        let res = fu.await??;
         Ok(NodeList::from_com(res))
     }
 

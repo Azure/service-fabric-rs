@@ -4,7 +4,9 @@
 // ------------------------------------------------------------
 
 use super::HRESULT;
-use mssf_com::FabricTypes::FABRIC_ERROR_CODE;
+use mssf_com::FabricTypes::{
+    FABRIC_ERROR_CODE, FABRIC_E_OPERATION_NOT_COMPLETE, FABRIC_E_OPERATION_NOT_SUPPORTED,
+};
 use windows::Win32::Foundation::{
     E_ABORT, E_ACCESSDENIED, E_FAIL, E_INVALIDARG, E_NOTIMPL, E_OUTOFMEMORY, E_POINTER, S_OK,
 };
@@ -58,7 +60,9 @@ pub enum FabricErrorCode {
     OperationFailed = E_FAIL.0 as isize,
     OutOfMemory = E_OUTOFMEMORY.0 as isize,
     NotImplemented = E_NOTIMPL.0 as isize,
-    // TODO: maybe all fabric error constants should be defined here as well in future.
+    // Some common errors from raw fabric code
+    AsyncOperationNotComplete = FABRIC_E_OPERATION_NOT_COMPLETE.0 as isize,
+    OperationNotSupported = FABRIC_E_OPERATION_NOT_SUPPORTED.0 as isize, // TODO: maybe all fabric error constants should be defined here as well in future.
 }
 
 impl From<FabricErrorCode> for FabricError {

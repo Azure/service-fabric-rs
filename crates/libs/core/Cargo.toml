@@ -17,13 +17,14 @@ include = [
 default = ["config_source", "tokio_async"]
 # Required for a lot of callback functionality.
 # Also requires ctrlc for signal handling
-tokio_async = ["dep:tokio", "ctrlc"]
+tokio_async = ["dep:tokio", "dep:tokio-util", "dep:ctrlc"]
 # Config crate required to implement its interface. 
-config_source = ["config"]
+config_source = ["dep:config"]
 
 [dependencies]
 tracing.workspace = true
 tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros"], optional = true }
+tokio-util = { version = "0.7", optional = true }
 windows-core = "0.57"
 ctrlc = { version = "3.0", features = ["termination"], optional = true }
 trait-variant = "0.1.1"
@@ -32,6 +33,8 @@ config = { version = "0.14.0",  default-features = false, optional = true }
 
 [dev-dependencies]
 paste = "1.0"
+# need time for testing
+tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros", "time"] }
 
 [dependencies.windows]
 version = "0.57"

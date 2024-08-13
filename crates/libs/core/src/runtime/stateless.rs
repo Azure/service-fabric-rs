@@ -6,6 +6,7 @@
 #![deny(non_snake_case)] // this file is safe rust
 
 use mssf_com::FabricRuntime::IFabricStatelessServicePartition;
+use tokio_util::sync::CancellationToken;
 use windows_core::HSTRING;
 
 use crate::types::ServicePartitionInformation;
@@ -44,6 +45,6 @@ pub trait StatelessServiceFactory {
 #[trait_variant::make(StatelessServiceInstance: Send)]
 pub trait LocalStatelessServiceInstance: Send + Sync + 'static {
     async fn open(&self, partition: &StatelessServicePartition) -> windows::core::Result<HSTRING>;
-    async fn close(&self) -> windows::core::Result<()>;
+    async fn close(&self, cancellation_token: CancellationToken) -> windows::core::Result<()>;
     fn abort(&self);
 }

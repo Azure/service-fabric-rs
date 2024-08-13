@@ -17,7 +17,7 @@ use mssf_com::FabricTypes::{
 };
 
 // FABRIC_HEALTH_STATE
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum HealthState {
     Invalid,
     Ok,

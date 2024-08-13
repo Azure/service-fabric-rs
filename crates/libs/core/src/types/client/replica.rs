@@ -72,6 +72,7 @@ impl FabricListAccessor<FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceRep
 }
 
 // FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM
+#[derive(Debug, Clone)]
 pub enum ServiceReplicaQueryResult {
     Invalid,
     Stateful(StatefulServiceReplicaQueryResult),
@@ -103,6 +104,7 @@ impl From<&FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceReplicaQueryResu
 }
 
 // FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM
+#[derive(Debug, Clone)]
 pub struct StatefulServiceReplicaQueryResult {
     pub replica_id: i64,
     pub replica_role: ReplicaRole,
@@ -131,7 +133,7 @@ impl From<&FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM>
 }
 
 // FABRIC_QUERY_SERVICE_REPLICA_STATUS
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum QueryServiceReplicaStatus {
     Invalid,
     Inbuild,
@@ -156,6 +158,7 @@ impl From<&FABRIC_QUERY_SERVICE_REPLICA_STATUS> for QueryServiceReplicaStatus {
 }
 
 //FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM
+#[derive(Debug, Clone)]
 pub struct StatelessServiceInstanceQueryResult {
     pub instance_id: i64,
     pub replica_status: QueryServiceReplicaStatus,

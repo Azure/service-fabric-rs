@@ -14,7 +14,7 @@ use windows_core::GUID;
 use crate::strings::HSTRINGWrap;
 
 // FABRIC_SERVICE_PARTITION_INFORMATION
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ServicePartitionInformation {
     Invalid,
     Singleton(SingletonPartitionInfomation),
@@ -22,19 +22,19 @@ pub enum ServicePartitionInformation {
     Named(NamedPartitionInfomation),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SingletonPartitionInfomation {
     pub id: GUID,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Int64PartitionInfomation {
     pub id: ::windows_core::GUID,
     pub low_key: i64,
     pub high_key: i64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NamedPartitionInfomation {
     pub id: ::windows_core::GUID,
     pub name: ::windows_core::HSTRING,

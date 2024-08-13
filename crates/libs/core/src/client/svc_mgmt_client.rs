@@ -12,11 +12,12 @@ use mssf_com::{
         FABRIC_PARTITION_KEY_TYPE_INVALID, FABRIC_PARTITION_KEY_TYPE_NONE,
         FABRIC_PARTITION_KEY_TYPE_STRING, FABRIC_REMOVE_REPLICA_DESCRIPTION,
         FABRIC_RESOLVED_SERVICE_ENDPOINT, FABRIC_RESTART_REPLICA_DESCRIPTION,
-        FABRIC_SERVICE_ENDPOINT_ROLE, FABRIC_SERVICE_PARTITION_KIND,
-        FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE, FABRIC_SERVICE_PARTITION_KIND_INVALID,
-        FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
-        FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
-        FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
+        FABRIC_SERVICE_ENDPOINT_ROLE, FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
+        FABRIC_SERVICE_PARTITION_KIND, FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE,
+        FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
+        FABRIC_SERVICE_PARTITION_KIND_SINGLETON, FABRIC_SERVICE_ROLE_INVALID,
+        FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY, FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY,
+        FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
     },
 };
 use windows_core::{HSTRING, PCWSTR};
@@ -24,7 +25,9 @@ use windows_core::{HSTRING, PCWSTR};
 use crate::{
     iter::{FabricIter, FabricListAccessor},
     sync::{fabric_begin_end_proxy, FabricReceiver},
-    types::{RemoveReplicaDescription, RestartReplicaDescription},
+    types::{
+        RemoveReplicaDescription, RestartReplicaDescription, ServiceNotificationFilterDescription,
+    },
 };
 
 // Service Management Client
@@ -89,6 +92,40 @@ impl ServiceManagementClient {
             move |ctx| unsafe { com2.EndRemoveReplica(ctx) },
         )
     }
+
+    fn register_service_notification_filter_internal(
+        &self,
+        desc: &FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
+        timeout_milliseconds: u32,
+    ) -> FabricReceiver<crate::Result<i64>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginRegisterServiceNotificationFilter(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndRegisterServiceNotificationFilter(ctx) },
+        )
+    }
+
+    fn unregister_service_notification_filter_internal(
+        &self,
+        filterid: i64,
+        timeout_milliseconds: u32,
+    ) -> FabricReceiver<crate::Result<()>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginUnregisterServiceNotificationFilter(
+                    filterid,
+                    timeout_milliseconds,
+                    callback,
+                )
+            },
+            move |ctx| unsafe { com2.EndUnregisterServiceNotificationFilter(ctx) },
+        )
+    }
 }
 
 // public implementation block
@@ -141,6 +178,8 @@ impl ServiceManagementClient {
     /// This API gives a running replica the chance to cleanup its state and be gracefully shutdown.
     /// WARNING: There are no safety checks performed when this API is used.
     /// Incorrect use of this API can lead to data loss for stateful services.
+    /// Remarks:
+    /// For stateless services, Instance Abort is called.
     pub async fn remove_replica(
         &self,
         desc: &RemoveReplicaDescription,
@@ -150,6 +189,47 @@ impl ServiceManagementClient {
         self.remove_replica_internal(&raw, timeout.as_millis() as u32)
             .await
     }
+
+    /// Remarks:
+    /// There is a cache of service endpoints in the client that gets updated by notifications
+    /// and this same cache is used to satisfy complaint based resolution requests
+    /// (see resolve_service_partition())). Applications that both register for notifications
+    /// and use complaint based resolution on the same client instance typically only need to
+    /// pass null for the ResolvedServicePartition argument during resolution.
+    /// This will always return the endpoints in the client cache updated by the latest notification.
+    /// The notification mechanism itself will keep the client cache updated when service endpoints change.
+    /// TODO: explore the relation to IFabricServiceNotification.
+    pub async fn register_service_notification_filter(
+        &self,
+        desc: &ServiceNotificationFilterDescription,
+        timeout: Duration,
+    ) -> crate::Result<FilterIdHandle> {
+        let raw: FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION = desc.into();
+        let id = self
+            .register_service_notification_filter_internal(&raw, timeout.as_millis() as u32)
+            .await?;
+        Ok(FilterIdHandle { id })
+    }
+
+    /// It's not necessary to unregister individual filters if the client itself
+    /// will no longer be used since all ServiceNotificationFilterDescription
+    /// objects registered by the FabricClient will be automatically unregistered when client is disposed.
+    pub async fn unregister_service_notification_filter(
+        &self,
+        filter_id_handle: FilterIdHandle,
+        timeout: Duration,
+    ) -> crate::Result<()> {
+        self.unregister_service_notification_filter_internal(
+            filter_id_handle.id,
+            timeout.as_millis() as u32,
+        )
+        .await
+    }
+}
+
+// Handle to the registered service notification filter
+pub struct FilterIdHandle {
+    id: i64,
 }
 
 // see ComFabricClient.cpp for conversion details in cpp
@@ -207,7 +287,7 @@ impl PartitionKeyType {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ServicePartitionKind {
     Int64Range,
     Invalid,
@@ -344,7 +424,7 @@ impl FabricListAccessor<FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEnd
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ResolvedServiceEndpoint {
     pub address: HSTRING,
     pub role: ServiceEndpointRole,

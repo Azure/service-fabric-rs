@@ -19,7 +19,7 @@ mod tests;
 // FabricClient safe wrapper
 // The design of FabricClient follows from the csharp client:
 // https://github.com/microsoft/service-fabric/blob/master/src/prod/src/managed/Api/src/System/Fabric/FabricClient.cs
-
+#[derive(Debug, Clone)]
 pub struct FabricClient {
     com_property_client: IFabricPropertyManagementClient2,
     com_service_client: IFabricServiceManagementClient6,

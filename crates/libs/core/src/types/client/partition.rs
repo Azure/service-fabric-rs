@@ -111,7 +111,7 @@ impl From<&FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartition {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ServicePartitionStatus {
     Invalid,
     Ready,
@@ -136,6 +136,7 @@ impl From<&FABRIC_QUERY_SERVICE_PARTITION_STATUS> for ServicePartitionStatus {
 }
 
 // FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM
+#[derive(Debug, Clone)]
 pub struct StatefulServicePartition {
     pub partition_information: ServicePartitionInformation,
     pub target_replica_set_size: u32,
@@ -160,6 +161,7 @@ impl From<&FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM> for StatefulServ
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct StatelessServicePartition {
     pub partition_information: ServicePartitionInformation,
     pub instance_count: u32,

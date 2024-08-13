@@ -122,7 +122,7 @@ where
     }
 
     fn set_complete(&self) {
-        self.is_completed.swap(&Cell::new(true));
+        self.is_completed.set(true);
     }
 }
 
@@ -198,6 +198,10 @@ impl<T> FabricReceiver2<T> {
                 // clear the sf ctx to avoid cancel twice.
                 self.ctx.take();
             }
+        } else {
+            // The inner ctx can be empty after we already cancelled the inner ctx.
+            // This can happen because we cancel during polling, and polling can
+            // happen many times.
         }
         Ok(())
     }
@@ -211,7 +215,7 @@ impl<T> Future for FabricReceiver2<T> {
     // of SF ctx returns other errors.
     // (TODO: observe other error code from SF, maybe some code should be ignored).
     type Output = crate::Result<T>;
-    fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         // Poll the receiver first, if ready then return the output,
         // else poll the cancellation token, if cancelled return the error,
         // else return pending.
@@ -220,47 +224,41 @@ impl<T> Future for FabricReceiver2<T> {
         // than cancelled error.
 
         // Try to receive the value from the sender
-        let innner =
-            <tokio::sync::oneshot::Receiver<T> as Future>::poll(Pin::new(&mut self.rx), _cx);
-        match innner {
-            Poll::Ready(x) => {
-                // error only happens when sender is dropped without sending.
-                match x {
-                    Ok(data) => Poll::Ready(Ok(data)),
-                    Err(_) => {
-                        if let Some(t) = self.token.as_ref() {
-                            if t.is_cancelled() {
-                                // cancel the SF ctx
-                                if let Err(e) = self.cancel_inner_ctx() {
-                                    return Poll::Ready(Err(e));
-                                }
-                                return Poll::Ready(Err(FabricErrorCode::OperationCanceled.into()));
-                            }
-                        }
-                        panic!("sender dropped without sending")
-                    }
-                }
-            }
-            Poll::Pending => {
-                // If the action is canceled we can safely stop and return canceled error.
-                if let Some(t) = &self.token {
-                    // this is cancel safe so we can poll it once and discard
-                    let fu = t.cancelled();
-                    let inner = std::pin::pin!(fu).poll(_cx);
-                    match inner {
-                        Poll::Ready(_) => {
-                            // operation cancelled
-                            if let Err(e) = self.cancel_inner_ctx() {
-                                return Poll::Ready(Err(e));
-                            }
-                            Poll::Ready(Err(FabricErrorCode::OperationCanceled.into()))
-                        }
-                        Poll::Pending => Poll::Pending,
+        let inner = <tokio::sync::oneshot::Receiver<T> as Future>::poll(Pin::new(&mut self.rx), cx);
+        match (inner, self.token.as_ref()) {
+            (Poll::Ready(Ok(data)), _) => Poll::Ready(Ok(data)),
+            (Poll::Ready(Err(_)), Some(t)) => {
+                if t.is_cancelled() {
+                    // cancel the SF ctx
+                    if let Err(e) = self.cancel_inner_ctx() {
+                        Poll::Ready(Err(e))
+                    } else {
+                        Poll::Ready(Err(FabricErrorCode::OperationCanceled.into()))
                     }
                 } else {
-                    Poll::Pending
+                    panic!("sender dropped without sending")
                 }
             }
+            (Poll::Ready(Err(_)), None) => {
+                panic!("sender dropped without sending")
+            }
+            (Poll::Pending, Some(t)) => {
+                // If the action is canceled we can safely stop and return canceled error.
+                // this is cancel safe so we can poll it once and discard
+                let fu = t.cancelled();
+                let inner = std::pin::pin!(fu).poll(cx);
+                match inner {
+                    Poll::Ready(_) => {
+                        // operation cancelled
+                        if let Err(e) = self.cancel_inner_ctx() {
+                            return Poll::Ready(Err(e));
+                        }
+                        Poll::Ready(Err(FabricErrorCode::OperationCanceled.into()))
+                    }
+                    Poll::Pending => Poll::Pending,
+                }
+            }
+            (Poll::Pending, None) => Poll::Pending,
         }
     }
 }
@@ -288,9 +286,10 @@ impl<T> FabricSender2<T> {
 
             // receiver should never be dropped if operation is not cancelled.
             if let Some(t) = self.token {
-                if !t.is_cancelled() {
-                    panic!("receiver dropped.");
-                }
+                debug_assert!(
+                    t.is_cancelled(),
+                    "task should be cancelled when receiver dropped."
+                );
             }
         }
     }

@@ -217,8 +217,11 @@ impl<T> Future for FabricReceiver2<T> {
     type Output = crate::Result<T>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         // Poll the receiver first, if ready then return the output,
-        // else poll the cancellation token, if cancelled return the error,
-        // else return pending.
+        // else poll the cancellation token, if cancelled propergate the cancel to SF ctx,
+        // and return pending. SF task should continue finish execute in the background,
+        // and finish with error code OperationCancelled
+        // and send the error code from FabricSender.
+        //
         // There can be the case that cancellation wakes the waker, but receiver
         // then got the result. The next poll will return received output rather
         // than cancelled error.
@@ -229,7 +232,9 @@ impl<T> Future for FabricReceiver2<T> {
             (Poll::Ready(Ok(data)), _) => Poll::Ready(Ok(data)),
             (Poll::Ready(Err(_)), Some(t)) => {
                 if t.is_cancelled() {
-                    // cancel the SF ctx
+                    // clear the token since we only propergate the signal once.
+                    self.token.take();
+                    // cancel the SF ctx and clear it.
                     if let Err(e) = self.cancel_inner_ctx() {
                         Poll::Ready(Err(e))
                     } else {
@@ -249,11 +254,18 @@ impl<T> Future for FabricReceiver2<T> {
                 let inner = std::pin::pin!(fu).poll(cx);
                 match inner {
                     Poll::Ready(_) => {
-                        // operation cancelled
+                        // clear the token since we only propergate the signal once.
+                        self.token.take();
+                        // operation cancelled. Propergate to inner sf ctx.
                         if let Err(e) = self.cancel_inner_ctx() {
-                            return Poll::Ready(Err(e));
+                            Poll::Ready(Err(e))
+                        } else {
+                            // The cancellation is propergated to sf task,
+                            // the receiver from now on should wait for the
+                            // final result from the sf task. (as we have cleared the token)
+                            // Most likely the task finishes with OperationCancelled error code.
+                            Poll::Pending
                         }
-                        Poll::Ready(Err(FabricErrorCode::OperationCanceled.into()))
                     }
                     Poll::Pending => Poll::Pending,
                 }
@@ -445,6 +457,7 @@ mod test {
         async fn get_data_delay(
             &self,
             delay: Duration,
+            ignore_cancel: bool, // ignores the token
             token: Option<CancellationToken>,
         ) -> crate::Result<String>;
 
@@ -466,13 +479,14 @@ mod test {
         async fn get_data_delay(
             &self,
             delay: Duration,
+            ignore_cancel: bool,
             token: Option<CancellationToken>,
         ) -> crate::Result<String> {
             if delay.is_zero() {
                 return Ok(self.get_data());
             }
-            match token {
-                Some(t) => {
+            match (token, ignore_cancel) {
+                (Some(t), false) => {
                     select! {
                         _ = t.cancelled() => {
                             // The token was cancelled
@@ -483,7 +497,8 @@ mod test {
                         }
                     }
                 }
-                None => {
+                // token is empty or ignore cancel.
+                _ => {
                     tokio::time::sleep(delay).await;
                     Ok(self.get_data())
                 }
@@ -562,12 +577,15 @@ mod test {
         pub fn begin_get_data_delay(
             &self,
             delay: Duration,
+            ignore_cancel: bool,
             callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
         ) -> crate::Result<IFabricAsyncOperationContext> {
             let inner = self.inner.clone();
             let (ctx, token) = BridgeContext3::make(callback);
             ctx.spawn(&self.rt, async move {
-                inner.get_data_delay(delay, Some(token)).await
+                inner
+                    .get_data_delay(delay, ignore_cancel, Some(token))
+                    .await
             })
         }
 
@@ -617,12 +635,13 @@ mod test {
         async fn get_data_delay(
             &self,
             delay: Duration,
+            ignore_cancel: bool,
             token: Option<CancellationToken>,
         ) -> crate::Result<String> {
             let com1 = &self.com;
             let com2 = self.com.clone();
             fabric_begin_end_proxy2(
-                move |callback| com1.begin_get_data_delay(delay, callback),
+                move |callback| com1.begin_get_data_delay(delay, ignore_cancel, callback),
                 move |context| com2.end_get_data_delay(context),
                 token,
             )
@@ -671,7 +690,7 @@ mod test {
         {
             let token = CancellationToken::new();
             let out = obj
-                .get_data_delay(Duration::ZERO, Some(token))
+                .get_data_delay(Duration::ZERO, false, Some(token))
                 .await
                 .unwrap();
             assert_eq!(out, init_data);
@@ -679,10 +698,21 @@ mod test {
         // get with cancel
         {
             let token = CancellationToken::new();
-            let fu = obj.get_data_delay(Duration::from_secs(5), Some(token.clone()));
+            let fu = obj.get_data_delay(Duration::from_secs(5), false, Some(token.clone()));
             token.cancel();
             let err = fu.await.unwrap_err();
             assert_eq!(err, FabricErrorCode::OperationCanceled.into());
+        }
+        // get with cancel but ignore cancel from inner impl.
+        // Because the cancel is ignored by inner implementation, success will be returned.
+        // This shows that the sender and receiver does not short circuit the future when token is cancelled,
+        // the future result is always the result from the (SF) background task.
+        {
+            let token = CancellationToken::new();
+            let fu = obj.get_data_delay(Duration::from_millis(3), true, Some(token.clone()));
+            token.cancel();
+            let out = fu.await.unwrap();
+            assert_eq!(out, init_data);
         }
         // set with cancel
         {
@@ -700,7 +730,10 @@ mod test {
         {
             // sleep past the delay time to observe the final state
             tokio::time::sleep(Duration::from_millis(20)).await;
-            let out = obj.get_data_delay(Duration::ZERO, None).await.unwrap();
+            let out = obj
+                .get_data_delay(Duration::ZERO, false, None)
+                .await
+                .unwrap();
             assert_eq!(out, init_data);
         }
         let expected_data2 = "mydata2";
@@ -712,7 +745,10 @@ mod test {
         }
         // read the set.
         {
-            let out = obj.get_data_delay(Duration::ZERO, None).await.unwrap();
+            let out = obj
+                .get_data_delay(Duration::ZERO, false, None)
+                .await
+                .unwrap();
             assert_eq!(out, expected_data2);
         }
         // restore the data to the original data

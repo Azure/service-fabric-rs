@@ -14,19 +14,6 @@ if(NOT fabric_metadata_POPULATED)
     # do not add to cmake build since we only need winmd file to generate code.
 endif()
 
-# fetch service-fabric-cpp for its scripts
-message(STATUS "fetching service-fabric-cpp")
-include(FetchContent)
-FetchContent_Declare(service_fabric_cpp
-    GIT_REPOSITORY https://github.com/youyuanwu/service-fabric-cpp.git
-    GIT_TAG 997f00bd4610834a3904b9cde8bf6b2c666bcb29
-)
-FetchContent_GetProperties(service_fabric_cpp)
-if(NOT service_fabric_cpp_POPULATED)
-    FetchContent_Populate(service_fabric_cpp)
-    # do not add to cmake build since we only use scripts
-endif()
-
 # generate rust code
 find_program (
     cargo_exe

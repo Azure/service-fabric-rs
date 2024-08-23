@@ -139,10 +139,10 @@ impl IFabricTransportClient {
         message: P0,
         timeoutmilliseconds: u32,
         callback: P1,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<IFabricTransportMessage>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P1: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginRequest)(
@@ -159,7 +159,7 @@ impl IFabricTransportClient {
         context: P0,
     ) -> windows_core::Result<IFabricTransportMessage>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndRequest)(
@@ -183,9 +183,9 @@ impl IFabricTransportClient {
         &self,
         timeoutmilliseconds: u32,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginOpen)(
@@ -198,7 +198,7 @@ impl IFabricTransportClient {
     }
     pub unsafe fn EndOpen<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndOpen)(
             windows_core::Interface::as_raw(self),
@@ -210,9 +210,9 @@ impl IFabricTransportClient {
         &self,
         timeoutmilliseconds: u32,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginClose)(
@@ -225,7 +225,7 @@ impl IFabricTransportClient {
     }
     pub unsafe fn EndClose<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndClose)(
             windows_core::Interface::as_raw(self),
@@ -390,10 +390,10 @@ impl IFabricTransportConnectionHandler {
         clientconnection: P0,
         timeoutmilliseconds: u32,
         callback: P1,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<IFabricTransportClientConnection>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P1: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginProcessConnect)(
@@ -407,7 +407,7 @@ impl IFabricTransportConnectionHandler {
     }
     pub unsafe fn EndProcessConnect<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndProcessConnect)(
             windows_core::Interface::as_raw(self),
@@ -420,9 +420,9 @@ impl IFabricTransportConnectionHandler {
         clientid: *const u16,
         timeoutmilliseconds: u32,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginProcessDisconnect)(
@@ -436,7 +436,7 @@ impl IFabricTransportConnectionHandler {
     }
     pub unsafe fn EndProcessDisconnect<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndProcessDisconnect)(
             windows_core::Interface::as_raw(self),
@@ -489,9 +489,9 @@ impl IFabricTransportListener {
     pub unsafe fn BeginOpen<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginOpen)(
@@ -504,9 +504,9 @@ impl IFabricTransportListener {
     pub unsafe fn EndOpen<P0>(
         &self,
         context: P0,
-    ) -> windows_core::Result<super::IFabricStringResult>
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndOpen)(
@@ -519,9 +519,9 @@ impl IFabricTransportListener {
     pub unsafe fn BeginClose<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginClose)(
@@ -533,7 +533,7 @@ impl IFabricTransportListener {
     }
     pub unsafe fn EndClose<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndClose)(
             windows_core::Interface::as_raw(self),
@@ -662,10 +662,10 @@ impl IFabricTransportMessageHandler {
         message: P0,
         timeoutmilliseconds: u32,
         callback: P1,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<IFabricTransportMessage>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P1: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginProcessRequest)(
@@ -683,7 +683,7 @@ impl IFabricTransportMessageHandler {
         context: P0,
     ) -> windows_core::Result<IFabricTransportMessage>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndProcessRequest)(
@@ -770,7 +770,7 @@ pub struct FABRIC_TRANSPORT_SETTINGS {
     pub MaxMessageSize: u32,
     pub MaxConcurrentCalls: u32,
     pub MaxQueueSize: u32,
-    pub SecurityCredentials: *const super::super::FABRIC_SECURITY_CREDENTIALS,
+    pub SecurityCredentials: *const super::FabricTypes::FABRIC_SECURITY_CREDENTIALS,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl windows_core::TypeKind for FABRIC_TRANSPORT_SETTINGS {
@@ -821,30 +821,30 @@ pub trait IFabricTransportClient_Impl: Sized {
         &self,
         message: Option<&IFabricTransportMessage>,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndRequest(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<IFabricTransportMessage>;
     fn Send(&self, message: Option<&IFabricTransportMessage>) -> windows_core::Result<()>;
     fn BeginOpen(
         &self,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndOpen(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn BeginClose(
         &self,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndClose(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn Abort(&self);
 }
@@ -1129,21 +1129,21 @@ pub trait IFabricTransportConnectionHandler_Impl: Sized {
         &self,
         clientconnection: Option<&IFabricTransportClientConnection>,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndProcessConnect(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn BeginProcessDisconnect(
         &self,
         clientid: *const u16,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndProcessDisconnect(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricTransportConnectionHandler {}
@@ -1252,19 +1252,19 @@ impl IFabricTransportConnectionHandler_Vtbl {
 pub trait IFabricTransportListener_Impl: Sized {
     fn BeginOpen(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndOpen(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
-    ) -> windows_core::Result<super::IFabricStringResult>;
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
     fn BeginClose(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndClose(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn Abort(&self);
 }
@@ -1476,11 +1476,11 @@ pub trait IFabricTransportMessageHandler_Impl: Sized {
         clientid: *const u16,
         message: Option<&IFabricTransportMessage>,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndProcessRequest(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<IFabricTransportMessage>;
     fn HandleOneWay(
         &self,

@@ -22,9 +22,7 @@ fn main() -> Result<()> {
             "--out",
             out_file,
             "--filter",
-            "Microsoft.ServiceFabric", // include fabric types
-            "--filter",
-            "!Microsoft.ServiceFabric.FabricCommon", // exclude other contents
+            "Microsoft.ServiceFabric.FabricTypes", // include fabric types
             "--config",
             "implement",
         ])?;
@@ -32,6 +30,7 @@ fn main() -> Result<()> {
         // TODO: need to modify the generated files.
         let mut lines = read_file_as_lines(out_file);
         remove_namespace(&mut lines, "pub mod ServiceFabric ");
+        remove_namespace(&mut lines, "pub mod FabricTypes ");
         write_content(out_file, lines);
     }
     // Generate FabricCommon
@@ -45,13 +44,6 @@ fn main() -> Result<()> {
             // include types
             "--filter",
             "Microsoft.ServiceFabric.FabricCommon",
-            "--filter",
-            // exclude types
-            "!Microsoft.ServiceFabric.FabricCommon.FabricClient",
-            "--filter",
-            "!Microsoft.ServiceFabric.FabricCommon.FabricRuntime",
-            "--filter",
-            "!Microsoft.ServiceFabric.FabricCommon.FabricTransport",
             "--config",
             "implement",
         ])?;
@@ -70,14 +62,13 @@ fn main() -> Result<()> {
             "--out",
             out_file,
             "--filter",
-            "Microsoft.ServiceFabric.FabricCommon.FabricRuntime", // include fabric types
+            "Microsoft.ServiceFabric.FabricRuntime", // include fabric types
             "--config",
             "implement",
         ])?;
         println!("{}", log);
         let mut lines = read_file_as_lines(out_file);
         remove_namespace(&mut lines, "pub mod ServiceFabric");
-        remove_namespace(&mut lines, "pub mod FabricCommon");
         remove_namespace(&mut lines, "pub mod FabricRuntime");
         write_content(out_file, lines);
     }
@@ -91,14 +82,13 @@ fn main() -> Result<()> {
             "--out",
             out_file,
             "--filter",
-            "Microsoft.ServiceFabric.FabricCommon.FabricClient", // include fabric types
+            "Microsoft.ServiceFabric.FabricClient", // include fabric types
             "--config",
             "implement",
         ])?;
         println!("{}", log);
         let mut lines = read_file_as_lines(out_file);
         remove_namespace(&mut lines, "pub mod ServiceFabric");
-        remove_namespace(&mut lines, "pub mod FabricCommon");
         remove_namespace(&mut lines, "pub mod FabricClient");
         write_content(out_file, lines);
     }
@@ -112,14 +102,13 @@ fn main() -> Result<()> {
             "--out",
             out_file,
             "--filter",
-            "Microsoft.ServiceFabric.FabricCommon.FabricTransport", // include fabric types
+            "Microsoft.ServiceFabric.FabricTransport", // include fabric types
             "--config",
             "implement",
         ])?;
         println!("{}", log);
         let mut lines = read_file_as_lines(out_file);
         remove_namespace(&mut lines, "pub mod ServiceFabric");
-        remove_namespace(&mut lines, "pub mod FabricCommon");
         remove_namespace(&mut lines, "pub mod FabricTransport");
         write_content(out_file, lines);
     }

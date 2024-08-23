@@ -1,4 +1,13 @@
 $ErrorActionPreference = "Stop";
 
-# pass through and run the script test, but use rust app in current dir.
-.\build\_deps\service_fabric_cpp-src\tests\echo_script_test.ps1
+# Script root is the current script file location
+
+& "$PSScriptRoot\..\scripts\echomain_ctl.ps1" -Action Add
+
+start-sleep -seconds 20
+
+& "$PSScriptRoot\..\scripts\echomain_ctl.ps1" -Action Resolve
+
+& "$PSScriptRoot\..\scripts\echomain_ctl.ps1" -Action Echo -Mode Test
+
+& "$PSScriptRoot\..\scripts\echomain_ctl.ps1" -Action Remove

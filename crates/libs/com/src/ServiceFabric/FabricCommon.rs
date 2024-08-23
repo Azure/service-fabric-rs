@@ -10,7 +10,7 @@
 #[inline]
 pub unsafe fn FabricDecryptText<P0>(
     encryptedtext: P0,
-    certstorelocation: super::FABRIC_X509_STORE_LOCATION,
+    certstorelocation: super::FabricTypes::FABRIC_X509_STORE_LOCATION,
 ) -> windows_core::Result<IFabricStringResult>
 where
     P0: windows_core::Param<windows_core::PCWSTR>,
@@ -19,7 +19,7 @@ where
     extern "system" {
         pub fn FabricDecryptText(
             encryptedtext: windows_core::PCWSTR,
-            certstorelocation: super::FABRIC_X509_STORE_LOCATION,
+            certstorelocation: super::FabricTypes::FABRIC_X509_STORE_LOCATION,
             decryptedtext: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT;
     }
@@ -54,7 +54,7 @@ pub unsafe fn FabricEncryptText<P0, P1, P2, P3>(
     text: P0,
     certthumbprint: P1,
     certstorename: P2,
-    certstorelocation: super::FABRIC_X509_STORE_LOCATION,
+    certstorelocation: super::FabricTypes::FABRIC_X509_STORE_LOCATION,
     algorithmoid: P3,
 ) -> windows_core::Result<IFabricStringResult>
 where
@@ -69,7 +69,7 @@ where
             text: windows_core::PCWSTR,
             certthumbprint: windows_core::PCWSTR,
             certstorename: windows_core::PCWSTR,
-            certstorelocation: super::FABRIC_X509_STORE_LOCATION,
+            certstorelocation: super::FabricTypes::FABRIC_X509_STORE_LOCATION,
             algorithmoid: windows_core::PCSTR,
             encryptedvalue: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT;
@@ -245,7 +245,9 @@ impl core::ops::Deref for IFabricGetReplicatorStatusResult {
 }
 windows_core::imp::interface_hierarchy!(IFabricGetReplicatorStatusResult, windows_core::IUnknown);
 impl IFabricGetReplicatorStatusResult {
-    pub unsafe fn get_ReplicatorStatus(&self) -> *mut super::FABRIC_REPLICATOR_STATUS_QUERY_RESULT {
+    pub unsafe fn get_ReplicatorStatus(
+        &self,
+    ) -> *mut super::FabricTypes::FABRIC_REPLICATOR_STATUS_QUERY_RESULT {
         (windows_core::Interface::vtable(self).get_ReplicatorStatus)(
             windows_core::Interface::as_raw(self),
         )
@@ -259,7 +261,8 @@ pub struct IFabricGetReplicatorStatusResult_Vtbl {
     pub get_ReplicatorStatus:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
-        ) -> *mut super::FABRIC_REPLICATOR_STATUS_QUERY_RESULT,
+        )
+            -> *mut super::FabricTypes::FABRIC_REPLICATOR_STATUS_QUERY_RESULT,
 }
 windows_core::imp::define_interface!(
     IFabricStringListResult,
@@ -433,7 +436,9 @@ impl IFabricAsyncOperationContext_Vtbl {
     }
 }
 pub trait IFabricGetReplicatorStatusResult_Impl: Sized {
-    fn get_ReplicatorStatus(&self) -> *mut super::FABRIC_REPLICATOR_STATUS_QUERY_RESULT;
+    fn get_ReplicatorStatus(
+        &self,
+    ) -> *mut super::FabricTypes::FABRIC_REPLICATOR_STATUS_QUERY_RESULT;
 }
 impl windows_core::RuntimeName for IFabricGetReplicatorStatusResult {}
 impl IFabricGetReplicatorStatusResult_Vtbl {
@@ -448,7 +453,7 @@ impl IFabricGetReplicatorStatusResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::FABRIC_REPLICATOR_STATUS_QUERY_RESULT {
+        ) -> *mut super::FabricTypes::FABRIC_REPLICATOR_STATUS_QUERY_RESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricGetReplicatorStatusResult_Impl::get_ReplicatorStatus(this)

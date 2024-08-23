@@ -6,7 +6,7 @@ message(STATUS "fetching fabric_metadata")
 include(FetchContent)
 FetchContent_Declare(fabric_metadata
     GIT_REPOSITORY https://github.com/Azure/service-fabric-metadata.git
-    GIT_TAG 490858f64780482ace013659fe852d7b4aeeed7f
+    GIT_TAG 552f4e38ad2c772419e52e62207c236fc31ffcbb
 )
 FetchContent_GetProperties(fabric_metadata)
 if(NOT fabric_metadata_POPULATED)

@@ -11,9 +11,6 @@ pub mod ServiceFabric;
 // expose mod directly
 pub use ServiceFabric::*;
 
-// hack to make generated code link together
-use ServiceFabric::FabricTypes::*;
-
 #[cfg(target_os = "windows")]
 pub use mssf_metadata;
 

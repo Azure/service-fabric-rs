@@ -13,10 +13,10 @@ pub unsafe fn FabricBeginCreateRuntime<P0, P1>(
     exithandler: P0,
     timeoutmilliseconds: u32,
     callback: P1,
-) -> windows_core::Result<super::IFabricAsyncOperationContext>
+) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
 where
     P0: windows_core::Param<IFabricProcessExitHandler>,
-    P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+    P1: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
 {
     #[link(name = "FabricRuntime")]
     extern "system" {
@@ -43,9 +43,9 @@ pub unsafe fn FabricBeginGetActivationContext<P0>(
     riid: *const windows_core::GUID,
     timeoutmilliseconds: u32,
     callback: P0,
-) -> windows_core::Result<super::IFabricAsyncOperationContext>
+) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
 where
-    P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+    P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
 {
     #[link(name = "FabricRuntime")]
     extern "system" {
@@ -70,9 +70,9 @@ pub unsafe fn FabricBeginGetCodePackageActivator<P0>(
     riid: *const windows_core::GUID,
     timeoutmilliseconds: u32,
     callback: P0,
-) -> windows_core::Result<super::IFabricAsyncOperationContext>
+) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
 where
-    P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+    P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
 {
     #[link(name = "FabricRuntime")]
     extern "system" {
@@ -96,9 +96,9 @@ where
 pub unsafe fn FabricBeginGetNodeContext<P0>(
     timeoutmilliseconds: u32,
     callback: P0,
-) -> windows_core::Result<super::IFabricAsyncOperationContext>
+) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
 where
-    P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+    P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
 {
     #[link(name = "FabricRuntime")]
     extern "system" {
@@ -118,8 +118,8 @@ pub unsafe fn FabricCreateKeyValueStoreReplica<P0, P1>(
     storename: P0,
     partitionid: windows_core::GUID,
     replicaid: i64,
-    replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
-    localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
+    replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+    localstorekind: super::FabricTypes::FABRIC_LOCAL_STORE_KIND,
     localstoresettings: *const core::ffi::c_void,
     storeeventhandler: P1,
 ) -> windows_core::Result<*mut core::ffi::c_void>
@@ -134,8 +134,8 @@ where
             storename: windows_core::PCWSTR,
             partitionid: windows_core::GUID,
             replicaid: i64,
-            replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
-            localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
+            replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+            localstorekind: super::FabricTypes::FABRIC_LOCAL_STORE_KIND,
             localstoresettings: *const core::ffi::c_void,
             storeeventhandler: *mut core::ffi::c_void,
             keyvaluestore: *mut *mut core::ffi::c_void,
@@ -161,12 +161,12 @@ pub unsafe fn FabricCreateKeyValueStoreReplica2<P0, P1, P2>(
     storename: P0,
     partitionid: windows_core::GUID,
     replicaid: i64,
-    replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
-    localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
+    replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+    localstorekind: super::FabricTypes::FABRIC_LOCAL_STORE_KIND,
     localstoresettings: *const core::ffi::c_void,
     storeeventhandler: P1,
     secondaryeventhandler: P2,
-    notificationmode: super::super::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
+    notificationmode: super::FabricTypes::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
 ) -> windows_core::Result<*mut core::ffi::c_void>
 where
     P0: windows_core::Param<windows_core::PCWSTR>,
@@ -180,12 +180,12 @@ where
             storename: windows_core::PCWSTR,
             partitionid: windows_core::GUID,
             replicaid: i64,
-            replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
-            localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
+            replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+            localstorekind: super::FabricTypes::FABRIC_LOCAL_STORE_KIND,
             localstoresettings: *const core::ffi::c_void,
             storeeventhandler: *mut core::ffi::c_void,
             secondaryeventhandler: *mut core::ffi::c_void,
-            notificationmode: super::super::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
+            notificationmode: super::FabricTypes::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
             keyvaluestore: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT;
     }
@@ -211,12 +211,12 @@ pub unsafe fn FabricCreateKeyValueStoreReplica3<P0, P1, P2>(
     storename: P0,
     partitionid: windows_core::GUID,
     replicaid: i64,
-    replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
-    localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
+    replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+    localstorekind: super::FabricTypes::FABRIC_LOCAL_STORE_KIND,
     localstoresettings: *const core::ffi::c_void,
     storeeventhandler: P1,
     secondaryeventhandler: P2,
-    notificationmode: super::super::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
+    notificationmode: super::FabricTypes::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
 ) -> windows_core::Result<*mut core::ffi::c_void>
 where
     P0: windows_core::Param<windows_core::PCWSTR>,
@@ -230,12 +230,12 @@ where
             storename: windows_core::PCWSTR,
             partitionid: windows_core::GUID,
             replicaid: i64,
-            replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
-            localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
+            replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+            localstorekind: super::FabricTypes::FABRIC_LOCAL_STORE_KIND,
             localstoresettings: *const core::ffi::c_void,
             storeeventhandler: *mut core::ffi::c_void,
             secondaryeventhandler: *mut core::ffi::c_void,
-            notificationmode: super::super::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
+            notificationmode: super::FabricTypes::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
             keyvaluestore: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT;
     }
@@ -262,16 +262,16 @@ pub unsafe fn FabricCreateKeyValueStoreReplica4<P0, P1, P2, P3>(
     partitionid: windows_core::GUID,
     replicaid: i64,
     servicename: P1,
-    replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
-    localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
+    replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+    localstorekind: super::FabricTypes::FABRIC_LOCAL_STORE_KIND,
     localstoresettings: *const core::ffi::c_void,
     storeeventhandler: P2,
     secondaryeventhandler: P3,
-    notificationmode: super::super::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
+    notificationmode: super::FabricTypes::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
 ) -> windows_core::Result<*mut core::ffi::c_void>
 where
     P0: windows_core::Param<windows_core::PCWSTR>,
-    P1: windows_core::Param<super::super::FABRIC_URI>,
+    P1: windows_core::Param<super::FabricTypes::FABRIC_URI>,
     P2: windows_core::Param<IFabricStoreEventHandler>,
     P3: windows_core::Param<IFabricSecondaryEventHandler>,
 {
@@ -282,13 +282,13 @@ where
             storename: windows_core::PCWSTR,
             partitionid: windows_core::GUID,
             replicaid: i64,
-            servicename: super::super::FABRIC_URI,
-            replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
-            localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
+            servicename: super::FabricTypes::FABRIC_URI,
+            replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+            localstorekind: super::FabricTypes::FABRIC_LOCAL_STORE_KIND,
             localstoresettings: *const core::ffi::c_void,
             storeeventhandler: *mut core::ffi::c_void,
             secondaryeventhandler: *mut core::ffi::c_void,
-            notificationmode: super::super::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
+            notificationmode: super::FabricTypes::FABRIC_KEY_VALUE_STORE_NOTIFICATION_MODE,
             keyvaluestore: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT;
     }
@@ -316,16 +316,16 @@ pub unsafe fn FabricCreateKeyValueStoreReplica5<P0, P1, P2, P3>(
     partitionid: windows_core::GUID,
     replicaid: i64,
     servicename: P1,
-    replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
-    kvssettings: *const super::super::FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS,
-    localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
+    replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+    kvssettings: *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS,
+    localstorekind: super::FabricTypes::FABRIC_LOCAL_STORE_KIND,
     localstoresettings: *const core::ffi::c_void,
     storeeventhandler: P2,
     secondaryeventhandler: P3,
 ) -> windows_core::Result<*mut core::ffi::c_void>
 where
     P0: windows_core::Param<windows_core::PCWSTR>,
-    P1: windows_core::Param<super::super::FABRIC_URI>,
+    P1: windows_core::Param<super::FabricTypes::FABRIC_URI>,
     P2: windows_core::Param<IFabricStoreEventHandler>,
     P3: windows_core::Param<IFabricSecondaryEventHandler>,
 {
@@ -336,10 +336,10 @@ where
             storename: windows_core::PCWSTR,
             partitionid: windows_core::GUID,
             replicaid: i64,
-            servicename: super::super::FABRIC_URI,
-            replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
-            kvssettings: *const super::super::FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS,
-            localstorekind: super::super::FABRIC_LOCAL_STORE_KIND,
+            servicename: super::FabricTypes::FABRIC_URI,
+            replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+            kvssettings: *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS,
+            localstorekind: super::FabricTypes::FABRIC_LOCAL_STORE_KIND,
             localstoresettings: *const core::ffi::c_void,
             storeeventhandler: *mut core::ffi::c_void,
             secondaryeventhandler: *mut core::ffi::c_void,
@@ -382,7 +382,7 @@ pub unsafe fn FabricEndCreateRuntime<P0>(
     context: P0,
 ) -> windows_core::Result<*mut core::ffi::c_void>
 where
-    P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+    P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
 {
     #[link(name = "FabricRuntime")]
     extern "system" {
@@ -399,7 +399,7 @@ pub unsafe fn FabricEndGetActivationContext<P0>(
     context: P0,
 ) -> windows_core::Result<*mut core::ffi::c_void>
 where
-    P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+    P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
 {
     #[link(name = "FabricRuntime")]
     extern "system" {
@@ -416,7 +416,7 @@ pub unsafe fn FabricEndGetCodePackageActivator<P0>(
     context: P0,
 ) -> windows_core::Result<*mut core::ffi::c_void>
 where
-    P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+    P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
 {
     #[link(name = "FabricRuntime")]
     extern "system" {
@@ -433,7 +433,7 @@ pub unsafe fn FabricEndGetNodeContext<P0>(
     context: P0,
 ) -> windows_core::Result<*mut core::ffi::c_void>
 where
-    P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+    P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
 {
     #[link(name = "FabricRuntime")]
     extern "system" {
@@ -589,9 +589,9 @@ impl IFabricAtomicGroupStateProvider {
         atomicgroupid: i64,
         commitsequencenumber: i64,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginAtomicGroupCommit)(
@@ -605,7 +605,7 @@ impl IFabricAtomicGroupStateProvider {
     }
     pub unsafe fn EndAtomicGroupCommit<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndAtomicGroupCommit)(
             windows_core::Interface::as_raw(self),
@@ -618,9 +618,9 @@ impl IFabricAtomicGroupStateProvider {
         atomicgroupid: i64,
         rollbackequencenumber: i64,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginAtomicGroupRollback)(
@@ -634,7 +634,7 @@ impl IFabricAtomicGroupStateProvider {
     }
     pub unsafe fn EndAtomicGroupRollback<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndAtomicGroupRollback)(
             windows_core::Interface::as_raw(self),
@@ -646,9 +646,9 @@ impl IFabricAtomicGroupStateProvider {
         &self,
         fromcommitsequencenumber: i64,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginUndoProgress)(
@@ -661,7 +661,7 @@ impl IFabricAtomicGroupStateProvider {
     }
     pub unsafe fn EndUndoProgress<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndUndoProgress)(
             windows_core::Interface::as_raw(self),
@@ -735,10 +735,10 @@ impl IFabricAtomicGroupStateReplicator {
         operationdata: P0,
         callback: P1,
         operationsequencenumber: *mut i64,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<IFabricOperationData>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P1: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginReplicateAtomicGroupOperation)(
@@ -756,7 +756,7 @@ impl IFabricAtomicGroupStateReplicator {
         context: P0,
     ) -> windows_core::Result<i64>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndReplicateAtomicGroupOperation)(
@@ -771,9 +771,9 @@ impl IFabricAtomicGroupStateReplicator {
         atomicgroupid: i64,
         callback: P0,
         commitsequencenumber: *mut i64,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginReplicateAtomicGroupCommit)(
@@ -787,7 +787,7 @@ impl IFabricAtomicGroupStateReplicator {
     }
     pub unsafe fn EndReplicateAtomicGroupCommit<P0>(&self, context: P0) -> windows_core::Result<i64>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndReplicateAtomicGroupCommit)(
@@ -802,9 +802,9 @@ impl IFabricAtomicGroupStateReplicator {
         atomicgroupid: i64,
         callback: P0,
         rollbacksequencenumber: *mut i64,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginReplicateAtomicGroupRollback)(
@@ -821,7 +821,7 @@ impl IFabricAtomicGroupStateReplicator {
         context: P0,
     ) -> windows_core::Result<i64>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndReplicateAtomicGroupRollback)(
@@ -890,7 +890,9 @@ impl core::ops::Deref for IFabricCodePackage {
 }
 windows_core::imp::interface_hierarchy!(IFabricCodePackage, windows_core::IUnknown);
 impl IFabricCodePackage {
-    pub unsafe fn get_Description(&self) -> *mut super::super::FABRIC_CODE_PACKAGE_DESCRIPTION {
+    pub unsafe fn get_Description(
+        &self,
+    ) -> *mut super::FabricTypes::FABRIC_CODE_PACKAGE_DESCRIPTION {
         (windows_core::Interface::vtable(self).get_Description)(windows_core::Interface::as_raw(
             self,
         ))
@@ -907,7 +909,8 @@ pub struct IFabricCodePackage_Vtbl {
     pub get_Description:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_CODE_PACKAGE_DESCRIPTION,
+        )
+            -> *mut super::FabricTypes::FABRIC_CODE_PACKAGE_DESCRIPTION,
     pub get_Path: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
 }
 windows_core::imp::define_interface!(
@@ -929,14 +932,14 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricCodePackage2 {
     pub unsafe fn get_SetupEntryPointRunAsPolicy(
         &self,
-    ) -> *mut super::super::FABRIC_RUNAS_POLICY_DESCRIPTION {
+    ) -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION {
         (windows_core::Interface::vtable(self).get_SetupEntryPointRunAsPolicy)(
             windows_core::Interface::as_raw(self),
         )
     }
     pub unsafe fn get_EntryPointRunAsPolicy(
         &self,
-    ) -> *mut super::super::FABRIC_RUNAS_POLICY_DESCRIPTION {
+    ) -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION {
         (windows_core::Interface::vtable(self).get_EntryPointRunAsPolicy)(
             windows_core::Interface::as_raw(self),
         )
@@ -950,11 +953,13 @@ pub struct IFabricCodePackage2_Vtbl {
     pub get_SetupEntryPointRunAsPolicy:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_RUNAS_POLICY_DESCRIPTION,
+        )
+            -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION,
     pub get_EntryPointRunAsPolicy:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_RUNAS_POLICY_DESCRIPTION,
+        )
+            -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION,
 }
 windows_core::imp::define_interface!(
     IFabricCodePackageActivationContext,
@@ -1002,28 +1007,28 @@ impl IFabricCodePackageActivationContext {
     }
     pub unsafe fn get_ServiceTypes(
         &self,
-    ) -> *mut super::super::FABRIC_SERVICE_TYPE_DESCRIPTION_LIST {
+    ) -> *mut super::FabricTypes::FABRIC_SERVICE_TYPE_DESCRIPTION_LIST {
         (windows_core::Interface::vtable(self).get_ServiceTypes)(windows_core::Interface::as_raw(
             self,
         ))
     }
     pub unsafe fn get_ServiceGroupTypes(
         &self,
-    ) -> *mut super::super::FABRIC_SERVICE_GROUP_TYPE_DESCRIPTION_LIST {
+    ) -> *mut super::FabricTypes::FABRIC_SERVICE_GROUP_TYPE_DESCRIPTION_LIST {
         (windows_core::Interface::vtable(self).get_ServiceGroupTypes)(
             windows_core::Interface::as_raw(self),
         )
     }
     pub unsafe fn get_ApplicationPrincipals(
         &self,
-    ) -> *mut super::super::FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION {
+    ) -> *mut super::FabricTypes::FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION {
         (windows_core::Interface::vtable(self).get_ApplicationPrincipals)(
             windows_core::Interface::as_raw(self),
         )
     }
     pub unsafe fn get_ServiceEndpointResources(
         &self,
-    ) -> *mut super::super::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION_LIST {
+    ) -> *mut super::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION_LIST {
         (windows_core::Interface::vtable(self).get_ServiceEndpointResources)(
             windows_core::Interface::as_raw(self),
         )
@@ -1031,7 +1036,7 @@ impl IFabricCodePackageActivationContext {
     pub unsafe fn GetServiceEndpointResource<P0>(
         &self,
         serviceendpointresourcename: P0,
-    ) -> windows_core::Result<*mut super::super::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION>
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
     {
@@ -1045,7 +1050,7 @@ impl IFabricCodePackageActivationContext {
     }
     pub unsafe fn GetCodePackageNames(
         &self,
-    ) -> windows_core::Result<super::IFabricStringListResult> {
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringListResult> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetCodePackageNames)(
             windows_core::Interface::as_raw(self),
@@ -1055,7 +1060,7 @@ impl IFabricCodePackageActivationContext {
     }
     pub unsafe fn GetConfigurationPackageNames(
         &self,
-    ) -> windows_core::Result<super::IFabricStringListResult> {
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringListResult> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetConfigurationPackageNames)(
             windows_core::Interface::as_raw(self),
@@ -1065,7 +1070,7 @@ impl IFabricCodePackageActivationContext {
     }
     pub unsafe fn GetDataPackageNames(
         &self,
-    ) -> windows_core::Result<super::IFabricStringListResult> {
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringListResult> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetDataPackageNames)(
             windows_core::Interface::as_raw(self),
@@ -1197,93 +1202,7 @@ impl IFabricCodePackageActivationContext {
 unsafe impl Send for IFabricCodePackageActivationContext {}
 unsafe impl Sync for IFabricCodePackageActivationContext {}
 #[repr(C)]
-pub struct IFabricCodePackageActivationContext_Vtbl {
-    pub base__: windows_core::IUnknown_Vtbl,
-    pub get_ContextId: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
-    pub get_CodePackageName:
-        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
-    pub get_CodePackageVersion:
-        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
-    pub get_WorkDirectory:
-        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
-    pub get_LogDirectory: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
-    pub get_TempDirectory:
-        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
-    pub get_ServiceTypes:
-        unsafe extern "system" fn(
-            *mut core::ffi::c_void,
-        )
-            -> *mut super::super::FABRIC_SERVICE_TYPE_DESCRIPTION_LIST,
-    pub get_ServiceGroupTypes:
-        unsafe extern "system" fn(
-            *mut core::ffi::c_void,
-        )
-            -> *mut super::super::FABRIC_SERVICE_GROUP_TYPE_DESCRIPTION_LIST,
-    pub get_ApplicationPrincipals:
-        unsafe extern "system" fn(
-            *mut core::ffi::c_void,
-        )
-            -> *mut super::super::FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION,
-    pub get_ServiceEndpointResources:
-        unsafe extern "system" fn(
-            *mut core::ffi::c_void,
-        )
-            -> *mut super::super::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION_LIST,
-    pub GetServiceEndpointResource: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        windows_core::PCWSTR,
-        *mut *mut super::super::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
-    ) -> windows_core::HRESULT,
-    pub GetCodePackageNames: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        *mut *mut core::ffi::c_void,
-    ) -> windows_core::HRESULT,
-    pub GetConfigurationPackageNames: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        *mut *mut core::ffi::c_void,
-    ) -> windows_core::HRESULT,
-    pub GetDataPackageNames: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        *mut *mut core::ffi::c_void,
-    ) -> windows_core::HRESULT,
-    pub GetCodePackage: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        windows_core::PCWSTR,
-        *mut *mut core::ffi::c_void,
-    ) -> windows_core::HRESULT,
-    pub GetConfigurationPackage: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        windows_core::PCWSTR,
-        *mut *mut core::ffi::c_void,
-    ) -> windows_core::HRESULT,
-    pub GetDataPackage: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        windows_core::PCWSTR,
-        *mut *mut core::ffi::c_void,
-    ) -> windows_core::HRESULT,
-    pub RegisterCodePackageChangeHandler: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        *mut core::ffi::c_void,
-        *mut i64,
-    ) -> windows_core::HRESULT,
-    pub UnregisterCodePackageChangeHandler:
-        unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
-    pub RegisterConfigurationPackageChangeHandler:
-        unsafe extern "system" fn(
-            *mut core::ffi::c_void,
-            *mut core::ffi::c_void,
-            *mut i64,
-        ) -> windows_core::HRESULT,
-    pub UnregisterConfigurationPackageChangeHandler:
-        unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
-    pub RegisterDataPackageChangeHandler: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        *mut core::ffi::c_void,
-        *mut i64,
-    ) -> windows_core::HRESULT,
-    pub UnregisterDataPackageChangeHandler:
-        unsafe extern "system" fn(*mut core::ffi::c_void, i64) -> windows_core::HRESULT,
-}
+pub struct IFabricCodePackageActivationContext_Vtbl where { pub base__ : windows_core::IUnknown_Vtbl , pub get_ContextId :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> windows_core::PCWSTR , pub get_CodePackageName :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> windows_core::PCWSTR , pub get_CodePackageVersion :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> windows_core::PCWSTR , pub get_WorkDirectory :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> windows_core::PCWSTR , pub get_LogDirectory :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> windows_core::PCWSTR , pub get_TempDirectory :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> windows_core::PCWSTR , pub get_ServiceTypes :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> *mut super::FabricTypes:: FABRIC_SERVICE_TYPE_DESCRIPTION_LIST , pub get_ServiceGroupTypes :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> *mut super::FabricTypes:: FABRIC_SERVICE_GROUP_TYPE_DESCRIPTION_LIST , pub get_ApplicationPrincipals :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> *mut super::FabricTypes:: FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION , pub get_ServiceEndpointResources :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> *mut super::FabricTypes:: FABRIC_ENDPOINT_RESOURCE_DESCRIPTION_LIST , pub GetServiceEndpointResource :unsafe extern "system" fn ( * mut core::ffi::c_void , windows_core::PCWSTR , *mut *mut super::FabricTypes:: FABRIC_ENDPOINT_RESOURCE_DESCRIPTION , ) -> windows_core::HRESULT , pub GetCodePackageNames :unsafe extern "system" fn ( * mut core::ffi::c_void , *mut * mut core::ffi::c_void , ) -> windows_core::HRESULT , pub GetConfigurationPackageNames :unsafe extern "system" fn ( * mut core::ffi::c_void , *mut * mut core::ffi::c_void , ) -> windows_core::HRESULT , pub GetDataPackageNames :unsafe extern "system" fn ( * mut core::ffi::c_void , *mut * mut core::ffi::c_void , ) -> windows_core::HRESULT , pub GetCodePackage :unsafe extern "system" fn ( * mut core::ffi::c_void , windows_core::PCWSTR , *mut * mut core::ffi::c_void , ) -> windows_core::HRESULT , pub GetConfigurationPackage :unsafe extern "system" fn ( * mut core::ffi::c_void , windows_core::PCWSTR , *mut * mut core::ffi::c_void , ) -> windows_core::HRESULT , pub GetDataPackage :unsafe extern "system" fn ( * mut core::ffi::c_void , windows_core::PCWSTR , *mut * mut core::ffi::c_void , ) -> windows_core::HRESULT , pub RegisterCodePackageChangeHandler :unsafe extern "system" fn ( * mut core::ffi::c_void , * mut core::ffi::c_void , *mut i64 , ) -> windows_core::HRESULT , pub UnregisterCodePackageChangeHandler :unsafe extern "system" fn ( * mut core::ffi::c_void , i64 , ) -> windows_core::HRESULT , pub RegisterConfigurationPackageChangeHandler :unsafe extern "system" fn ( * mut core::ffi::c_void , * mut core::ffi::c_void , *mut i64 , ) -> windows_core::HRESULT , pub UnregisterConfigurationPackageChangeHandler :unsafe extern "system" fn ( * mut core::ffi::c_void , i64 , ) -> windows_core::HRESULT , pub RegisterDataPackageChangeHandler :unsafe extern "system" fn ( * mut core::ffi::c_void , * mut core::ffi::c_void , *mut i64 , ) -> windows_core::HRESULT , pub UnregisterDataPackageChangeHandler :unsafe extern "system" fn ( * mut core::ffi::c_void , i64 , ) -> windows_core::HRESULT , }
 windows_core::imp::define_interface!(
     IFabricCodePackageActivationContext2,
     IFabricCodePackageActivationContext2_Vtbl,
@@ -1301,7 +1220,7 @@ windows_core::imp::interface_hierarchy!(
     IFabricCodePackageActivationContext
 );
 impl IFabricCodePackageActivationContext2 {
-    pub unsafe fn get_ApplicationName(&self) -> super::super::FABRIC_URI {
+    pub unsafe fn get_ApplicationName(&self) -> super::FabricTypes::FABRIC_URI {
         (windows_core::Interface::vtable(self).get_ApplicationName)(
             windows_core::Interface::as_raw(self),
         )
@@ -1313,7 +1232,7 @@ impl IFabricCodePackageActivationContext2 {
     }
     pub unsafe fn GetServiceManifestName(
         &self,
-    ) -> windows_core::Result<super::IFabricStringResult> {
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetServiceManifestName)(
             windows_core::Interface::as_raw(self),
@@ -1323,7 +1242,7 @@ impl IFabricCodePackageActivationContext2 {
     }
     pub unsafe fn GetServiceManifestVersion(
         &self,
-    ) -> windows_core::Result<super::IFabricStringResult> {
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetServiceManifestVersion)(
             windows_core::Interface::as_raw(self),
@@ -1338,7 +1257,7 @@ unsafe impl Sync for IFabricCodePackageActivationContext2 {}
 pub struct IFabricCodePackageActivationContext2_Vtbl {
     pub base__: IFabricCodePackageActivationContext_Vtbl,
     pub get_ApplicationName:
-        unsafe extern "system" fn(*mut core::ffi::c_void) -> super::super::FABRIC_URI,
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> super::FabricTypes::FABRIC_URI,
     pub get_ApplicationTypeName:
         unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
     pub GetServiceManifestName: unsafe extern "system" fn(
@@ -1370,7 +1289,7 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricCodePackageActivationContext3 {
     pub unsafe fn ReportApplicationHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportApplicationHealth)(
             windows_core::Interface::as_raw(self),
@@ -1380,7 +1299,7 @@ impl IFabricCodePackageActivationContext3 {
     }
     pub unsafe fn ReportDeployedApplicationHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportDeployedApplicationHealth)(
             windows_core::Interface::as_raw(self),
@@ -1390,7 +1309,7 @@ impl IFabricCodePackageActivationContext3 {
     }
     pub unsafe fn ReportDeployedServicePackageHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportDeployedServicePackageHealth)(
             windows_core::Interface::as_raw(self),
@@ -1406,15 +1325,15 @@ pub struct IFabricCodePackageActivationContext3_Vtbl {
     pub base__: IFabricCodePackageActivationContext2_Vtbl,
     pub ReportApplicationHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::HRESULT,
     pub ReportDeployedApplicationHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::HRESULT,
     pub ReportDeployedServicePackageHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -1438,8 +1357,8 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricCodePackageActivationContext4 {
     pub unsafe fn ReportApplicationHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportApplicationHealth2)(
             windows_core::Interface::as_raw(self),
@@ -1450,8 +1369,8 @@ impl IFabricCodePackageActivationContext4 {
     }
     pub unsafe fn ReportDeployedApplicationHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportDeployedApplicationHealth2)(
             windows_core::Interface::as_raw(self),
@@ -1462,8 +1381,8 @@ impl IFabricCodePackageActivationContext4 {
     }
     pub unsafe fn ReportDeployedServicePackageHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportDeployedServicePackageHealth2)(
             windows_core::Interface::as_raw(self),
@@ -1480,18 +1399,18 @@ pub struct IFabricCodePackageActivationContext4_Vtbl {
     pub base__: IFabricCodePackageActivationContext3_Vtbl,
     pub ReportApplicationHealth2: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
-        *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::HRESULT,
     pub ReportDeployedApplicationHealth2: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
-        *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::HRESULT,
     pub ReportDeployedServicePackageHealth2: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
-        *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     )
         -> windows_core::HRESULT,
 }
@@ -1560,7 +1479,7 @@ impl IFabricCodePackageActivationContext6 {
     pub unsafe fn GetDirectory<P0>(
         &self,
         logicaldirectoryname: P0,
-    ) -> windows_core::Result<super::IFabricStringResult>
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
     {
@@ -1599,13 +1518,13 @@ windows_core::imp::interface_hierarchy!(IFabricCodePackageActivator, windows_cor
 impl IFabricCodePackageActivator {
     pub unsafe fn BeginActivateCodePackage<P0>(
         &self,
-        codepackagenames: *const super::super::FABRIC_STRING_LIST,
-        environment: *const super::super::FABRIC_STRING_MAP,
+        codepackagenames: *const super::FabricTypes::FABRIC_STRING_LIST,
+        environment: *const super::FabricTypes::FABRIC_STRING_MAP,
         timeoutmilliseconds: u32,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginActivateCodePackage)(
@@ -1620,7 +1539,7 @@ impl IFabricCodePackageActivator {
     }
     pub unsafe fn EndActivateCodePackage<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndActivateCodePackage)(
             windows_core::Interface::as_raw(self),
@@ -1630,12 +1549,12 @@ impl IFabricCodePackageActivator {
     }
     pub unsafe fn BeginDeactivateCodePackage<P0>(
         &self,
-        codepackagenames: *const super::super::FABRIC_STRING_LIST,
+        codepackagenames: *const super::FabricTypes::FABRIC_STRING_LIST,
         timeoutmilliseconds: u32,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginDeactivateCodePackage)(
@@ -1649,7 +1568,7 @@ impl IFabricCodePackageActivator {
     }
     pub unsafe fn EndDeactivateCodePackage<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndDeactivateCodePackage)(
             windows_core::Interface::as_raw(self),
@@ -1659,7 +1578,7 @@ impl IFabricCodePackageActivator {
     }
     pub unsafe fn AbortCodePackage(
         &self,
-        codepackagenames: *const super::super::FABRIC_STRING_LIST,
+        codepackagenames: *const super::FabricTypes::FABRIC_STRING_LIST,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).AbortCodePackage)(
             windows_core::Interface::as_raw(self),
@@ -1700,8 +1619,8 @@ pub struct IFabricCodePackageActivator_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub BeginActivateCodePackage: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_STRING_LIST,
-        *const super::super::FABRIC_STRING_MAP,
+        *const super::FabricTypes::FABRIC_STRING_LIST,
+        *const super::FabricTypes::FABRIC_STRING_MAP,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -1712,7 +1631,7 @@ pub struct IFabricCodePackageActivator_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginDeactivateCodePackage: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_STRING_LIST,
+        *const super::FabricTypes::FABRIC_STRING_LIST,
         u32,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -1723,7 +1642,7 @@ pub struct IFabricCodePackageActivator_Vtbl {
     ) -> windows_core::HRESULT,
     pub AbortCodePackage: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_STRING_LIST,
+        *const super::FabricTypes::FABRIC_STRING_LIST,
     ) -> windows_core::HRESULT,
     pub RegisterCodePackageEventHandler: unsafe extern "system" fn(
         *mut core::ffi::c_void,
@@ -1824,7 +1743,7 @@ impl IFabricCodePackageEventHandler {
     pub unsafe fn OnCodePackageEvent<P0>(
         &self,
         source: P0,
-        eventdesc: *const super::super::FABRIC_CODE_PACKAGE_EVENT_DESCRIPTION,
+        eventdesc: *const super::FabricTypes::FABRIC_CODE_PACKAGE_EVENT_DESCRIPTION,
     ) where
         P0: windows_core::Param<IFabricCodePackageActivator>,
     {
@@ -1843,7 +1762,7 @@ pub struct IFabricCodePackageEventHandler_Vtbl {
     pub OnCodePackageEvent: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_CODE_PACKAGE_EVENT_DESCRIPTION,
+        *const super::FabricTypes::FABRIC_CODE_PACKAGE_EVENT_DESCRIPTION,
     ),
 }
 windows_core::imp::define_interface!(
@@ -1861,7 +1780,7 @@ windows_core::imp::interface_hierarchy!(IFabricConfigurationPackage, windows_cor
 impl IFabricConfigurationPackage {
     pub unsafe fn get_Description(
         &self,
-    ) -> *mut super::super::FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION {
+    ) -> *mut super::FabricTypes::FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION {
         (windows_core::Interface::vtable(self).get_Description)(windows_core::Interface::as_raw(
             self,
         ))
@@ -1869,13 +1788,13 @@ impl IFabricConfigurationPackage {
     pub unsafe fn get_Path(&self) -> windows_core::PCWSTR {
         (windows_core::Interface::vtable(self).get_Path)(windows_core::Interface::as_raw(self))
     }
-    pub unsafe fn get_Settings(&self) -> *mut super::super::FABRIC_CONFIGURATION_SETTINGS {
+    pub unsafe fn get_Settings(&self) -> *mut super::FabricTypes::FABRIC_CONFIGURATION_SETTINGS {
         (windows_core::Interface::vtable(self).get_Settings)(windows_core::Interface::as_raw(self))
     }
     pub unsafe fn GetSection<P0>(
         &self,
         sectionname: P0,
-    ) -> windows_core::Result<*mut super::super::FABRIC_CONFIGURATION_SECTION>
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_CONFIGURATION_SECTION>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
     {
@@ -1910,7 +1829,7 @@ impl IFabricConfigurationPackage {
     pub unsafe fn DecryptValue<P0>(
         &self,
         encryptedvalue: P0,
-    ) -> windows_core::Result<super::IFabricStringResult>
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
     {
@@ -1926,36 +1845,7 @@ impl IFabricConfigurationPackage {
 unsafe impl Send for IFabricConfigurationPackage {}
 unsafe impl Sync for IFabricConfigurationPackage {}
 #[repr(C)]
-pub struct IFabricConfigurationPackage_Vtbl {
-    pub base__: windows_core::IUnknown_Vtbl,
-    pub get_Description:
-        unsafe extern "system" fn(
-            *mut core::ffi::c_void,
-        )
-            -> *mut super::super::FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION,
-    pub get_Path: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
-    pub get_Settings: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-    )
-        -> *mut super::super::FABRIC_CONFIGURATION_SETTINGS,
-    pub GetSection: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        windows_core::PCWSTR,
-        *mut *mut super::super::FABRIC_CONFIGURATION_SECTION,
-    ) -> windows_core::HRESULT,
-    pub GetValue: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        windows_core::PCWSTR,
-        windows_core::PCWSTR,
-        *mut u8,
-        *mut windows_core::PCWSTR,
-    ) -> windows_core::HRESULT,
-    pub DecryptValue: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-        windows_core::PCWSTR,
-        *mut *mut core::ffi::c_void,
-    ) -> windows_core::HRESULT,
-}
+pub struct IFabricConfigurationPackage_Vtbl where { pub base__ : windows_core::IUnknown_Vtbl , pub get_Description :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> *mut super::FabricTypes:: FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION , pub get_Path :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> windows_core::PCWSTR , pub get_Settings :unsafe extern "system" fn ( * mut core::ffi::c_void , ) -> *mut super::FabricTypes:: FABRIC_CONFIGURATION_SETTINGS , pub GetSection :unsafe extern "system" fn ( * mut core::ffi::c_void , windows_core::PCWSTR , *mut *mut super::FabricTypes:: FABRIC_CONFIGURATION_SECTION , ) -> windows_core::HRESULT , pub GetValue :unsafe extern "system" fn ( * mut core::ffi::c_void , windows_core::PCWSTR , windows_core::PCWSTR , *mut u8 , *mut windows_core::PCWSTR , ) -> windows_core::HRESULT , pub DecryptValue :unsafe extern "system" fn ( * mut core::ffi::c_void , windows_core::PCWSTR , *mut * mut core::ffi::c_void , ) -> windows_core::HRESULT , }
 windows_core::imp::define_interface!(
     IFabricConfigurationPackage2,
     IFabricConfigurationPackage2_Vtbl,
@@ -1977,7 +1867,7 @@ impl IFabricConfigurationPackage2 {
         &self,
         sectionname: P0,
         parameterprefix: P1,
-    ) -> windows_core::Result<*mut super::super::FABRIC_CONFIGURATION_PARAMETER_LIST>
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_CONFIGURATION_PARAMETER_LIST>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
         P1: windows_core::Param<windows_core::PCWSTR>,
@@ -2001,7 +1891,7 @@ pub struct IFabricConfigurationPackage2_Vtbl {
         *mut core::ffi::c_void,
         windows_core::PCWSTR,
         windows_core::PCWSTR,
-        *mut *mut super::super::FABRIC_CONFIGURATION_PARAMETER_LIST,
+        *mut *mut super::FabricTypes::FABRIC_CONFIGURATION_PARAMETER_LIST,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -2095,7 +1985,9 @@ impl core::ops::Deref for IFabricDataPackage {
 }
 windows_core::imp::interface_hierarchy!(IFabricDataPackage, windows_core::IUnknown);
 impl IFabricDataPackage {
-    pub unsafe fn get_Description(&self) -> *mut super::super::FABRIC_DATA_PACKAGE_DESCRIPTION {
+    pub unsafe fn get_Description(
+        &self,
+    ) -> *mut super::FabricTypes::FABRIC_DATA_PACKAGE_DESCRIPTION {
         (windows_core::Interface::vtable(self).get_Description)(windows_core::Interface::as_raw(
             self,
         ))
@@ -2112,7 +2004,8 @@ pub struct IFabricDataPackage_Vtbl {
     pub get_Description:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_DATA_PACKAGE_DESCRIPTION,
+        )
+            -> *mut super::FabricTypes::FABRIC_DATA_PACKAGE_DESCRIPTION,
     pub get_Path: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
 }
 windows_core::imp::define_interface!(
@@ -2203,7 +2096,7 @@ impl core::ops::Deref for IFabricEseLocalStoreSettingsResult {
 }
 windows_core::imp::interface_hierarchy!(IFabricEseLocalStoreSettingsResult, windows_core::IUnknown);
 impl IFabricEseLocalStoreSettingsResult {
-    pub unsafe fn get_Settings(&self) -> *mut super::super::FABRIC_ESE_LOCAL_STORE_SETTINGS {
+    pub unsafe fn get_Settings(&self) -> *mut super::FabricTypes::FABRIC_ESE_LOCAL_STORE_SETTINGS {
         (windows_core::Interface::vtable(self).get_Settings)(windows_core::Interface::as_raw(self))
     }
 }
@@ -2215,7 +2108,8 @@ pub struct IFabricEseLocalStoreSettingsResult_Vtbl {
     pub get_Settings:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_ESE_LOCAL_STORE_SETTINGS,
+        )
+            -> *mut super::FabricTypes::FABRIC_ESE_LOCAL_STORE_SETTINGS,
 }
 windows_core::imp::define_interface!(
     IFabricKeyValueStoreEnumerator,
@@ -2496,7 +2390,9 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricKeyValueStoreItemMetadataResult {
-    pub unsafe fn get_Metadata(&self) -> *mut super::super::FABRIC_KEY_VALUE_STORE_ITEM_METADATA {
+    pub unsafe fn get_Metadata(
+        &self,
+    ) -> *mut super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM_METADATA {
         (windows_core::Interface::vtable(self).get_Metadata)(windows_core::Interface::as_raw(self))
     }
 }
@@ -2509,7 +2405,7 @@ pub struct IFabricKeyValueStoreItemMetadataResult_Vtbl {
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         )
-            -> *mut super::super::FABRIC_KEY_VALUE_STORE_ITEM_METADATA,
+            -> *mut super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM_METADATA,
 }
 windows_core::imp::define_interface!(
     IFabricKeyValueStoreItemResult,
@@ -2524,7 +2420,7 @@ impl core::ops::Deref for IFabricKeyValueStoreItemResult {
 }
 windows_core::imp::interface_hierarchy!(IFabricKeyValueStoreItemResult, windows_core::IUnknown);
 impl IFabricKeyValueStoreItemResult {
-    pub unsafe fn get_Item(&self) -> *mut super::super::FABRIC_KEY_VALUE_STORE_ITEM {
+    pub unsafe fn get_Item(&self) -> *mut super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM {
         (windows_core::Interface::vtable(self).get_Item)(windows_core::Interface::as_raw(self))
     }
 }
@@ -2535,7 +2431,8 @@ pub struct IFabricKeyValueStoreItemResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub get_Item: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-    ) -> *mut super::super::FABRIC_KEY_VALUE_STORE_ITEM,
+    )
+        -> *mut super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM,
 }
 windows_core::imp::define_interface!(
     IFabricKeyValueStoreNotification,
@@ -2656,7 +2553,7 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricKeyValueStoreReplica {
     pub unsafe fn GetCurrentEpoch(
         &self,
-        currentepoch: *mut super::super::FABRIC_EPOCH,
+        currentepoch: *mut super::FabricTypes::FABRIC_EPOCH,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).GetCurrentEpoch)(
             windows_core::Interface::as_raw(self),
@@ -2666,7 +2563,7 @@ impl IFabricKeyValueStoreReplica {
     }
     pub unsafe fn UpdateReplicatorSettings(
         &self,
-        replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
+        replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).UpdateReplicatorSettings)(
             windows_core::Interface::as_raw(self),
@@ -2864,11 +2761,11 @@ pub struct IFabricKeyValueStoreReplica_Vtbl {
     pub base__: IFabricStatefulServiceReplica_Vtbl,
     pub GetCurrentEpoch: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *mut super::super::FABRIC_EPOCH,
+        *mut super::FabricTypes::FABRIC_EPOCH,
     ) -> windows_core::HRESULT,
     pub UpdateReplicatorSettings: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_REPLICATOR_SETTINGS,
+        *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
     ) -> windows_core::HRESULT,
     pub CreateTransaction: unsafe extern "system" fn(
         *mut core::ffi::c_void,
@@ -2976,7 +2873,7 @@ impl IFabricKeyValueStoreReplica2 {
     }
     pub unsafe fn CreateTransaction2(
         &self,
-        settings: *const super::super::FABRIC_KEY_VALUE_STORE_TRANSACTION_SETTINGS,
+        settings: *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_TRANSACTION_SETTINGS,
     ) -> windows_core::Result<IFabricTransaction> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).CreateTransaction2)(
@@ -3002,7 +2899,7 @@ pub struct IFabricKeyValueStoreReplica2_Vtbl {
     ) -> windows_core::HRESULT,
     pub CreateTransaction2: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_KEY_VALUE_STORE_TRANSACTION_SETTINGS,
+        *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_TRANSACTION_SETTINGS,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
 }
@@ -3028,14 +2925,14 @@ impl IFabricKeyValueStoreReplica3 {
     pub unsafe fn BeginBackup<P0, P1, P2>(
         &self,
         backupdirectory: P0,
-        backupoption: super::super::FABRIC_STORE_BACKUP_OPTION,
+        backupoption: super::FabricTypes::FABRIC_STORE_BACKUP_OPTION,
         postbackuphandler: P1,
         callback: P2,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
         P1: windows_core::Param<IFabricStorePostBackupHandler>,
-        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P2: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginBackup)(
@@ -3050,7 +2947,7 @@ impl IFabricKeyValueStoreReplica3 {
     }
     pub unsafe fn EndBackup<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndBackup)(
             windows_core::Interface::as_raw(self),
@@ -3067,7 +2964,7 @@ pub struct IFabricKeyValueStoreReplica3_Vtbl {
     pub BeginBackup: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         windows_core::PCWSTR,
-        super::super::FABRIC_STORE_BACKUP_OPTION,
+        super::FabricTypes::FABRIC_STORE_BACKUP_OPTION,
         *mut core::ffi::c_void,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -3101,10 +2998,10 @@ impl IFabricKeyValueStoreReplica4 {
         &self,
         backupdirectory: P0,
         callback: P1,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P1: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginRestore)(
@@ -3117,7 +3014,7 @@ impl IFabricKeyValueStoreReplica4 {
     }
     pub unsafe fn EndRestore<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndRestore)(
             windows_core::Interface::as_raw(self),
@@ -3387,12 +3284,12 @@ impl IFabricKeyValueStoreReplica6 {
     pub unsafe fn BeginRestore2<P0, P1>(
         &self,
         backupdirectory: P0,
-        settings: *const super::super::FABRIC_KEY_VALUE_STORE_RESTORE_SETTINGS,
+        settings: *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_RESTORE_SETTINGS,
         callback: P1,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P1: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginRestore2)(
@@ -3413,7 +3310,7 @@ pub struct IFabricKeyValueStoreReplica6_Vtbl {
     pub BeginRestore2: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         windows_core::PCWSTR,
-        *const super::super::FABRIC_KEY_VALUE_STORE_RESTORE_SETTINGS,
+        *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_RESTORE_SETTINGS,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
@@ -3431,7 +3328,7 @@ impl core::ops::Deref for IFabricNodeContextResult {
 }
 windows_core::imp::interface_hierarchy!(IFabricNodeContextResult, windows_core::IUnknown);
 impl IFabricNodeContextResult {
-    pub unsafe fn get_NodeContext(&self) -> *mut super::super::FABRIC_NODE_CONTEXT {
+    pub unsafe fn get_NodeContext(&self) -> *mut super::FabricTypes::FABRIC_NODE_CONTEXT {
         (windows_core::Interface::vtable(self).get_NodeContext)(windows_core::Interface::as_raw(
             self,
         ))
@@ -3442,8 +3339,10 @@ unsafe impl Sync for IFabricNodeContextResult {}
 #[repr(C)]
 pub struct IFabricNodeContextResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    pub get_NodeContext:
-        unsafe extern "system" fn(*mut core::ffi::c_void) -> *mut super::super::FABRIC_NODE_CONTEXT,
+    pub get_NodeContext: unsafe extern "system" fn(
+        *mut core::ffi::c_void,
+    )
+        -> *mut super::FabricTypes::FABRIC_NODE_CONTEXT,
 }
 windows_core::imp::define_interface!(
     IFabricNodeContextResult2,
@@ -3465,7 +3364,7 @@ impl IFabricNodeContextResult2 {
     pub unsafe fn GetDirectory<P0>(
         &self,
         logicaldirectoryname: P0,
-    ) -> windows_core::Result<super::IFabricStringResult>
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
     {
@@ -3502,13 +3401,13 @@ impl core::ops::Deref for IFabricOperation {
 }
 windows_core::imp::interface_hierarchy!(IFabricOperation, windows_core::IUnknown);
 impl IFabricOperation {
-    pub unsafe fn get_Metadata(&self) -> *mut super::super::FABRIC_OPERATION_METADATA {
+    pub unsafe fn get_Metadata(&self) -> *mut super::FabricTypes::FABRIC_OPERATION_METADATA {
         (windows_core::Interface::vtable(self).get_Metadata)(windows_core::Interface::as_raw(self))
     }
     pub unsafe fn GetData(
         &self,
         count: *mut u32,
-    ) -> windows_core::Result<*mut super::super::FABRIC_OPERATION_DATA_BUFFER> {
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_OPERATION_DATA_BUFFER> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetData)(
             windows_core::Interface::as_raw(self),
@@ -3527,14 +3426,14 @@ unsafe impl Sync for IFabricOperation {}
 #[repr(C)]
 pub struct IFabricOperation_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    pub get_Metadata: unsafe extern "system" fn(
-        *mut core::ffi::c_void,
-    )
-        -> *mut super::super::FABRIC_OPERATION_METADATA,
+    pub get_Metadata:
+        unsafe extern "system" fn(
+            *mut core::ffi::c_void,
+        ) -> *mut super::FabricTypes::FABRIC_OPERATION_METADATA,
     pub GetData: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         *mut u32,
-        *mut *mut super::super::FABRIC_OPERATION_DATA_BUFFER,
+        *mut *mut super::FabricTypes::FABRIC_OPERATION_DATA_BUFFER,
     ) -> windows_core::HRESULT,
     pub Acknowledge: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::HRESULT,
 }
@@ -3554,7 +3453,7 @@ impl IFabricOperationData {
     pub unsafe fn GetData(
         &self,
         count: *mut u32,
-    ) -> windows_core::Result<*mut super::super::FABRIC_OPERATION_DATA_BUFFER> {
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_OPERATION_DATA_BUFFER> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetData)(
             windows_core::Interface::as_raw(self),
@@ -3572,7 +3471,7 @@ pub struct IFabricOperationData_Vtbl {
     pub GetData: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         *mut u32,
-        *mut *mut super::super::FABRIC_OPERATION_DATA_BUFFER,
+        *mut *mut super::FabricTypes::FABRIC_OPERATION_DATA_BUFFER,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -3591,9 +3490,9 @@ impl IFabricOperationDataStream {
     pub unsafe fn BeginGetNext<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetNext)(
@@ -3605,7 +3504,7 @@ impl IFabricOperationDataStream {
     }
     pub unsafe fn EndGetNext<P0>(&self, context: P0) -> windows_core::Result<IFabricOperationData>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndGetNext)(
@@ -3648,9 +3547,9 @@ impl IFabricOperationStream {
     pub unsafe fn BeginGetOperation<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginGetOperation)(
@@ -3662,7 +3561,7 @@ impl IFabricOperationStream {
     }
     pub unsafe fn EndGetOperation<P0>(&self, context: P0) -> windows_core::Result<IFabricOperation>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndGetOperation)(
@@ -3708,7 +3607,7 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricOperationStream2 {
     pub unsafe fn ReportFault(
         &self,
-        faulttype: super::super::FABRIC_FAULT_TYPE,
+        faulttype: super::FabricTypes::FABRIC_FAULT_TYPE,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportFault)(
             windows_core::Interface::as_raw(self),
@@ -3724,7 +3623,7 @@ pub struct IFabricOperationStream2_Vtbl {
     pub base__: IFabricOperationStream_Vtbl,
     pub ReportFault: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        super::super::FABRIC_FAULT_TYPE,
+        super::FabricTypes::FABRIC_FAULT_TYPE,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -3747,9 +3646,9 @@ impl IFabricPrimaryReplicator {
     pub unsafe fn BeginOnDataLoss<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginOnDataLoss)(
@@ -3761,7 +3660,7 @@ impl IFabricPrimaryReplicator {
     }
     pub unsafe fn EndOnDataLoss<P0>(&self, context: P0) -> windows_core::Result<u8>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndOnDataLoss)(
@@ -3773,8 +3672,8 @@ impl IFabricPrimaryReplicator {
     }
     pub unsafe fn UpdateCatchUpReplicaSetConfiguration(
         &self,
-        currentconfiguration: *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
-        previousconfiguration: *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
+        currentconfiguration: *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
+        previousconfiguration: *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).UpdateCatchUpReplicaSetConfiguration)(
             windows_core::Interface::as_raw(self),
@@ -3785,11 +3684,11 @@ impl IFabricPrimaryReplicator {
     }
     pub unsafe fn BeginWaitForCatchUpQuorum<P0>(
         &self,
-        catchupmode: super::super::FABRIC_REPLICA_SET_QUORUM_MODE,
+        catchupmode: super::FabricTypes::FABRIC_REPLICA_SET_QUORUM_MODE,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginWaitForCatchUpQuorum)(
@@ -3802,7 +3701,7 @@ impl IFabricPrimaryReplicator {
     }
     pub unsafe fn EndWaitForCatchUpQuorum<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndWaitForCatchUpQuorum)(
             windows_core::Interface::as_raw(self),
@@ -3812,7 +3711,7 @@ impl IFabricPrimaryReplicator {
     }
     pub unsafe fn UpdateCurrentReplicaSetConfiguration(
         &self,
-        currentconfiguration: *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
+        currentconfiguration: *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).UpdateCurrentReplicaSetConfiguration)(
             windows_core::Interface::as_raw(self),
@@ -3822,11 +3721,11 @@ impl IFabricPrimaryReplicator {
     }
     pub unsafe fn BeginBuildReplica<P0>(
         &self,
-        replica: *const super::super::FABRIC_REPLICA_INFORMATION,
+        replica: *const super::FabricTypes::FABRIC_REPLICA_INFORMATION,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginBuildReplica)(
@@ -3839,7 +3738,7 @@ impl IFabricPrimaryReplicator {
     }
     pub unsafe fn EndBuildReplica<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndBuildReplica)(
             windows_core::Interface::as_raw(self),
@@ -3872,13 +3771,13 @@ pub struct IFabricPrimaryReplicator_Vtbl {
     ) -> windows_core::HRESULT,
     pub UpdateCatchUpReplicaSetConfiguration: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
-        *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
+        *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
+        *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
     )
         -> windows_core::HRESULT,
     pub BeginWaitForCatchUpQuorum: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        super::super::FABRIC_REPLICA_SET_QUORUM_MODE,
+        super::FabricTypes::FABRIC_REPLICA_SET_QUORUM_MODE,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
@@ -3888,12 +3787,12 @@ pub struct IFabricPrimaryReplicator_Vtbl {
     ) -> windows_core::HRESULT,
     pub UpdateCurrentReplicaSetConfiguration: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
+        *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
     )
         -> windows_core::HRESULT,
     pub BeginBuildReplica: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_REPLICA_INFORMATION,
+        *const super::FabricTypes::FABRIC_REPLICA_INFORMATION,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
@@ -3946,9 +3845,9 @@ impl IFabricReplicator {
     pub unsafe fn BeginOpen<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginOpen)(
@@ -3961,9 +3860,9 @@ impl IFabricReplicator {
     pub unsafe fn EndOpen<P0>(
         &self,
         context: P0,
-    ) -> windows_core::Result<super::IFabricStringResult>
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndOpen)(
@@ -3975,12 +3874,12 @@ impl IFabricReplicator {
     }
     pub unsafe fn BeginChangeRole<P0>(
         &self,
-        epoch: *const super::super::FABRIC_EPOCH,
-        role: super::super::FABRIC_REPLICA_ROLE,
+        epoch: *const super::FabricTypes::FABRIC_EPOCH,
+        role: super::FabricTypes::FABRIC_REPLICA_ROLE,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginChangeRole)(
@@ -3994,7 +3893,7 @@ impl IFabricReplicator {
     }
     pub unsafe fn EndChangeRole<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndChangeRole)(
             windows_core::Interface::as_raw(self),
@@ -4004,11 +3903,11 @@ impl IFabricReplicator {
     }
     pub unsafe fn BeginUpdateEpoch<P0>(
         &self,
-        epoch: *const super::super::FABRIC_EPOCH,
+        epoch: *const super::FabricTypes::FABRIC_EPOCH,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginUpdateEpoch)(
@@ -4021,7 +3920,7 @@ impl IFabricReplicator {
     }
     pub unsafe fn EndUpdateEpoch<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndUpdateEpoch)(
             windows_core::Interface::as_raw(self),
@@ -4032,9 +3931,9 @@ impl IFabricReplicator {
     pub unsafe fn BeginClose<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginClose)(
@@ -4046,7 +3945,7 @@ impl IFabricReplicator {
     }
     pub unsafe fn EndClose<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndClose)(
             windows_core::Interface::as_raw(self),
@@ -4091,8 +3990,8 @@ pub struct IFabricReplicator_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginChangeRole: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_EPOCH,
-        super::super::FABRIC_REPLICA_ROLE,
+        *const super::FabricTypes::FABRIC_EPOCH,
+        super::FabricTypes::FABRIC_REPLICA_ROLE,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
@@ -4102,7 +4001,7 @@ pub struct IFabricReplicator_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginUpdateEpoch: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_EPOCH,
+        *const super::FabricTypes::FABRIC_EPOCH,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
@@ -4160,7 +4059,9 @@ impl core::ops::Deref for IFabricReplicatorSettingsResult {
 }
 windows_core::imp::interface_hierarchy!(IFabricReplicatorSettingsResult, windows_core::IUnknown);
 impl IFabricReplicatorSettingsResult {
-    pub unsafe fn get_ReplicatorSettings(&self) -> *mut super::super::FABRIC_REPLICATOR_SETTINGS {
+    pub unsafe fn get_ReplicatorSettings(
+        &self,
+    ) -> *mut super::FabricTypes::FABRIC_REPLICATOR_SETTINGS {
         (windows_core::Interface::vtable(self).get_ReplicatorSettings)(
             windows_core::Interface::as_raw(self),
         )
@@ -4174,7 +4075,7 @@ pub struct IFabricReplicatorSettingsResult_Vtbl {
     pub get_ReplicatorSettings:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_REPLICATOR_SETTINGS,
+        ) -> *mut super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
 }
 windows_core::imp::define_interface!(
     IFabricRuntime,
@@ -4195,11 +4096,11 @@ impl IFabricRuntime {
         factory: P1,
         timeoutmilliseconds: u32,
         callback: P2,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
         P1: windows_core::Param<IFabricStatelessServiceFactory>,
-        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P2: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginRegisterStatelessServiceFactory)(
@@ -4217,7 +4118,7 @@ impl IFabricRuntime {
         context: P0,
     ) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndRegisterStatelessServiceFactory)(
             windows_core::Interface::as_raw(self),
@@ -4247,11 +4148,11 @@ impl IFabricRuntime {
         factory: P1,
         timeoutmilliseconds: u32,
         callback: P2,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
         P1: windows_core::Param<IFabricStatefulServiceFactory>,
-        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P2: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginRegisterStatefulServiceFactory)(
@@ -4269,7 +4170,7 @@ impl IFabricRuntime {
         context: P0,
     ) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndRegisterStatefulServiceFactory)(
             windows_core::Interface::as_raw(self),
@@ -4309,11 +4210,11 @@ impl IFabricRuntime {
         factory: P1,
         timeoutmilliseconds: u32,
         callback: P2,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
         P1: windows_core::Param<IFabricServiceGroupFactory>,
-        P2: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P2: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginRegisterServiceGroupFactory)(
@@ -4328,7 +4229,7 @@ impl IFabricRuntime {
     }
     pub unsafe fn EndRegisterServiceGroupFactory<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndRegisterServiceGroupFactory)(
             windows_core::Interface::as_raw(self),
@@ -4477,7 +4378,9 @@ impl core::ops::Deref for IFabricSecurityCredentialsResult {
 }
 windows_core::imp::interface_hierarchy!(IFabricSecurityCredentialsResult, windows_core::IUnknown);
 impl IFabricSecurityCredentialsResult {
-    pub unsafe fn get_SecurityCredentials(&self) -> *mut super::super::FABRIC_SECURITY_CREDENTIALS {
+    pub unsafe fn get_SecurityCredentials(
+        &self,
+    ) -> *mut super::FabricTypes::FABRIC_SECURITY_CREDENTIALS {
         (windows_core::Interface::vtable(self).get_SecurityCredentials)(
             windows_core::Interface::as_raw(self),
         )
@@ -4491,7 +4394,7 @@ pub struct IFabricSecurityCredentialsResult_Vtbl {
     pub get_SecurityCredentials:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_SECURITY_CREDENTIALS,
+        ) -> *mut super::FabricTypes::FABRIC_SECURITY_CREDENTIALS,
 }
 windows_core::imp::define_interface!(
     IFabricServiceGroupFactory,
@@ -4619,7 +4522,7 @@ impl IFabricServiceGroupPartition {
         riid: *const windows_core::GUID,
     ) -> windows_core::Result<*mut core::ffi::c_void>
     where
-        P0: windows_core::Param<super::super::FABRIC_URI>,
+        P0: windows_core::Param<super::FabricTypes::FABRIC_URI>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).ResolveMember)(
@@ -4638,7 +4541,7 @@ pub struct IFabricServiceGroupPartition_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub ResolveMember: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        super::super::FABRIC_URI,
+        super::FabricTypes::FABRIC_URI,
         *const windows_core::GUID,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
@@ -4658,12 +4561,12 @@ windows_core::imp::interface_hierarchy!(IFabricStateProvider, windows_core::IUnk
 impl IFabricStateProvider {
     pub unsafe fn BeginUpdateEpoch<P0>(
         &self,
-        epoch: *const super::super::FABRIC_EPOCH,
+        epoch: *const super::FabricTypes::FABRIC_EPOCH,
         previousepochlastsequencenumber: i64,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginUpdateEpoch)(
@@ -4677,7 +4580,7 @@ impl IFabricStateProvider {
     }
     pub unsafe fn EndUpdateEpoch<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndUpdateEpoch)(
             windows_core::Interface::as_raw(self),
@@ -4696,9 +4599,9 @@ impl IFabricStateProvider {
     pub unsafe fn BeginOnDataLoss<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginOnDataLoss)(
@@ -4710,7 +4613,7 @@ impl IFabricStateProvider {
     }
     pub unsafe fn EndOnDataLoss<P0>(&self, context: P0) -> windows_core::Result<u8>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndOnDataLoss)(
@@ -4753,7 +4656,7 @@ pub struct IFabricStateProvider_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub BeginUpdateEpoch: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_EPOCH,
+        *const super::FabricTypes::FABRIC_EPOCH,
         i64,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -4803,10 +4706,10 @@ impl IFabricStateReplicator {
         operationdata: P0,
         callback: P1,
         sequencenumber: *mut i64,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<IFabricOperationData>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P1: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginReplicate)(
@@ -4820,7 +4723,7 @@ impl IFabricStateReplicator {
     }
     pub unsafe fn EndReplicate<P0>(&self, context: P0) -> windows_core::Result<i64>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndReplicate)(
@@ -4848,7 +4751,7 @@ impl IFabricStateReplicator {
     }
     pub unsafe fn UpdateReplicatorSettings(
         &self,
-        replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
+        replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).UpdateReplicatorSettings)(
             windows_core::Interface::as_raw(self),
@@ -4884,7 +4787,7 @@ pub struct IFabricStateReplicator_Vtbl {
     ) -> windows_core::HRESULT,
     pub UpdateReplicatorSettings: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_REPLICATOR_SETTINGS,
+        *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -4948,7 +4851,7 @@ impl IFabricStatefulServiceFactory {
     ) -> windows_core::Result<IFabricStatefulServiceReplica>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::FabricTypes::FABRIC_URI>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).CreateReplica)(
@@ -4972,7 +4875,7 @@ pub struct IFabricStatefulServiceFactory_Vtbl {
     pub CreateReplica: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         windows_core::PCWSTR,
-        super::super::FABRIC_URI,
+        super::FabricTypes::FABRIC_URI,
         u32,
         *const u8,
         windows_core::GUID,
@@ -4995,7 +4898,7 @@ windows_core::imp::interface_hierarchy!(IFabricStatefulServicePartition, windows
 impl IFabricStatefulServicePartition {
     pub unsafe fn GetPartitionInfo(
         &self,
-    ) -> windows_core::Result<*mut super::super::FABRIC_SERVICE_PARTITION_INFORMATION> {
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetPartitionInfo)(
             windows_core::Interface::as_raw(self),
@@ -5005,7 +4908,7 @@ impl IFabricStatefulServicePartition {
     }
     pub unsafe fn GetReadStatus(
         &self,
-    ) -> windows_core::Result<super::super::FABRIC_SERVICE_PARTITION_ACCESS_STATUS> {
+    ) -> windows_core::Result<super::FabricTypes::FABRIC_SERVICE_PARTITION_ACCESS_STATUS> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetReadStatus)(
             windows_core::Interface::as_raw(self),
@@ -5015,7 +4918,7 @@ impl IFabricStatefulServicePartition {
     }
     pub unsafe fn GetWriteStatus(
         &self,
-    ) -> windows_core::Result<super::super::FABRIC_SERVICE_PARTITION_ACCESS_STATUS> {
+    ) -> windows_core::Result<super::FabricTypes::FABRIC_SERVICE_PARTITION_ACCESS_STATUS> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetWriteStatus)(
             windows_core::Interface::as_raw(self),
@@ -5026,7 +4929,7 @@ impl IFabricStatefulServicePartition {
     pub unsafe fn CreateReplicator<P0>(
         &self,
         stateprovider: P0,
-        replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
+        replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
         replicator: *mut Option<IFabricReplicator>,
     ) -> windows_core::Result<IFabricStateReplicator>
     where
@@ -5044,7 +4947,7 @@ impl IFabricStatefulServicePartition {
     }
     pub unsafe fn ReportLoad(
         &self,
-        metrics: &[super::super::FABRIC_LOAD_METRIC],
+        metrics: &[super::FabricTypes::FABRIC_LOAD_METRIC],
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportLoad)(
             windows_core::Interface::as_raw(self),
@@ -5055,7 +4958,7 @@ impl IFabricStatefulServicePartition {
     }
     pub unsafe fn ReportFault(
         &self,
-        faulttype: super::super::FABRIC_FAULT_TYPE,
+        faulttype: super::FabricTypes::FABRIC_FAULT_TYPE,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportFault)(
             windows_core::Interface::as_raw(self),
@@ -5071,31 +4974,31 @@ pub struct IFabricStatefulServicePartition_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub GetPartitionInfo: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *mut *mut super::super::FABRIC_SERVICE_PARTITION_INFORMATION,
+        *mut *mut super::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION,
     ) -> windows_core::HRESULT,
     pub GetReadStatus: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *mut super::super::FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
+        *mut super::FabricTypes::FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
     ) -> windows_core::HRESULT,
     pub GetWriteStatus: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *mut super::super::FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
+        *mut super::FabricTypes::FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
     ) -> windows_core::HRESULT,
     pub CreateReplicator: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_REPLICATOR_SETTINGS,
+        *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
         *mut *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
     pub ReportLoad: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         u32,
-        *const super::super::FABRIC_LOAD_METRIC,
+        *const super::FabricTypes::FABRIC_LOAD_METRIC,
     ) -> windows_core::HRESULT,
     pub ReportFault: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        super::super::FABRIC_FAULT_TYPE,
+        super::FabricTypes::FABRIC_FAULT_TYPE,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -5117,7 +5020,7 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricStatefulServicePartition1 {
     pub unsafe fn ReportMoveCost(
         &self,
-        movecost: super::super::FABRIC_MOVE_COST,
+        movecost: super::FabricTypes::FABRIC_MOVE_COST,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportMoveCost)(
             windows_core::Interface::as_raw(self),
@@ -5133,7 +5036,7 @@ pub struct IFabricStatefulServicePartition1_Vtbl {
     pub base__: IFabricStatefulServicePartition_Vtbl,
     pub ReportMoveCost: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        super::super::FABRIC_MOVE_COST,
+        super::FabricTypes::FABRIC_MOVE_COST,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -5156,7 +5059,7 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricStatefulServicePartition2 {
     pub unsafe fn ReportReplicaHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportReplicaHealth)(
             windows_core::Interface::as_raw(self),
@@ -5166,7 +5069,7 @@ impl IFabricStatefulServicePartition2 {
     }
     pub unsafe fn ReportPartitionHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportPartitionHealth)(
             windows_core::Interface::as_raw(self),
@@ -5182,11 +5085,11 @@ pub struct IFabricStatefulServicePartition2_Vtbl {
     pub base__: IFabricStatefulServicePartition1_Vtbl,
     pub ReportReplicaHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::HRESULT,
     pub ReportPartitionHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -5210,8 +5113,8 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricStatefulServicePartition3 {
     pub unsafe fn ReportReplicaHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportReplicaHealth2)(
             windows_core::Interface::as_raw(self),
@@ -5222,8 +5125,8 @@ impl IFabricStatefulServicePartition3 {
     }
     pub unsafe fn ReportPartitionHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportPartitionHealth2)(
             windows_core::Interface::as_raw(self),
@@ -5240,13 +5143,13 @@ pub struct IFabricStatefulServicePartition3_Vtbl {
     pub base__: IFabricStatefulServicePartition2_Vtbl,
     pub ReportReplicaHealth2: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
-        *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::HRESULT,
     pub ReportPartitionHealth2: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
-        *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -5264,13 +5167,13 @@ windows_core::imp::interface_hierarchy!(IFabricStatefulServiceReplica, windows_c
 impl IFabricStatefulServiceReplica {
     pub unsafe fn BeginOpen<P0, P1>(
         &self,
-        openmode: super::super::FABRIC_REPLICA_OPEN_MODE,
+        openmode: super::FabricTypes::FABRIC_REPLICA_OPEN_MODE,
         partition: P0,
         callback: P1,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<IFabricStatefulServicePartition>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P1: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginOpen)(
@@ -5284,7 +5187,7 @@ impl IFabricStatefulServiceReplica {
     }
     pub unsafe fn EndOpen<P0>(&self, context: P0) -> windows_core::Result<IFabricReplicator>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndOpen)(
@@ -5296,11 +5199,11 @@ impl IFabricStatefulServiceReplica {
     }
     pub unsafe fn BeginChangeRole<P0>(
         &self,
-        newrole: super::super::FABRIC_REPLICA_ROLE,
+        newrole: super::FabricTypes::FABRIC_REPLICA_ROLE,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginChangeRole)(
@@ -5314,9 +5217,9 @@ impl IFabricStatefulServiceReplica {
     pub unsafe fn EndChangeRole<P0>(
         &self,
         context: P0,
-    ) -> windows_core::Result<super::IFabricStringResult>
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndChangeRole)(
@@ -5329,9 +5232,9 @@ impl IFabricStatefulServiceReplica {
     pub unsafe fn BeginClose<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginClose)(
@@ -5343,7 +5246,7 @@ impl IFabricStatefulServiceReplica {
     }
     pub unsafe fn EndClose<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndClose)(
             windows_core::Interface::as_raw(self),
@@ -5362,7 +5265,7 @@ pub struct IFabricStatefulServiceReplica_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub BeginOpen: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        super::super::FABRIC_REPLICA_OPEN_MODE,
+        super::FabricTypes::FABRIC_REPLICA_OPEN_MODE,
         *mut core::ffi::c_void,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
@@ -5374,7 +5277,7 @@ pub struct IFabricStatefulServiceReplica_Vtbl {
     ) -> windows_core::HRESULT,
     pub BeginChangeRole: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        super::super::FABRIC_REPLICA_ROLE,
+        super::FabricTypes::FABRIC_REPLICA_ROLE,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
@@ -5417,7 +5320,7 @@ impl IFabricStatelessServiceFactory {
     ) -> windows_core::Result<IFabricStatelessServiceInstance>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
-        P1: windows_core::Param<super::super::FABRIC_URI>,
+        P1: windows_core::Param<super::FabricTypes::FABRIC_URI>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).CreateInstance)(
@@ -5441,7 +5344,7 @@ pub struct IFabricStatelessServiceFactory_Vtbl {
     pub CreateInstance: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         windows_core::PCWSTR,
-        super::super::FABRIC_URI,
+        super::FabricTypes::FABRIC_URI,
         u32,
         *const u8,
         windows_core::GUID,
@@ -5466,10 +5369,10 @@ impl IFabricStatelessServiceInstance {
         &self,
         partition: P0,
         callback: P1,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
         P0: windows_core::Param<IFabricStatelessServicePartition>,
-        P1: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P1: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginOpen)(
@@ -5483,9 +5386,9 @@ impl IFabricStatelessServiceInstance {
     pub unsafe fn EndOpen<P0>(
         &self,
         context: P0,
-    ) -> windows_core::Result<super::IFabricStringResult>
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndOpen)(
@@ -5498,9 +5401,9 @@ impl IFabricStatelessServiceInstance {
     pub unsafe fn BeginClose<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginClose)(
@@ -5512,7 +5415,7 @@ impl IFabricStatelessServiceInstance {
     }
     pub unsafe fn EndClose<P0>(&self, context: P0) -> windows_core::Result<()>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         (windows_core::Interface::vtable(self).EndClose)(
             windows_core::Interface::as_raw(self),
@@ -5566,7 +5469,7 @@ windows_core::imp::interface_hierarchy!(IFabricStatelessServicePartition, window
 impl IFabricStatelessServicePartition {
     pub unsafe fn GetPartitionInfo(
         &self,
-    ) -> windows_core::Result<*mut super::super::FABRIC_SERVICE_PARTITION_INFORMATION> {
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION> {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).GetPartitionInfo)(
             windows_core::Interface::as_raw(self),
@@ -5576,7 +5479,7 @@ impl IFabricStatelessServicePartition {
     }
     pub unsafe fn ReportLoad(
         &self,
-        metrics: &[super::super::FABRIC_LOAD_METRIC],
+        metrics: &[super::FabricTypes::FABRIC_LOAD_METRIC],
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportLoad)(
             windows_core::Interface::as_raw(self),
@@ -5587,7 +5490,7 @@ impl IFabricStatelessServicePartition {
     }
     pub unsafe fn ReportFault(
         &self,
-        faulttype: super::super::FABRIC_FAULT_TYPE,
+        faulttype: super::FabricTypes::FABRIC_FAULT_TYPE,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportFault)(
             windows_core::Interface::as_raw(self),
@@ -5603,16 +5506,16 @@ pub struct IFabricStatelessServicePartition_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub GetPartitionInfo: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *mut *mut super::super::FABRIC_SERVICE_PARTITION_INFORMATION,
+        *mut *mut super::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION,
     ) -> windows_core::HRESULT,
     pub ReportLoad: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         u32,
-        *const super::super::FABRIC_LOAD_METRIC,
+        *const super::FabricTypes::FABRIC_LOAD_METRIC,
     ) -> windows_core::HRESULT,
     pub ReportFault: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        super::super::FABRIC_FAULT_TYPE,
+        super::FabricTypes::FABRIC_FAULT_TYPE,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -5634,7 +5537,7 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricStatelessServicePartition1 {
     pub unsafe fn ReportMoveCost(
         &self,
-        movecost: super::super::FABRIC_MOVE_COST,
+        movecost: super::FabricTypes::FABRIC_MOVE_COST,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportMoveCost)(
             windows_core::Interface::as_raw(self),
@@ -5650,7 +5553,7 @@ pub struct IFabricStatelessServicePartition1_Vtbl {
     pub base__: IFabricStatelessServicePartition_Vtbl,
     pub ReportMoveCost: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        super::super::FABRIC_MOVE_COST,
+        super::FabricTypes::FABRIC_MOVE_COST,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -5673,7 +5576,7 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricStatelessServicePartition2 {
     pub unsafe fn ReportInstanceHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportInstanceHealth)(
             windows_core::Interface::as_raw(self),
@@ -5683,7 +5586,7 @@ impl IFabricStatelessServicePartition2 {
     }
     pub unsafe fn ReportPartitionHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportPartitionHealth)(
             windows_core::Interface::as_raw(self),
@@ -5699,11 +5602,11 @@ pub struct IFabricStatelessServicePartition2_Vtbl {
     pub base__: IFabricStatelessServicePartition1_Vtbl,
     pub ReportInstanceHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::HRESULT,
     pub ReportPartitionHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -5727,8 +5630,8 @@ windows_core::imp::interface_hierarchy!(
 impl IFabricStatelessServicePartition3 {
     pub unsafe fn ReportInstanceHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportInstanceHealth2)(
             windows_core::Interface::as_raw(self),
@@ -5739,8 +5642,8 @@ impl IFabricStatelessServicePartition3 {
     }
     pub unsafe fn ReportPartitionHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()> {
         (windows_core::Interface::vtable(self).ReportPartitionHealth2)(
             windows_core::Interface::as_raw(self),
@@ -5757,13 +5660,13 @@ pub struct IFabricStatelessServicePartition3_Vtbl {
     pub base__: IFabricStatelessServicePartition2_Vtbl,
     pub ReportInstanceHealth2: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
-        *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::HRESULT,
     pub ReportPartitionHealth2: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_HEALTH_INFORMATION,
-        *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::HRESULT,
 }
 windows_core::imp::define_interface!(
@@ -5810,9 +5713,9 @@ impl IFabricStoreEventHandler2 {
     pub unsafe fn BeginOnDataLoss<P0>(
         &self,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginOnDataLoss)(
@@ -5824,7 +5727,7 @@ impl IFabricStoreEventHandler2 {
     }
     pub unsafe fn EndOnDataLoss<P0>(&self, context: P0) -> windows_core::Result<u8>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndOnDataLoss)(
@@ -5866,11 +5769,11 @@ windows_core::imp::interface_hierarchy!(IFabricStorePostBackupHandler, windows_c
 impl IFabricStorePostBackupHandler {
     pub unsafe fn BeginPostBackup<P0>(
         &self,
-        info: *const super::super::FABRIC_STORE_BACKUP_INFO,
+        info: *const super::FabricTypes::FABRIC_STORE_BACKUP_INFO,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginPostBackup)(
@@ -5883,7 +5786,7 @@ impl IFabricStorePostBackupHandler {
     }
     pub unsafe fn EndPostBackup<P0>(&self, context: P0) -> windows_core::Result<u8>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndPostBackup)(
@@ -5901,7 +5804,7 @@ pub struct IFabricStorePostBackupHandler_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     pub BeginPostBackup: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *const super::super::FABRIC_STORE_BACKUP_INFO,
+        *const super::FabricTypes::FABRIC_STORE_BACKUP_INFO,
         *mut core::ffi::c_void,
         *mut *mut core::ffi::c_void,
     ) -> windows_core::HRESULT,
@@ -5932,9 +5835,9 @@ impl IFabricTransaction {
         &self,
         timeoutmilliseconds: u32,
         callback: P0,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationCallback>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationCallback>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).BeginCommit)(
@@ -5947,7 +5850,7 @@ impl IFabricTransaction {
     }
     pub unsafe fn EndCommit<P0>(&self, context: P0) -> windows_core::Result<i64>
     where
-        P0: windows_core::Param<super::IFabricAsyncOperationContext>,
+        P0: windows_core::Param<super::FabricCommon::IFabricAsyncOperationContext>,
     {
         let mut result__ = core::mem::zeroed();
         (windows_core::Interface::vtable(self).EndCommit)(
@@ -5995,7 +5898,9 @@ impl IFabricTransactionBase {
     pub unsafe fn get_Id(&self) -> *mut windows_core::GUID {
         (windows_core::Interface::vtable(self).get_Id)(windows_core::Interface::as_raw(self))
     }
-    pub unsafe fn get_IsolationLevel(&self) -> super::super::FABRIC_TRANSACTION_ISOLATION_LEVEL {
+    pub unsafe fn get_IsolationLevel(
+        &self,
+    ) -> super::FabricTypes::FABRIC_TRANSACTION_ISOLATION_LEVEL {
         (windows_core::Interface::vtable(self).get_IsolationLevel)(windows_core::Interface::as_raw(
             self,
         ))
@@ -6010,7 +5915,8 @@ pub struct IFabricTransactionBase_Vtbl {
     pub get_IsolationLevel:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
-        ) -> super::super::FABRIC_TRANSACTION_ISOLATION_LEVEL,
+        )
+            -> super::FabricTypes::FABRIC_TRANSACTION_ISOLATION_LEVEL,
 }
 pub const FabricRuntime: windows_core::GUID =
     windows_core::GUID::from_u128(0xcc53af8c_74cd_11df_ac3e_0024811e3892);
@@ -6025,30 +5931,30 @@ pub trait IFabricAtomicGroupStateProvider_Impl: Sized {
         &self,
         atomicgroupid: i64,
         commitsequencenumber: i64,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndAtomicGroupCommit(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn BeginAtomicGroupRollback(
         &self,
         atomicgroupid: i64,
         rollbackequencenumber: i64,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndAtomicGroupRollback(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn BeginUndoProgress(
         &self,
         fromcommitsequencenumber: i64,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndUndoProgress(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricAtomicGroupStateProvider {}
@@ -6202,32 +6108,32 @@ pub trait IFabricAtomicGroupStateReplicator_Impl: Sized {
         &self,
         atomicgroupid: i64,
         operationdata: Option<&IFabricOperationData>,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
         operationsequencenumber: *mut i64,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndReplicateAtomicGroupOperation(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<i64>;
     fn BeginReplicateAtomicGroupCommit(
         &self,
         atomicgroupid: i64,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
         commitsequencenumber: *mut i64,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndReplicateAtomicGroupCommit(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<i64>;
     fn BeginReplicateAtomicGroupRollback(
         &self,
         atomicgroupid: i64,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
         rollbacksequencenumber: *mut i64,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndReplicateAtomicGroupRollback(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<i64>;
 }
 impl windows_core::RuntimeName for IFabricAtomicGroupStateReplicator {}
@@ -6437,7 +6343,7 @@ impl IFabricAtomicGroupStateReplicator_Vtbl {
     }
 }
 pub trait IFabricCodePackage_Impl: Sized {
-    fn get_Description(&self) -> *mut super::super::FABRIC_CODE_PACKAGE_DESCRIPTION;
+    fn get_Description(&self) -> *mut super::FabricTypes::FABRIC_CODE_PACKAGE_DESCRIPTION;
     fn get_Path(&self) -> windows_core::PCWSTR;
 }
 impl windows_core::RuntimeName for IFabricCodePackage {}
@@ -6453,7 +6359,7 @@ impl IFabricCodePackage_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_CODE_PACKAGE_DESCRIPTION {
+        ) -> *mut super::FabricTypes::FABRIC_CODE_PACKAGE_DESCRIPTION {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricCodePackage_Impl::get_Description(this)
@@ -6480,8 +6386,11 @@ impl IFabricCodePackage_Vtbl {
     }
 }
 pub trait IFabricCodePackage2_Impl: Sized + IFabricCodePackage_Impl {
-    fn get_SetupEntryPointRunAsPolicy(&self) -> *mut super::super::FABRIC_RUNAS_POLICY_DESCRIPTION;
-    fn get_EntryPointRunAsPolicy(&self) -> *mut super::super::FABRIC_RUNAS_POLICY_DESCRIPTION;
+    fn get_SetupEntryPointRunAsPolicy(
+        &self,
+    ) -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION;
+    fn get_EntryPointRunAsPolicy(&self)
+        -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION;
 }
 impl windows_core::RuntimeName for IFabricCodePackage2 {}
 impl IFabricCodePackage2_Vtbl {
@@ -6496,7 +6405,7 @@ impl IFabricCodePackage2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_RUNAS_POLICY_DESCRIPTION {
+        ) -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricCodePackage2_Impl::get_SetupEntryPointRunAsPolicy(this)
@@ -6507,7 +6416,7 @@ impl IFabricCodePackage2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_RUNAS_POLICY_DESCRIPTION {
+        ) -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricCodePackage2_Impl::get_EntryPointRunAsPolicy(this)
@@ -6530,23 +6439,29 @@ pub trait IFabricCodePackageActivationContext_Impl: Sized {
     fn get_WorkDirectory(&self) -> windows_core::PCWSTR;
     fn get_LogDirectory(&self) -> windows_core::PCWSTR;
     fn get_TempDirectory(&self) -> windows_core::PCWSTR;
-    fn get_ServiceTypes(&self) -> *mut super::super::FABRIC_SERVICE_TYPE_DESCRIPTION_LIST;
+    fn get_ServiceTypes(&self) -> *mut super::FabricTypes::FABRIC_SERVICE_TYPE_DESCRIPTION_LIST;
     fn get_ServiceGroupTypes(
         &self,
-    ) -> *mut super::super::FABRIC_SERVICE_GROUP_TYPE_DESCRIPTION_LIST;
+    ) -> *mut super::FabricTypes::FABRIC_SERVICE_GROUP_TYPE_DESCRIPTION_LIST;
     fn get_ApplicationPrincipals(
         &self,
-    ) -> *mut super::super::FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION;
+    ) -> *mut super::FabricTypes::FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION;
     fn get_ServiceEndpointResources(
         &self,
-    ) -> *mut super::super::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION_LIST;
+    ) -> *mut super::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION_LIST;
     fn GetServiceEndpointResource(
         &self,
         serviceendpointresourcename: &windows_core::PCWSTR,
-    ) -> windows_core::Result<*mut super::super::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION>;
-    fn GetCodePackageNames(&self) -> windows_core::Result<super::IFabricStringListResult>;
-    fn GetConfigurationPackageNames(&self) -> windows_core::Result<super::IFabricStringListResult>;
-    fn GetDataPackageNames(&self) -> windows_core::Result<super::IFabricStringListResult>;
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION>;
+    fn GetCodePackageNames(
+        &self,
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringListResult>;
+    fn GetConfigurationPackageNames(
+        &self,
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringListResult>;
+    fn GetDataPackageNames(
+        &self,
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringListResult>;
     fn GetCodePackage(
         &self,
         codepackagename: &windows_core::PCWSTR,
@@ -6657,7 +6572,7 @@ impl IFabricCodePackageActivationContext_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_SERVICE_TYPE_DESCRIPTION_LIST {
+        ) -> *mut super::FabricTypes::FABRIC_SERVICE_TYPE_DESCRIPTION_LIST {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricCodePackageActivationContext_Impl::get_ServiceTypes(this)
@@ -6668,7 +6583,7 @@ impl IFabricCodePackageActivationContext_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_SERVICE_GROUP_TYPE_DESCRIPTION_LIST {
+        ) -> *mut super::FabricTypes::FABRIC_SERVICE_GROUP_TYPE_DESCRIPTION_LIST {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricCodePackageActivationContext_Impl::get_ServiceGroupTypes(this)
@@ -6679,7 +6594,7 @@ impl IFabricCodePackageActivationContext_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION {
+        ) -> *mut super::FabricTypes::FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricCodePackageActivationContext_Impl::get_ApplicationPrincipals(this)
@@ -6690,7 +6605,7 @@ impl IFabricCodePackageActivationContext_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION_LIST {
+        ) -> *mut super::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION_LIST {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricCodePackageActivationContext_Impl::get_ServiceEndpointResources(this)
@@ -6702,7 +6617,7 @@ impl IFabricCodePackageActivationContext_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             serviceendpointresourcename: windows_core::PCWSTR,
-            bufferedvalue: *mut *mut super::super::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
+            bufferedvalue: *mut *mut super::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -6997,10 +6912,14 @@ impl IFabricCodePackageActivationContext_Vtbl {
 pub trait IFabricCodePackageActivationContext2_Impl:
     Sized + IFabricCodePackageActivationContext_Impl
 {
-    fn get_ApplicationName(&self) -> super::super::FABRIC_URI;
+    fn get_ApplicationName(&self) -> super::FabricTypes::FABRIC_URI;
     fn get_ApplicationTypeName(&self) -> windows_core::PCWSTR;
-    fn GetServiceManifestName(&self) -> windows_core::Result<super::IFabricStringResult>;
-    fn GetServiceManifestVersion(&self) -> windows_core::Result<super::IFabricStringResult>;
+    fn GetServiceManifestName(
+        &self,
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
+    fn GetServiceManifestVersion(
+        &self,
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
 }
 impl windows_core::RuntimeName for IFabricCodePackageActivationContext2 {}
 impl IFabricCodePackageActivationContext2_Vtbl {
@@ -7015,7 +6934,7 @@ impl IFabricCodePackageActivationContext2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> super::super::FABRIC_URI {
+        ) -> super::FabricTypes::FABRIC_URI {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricCodePackageActivationContext2_Impl::get_ApplicationName(this)
@@ -7085,15 +7004,15 @@ pub trait IFabricCodePackageActivationContext3_Impl:
 {
     fn ReportApplicationHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()>;
     fn ReportDeployedApplicationHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()>;
     fn ReportDeployedServicePackageHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricCodePackageActivationContext3 {}
@@ -7109,7 +7028,7 @@ impl IFabricCodePackageActivationContext3_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -7125,7 +7044,7 @@ impl IFabricCodePackageActivationContext3_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -7141,7 +7060,7 @@ impl IFabricCodePackageActivationContext3_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -7177,18 +7096,18 @@ pub trait IFabricCodePackageActivationContext4_Impl:
 {
     fn ReportApplicationHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()>;
     fn ReportDeployedApplicationHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()>;
     fn ReportDeployedServicePackageHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricCodePackageActivationContext4 {}
@@ -7204,8 +7123,8 @@ impl IFabricCodePackageActivationContext4_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-            sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+            sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -7222,8 +7141,8 @@ impl IFabricCodePackageActivationContext4_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-            sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+            sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -7240,8 +7159,8 @@ impl IFabricCodePackageActivationContext4_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-            sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+            sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -7329,7 +7248,7 @@ pub trait IFabricCodePackageActivationContext6_Impl:
     fn GetDirectory(
         &self,
         logicaldirectoryname: &windows_core::PCWSTR,
-    ) -> windows_core::Result<super::IFabricStringResult>;
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
 }
 impl windows_core::RuntimeName for IFabricCodePackageActivationContext6 {}
 impl IFabricCodePackageActivationContext6_Vtbl {
@@ -7377,28 +7296,28 @@ impl IFabricCodePackageActivationContext6_Vtbl {
 pub trait IFabricCodePackageActivator_Impl: Sized {
     fn BeginActivateCodePackage(
         &self,
-        codepackagenames: *const super::super::FABRIC_STRING_LIST,
-        environment: *const super::super::FABRIC_STRING_MAP,
+        codepackagenames: *const super::FabricTypes::FABRIC_STRING_LIST,
+        environment: *const super::FabricTypes::FABRIC_STRING_MAP,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndActivateCodePackage(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn BeginDeactivateCodePackage(
         &self,
-        codepackagenames: *const super::super::FABRIC_STRING_LIST,
+        codepackagenames: *const super::FabricTypes::FABRIC_STRING_LIST,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndDeactivateCodePackage(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn AbortCodePackage(
         &self,
-        codepackagenames: *const super::super::FABRIC_STRING_LIST,
+        codepackagenames: *const super::FabricTypes::FABRIC_STRING_LIST,
     ) -> windows_core::Result<()>;
     fn RegisterCodePackageEventHandler(
         &self,
@@ -7419,8 +7338,8 @@ impl IFabricCodePackageActivator_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            codepackagenames: *const super::super::FABRIC_STRING_LIST,
-            environment: *const super::super::FABRIC_STRING_MAP,
+            codepackagenames: *const super::FabricTypes::FABRIC_STRING_LIST,
+            environment: *const super::FabricTypes::FABRIC_STRING_MAP,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -7463,7 +7382,7 @@ impl IFabricCodePackageActivator_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            codepackagenames: *const super::super::FABRIC_STRING_LIST,
+            codepackagenames: *const super::FabricTypes::FABRIC_STRING_LIST,
             timeoutmilliseconds: u32,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -7505,7 +7424,7 @@ impl IFabricCodePackageActivator_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            codepackagenames: *const super::super::FABRIC_STRING_LIST,
+            codepackagenames: *const super::FabricTypes::FABRIC_STRING_LIST,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -7669,7 +7588,7 @@ pub trait IFabricCodePackageEventHandler_Impl: Sized {
     fn OnCodePackageEvent(
         &self,
         source: Option<&IFabricCodePackageActivator>,
-        eventdesc: *const super::super::FABRIC_CODE_PACKAGE_EVENT_DESCRIPTION,
+        eventdesc: *const super::FabricTypes::FABRIC_CODE_PACKAGE_EVENT_DESCRIPTION,
     );
 }
 impl windows_core::RuntimeName for IFabricCodePackageEventHandler {}
@@ -7686,7 +7605,7 @@ impl IFabricCodePackageEventHandler_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             source: *mut core::ffi::c_void,
-            eventdesc: *const super::super::FABRIC_CODE_PACKAGE_EVENT_DESCRIPTION,
+            eventdesc: *const super::FabricTypes::FABRIC_CODE_PACKAGE_EVENT_DESCRIPTION,
         ) {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -7706,13 +7625,13 @@ impl IFabricCodePackageEventHandler_Vtbl {
     }
 }
 pub trait IFabricConfigurationPackage_Impl: Sized {
-    fn get_Description(&self) -> *mut super::super::FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION;
+    fn get_Description(&self) -> *mut super::FabricTypes::FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION;
     fn get_Path(&self) -> windows_core::PCWSTR;
-    fn get_Settings(&self) -> *mut super::super::FABRIC_CONFIGURATION_SETTINGS;
+    fn get_Settings(&self) -> *mut super::FabricTypes::FABRIC_CONFIGURATION_SETTINGS;
     fn GetSection(
         &self,
         sectionname: &windows_core::PCWSTR,
-    ) -> windows_core::Result<*mut super::super::FABRIC_CONFIGURATION_SECTION>;
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_CONFIGURATION_SECTION>;
     fn GetValue(
         &self,
         sectionname: &windows_core::PCWSTR,
@@ -7722,7 +7641,7 @@ pub trait IFabricConfigurationPackage_Impl: Sized {
     fn DecryptValue(
         &self,
         encryptedvalue: &windows_core::PCWSTR,
-    ) -> windows_core::Result<super::IFabricStringResult>;
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
 }
 impl windows_core::RuntimeName for IFabricConfigurationPackage {}
 impl IFabricConfigurationPackage_Vtbl {
@@ -7737,7 +7656,7 @@ impl IFabricConfigurationPackage_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION {
+        ) -> *mut super::FabricTypes::FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricConfigurationPackage_Impl::get_Description(this)
@@ -7759,7 +7678,7 @@ impl IFabricConfigurationPackage_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_CONFIGURATION_SETTINGS {
+        ) -> *mut super::FabricTypes::FABRIC_CONFIGURATION_SETTINGS {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricConfigurationPackage_Impl::get_Settings(this)
@@ -7771,7 +7690,7 @@ impl IFabricConfigurationPackage_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             sectionname: windows_core::PCWSTR,
-            bufferedvalue: *mut *mut super::super::FABRIC_CONFIGURATION_SECTION,
+            bufferedvalue: *mut *mut super::FabricTypes::FABRIC_CONFIGURATION_SECTION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -7853,7 +7772,7 @@ pub trait IFabricConfigurationPackage2_Impl: Sized + IFabricConfigurationPackage
         &self,
         sectionname: &windows_core::PCWSTR,
         parameterprefix: &windows_core::PCWSTR,
-    ) -> windows_core::Result<*mut super::super::FABRIC_CONFIGURATION_PARAMETER_LIST>;
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_CONFIGURATION_PARAMETER_LIST>;
 }
 impl windows_core::RuntimeName for IFabricConfigurationPackage2 {}
 impl IFabricConfigurationPackage2_Vtbl {
@@ -7870,7 +7789,7 @@ impl IFabricConfigurationPackage2_Vtbl {
             this: *mut core::ffi::c_void,
             sectionname: windows_core::PCWSTR,
             parameterprefix: windows_core::PCWSTR,
-            bufferedvalue: *mut *mut super::super::FABRIC_CONFIGURATION_PARAMETER_LIST,
+            bufferedvalue: *mut *mut super::FabricTypes::FABRIC_CONFIGURATION_PARAMETER_LIST,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -7986,7 +7905,7 @@ impl IFabricConfigurationPackageChangeHandler_Vtbl {
     }
 }
 pub trait IFabricDataPackage_Impl: Sized {
-    fn get_Description(&self) -> *mut super::super::FABRIC_DATA_PACKAGE_DESCRIPTION;
+    fn get_Description(&self) -> *mut super::FabricTypes::FABRIC_DATA_PACKAGE_DESCRIPTION;
     fn get_Path(&self) -> windows_core::PCWSTR;
 }
 impl windows_core::RuntimeName for IFabricDataPackage {}
@@ -8002,7 +7921,7 @@ impl IFabricDataPackage_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_DATA_PACKAGE_DESCRIPTION {
+        ) -> *mut super::FabricTypes::FABRIC_DATA_PACKAGE_DESCRIPTION {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricDataPackage_Impl::get_Description(this)
@@ -8118,7 +8037,7 @@ impl IFabricDataPackageChangeHandler_Vtbl {
     }
 }
 pub trait IFabricEseLocalStoreSettingsResult_Impl: Sized {
-    fn get_Settings(&self) -> *mut super::super::FABRIC_ESE_LOCAL_STORE_SETTINGS;
+    fn get_Settings(&self) -> *mut super::FabricTypes::FABRIC_ESE_LOCAL_STORE_SETTINGS;
 }
 impl windows_core::RuntimeName for IFabricEseLocalStoreSettingsResult {}
 impl IFabricEseLocalStoreSettingsResult_Vtbl {
@@ -8133,7 +8052,7 @@ impl IFabricEseLocalStoreSettingsResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_ESE_LOCAL_STORE_SETTINGS {
+        ) -> *mut super::FabricTypes::FABRIC_ESE_LOCAL_STORE_SETTINGS {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricEseLocalStoreSettingsResult_Impl::get_Settings(this)
@@ -8466,7 +8385,7 @@ impl IFabricKeyValueStoreItemMetadataEnumerator2_Vtbl {
     }
 }
 pub trait IFabricKeyValueStoreItemMetadataResult_Impl: Sized {
-    fn get_Metadata(&self) -> *mut super::super::FABRIC_KEY_VALUE_STORE_ITEM_METADATA;
+    fn get_Metadata(&self) -> *mut super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM_METADATA;
 }
 impl windows_core::RuntimeName for IFabricKeyValueStoreItemMetadataResult {}
 impl IFabricKeyValueStoreItemMetadataResult_Vtbl {
@@ -8481,7 +8400,7 @@ impl IFabricKeyValueStoreItemMetadataResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_KEY_VALUE_STORE_ITEM_METADATA {
+        ) -> *mut super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM_METADATA {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricKeyValueStoreItemMetadataResult_Impl::get_Metadata(this)
@@ -8496,7 +8415,7 @@ impl IFabricKeyValueStoreItemMetadataResult_Vtbl {
     }
 }
 pub trait IFabricKeyValueStoreItemResult_Impl: Sized {
-    fn get_Item(&self) -> *mut super::super::FABRIC_KEY_VALUE_STORE_ITEM;
+    fn get_Item(&self) -> *mut super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM;
 }
 impl windows_core::RuntimeName for IFabricKeyValueStoreItemResult {}
 impl IFabricKeyValueStoreItemResult_Vtbl {
@@ -8511,7 +8430,7 @@ impl IFabricKeyValueStoreItemResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_KEY_VALUE_STORE_ITEM {
+        ) -> *mut super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricKeyValueStoreItemResult_Impl::get_Item(this)
@@ -8658,11 +8577,11 @@ impl IFabricKeyValueStoreNotificationEnumerator2_Vtbl {
 pub trait IFabricKeyValueStoreReplica_Impl: Sized + IFabricStatefulServiceReplica_Impl {
     fn GetCurrentEpoch(
         &self,
-        currentepoch: *mut super::super::FABRIC_EPOCH,
+        currentepoch: *mut super::FabricTypes::FABRIC_EPOCH,
     ) -> windows_core::Result<()>;
     fn UpdateReplicatorSettings(
         &self,
-        replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
+        replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
     ) -> windows_core::Result<()>;
     fn CreateTransaction(&self) -> windows_core::Result<IFabricTransaction>;
     fn Add(
@@ -8733,7 +8652,7 @@ impl IFabricKeyValueStoreReplica_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            currentepoch: *mut super::super::FABRIC_EPOCH,
+            currentepoch: *mut super::FabricTypes::FABRIC_EPOCH,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -8749,7 +8668,7 @@ impl IFabricKeyValueStoreReplica_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
+            replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -9034,7 +8953,7 @@ pub trait IFabricKeyValueStoreReplica2_Impl: Sized + IFabricKeyValueStoreReplica
     fn Restore(&self, backupdirectory: &windows_core::PCWSTR) -> windows_core::Result<()>;
     fn CreateTransaction2(
         &self,
-        settings: *const super::super::FABRIC_KEY_VALUE_STORE_TRANSACTION_SETTINGS,
+        settings: *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_TRANSACTION_SETTINGS,
     ) -> windows_core::Result<IFabricTransaction>;
 }
 impl windows_core::RuntimeName for IFabricKeyValueStoreReplica2 {}
@@ -9076,7 +8995,7 @@ impl IFabricKeyValueStoreReplica2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            settings: *const super::super::FABRIC_KEY_VALUE_STORE_TRANSACTION_SETTINGS,
+            settings: *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_TRANSACTION_SETTINGS,
             transaction: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
@@ -9109,13 +9028,13 @@ pub trait IFabricKeyValueStoreReplica3_Impl: Sized + IFabricKeyValueStoreReplica
     fn BeginBackup(
         &self,
         backupdirectory: &windows_core::PCWSTR,
-        backupoption: super::super::FABRIC_STORE_BACKUP_OPTION,
+        backupoption: super::FabricTypes::FABRIC_STORE_BACKUP_OPTION,
         postbackuphandler: Option<&IFabricStorePostBackupHandler>,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndBackup(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricKeyValueStoreReplica3 {}
@@ -9132,7 +9051,7 @@ impl IFabricKeyValueStoreReplica3_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             backupdirectory: windows_core::PCWSTR,
-            backupoption: super::super::FABRIC_STORE_BACKUP_OPTION,
+            backupoption: super::FabricTypes::FABRIC_STORE_BACKUP_OPTION,
             postbackuphandler: *mut core::ffi::c_void,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -9186,11 +9105,11 @@ pub trait IFabricKeyValueStoreReplica4_Impl: Sized + IFabricKeyValueStoreReplica
     fn BeginRestore(
         &self,
         backupdirectory: &windows_core::PCWSTR,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndRestore(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricKeyValueStoreReplica4 {}
@@ -9514,9 +9433,9 @@ pub trait IFabricKeyValueStoreReplica6_Impl: Sized + IFabricKeyValueStoreReplica
     fn BeginRestore2(
         &self,
         backupdirectory: &windows_core::PCWSTR,
-        settings: *const super::super::FABRIC_KEY_VALUE_STORE_RESTORE_SETTINGS,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        settings: *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_RESTORE_SETTINGS,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
 }
 impl windows_core::RuntimeName for IFabricKeyValueStoreReplica6 {}
 impl IFabricKeyValueStoreReplica6_Vtbl {
@@ -9532,7 +9451,7 @@ impl IFabricKeyValueStoreReplica6_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             backupdirectory: windows_core::PCWSTR,
-            settings: *const super::super::FABRIC_KEY_VALUE_STORE_RESTORE_SETTINGS,
+            settings: *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_RESTORE_SETTINGS,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
@@ -9567,7 +9486,7 @@ impl IFabricKeyValueStoreReplica6_Vtbl {
     }
 }
 pub trait IFabricNodeContextResult_Impl: Sized {
-    fn get_NodeContext(&self) -> *mut super::super::FABRIC_NODE_CONTEXT;
+    fn get_NodeContext(&self) -> *mut super::FabricTypes::FABRIC_NODE_CONTEXT;
 }
 impl windows_core::RuntimeName for IFabricNodeContextResult {}
 impl IFabricNodeContextResult_Vtbl {
@@ -9582,7 +9501,7 @@ impl IFabricNodeContextResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_NODE_CONTEXT {
+        ) -> *mut super::FabricTypes::FABRIC_NODE_CONTEXT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricNodeContextResult_Impl::get_NodeContext(this)
@@ -9600,7 +9519,7 @@ pub trait IFabricNodeContextResult2_Impl: Sized + IFabricNodeContextResult_Impl 
     fn GetDirectory(
         &self,
         logicaldirectoryname: &windows_core::PCWSTR,
-    ) -> windows_core::Result<super::IFabricStringResult>;
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
 }
 impl windows_core::RuntimeName for IFabricNodeContextResult2 {}
 impl IFabricNodeContextResult2_Vtbl {
@@ -9642,11 +9561,11 @@ impl IFabricNodeContextResult2_Vtbl {
     }
 }
 pub trait IFabricOperation_Impl: Sized {
-    fn get_Metadata(&self) -> *mut super::super::FABRIC_OPERATION_METADATA;
+    fn get_Metadata(&self) -> *mut super::FabricTypes::FABRIC_OPERATION_METADATA;
     fn GetData(
         &self,
         count: *mut u32,
-    ) -> windows_core::Result<*mut super::super::FABRIC_OPERATION_DATA_BUFFER>;
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_OPERATION_DATA_BUFFER>;
     fn Acknowledge(&self) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricOperation {}
@@ -9662,7 +9581,7 @@ impl IFabricOperation_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_OPERATION_METADATA {
+        ) -> *mut super::FabricTypes::FABRIC_OPERATION_METADATA {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricOperation_Impl::get_Metadata(this)
@@ -9674,7 +9593,7 @@ impl IFabricOperation_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             count: *mut u32,
-            buffers: *mut *mut super::super::FABRIC_OPERATION_DATA_BUFFER,
+            buffers: *mut *mut super::FabricTypes::FABRIC_OPERATION_DATA_BUFFER,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -9712,7 +9631,7 @@ pub trait IFabricOperationData_Impl: Sized {
     fn GetData(
         &self,
         count: *mut u32,
-    ) -> windows_core::Result<*mut super::super::FABRIC_OPERATION_DATA_BUFFER>;
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_OPERATION_DATA_BUFFER>;
 }
 impl windows_core::RuntimeName for IFabricOperationData {}
 impl IFabricOperationData_Vtbl {
@@ -9728,7 +9647,7 @@ impl IFabricOperationData_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             count: *mut u32,
-            buffers: *mut *mut super::super::FABRIC_OPERATION_DATA_BUFFER,
+            buffers: *mut *mut super::FabricTypes::FABRIC_OPERATION_DATA_BUFFER,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -9752,11 +9671,11 @@ impl IFabricOperationData_Vtbl {
 pub trait IFabricOperationDataStream_Impl: Sized {
     fn BeginGetNext(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndGetNext(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<IFabricOperationData>;
 }
 impl windows_core::RuntimeName for IFabricOperationDataStream {}
@@ -9823,11 +9742,11 @@ impl IFabricOperationDataStream_Vtbl {
 pub trait IFabricOperationStream_Impl: Sized {
     fn BeginGetOperation(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndGetOperation(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<IFabricOperation>;
 }
 impl windows_core::RuntimeName for IFabricOperationStream {}
@@ -9892,7 +9811,10 @@ impl IFabricOperationStream_Vtbl {
     }
 }
 pub trait IFabricOperationStream2_Impl: Sized + IFabricOperationStream_Impl {
-    fn ReportFault(&self, faulttype: super::super::FABRIC_FAULT_TYPE) -> windows_core::Result<()>;
+    fn ReportFault(
+        &self,
+        faulttype: super::FabricTypes::FABRIC_FAULT_TYPE,
+    ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricOperationStream2 {}
 impl IFabricOperationStream2_Vtbl {
@@ -9907,7 +9829,7 @@ impl IFabricOperationStream2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            faulttype: super::super::FABRIC_FAULT_TYPE,
+            faulttype: super::FabricTypes::FABRIC_FAULT_TYPE,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -9927,38 +9849,38 @@ impl IFabricOperationStream2_Vtbl {
 pub trait IFabricPrimaryReplicator_Impl: Sized + IFabricReplicator_Impl {
     fn BeginOnDataLoss(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndOnDataLoss(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<u8>;
     fn UpdateCatchUpReplicaSetConfiguration(
         &self,
-        currentconfiguration: *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
-        previousconfiguration: *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
+        currentconfiguration: *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
+        previousconfiguration: *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
     ) -> windows_core::Result<()>;
     fn BeginWaitForCatchUpQuorum(
         &self,
-        catchupmode: super::super::FABRIC_REPLICA_SET_QUORUM_MODE,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        catchupmode: super::FabricTypes::FABRIC_REPLICA_SET_QUORUM_MODE,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndWaitForCatchUpQuorum(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn UpdateCurrentReplicaSetConfiguration(
         &self,
-        currentconfiguration: *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
+        currentconfiguration: *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
     ) -> windows_core::Result<()>;
     fn BeginBuildReplica(
         &self,
-        replica: *const super::super::FABRIC_REPLICA_INFORMATION,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        replica: *const super::FabricTypes::FABRIC_REPLICA_INFORMATION,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndBuildReplica(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn RemoveReplica(&self, replicaid: i64) -> windows_core::Result<()>;
 }
@@ -10019,8 +9941,8 @@ impl IFabricPrimaryReplicator_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            currentconfiguration: *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
-            previousconfiguration: *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
+            currentconfiguration: *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
+            previousconfiguration: *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -10037,7 +9959,7 @@ impl IFabricPrimaryReplicator_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            catchupmode: super::super::FABRIC_REPLICA_SET_QUORUM_MODE,
+            catchupmode: super::FabricTypes::FABRIC_REPLICA_SET_QUORUM_MODE,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
@@ -10077,7 +9999,7 @@ impl IFabricPrimaryReplicator_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            currentconfiguration: *const super::super::FABRIC_REPLICA_SET_CONFIGURATION,
+            currentconfiguration: *const super::FabricTypes::FABRIC_REPLICA_SET_CONFIGURATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -10093,7 +10015,7 @@ impl IFabricPrimaryReplicator_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            replica: *const super::super::FABRIC_REPLICA_INFORMATION,
+            replica: *const super::FabricTypes::FABRIC_REPLICA_INFORMATION,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
@@ -10202,38 +10124,38 @@ impl IFabricProcessExitHandler_Vtbl {
 pub trait IFabricReplicator_Impl: Sized {
     fn BeginOpen(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndOpen(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
-    ) -> windows_core::Result<super::IFabricStringResult>;
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
     fn BeginChangeRole(
         &self,
-        epoch: *const super::super::FABRIC_EPOCH,
-        role: super::super::FABRIC_REPLICA_ROLE,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        epoch: *const super::FabricTypes::FABRIC_EPOCH,
+        role: super::FabricTypes::FABRIC_REPLICA_ROLE,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndChangeRole(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn BeginUpdateEpoch(
         &self,
-        epoch: *const super::super::FABRIC_EPOCH,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        epoch: *const super::FabricTypes::FABRIC_EPOCH,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndUpdateEpoch(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn BeginClose(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndClose(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn Abort(&self);
     fn GetCurrentProgress(&self) -> windows_core::Result<i64>;
@@ -10293,8 +10215,8 @@ impl IFabricReplicator_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            epoch: *const super::super::FABRIC_EPOCH,
-            role: super::super::FABRIC_REPLICA_ROLE,
+            epoch: *const super::FabricTypes::FABRIC_EPOCH,
+            role: super::FabricTypes::FABRIC_REPLICA_ROLE,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
@@ -10332,7 +10254,7 @@ impl IFabricReplicator_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            epoch: *const super::super::FABRIC_EPOCH,
+            epoch: *const super::FabricTypes::FABRIC_EPOCH,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
@@ -10480,7 +10402,7 @@ impl IFabricReplicatorCatchupSpecificQuorum_Vtbl {
     }
 }
 pub trait IFabricReplicatorSettingsResult_Impl: Sized {
-    fn get_ReplicatorSettings(&self) -> *mut super::super::FABRIC_REPLICATOR_SETTINGS;
+    fn get_ReplicatorSettings(&self) -> *mut super::FabricTypes::FABRIC_REPLICATOR_SETTINGS;
 }
 impl windows_core::RuntimeName for IFabricReplicatorSettingsResult {}
 impl IFabricReplicatorSettingsResult_Vtbl {
@@ -10495,7 +10417,7 @@ impl IFabricReplicatorSettingsResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_REPLICATOR_SETTINGS {
+        ) -> *mut super::FabricTypes::FABRIC_REPLICATOR_SETTINGS {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricReplicatorSettingsResult_Impl::get_ReplicatorSettings(this)
@@ -10515,11 +10437,11 @@ pub trait IFabricRuntime_Impl: Sized {
         servicetypename: &windows_core::PCWSTR,
         factory: Option<&IFabricStatelessServiceFactory>,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndRegisterStatelessServiceFactory(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn RegisterStatelessServiceFactory(
         &self,
@@ -10531,11 +10453,11 @@ pub trait IFabricRuntime_Impl: Sized {
         servicetypename: &windows_core::PCWSTR,
         factory: Option<&IFabricStatefulServiceFactory>,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndRegisterStatefulServiceFactory(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn RegisterStatefulServiceFactory(
         &self,
@@ -10550,11 +10472,11 @@ pub trait IFabricRuntime_Impl: Sized {
         groupservicetype: &windows_core::PCWSTR,
         factory: Option<&IFabricServiceGroupFactory>,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndRegisterServiceGroupFactory(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn RegisterServiceGroupFactory(
         &self,
@@ -10879,7 +10801,7 @@ impl IFabricSecondaryEventHandler_Vtbl {
     }
 }
 pub trait IFabricSecurityCredentialsResult_Impl: Sized {
-    fn get_SecurityCredentials(&self) -> *mut super::super::FABRIC_SECURITY_CREDENTIALS;
+    fn get_SecurityCredentials(&self) -> *mut super::FabricTypes::FABRIC_SECURITY_CREDENTIALS;
 }
 impl windows_core::RuntimeName for IFabricSecurityCredentialsResult {}
 impl IFabricSecurityCredentialsResult_Vtbl {
@@ -10894,7 +10816,7 @@ impl IFabricSecurityCredentialsResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> *mut super::super::FABRIC_SECURITY_CREDENTIALS {
+        ) -> *mut super::FabricTypes::FABRIC_SECURITY_CREDENTIALS {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricSecurityCredentialsResult_Impl::get_SecurityCredentials(this)
@@ -11033,7 +10955,7 @@ impl IFabricServiceGroupFactoryBuilder_Vtbl {
 pub trait IFabricServiceGroupPartition_Impl: Sized {
     fn ResolveMember(
         &self,
-        name: super::super::FABRIC_URI,
+        name: super::FabricTypes::FABRIC_URI,
         riid: *const windows_core::GUID,
     ) -> windows_core::Result<*mut core::ffi::c_void>;
 }
@@ -11050,7 +10972,7 @@ impl IFabricServiceGroupPartition_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            name: super::super::FABRIC_URI,
+            name: super::FabricTypes::FABRIC_URI,
             riid: *const windows_core::GUID,
             member: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
@@ -11080,22 +11002,22 @@ impl IFabricServiceGroupPartition_Vtbl {
 pub trait IFabricStateProvider_Impl: Sized {
     fn BeginUpdateEpoch(
         &self,
-        epoch: *const super::super::FABRIC_EPOCH,
+        epoch: *const super::FabricTypes::FABRIC_EPOCH,
         previousepochlastsequencenumber: i64,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndUpdateEpoch(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn GetLastCommittedSequenceNumber(&self) -> windows_core::Result<i64>;
     fn BeginOnDataLoss(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndOnDataLoss(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<u8>;
     fn GetCopyContext(&self) -> windows_core::Result<IFabricOperationDataStream>;
     fn GetCopyState(
@@ -11117,7 +11039,7 @@ impl IFabricStateProvider_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            epoch: *const super::super::FABRIC_EPOCH,
+            epoch: *const super::FabricTypes::FABRIC_EPOCH,
             previousepochlastsequencenumber: i64,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -11276,18 +11198,18 @@ pub trait IFabricStateReplicator_Impl: Sized {
     fn BeginReplicate(
         &self,
         operationdata: Option<&IFabricOperationData>,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
         sequencenumber: *mut i64,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndReplicate(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<i64>;
     fn GetReplicationStream(&self) -> windows_core::Result<IFabricOperationStream>;
     fn GetCopyStream(&self) -> windows_core::Result<IFabricOperationStream>;
     fn UpdateReplicatorSettings(
         &self,
-        replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
+        replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricStateReplicator {}
@@ -11387,7 +11309,7 @@ impl IFabricStateReplicator_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
+            replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11452,7 +11374,7 @@ pub trait IFabricStatefulServiceFactory_Impl: Sized {
     fn CreateReplica(
         &self,
         servicetypename: &windows_core::PCWSTR,
-        servicename: super::super::FABRIC_URI,
+        servicename: super::FabricTypes::FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &windows_core::GUID,
@@ -11473,7 +11395,7 @@ impl IFabricStatefulServiceFactory_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             servicetypename: windows_core::PCWSTR,
-            servicename: super::super::FABRIC_URI,
+            servicename: super::FabricTypes::FABRIC_URI,
             initializationdatalength: u32,
             initializationdata: *const u8,
             partitionid: windows_core::GUID,
@@ -11510,25 +11432,28 @@ impl IFabricStatefulServiceFactory_Vtbl {
 pub trait IFabricStatefulServicePartition_Impl: Sized {
     fn GetPartitionInfo(
         &self,
-    ) -> windows_core::Result<*mut super::super::FABRIC_SERVICE_PARTITION_INFORMATION>;
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION>;
     fn GetReadStatus(
         &self,
-    ) -> windows_core::Result<super::super::FABRIC_SERVICE_PARTITION_ACCESS_STATUS>;
+    ) -> windows_core::Result<super::FabricTypes::FABRIC_SERVICE_PARTITION_ACCESS_STATUS>;
     fn GetWriteStatus(
         &self,
-    ) -> windows_core::Result<super::super::FABRIC_SERVICE_PARTITION_ACCESS_STATUS>;
+    ) -> windows_core::Result<super::FabricTypes::FABRIC_SERVICE_PARTITION_ACCESS_STATUS>;
     fn CreateReplicator(
         &self,
         stateprovider: Option<&IFabricStateProvider>,
-        replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
+        replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
         replicator: *mut Option<IFabricReplicator>,
     ) -> windows_core::Result<IFabricStateReplicator>;
     fn ReportLoad(
         &self,
         metriccount: u32,
-        metrics: *const super::super::FABRIC_LOAD_METRIC,
+        metrics: *const super::FabricTypes::FABRIC_LOAD_METRIC,
     ) -> windows_core::Result<()>;
-    fn ReportFault(&self, faulttype: super::super::FABRIC_FAULT_TYPE) -> windows_core::Result<()>;
+    fn ReportFault(
+        &self,
+        faulttype: super::FabricTypes::FABRIC_FAULT_TYPE,
+    ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricStatefulServicePartition {}
 impl IFabricStatefulServicePartition_Vtbl {
@@ -11543,7 +11468,7 @@ impl IFabricStatefulServicePartition_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            bufferedvalue: *mut *mut super::super::FABRIC_SERVICE_PARTITION_INFORMATION,
+            bufferedvalue: *mut *mut super::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11561,7 +11486,7 @@ impl IFabricStatefulServicePartition_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            readstatus: *mut super::super::FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
+            readstatus: *mut super::FabricTypes::FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11579,7 +11504,7 @@ impl IFabricStatefulServicePartition_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            writestatus: *mut super::super::FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
+            writestatus: *mut super::FabricTypes::FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11598,7 +11523,7 @@ impl IFabricStatefulServicePartition_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             stateprovider: *mut core::ffi::c_void,
-            replicatorsettings: *const super::super::FABRIC_REPLICATOR_SETTINGS,
+            replicatorsettings: *const super::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
             replicator: *mut *mut core::ffi::c_void,
             statereplicator: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
@@ -11624,7 +11549,7 @@ impl IFabricStatefulServicePartition_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             metriccount: u32,
-            metrics: *const super::super::FABRIC_LOAD_METRIC,
+            metrics: *const super::FabricTypes::FABRIC_LOAD_METRIC,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11641,7 +11566,7 @@ impl IFabricStatefulServicePartition_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            faulttype: super::super::FABRIC_FAULT_TYPE,
+            faulttype: super::FabricTypes::FABRIC_FAULT_TYPE,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11668,7 +11593,10 @@ impl IFabricStatefulServicePartition_Vtbl {
 pub trait IFabricStatefulServicePartition1_Impl:
     Sized + IFabricStatefulServicePartition_Impl
 {
-    fn ReportMoveCost(&self, movecost: super::super::FABRIC_MOVE_COST) -> windows_core::Result<()>;
+    fn ReportMoveCost(
+        &self,
+        movecost: super::FabricTypes::FABRIC_MOVE_COST,
+    ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricStatefulServicePartition1 {}
 impl IFabricStatefulServicePartition1_Vtbl {
@@ -11683,7 +11611,7 @@ impl IFabricStatefulServicePartition1_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            movecost: super::super::FABRIC_MOVE_COST,
+            movecost: super::FabricTypes::FABRIC_MOVE_COST,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11708,11 +11636,11 @@ pub trait IFabricStatefulServicePartition2_Impl:
 {
     fn ReportReplicaHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()>;
     fn ReportPartitionHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricStatefulServicePartition2 {}
@@ -11728,7 +11656,7 @@ impl IFabricStatefulServicePartition2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11744,7 +11672,7 @@ impl IFabricStatefulServicePartition2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11771,13 +11699,13 @@ pub trait IFabricStatefulServicePartition3_Impl:
 {
     fn ReportReplicaHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()>;
     fn ReportPartitionHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricStatefulServicePartition3 {}
@@ -11793,8 +11721,8 @@ impl IFabricStatefulServicePartition3_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-            sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+            sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11811,8 +11739,8 @@ impl IFabricStatefulServicePartition3_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-            sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+            sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -11839,30 +11767,30 @@ impl IFabricStatefulServicePartition3_Vtbl {
 pub trait IFabricStatefulServiceReplica_Impl: Sized {
     fn BeginOpen(
         &self,
-        openmode: super::super::FABRIC_REPLICA_OPEN_MODE,
+        openmode: super::FabricTypes::FABRIC_REPLICA_OPEN_MODE,
         partition: Option<&IFabricStatefulServicePartition>,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndOpen(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<IFabricReplicator>;
     fn BeginChangeRole(
         &self,
-        newrole: super::super::FABRIC_REPLICA_ROLE,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        newrole: super::FabricTypes::FABRIC_REPLICA_ROLE,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndChangeRole(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
-    ) -> windows_core::Result<super::IFabricStringResult>;
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
     fn BeginClose(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndClose(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn Abort(&self);
 }
@@ -11879,7 +11807,7 @@ impl IFabricStatefulServiceReplica_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            openmode: super::super::FABRIC_REPLICA_OPEN_MODE,
+            openmode: super::FabricTypes::FABRIC_REPLICA_OPEN_MODE,
             partition: *mut core::ffi::c_void,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
@@ -11927,7 +11855,7 @@ impl IFabricStatefulServiceReplica_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            newrole: super::super::FABRIC_REPLICA_ROLE,
+            newrole: super::FabricTypes::FABRIC_REPLICA_ROLE,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
@@ -12035,7 +11963,7 @@ pub trait IFabricStatelessServiceFactory_Impl: Sized {
     fn CreateInstance(
         &self,
         servicetypename: &windows_core::PCWSTR,
-        servicename: super::super::FABRIC_URI,
+        servicename: super::FabricTypes::FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &windows_core::GUID,
@@ -12056,7 +11984,7 @@ impl IFabricStatelessServiceFactory_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             servicetypename: windows_core::PCWSTR,
-            servicename: super::super::FABRIC_URI,
+            servicename: super::FabricTypes::FABRIC_URI,
             initializationdatalength: u32,
             initializationdata: *const u8,
             partitionid: windows_core::GUID,
@@ -12094,19 +12022,19 @@ pub trait IFabricStatelessServiceInstance_Impl: Sized {
     fn BeginOpen(
         &self,
         partition: Option<&IFabricStatelessServicePartition>,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndOpen(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
-    ) -> windows_core::Result<super::IFabricStringResult>;
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
     fn BeginClose(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndClose(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<()>;
     fn Abort(&self);
 }
@@ -12228,13 +12156,16 @@ impl IFabricStatelessServiceInstance_Vtbl {
 pub trait IFabricStatelessServicePartition_Impl: Sized {
     fn GetPartitionInfo(
         &self,
-    ) -> windows_core::Result<*mut super::super::FABRIC_SERVICE_PARTITION_INFORMATION>;
+    ) -> windows_core::Result<*mut super::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION>;
     fn ReportLoad(
         &self,
         metriccount: u32,
-        metrics: *const super::super::FABRIC_LOAD_METRIC,
+        metrics: *const super::FabricTypes::FABRIC_LOAD_METRIC,
     ) -> windows_core::Result<()>;
-    fn ReportFault(&self, faulttype: super::super::FABRIC_FAULT_TYPE) -> windows_core::Result<()>;
+    fn ReportFault(
+        &self,
+        faulttype: super::FabricTypes::FABRIC_FAULT_TYPE,
+    ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricStatelessServicePartition {}
 impl IFabricStatelessServicePartition_Vtbl {
@@ -12249,7 +12180,7 @@ impl IFabricStatelessServicePartition_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            bufferedvalue: *mut *mut super::super::FABRIC_SERVICE_PARTITION_INFORMATION,
+            bufferedvalue: *mut *mut super::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -12268,7 +12199,7 @@ impl IFabricStatelessServicePartition_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             metriccount: u32,
-            metrics: *const super::super::FABRIC_LOAD_METRIC,
+            metrics: *const super::FabricTypes::FABRIC_LOAD_METRIC,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -12285,7 +12216,7 @@ impl IFabricStatelessServicePartition_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            faulttype: super::super::FABRIC_FAULT_TYPE,
+            faulttype: super::FabricTypes::FABRIC_FAULT_TYPE,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -12309,7 +12240,10 @@ impl IFabricStatelessServicePartition_Vtbl {
 pub trait IFabricStatelessServicePartition1_Impl:
     Sized + IFabricStatelessServicePartition_Impl
 {
-    fn ReportMoveCost(&self, movecost: super::super::FABRIC_MOVE_COST) -> windows_core::Result<()>;
+    fn ReportMoveCost(
+        &self,
+        movecost: super::FabricTypes::FABRIC_MOVE_COST,
+    ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricStatelessServicePartition1 {}
 impl IFabricStatelessServicePartition1_Vtbl {
@@ -12324,7 +12258,7 @@ impl IFabricStatelessServicePartition1_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            movecost: super::super::FABRIC_MOVE_COST,
+            movecost: super::FabricTypes::FABRIC_MOVE_COST,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -12349,11 +12283,11 @@ pub trait IFabricStatelessServicePartition2_Impl:
 {
     fn ReportInstanceHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()>;
     fn ReportPartitionHealth(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricStatelessServicePartition2 {}
@@ -12369,7 +12303,7 @@ impl IFabricStatelessServicePartition2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -12385,7 +12319,7 @@ impl IFabricStatelessServicePartition2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -12412,13 +12346,13 @@ pub trait IFabricStatelessServicePartition3_Impl:
 {
     fn ReportInstanceHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()>;
     fn ReportPartitionHealth2(
         &self,
-        healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-        sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+        healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+        sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
     ) -> windows_core::Result<()>;
 }
 impl windows_core::RuntimeName for IFabricStatelessServicePartition3 {}
@@ -12434,8 +12368,8 @@ impl IFabricStatelessServicePartition3_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-            sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+            sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -12452,8 +12386,8 @@ impl IFabricStatelessServicePartition3_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            healthinfo: *const super::super::FABRIC_HEALTH_INFORMATION,
-            sendoptions: *const super::super::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+            healthinfo: *const super::FabricTypes::FABRIC_HEALTH_INFORMATION,
+            sendoptions: *const super::FabricTypes::FABRIC_HEALTH_REPORT_SEND_OPTIONS,
         ) -> windows_core::HRESULT {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
@@ -12510,11 +12444,11 @@ impl IFabricStoreEventHandler_Vtbl {
 pub trait IFabricStoreEventHandler2_Impl: Sized + IFabricStoreEventHandler_Impl {
     fn BeginOnDataLoss(
         &self,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndOnDataLoss(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<u8>;
 }
 impl windows_core::RuntimeName for IFabricStoreEventHandler2 {}
@@ -12582,12 +12516,12 @@ impl IFabricStoreEventHandler2_Vtbl {
 pub trait IFabricStorePostBackupHandler_Impl: Sized {
     fn BeginPostBackup(
         &self,
-        info: *const super::super::FABRIC_STORE_BACKUP_INFO,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        info: *const super::FabricTypes::FABRIC_STORE_BACKUP_INFO,
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndPostBackup(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<u8>;
 }
 impl windows_core::RuntimeName for IFabricStorePostBackupHandler {}
@@ -12603,7 +12537,7 @@ impl IFabricStorePostBackupHandler_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            info: *const super::super::FABRIC_STORE_BACKUP_INFO,
+            info: *const super::FabricTypes::FABRIC_STORE_BACKUP_INFO,
             callback: *mut core::ffi::c_void,
             context: *mut *mut core::ffi::c_void,
         ) -> windows_core::HRESULT {
@@ -12657,11 +12591,11 @@ pub trait IFabricTransaction_Impl: Sized + IFabricTransactionBase_Impl {
     fn BeginCommit(
         &self,
         timeoutmilliseconds: u32,
-        callback: Option<&super::IFabricAsyncOperationCallback>,
-    ) -> windows_core::Result<super::IFabricAsyncOperationContext>;
+        callback: Option<&super::FabricCommon::IFabricAsyncOperationCallback>,
+    ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
     fn EndCommit(
         &self,
-        context: Option<&super::IFabricAsyncOperationContext>,
+        context: Option<&super::FabricCommon::IFabricAsyncOperationContext>,
     ) -> windows_core::Result<i64>;
     fn Rollback(&self);
 }
@@ -12743,7 +12677,7 @@ impl IFabricTransaction_Vtbl {
 }
 pub trait IFabricTransactionBase_Impl: Sized {
     fn get_Id(&self) -> *mut windows_core::GUID;
-    fn get_IsolationLevel(&self) -> super::super::FABRIC_TRANSACTION_ISOLATION_LEVEL;
+    fn get_IsolationLevel(&self) -> super::FabricTypes::FABRIC_TRANSACTION_ISOLATION_LEVEL;
 }
 impl windows_core::RuntimeName for IFabricTransactionBase {}
 impl IFabricTransactionBase_Vtbl {
@@ -12769,7 +12703,7 @@ impl IFabricTransactionBase_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> super::super::FABRIC_TRANSACTION_ISOLATION_LEVEL {
+        ) -> super::FabricTypes::FABRIC_TRANSACTION_ISOLATION_LEVEL {
             let this = (this as *const *const ()).offset(OFFSET) as *const Identity;
             let this = (*this).get_impl();
             IFabricTransactionBase_Impl::get_IsolationLevel(this)

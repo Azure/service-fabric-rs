@@ -78,7 +78,11 @@ impl Instance {
 }
 
 impl StatelessServiceInstance for Instance {
-    async fn open(&self, partition: &StatelessServicePartition) -> mssf_core::Result<HSTRING> {
+    async fn open(
+        &self,
+        partition: &StatelessServicePartition,
+        _: CancellationToken,
+    ) -> mssf_core::Result<HSTRING> {
         info!("Instance::open");
         let info = partition.get_partition_info().unwrap();
         if let ServicePartitionInformation::Singleton(s) = info {

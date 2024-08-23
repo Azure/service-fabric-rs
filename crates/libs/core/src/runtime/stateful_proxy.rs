@@ -16,7 +16,7 @@ use windows_core::{Interface, HSTRING};
 
 use crate::{
     strings::HSTRINGWrap,
-    sync::{fabric_begin_end_proxy, fabric_begin_end_proxy2, CancellationToken},
+    sync::{fabric_begin_end_proxy2, CancellationToken},
     types::ReplicaRole,
 };
 
@@ -40,45 +40,52 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
+        cancellation_token: CancellationToken,
     ) -> windows::core::Result<impl PrimaryReplicator> {
         info!("StatefulServiceReplicaProxy::open with mode {:?}", openmode);
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| unsafe {
                 com1.BeginOpen(openmode.into(), partition.get_com(), callback)
             },
             move |ctx| unsafe { com2.EndOpen(ctx) },
+            Some(cancellation_token),
         );
-        let rplctr = rx.await?;
+        let rplctr = rx.await??;
         // TODO: cast without clone will cause access violation on AddRef in SF runtime.
         let p_rplctr: IFabricPrimaryReplicator = rplctr.clone().cast().unwrap(); // must work
                                                                                  // Replicator must impl primary replicator as well.
         let res = PrimaryReplicatorProxy::new(p_rplctr);
         Ok(res)
     }
-    async fn change_role(&self, newrole: ReplicaRole) -> ::windows_core::Result<HSTRING> {
+    async fn change_role(
+        &self,
+        newrole: ReplicaRole,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<HSTRING> {
         // replica address
         info!("StatefulServiceReplicaProxy::change_role {:?}", newrole);
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| unsafe { com1.BeginChangeRole((&newrole).into(), callback) },
             move |ctx| unsafe { com2.EndChangeRole(ctx) },
+            Some(cancellation_token),
         );
-        let addr = rx.await?;
+        let addr = rx.await??;
         Ok(HSTRINGWrap::from(&addr).into())
     }
-    async fn close(&self) -> windows::core::Result<()> {
+    async fn close(&self, cancellation_token: CancellationToken) -> windows::core::Result<()> {
         info!("StatefulServiceReplicaProxy::close");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| unsafe { com1.BeginClose(callback) },
             move |ctx| unsafe { com2.EndClose(ctx) },
+            Some(cancellation_token),
         );
-        rx.await?;
-        Ok(())
+        rx.await?
     }
     fn abort(&self) {
         info!("StatefulServiceReplicaProxy::abort");
@@ -121,25 +128,36 @@ impl Replicator for ReplicatorProxy {
         );
         rx.await?
     }
-    async fn change_role(&self, epoch: &Epoch, role: &ReplicaRole) -> ::windows_core::Result<()> {
+    async fn change_role(
+        &self,
+        epoch: &Epoch,
+        role: &ReplicaRole,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<()> {
         info!("ReplicatorProxy::change_role");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| unsafe { com1.BeginChangeRole(&epoch.into(), role.into(), callback) },
             move |ctx| unsafe { com2.EndChangeRole(ctx) },
+            Some(cancellation_token),
         );
-        rx.await
+        rx.await?
     }
-    async fn update_epoch(&self, epoch: &Epoch) -> ::windows_core::Result<()> {
+    async fn update_epoch(
+        &self,
+        epoch: &Epoch,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<()> {
         info!("ReplicatorProxy::update_epoch");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| unsafe { com1.BeginUpdateEpoch(&epoch.into(), callback) },
             move |ctx| unsafe { com2.EndUpdateEpoch(ctx) },
+            Some(cancellation_token),
         );
-        rx.await
+        rx.await?
     }
     fn get_current_progress(&self) -> ::windows_core::Result<i64> {
         info!("ReplicatorProxy::get_current_progress");
@@ -174,11 +192,22 @@ impl Replicator for PrimaryReplicatorProxy {
     async fn close(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<()> {
         self.parent.close(cancellation_token).await
     }
-    async fn change_role(&self, epoch: &Epoch, role: &ReplicaRole) -> ::windows_core::Result<()> {
-        self.parent.change_role(epoch, role).await
+    async fn change_role(
+        &self,
+        epoch: &Epoch,
+        role: &ReplicaRole,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<()> {
+        self.parent
+            .change_role(epoch, role, cancellation_token)
+            .await
     }
-    async fn update_epoch(&self, epoch: &Epoch) -> ::windows_core::Result<()> {
-        self.parent.update_epoch(epoch).await
+    async fn update_epoch(
+        &self,
+        epoch: &Epoch,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<()> {
+        self.parent.update_epoch(epoch, cancellation_token).await
     }
     fn get_current_progress(&self) -> ::windows_core::Result<i64> {
         self.parent.get_current_progress()
@@ -192,15 +221,19 @@ impl Replicator for PrimaryReplicatorProxy {
 }
 
 impl PrimaryReplicator for PrimaryReplicatorProxy {
-    async fn on_data_loss(&self) -> ::windows_core::Result<u8> {
+    async fn on_data_loss(
+        &self,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<u8> {
         info!("PrimaryReplicatorProxy::on_data_loss");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| unsafe { com1.BeginOnDataLoss(callback) },
             move |ctx| unsafe { com2.EndOnDataLoss(ctx) },
+            Some(cancellation_token),
         );
-        rx.await
+        rx.await?
     }
     fn update_catch_up_replica_set_configuration(
         &self,
@@ -218,15 +251,17 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     async fn wait_for_catch_up_quorum(
         &self,
         catchupmode: ReplicaSetQuarumMode,
+        cancellation_token: CancellationToken,
     ) -> ::windows_core::Result<()> {
         info!("PrimaryReplicatorProxy::wait_for_catch_up_quorum");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| unsafe { com1.BeginWaitForCatchUpQuorum(catchupmode.into(), callback) },
             move |ctx| unsafe { com2.EndWaitForCatchUpQuorum(ctx) },
+            Some(cancellation_token),
         );
-        rx.await
+        rx.await?
     }
     fn update_current_replica_set_configuration(
         &self,
@@ -238,19 +273,24 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
                 .UpdateCurrentReplicaSetConfiguration(currentconfiguration.get_view().get_raw())
         }
     }
-    async fn build_replica(&self, replica: &ReplicaInfo) -> ::windows_core::Result<()> {
+    async fn build_replica(
+        &self,
+        replica: &ReplicaInfo,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<()> {
         info!("PrimaryReplicatorProxy::build_replica");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| {
                 let (mut info, ex1) = replica.get_raw_parts();
                 info.Reserved = std::ptr::addr_of!(ex1) as *mut c_void;
                 unsafe { com1.BeginBuildReplica(&info, callback) }
             },
             move |ctx| unsafe { com2.EndBuildReplica(ctx) },
+            Some(cancellation_token),
         );
-        rx.await
+        rx.await?
     }
     fn remove_replica(&self, replicaid: i64) -> ::windows_core::Result<()> {
         info!("PrimaryReplicatorProxy::remove_replica");

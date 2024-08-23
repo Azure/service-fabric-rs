@@ -12,7 +12,6 @@ use mssf_core::runtime::executor::{DefaultExecutor, Executor};
 use mssf_core::runtime::node_context::NodeContext;
 use mssf_core::runtime::ActivationContext;
 use mssf_core::HSTRING;
-use std::time::Duration;
 use tracing::{error, info};
 
 use crate::config::MySettings;
@@ -53,7 +52,7 @@ fn main() -> mssf_core::Result<()> {
     let port = endpoint.port;
 
     // get hostname
-    let ctx = NodeContext::get_sync(Duration::from_secs(1)).unwrap();
+    let ctx = NodeContext::get_sync().unwrap();
     info!("NodeContext: {:?}", ctx);
     let hostname = ctx.ip_address_or_fqdn;
 

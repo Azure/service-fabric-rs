@@ -78,6 +78,7 @@ async fn test_fabric_client() {
                 &PartitionKeyType::None,
                 None,
                 timeout,
+                None,
             )
             .await;
         match res {

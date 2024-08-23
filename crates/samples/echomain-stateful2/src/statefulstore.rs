@@ -63,24 +63,33 @@ impl AppFabricReplicator {
 
 // This is basic implementation of Replicator
 impl Replicator for AppFabricReplicator {
-    async fn open(&self) -> windows::core::Result<HSTRING> {
+    async fn open(&self, _: CancellationToken) -> windows::core::Result<HSTRING> {
         info!("AppFabricReplicator2::Replicator::Open");
         let addr = get_addr(self.port_, self.hostname_.clone());
         let str_res = HSTRING::from(addr);
         Ok(str_res)
     }
 
-    async fn close(&self) -> windows::core::Result<()> {
+    async fn close(&self, _: CancellationToken) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::Replicator::close");
         Ok(())
     }
 
-    async fn change_role(&self, _epoch: &Epoch, _role: &ReplicaRole) -> windows::core::Result<()> {
+    async fn change_role(
+        &self,
+        _epoch: &Epoch,
+        _role: &ReplicaRole,
+        _: CancellationToken,
+    ) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::Replicator::change_role");
         Ok(())
     }
 
-    async fn update_epoch(&self, _epoch: &Epoch) -> windows::core::Result<()> {
+    async fn update_epoch(
+        &self,
+        _epoch: &Epoch,
+        _: CancellationToken,
+    ) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::Replicator::update_epoch");
         Ok(())
     }
@@ -102,7 +111,7 @@ impl Replicator for AppFabricReplicator {
 
 // This is basic implementation of PrimaryReplicator
 impl PrimaryReplicator for AppFabricReplicator {
-    async fn on_data_loss(&self) -> windows::core::Result<u8> {
+    async fn on_data_loss(&self, _: CancellationToken) -> windows::core::Result<u8> {
         info!("AppFabricReplicator2::PrimaryReplicator::on_data_loss");
         Ok(0)
     }
@@ -119,6 +128,7 @@ impl PrimaryReplicator for AppFabricReplicator {
     async fn wait_for_catch_up_quorum(
         &self,
         _catchupmode: ReplicaSetQuarumMode,
+        _: CancellationToken,
     ) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::wait_for_catch_up_quorum");
         Ok(())
@@ -132,7 +142,11 @@ impl PrimaryReplicator for AppFabricReplicator {
         Ok(())
     }
 
-    async fn build_replica(&self, _replica: &ReplicaInfo) -> windows::core::Result<()> {
+    async fn build_replica(
+        &self,
+        _replica: &ReplicaInfo,
+        _: CancellationToken,
+    ) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::build_replica");
         Ok(())
     }
@@ -245,13 +259,18 @@ impl StatefulServiceReplica for Replica {
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
+        _: CancellationToken,
     ) -> windows::core::Result<impl PrimaryReplicator + 'static> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
         self.svc.start_loop_in_background(partition);
         Ok(AppFabricReplicator::new(self.port_, self.hostname_.clone()))
     }
-    async fn change_role(&self, newrole: ReplicaRole) -> ::windows_core::Result<HSTRING> {
+    async fn change_role(
+        &self,
+        newrole: ReplicaRole,
+        _: CancellationToken,
+    ) -> ::windows_core::Result<HSTRING> {
         info!("Replica::change_role {:?}", newrole);
         if newrole == ReplicaRole::Primary {
             info!("primary {:?}", self.svc.tcp_port);
@@ -261,7 +280,7 @@ impl StatefulServiceReplica for Replica {
         let str_res = HSTRING::from(addr);
         Ok(str_res)
     }
-    async fn close(&self) -> windows::core::Result<()> {
+    async fn close(&self, _: CancellationToken) -> windows::core::Result<()> {
         info!("Replica::close");
         self.svc.stop();
         Ok(())

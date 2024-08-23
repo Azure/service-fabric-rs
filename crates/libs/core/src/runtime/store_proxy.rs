@@ -12,7 +12,7 @@ use mssf_com::{
 use tracing::info;
 use windows_core::PCWSTR;
 
-use crate::sync::fabric_begin_end_proxy;
+use crate::sync::{fabric_begin_end_proxy2, CancellationToken};
 
 use super::store_types::TransactionIsolationLevel;
 
@@ -113,15 +113,20 @@ impl TransactionProxy {
         unsafe { self.com_impl.get_IsolationLevel().into() }
     }
 
-    pub async fn commit(&self, timeoutmilliseconds: u32) -> ::windows_core::Result<i64> {
+    pub async fn commit(
+        &self,
+        timeoutmilliseconds: u32,
+        cancellation_token: Option<CancellationToken>,
+    ) -> ::windows_core::Result<i64> {
         info!("TransactionProxy::commit");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| unsafe { com1.BeginCommit(timeoutmilliseconds, callback) },
             move |ctx| unsafe { com2.EndCommit(ctx) },
+            cancellation_token,
         );
-        rx.await
+        rx.await?
     }
 
     pub fn rollback(&self) {

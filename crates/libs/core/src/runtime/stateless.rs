@@ -44,7 +44,11 @@ pub trait StatelessServiceFactory {
 // safe service instance
 #[trait_variant::make(StatelessServiceInstance: Send)]
 pub trait LocalStatelessServiceInstance: Send + Sync + 'static {
-    async fn open(&self, partition: &StatelessServicePartition) -> windows::core::Result<HSTRING>;
+    async fn open(
+        &self,
+        partition: &StatelessServicePartition,
+        cancellation_token: CancellationToken,
+    ) -> windows::core::Result<HSTRING>;
     async fn close(&self, cancellation_token: CancellationToken) -> windows::core::Result<()>;
     fn abort(&self);
 }

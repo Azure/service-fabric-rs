@@ -8,6 +8,7 @@
 use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
 use windows_core::{Error, HSTRING};
 
+use crate::sync::CancellationToken;
 use crate::types::{LoadMetric, LoadMetricListRef, ReplicaRole};
 
 use super::stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode};
@@ -37,9 +38,14 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
+        cancellation_token: CancellationToken,
     ) -> windows::core::Result<impl PrimaryReplicator>;
-    async fn change_role(&self, newrole: ReplicaRole) -> ::windows_core::Result<HSTRING>; // replica address
-    async fn close(&self) -> windows::core::Result<()>;
+    async fn change_role(
+        &self,
+        newrole: ReplicaRole,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<HSTRING>; // replica address
+    async fn close(&self, cancellation_token: CancellationToken) -> windows::core::Result<()>;
     fn abort(&self);
 }
 
@@ -71,10 +77,19 @@ impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
 
 #[trait_variant::make(Replicator: Send)]
 pub trait LocalReplicator: Send + Sync + 'static {
-    async fn open(&self) -> ::windows_core::Result<HSTRING>; // replicator address
-    async fn close(&self) -> ::windows_core::Result<()>;
-    async fn change_role(&self, epoch: &Epoch, role: &ReplicaRole) -> ::windows_core::Result<()>;
-    async fn update_epoch(&self, epoch: &Epoch) -> ::windows_core::Result<()>;
+    async fn open(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<HSTRING>; // replicator address
+    async fn close(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<()>;
+    async fn change_role(
+        &self,
+        epoch: &Epoch,
+        role: &ReplicaRole,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<()>;
+    async fn update_epoch(
+        &self,
+        epoch: &Epoch,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<()>;
     fn get_current_progress(&self) -> ::windows_core::Result<i64>;
     fn get_catch_up_capability(&self) -> ::windows_core::Result<i64>;
     fn abort(&self);
@@ -85,7 +100,10 @@ pub trait LocalPrimaryReplicator: Replicator {
     // SF calls this to indicate that possible data loss has occurred (write quorum loss),
     // returns is isStateChanged. If true, SF will re-create other secondaries.
     // The default SF impl might be a pass through to the state provider.
-    async fn on_data_loss(&self) -> ::windows_core::Result<u8>;
+    async fn on_data_loss(
+        &self,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<u8>;
     fn update_catch_up_replica_set_configuration(
         &self,
         currentconfiguration: &ReplicaSetConfig,
@@ -94,11 +112,16 @@ pub trait LocalPrimaryReplicator: Replicator {
     async fn wait_for_catch_up_quorum(
         &self,
         catchupmode: ReplicaSetQuarumMode,
+        cancellation_token: CancellationToken,
     ) -> ::windows_core::Result<()>;
     fn update_current_replica_set_configuration(
         &self,
         currentconfiguration: &ReplicaSetConfig,
     ) -> ::windows_core::Result<()>;
-    async fn build_replica(&self, replica: &ReplicaInfo) -> ::windows_core::Result<()>;
+    async fn build_replica(
+        &self,
+        replica: &ReplicaInfo,
+        cancellation_token: CancellationToken,
+    ) -> ::windows_core::Result<()>;
     fn remove_replica(&self, replicaid: i64) -> ::windows_core::Result<()>;
 }

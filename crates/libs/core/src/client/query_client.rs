@@ -19,7 +19,7 @@ use mssf_com::{
 
 use crate::{
     strings::get_pcwstr_from_opt,
-    sync::{fabric_begin_end_proxy, fabric_begin_end_proxy2, FabricReceiver},
+    sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2},
     types::{
         NodeList, NodeQueryDescription, ServicePartitionList, ServicePartitionQueryDescription,
         ServiceReplicaList, ServiceReplicaQueryDescription,
@@ -38,8 +38,8 @@ impl QueryClient {
         &self,
         query_description: &FABRIC_NODE_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<crate::sync::CancellationToken>,
-    ) -> crate::sync::FabricReceiver2<::windows_core::Result<IFabricGetNodeListResult2>> {
+        cancellation_token: Option<CancellationToken>,
+    ) -> FabricReceiver2<::windows_core::Result<IFabricGetNodeListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
 
@@ -56,14 +56,16 @@ impl QueryClient {
         &self,
         desc: &FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
-    ) -> FabricReceiver<crate::Result<IFabricGetPartitionListResult2>> {
+        cancellation_token: Option<CancellationToken>,
+    ) -> FabricReceiver2<crate::Result<IFabricGetPartitionListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy(
+        fabric_begin_end_proxy2(
             move |callback| unsafe {
                 com1.BeginGetPartitionList(desc, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndGetPartitionList2(ctx) },
+            cancellation_token,
         )
     }
 
@@ -71,14 +73,16 @@ impl QueryClient {
         &self,
         desc: &FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
-    ) -> FabricReceiver<crate::Result<IFabricGetReplicaListResult2>> {
+        cancellation_token: Option<CancellationToken>,
+    ) -> FabricReceiver2<crate::Result<IFabricGetReplicaListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy(
+        fabric_begin_end_proxy2(
             move |callback| unsafe {
                 com1.BeginGetReplicaList(desc, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndGetReplicaList2(ctx) },
+            cancellation_token,
         )
     }
 }
@@ -130,10 +134,13 @@ impl QueryClient {
         &self,
         desc: &ServicePartitionQueryDescription,
         timeout: Duration,
+        cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<ServicePartitionList> {
         let raw: FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION = desc.into();
         let mili = timeout.as_millis() as u32;
-        let com = self.get_partition_list_internal(&raw, mili).await?;
+        let com = self
+            .get_partition_list_internal(&raw, mili, cancellation_token)
+            .await??;
         Ok(ServicePartitionList::new(com))
     }
 
@@ -141,10 +148,13 @@ impl QueryClient {
         &self,
         desc: &ServiceReplicaQueryDescription,
         timeout: Duration,
+        cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<ServiceReplicaList> {
         let raw: FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION = desc.into();
         let mili = timeout.as_millis() as u32;
-        let com = self.get_replica_list_internal(&raw, mili).await?;
+        let com = self
+            .get_replica_list_internal(&raw, mili, cancellation_token)
+            .await??;
         Ok(ServiceReplicaList::new(com))
     }
 }

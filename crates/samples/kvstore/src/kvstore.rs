@@ -19,6 +19,7 @@ use mssf_core::{
         store_proxy::KVStoreProxy,
         store_types::ReplicatorSettings,
     },
+    sync::CancellationToken,
     types::ReplicaRole,
     Error, GUID, HSTRING,
 };
@@ -168,7 +169,7 @@ impl Service {
             let key = HSTRING::from("mykey");
             let value = String::from("myvalue");
             kv.add(&tx, key.as_wide(), value.as_bytes())?;
-            seq = tx.commit(1000).await?;
+            seq = tx.commit(1000, None).await?;
         }
 
         // remove kv
@@ -176,7 +177,7 @@ impl Service {
             let tx = kv.create_transaction()?;
             let key = HSTRING::from("mykey");
             kv.remove(&tx, key.as_wide(), seq)?;
-            let _ = tx.commit(1000).await?;
+            let _ = tx.commit(1000, None).await?;
         }
         Ok(())
     }
@@ -187,23 +188,31 @@ impl StatefulServiceReplica for Replica {
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
+        cancellation_token: CancellationToken,
     ) -> mssf_core::Result<impl PrimaryReplicator> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
-        self.kv.open(openmode, partition).await
+        self.kv.open(openmode, partition, cancellation_token).await
     }
-    async fn change_role(&self, newrole: ReplicaRole) -> mssf_core::Result<HSTRING> {
+    async fn change_role(
+        &self,
+        newrole: ReplicaRole,
+        cancellation_token: CancellationToken,
+    ) -> mssf_core::Result<HSTRING> {
         info!("Replica::change_role {:?}", newrole);
-        let addr = self.kv.change_role(newrole.clone()).await?;
+        let addr = self
+            .kv
+            .change_role(newrole.clone(), cancellation_token)
+            .await?;
         if newrole == ReplicaRole::Primary {
             self.svc.start_loop();
         }
         Ok(addr)
     }
-    async fn close(&self) -> mssf_core::Result<()> {
+    async fn close(&self, cancellation_token: CancellationToken) -> mssf_core::Result<()> {
         info!("Replica::close");
         self.svc.stop();
-        self.kv.close().await
+        self.kv.close(cancellation_token).await
     }
     fn abort(&self) {
         info!("Replica::abort");

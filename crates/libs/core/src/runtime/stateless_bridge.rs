@@ -9,9 +9,7 @@
 use std::sync::Arc;
 
 use crate::{
-    runtime::stateless::StatelessServicePartition,
-    strings::HSTRINGWrap,
-    sync::{fabric_begin_bridge, fabric_end_bridge, BridgeContext3},
+    runtime::stateless::StatelessServicePartition, strings::HSTRINGWrap, sync::BridgeContext3,
 };
 use mssf_com::{
     FabricCommon::IFabricStringResult,
@@ -134,9 +132,10 @@ where
         let partition_cp = partition.unwrap().clone();
         let partition_bridge = StatelessServicePartition::new(partition_cp);
         let inner = self.inner.clone();
-        fabric_begin_bridge(&self.rt, callback, async move {
+        let (ctx, token) = BridgeContext3::make(callback);
+        ctx.spawn(&self.rt, async move {
             inner
-                .open(&partition_bridge)
+                .open(&partition_bridge, token)
                 .await
                 .map(|s| IFabricStringResult::from(HSTRINGWrap::from(s)))
         })
@@ -147,7 +146,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<IFabricStringResult> {
         info!("IFabricStatelessServiceInstanceBridge::EndOpen");
-        fabric_end_bridge(context)
+        BridgeContext3::result(context)?
     }
 
     fn BeginClose(

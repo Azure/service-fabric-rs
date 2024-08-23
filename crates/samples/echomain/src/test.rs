@@ -48,7 +48,10 @@ impl EchoTestClient {
             service_name: self.service_uri.clone(),
             partition_id_filter: None,
         };
-        let list = qc.get_partition_list(&desc, self.timeout).await.unwrap();
+        let list = qc
+            .get_partition_list(&desc, self.timeout, None)
+            .await
+            .unwrap();
         // there is only one partition
         let p = list.iter().next().unwrap();
         let stateless = match p {
@@ -72,7 +75,7 @@ impl EchoTestClient {
             partition_id,
             replica_id_or_instance_id_filter: None,
         };
-        let replicas = qc.get_replica_list(&desc, self.timeout).await?;
+        let replicas = qc.get_replica_list(&desc, self.timeout, None).await?;
         let replica_op = replicas.iter().next(); // only one replica
         match replica_op {
             Some(replica) => Ok(match replica {
@@ -92,6 +95,7 @@ impl EchoTestClient {
                 &PartitionKeyType::None,
                 None,
                 self.timeout,
+                None,
             )
             .await
             .expect("resolve failed");
@@ -143,7 +147,7 @@ async fn test_fabric_client() {
             flags: ServiceNotificationFilterFlags::NamePrefix,
         };
         // register takes more than 1 sec.
-        mgmt.register_service_notification_filter(&desc, Duration::from_secs(10))
+        mgmt.register_service_notification_filter(&desc, Duration::from_secs(10), None)
             .await
             .unwrap()
     };
@@ -162,7 +166,7 @@ async fn test_fabric_client() {
             partition_id: single.id,
             replica_or_instance_id: stateless_replica.instance_id,
         };
-        mgmt.remove_replica(&desc, timeout)
+        mgmt.remove_replica(&desc, timeout, None)
             .await
             .expect("Failed to remove replica");
     }
@@ -191,7 +195,7 @@ async fn test_fabric_client() {
     }
 
     // unregisters the notification
-    mgmt.unregister_service_notification_filter(filter_handle, timeout)
+    mgmt.unregister_service_notification_filter(filter_handle, timeout, None)
         .await
         .unwrap();
 }

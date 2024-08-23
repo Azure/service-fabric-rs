@@ -50,7 +50,10 @@ impl TestClient {
             service_name: self.service_uri.clone(),
             partition_id_filter: None,
         };
-        let list = qc.get_partition_list(&desc, self.timeout).await.unwrap();
+        let list = qc
+            .get_partition_list(&desc, self.timeout, None)
+            .await
+            .unwrap();
         // there is only one partition
         let p = list.iter().next().unwrap();
         let stateful = match p {
@@ -81,7 +84,7 @@ impl TestClient {
             replica_id_or_instance_id_filter: None,
         };
         let replicas = qc
-            .get_replica_list(&desc, self.timeout)
+            .get_replica_list(&desc, self.timeout, None)
             .await?
             .iter()
             .collect::<Vec<_>>();
@@ -171,6 +174,7 @@ impl TestClient {
             &PartitionKeyType::None,
             prev,
             self.timeout,
+            None,
         )
         .await
     }
@@ -188,7 +192,9 @@ impl TestClient {
             replica_or_instance_id: p.replica_id,
         };
         let mgmt = self.fc.get_service_manager();
-        mgmt.restart_replica(&desc, self.timeout).await.unwrap();
+        mgmt.restart_replica(&desc, self.timeout, None)
+            .await
+            .unwrap();
 
         // get replica info to see primary has changed
         let mut count = 0;
@@ -253,7 +259,7 @@ async fn test_partition_info() {
             flags: ServiceNotificationFilterFlags::NamePrefix,
         };
         // register takes more than 1 sec.
-        mgmt.register_service_notification_filter(&desc, Duration::from_secs(10))
+        mgmt.register_service_notification_filter(&desc, Duration::from_secs(10), None)
             .await
             .unwrap()
     };
@@ -295,7 +301,7 @@ async fn test_partition_info() {
         }
     }
     // unregisters the notification
-    mgmt.unregister_service_notification_filter(filter_handle, timeout)
+    mgmt.unregister_service_notification_filter(filter_handle, timeout, None)
         .await
         .unwrap();
 

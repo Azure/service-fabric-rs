@@ -63,14 +63,14 @@ impl AppFabricReplicator {
 
 // This is basic implementation of Replicator
 impl Replicator for AppFabricReplicator {
-    async fn open(&self) -> windows::core::Result<HSTRING> {
+    async fn open(&self, _: CancellationToken) -> windows::core::Result<HSTRING> {
         info!("AppFabricReplicator2::Replicator::Open");
         let addr = get_addr(self.port_, self.hostname_.clone());
         let str_res = HSTRING::from(addr);
         Ok(str_res)
     }
 
-    async fn close(&self) -> windows::core::Result<()> {
+    async fn close(&self, _: CancellationToken) -> windows::core::Result<()> {
         info!("AppFabricReplicator2::Replicator::close");
         Ok(())
     }

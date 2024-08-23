@@ -8,6 +8,7 @@
 use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
 use windows_core::{Error, HSTRING};
 
+use crate::sync::CancellationToken;
 use crate::types::{LoadMetric, LoadMetricListRef, ReplicaRole};
 
 use super::stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode};
@@ -71,8 +72,8 @@ impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
 
 #[trait_variant::make(Replicator: Send)]
 pub trait LocalReplicator: Send + Sync + 'static {
-    async fn open(&self) -> ::windows_core::Result<HSTRING>; // replicator address
-    async fn close(&self) -> ::windows_core::Result<()>;
+    async fn open(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<HSTRING>; // replicator address
+    async fn close(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<()>;
     async fn change_role(&self, epoch: &Epoch, role: &ReplicaRole) -> ::windows_core::Result<()>;
     async fn update_epoch(&self, epoch: &Epoch) -> ::windows_core::Result<()>;
     fn get_current_progress(&self) -> ::windows_core::Result<i64>;

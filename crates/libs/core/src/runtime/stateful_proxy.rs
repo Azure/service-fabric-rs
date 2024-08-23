@@ -14,7 +14,11 @@ use mssf_com::FabricRuntime::{
 use tracing::info;
 use windows_core::{Interface, HSTRING};
 
-use crate::{strings::HSTRINGWrap, sync::fabric_begin_end_proxy, types::ReplicaRole};
+use crate::{
+    strings::HSTRINGWrap,
+    sync::{fabric_begin_end_proxy, fabric_begin_end_proxy2, CancellationToken},
+    types::ReplicaRole,
+};
 
 use super::{
     stateful::{PrimaryReplicator, Replicator, StatefulServicePartition, StatefulServiceReplica},
@@ -93,27 +97,29 @@ impl ReplicatorProxy {
 }
 
 impl Replicator for ReplicatorProxy {
-    async fn open(&self) -> ::windows_core::Result<HSTRING> {
+    async fn open(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<HSTRING> {
         info!("ReplicatorProxy::open");
         // replicator address
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| unsafe { com1.BeginOpen(callback) },
             move |ctx| unsafe { com2.EndOpen(ctx) },
+            Some(cancellation_token),
         );
-        let addr = rx.await?;
+        let addr = rx.await??;
         Ok(HSTRINGWrap::from(&addr).into())
     }
-    async fn close(&self) -> ::windows_core::Result<()> {
+    async fn close(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<()> {
         info!("ReplicatorProxy::close");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy(
+        let rx = fabric_begin_end_proxy2(
             move |callback| unsafe { com1.BeginClose(callback) },
             move |ctx| unsafe { com2.EndClose(ctx) },
+            Some(cancellation_token),
         );
-        rx.await
+        rx.await?
     }
     async fn change_role(&self, epoch: &Epoch, role: &ReplicaRole) -> ::windows_core::Result<()> {
         info!("ReplicatorProxy::change_role");
@@ -162,11 +168,11 @@ impl PrimaryReplicatorProxy {
 }
 
 impl Replicator for PrimaryReplicatorProxy {
-    async fn open(&self) -> ::windows_core::Result<HSTRING> {
-        self.parent.open().await
+    async fn open(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<HSTRING> {
+        self.parent.open(cancellation_token).await
     }
-    async fn close(&self) -> ::windows_core::Result<()> {
-        self.parent.close().await
+    async fn close(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<()> {
+        self.parent.close(cancellation_token).await
     }
     async fn change_role(&self, epoch: &Epoch, role: &ReplicaRole) -> ::windows_core::Result<()> {
         self.parent.change_role(epoch, role).await

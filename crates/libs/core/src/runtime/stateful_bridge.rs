@@ -34,7 +34,7 @@ use crate::{
         stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig},
     },
     strings::HSTRINGWrap,
-    sync::{fabric_begin_bridge, fabric_end_bridge},
+    sync::{fabric_begin_bridge, fabric_end_bridge, BridgeContext3},
     types::ReplicaRole,
 };
 
@@ -148,9 +148,10 @@ where
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricReplicatorBridge::BeginOpen");
         let inner = self.inner.clone();
-        fabric_begin_bridge(&self.rt, callback, async move {
+        let (ctx, token) = BridgeContext3::make(callback);
+        ctx.spawn(&self.rt, async move {
             inner
-                .open()
+                .open(token)
                 .await
                 .map(|s| IFabricStringResult::from(HSTRINGWrap::from(s)))
         })
@@ -161,7 +162,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<IFabricStringResult> {
         info!("IFabricReplicatorBridge::EndOpen");
-        fabric_end_bridge(context)
+        BridgeContext3::result(context)?
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
@@ -223,7 +224,8 @@ where
     ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricReplicatorBridge::BeginClose");
         let inner = self.inner.clone();
-        fabric_begin_bridge(&self.rt, callback, async move { inner.close().await })
+        let (ctx, token) = BridgeContext3::make(callback);
+        ctx.spawn(&self.rt, async move { inner.close(token).await })
     }
 
     fn EndClose(
@@ -231,7 +233,7 @@ where
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> ::windows_core::Result<()> {
         info!("IFabricReplicatorBridge::EndClose");
-        fabric_end_bridge(context)
+        BridgeContext3::result(context)?
     }
 
     fn Abort(&self) {

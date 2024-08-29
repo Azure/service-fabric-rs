@@ -5,8 +5,7 @@
 
 use mssf_core::runtime::ActivationContext;
 #[no_mangle]
-fn test_fn()
-{
+fn test_fn() {
     // Make sure we link something
     //
     let my_ctx = ActivationContext::create();

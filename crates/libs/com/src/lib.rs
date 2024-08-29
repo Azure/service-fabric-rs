@@ -11,9 +11,9 @@ pub mod ServiceFabric;
 // expose mod directly
 pub use ServiceFabric::*;
 
-#[cfg(all(target_os = "windows", feature="bundled_import_libs"))]
+#[cfg(all(target_os = "windows", feature = "bundled_import_libs"))]
 pub use mssf_metadata;
 
 // In linux force to pull in pal lib for linking
-#[cfg(all(target_os = "linux", feature="bundled_import_libs"))]
+#[cfg(all(target_os = "linux", feature = "bundled_import_libs"))]
 extern crate mssf_pal;

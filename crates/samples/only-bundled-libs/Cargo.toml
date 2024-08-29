@@ -13,4 +13,4 @@ path = "../../libs/com"
 [dependencies.mssf-core]
 path = "../../libs/core"
 default-features = false
-features = ["bundled_import_libs"]
+features = ["bundled_libs"]

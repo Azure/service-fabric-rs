@@ -24,7 +24,7 @@ targets = []
 mssf-metadata = { version = "0.0.1", optional = true }
 
 [target.'cfg(unix)'.dependencies]
-mssf-pal = { path = "../pal" , version = "0.0.9", optional = true }
+mssf-pal = { path = "../pal" , version = "0.0.9" }
 
 [dependencies]
 windows-core = "0.57"
@@ -37,5 +37,5 @@ features = [
 ]
 
 [features]
-default = ["bundled_import_libs"]
-bundled_import_libs = ["dep:mssf-metadata","dep:mssf-pal"]
+default = ["bundled_libs"]
+bundled_libs = ["dep:mssf-metadata"]

@@ -1,5 +1,5 @@
 [package]
-name = "only_bundled_libs"
+name = "no_default_features"
 version = "0.1.0"
 edition = "2021"
 
@@ -13,4 +13,3 @@ path = "../../libs/com"
 [dependencies.mssf-core]
 path = "../../libs/core"
 default-features = false
-features = ["bundled_libs"]

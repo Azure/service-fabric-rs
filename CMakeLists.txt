@@ -68,6 +68,7 @@ add_custom_target(format
 add_subdirectory(crates/samples/echomain)
 add_subdirectory(crates/samples/echomain-stateful2)
 add_subdirectory(crates/samples/echomain-stateful)
+add_subdirectory(crates/samples/only-bundled-libs)
 
 if(WIN32) #linux is not tested
     add_subdirectory(crates/samples/kvstore)

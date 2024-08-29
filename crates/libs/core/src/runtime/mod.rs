@@ -28,12 +28,14 @@ pub mod executor;
 pub mod node_context;
 #[cfg(feature = "tokio_async")]
 pub mod runtime_wrapper;
+#[cfg(feature = "tokio_async")]
 pub mod stateful;
 #[cfg(feature = "tokio_async")]
 pub mod stateful_bridge;
 #[cfg(feature = "tokio_async")]
 pub mod stateful_proxy;
 pub mod stateful_types;
+#[cfg(feature = "tokio_async")]
 pub mod stateless;
 #[cfg(feature = "tokio_async")]
 pub mod stateless_bridge;

@@ -281,6 +281,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "no_default_features"
+version = "0.1.0"
+dependencies = [
+ "mssf-com",
+ "mssf-core",
+]
+
+[[package]]
 name = "nom"
 version = "7.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

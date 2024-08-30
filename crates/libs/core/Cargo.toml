@@ -14,12 +14,13 @@ include = [
 ]
 
 [features]
-default = ["config_source", "tokio_async"]
+default = ["config_source", "tokio_async", "bundled_libs"]
 # Required for a lot of callback functionality.
 # Also requires ctrlc for signal handling
 tokio_async = ["dep:tokio", "dep:tokio-util", "dep:ctrlc"]
 # Config crate required to implement its interface. 
 config_source = ["dep:config"]
+bundled_libs = ["mssf-com/bundled_libs"]
 
 [dependencies]
 tracing.workspace = true
@@ -49,6 +50,7 @@ features = [
 [dependencies.mssf-com]
 path = "../com"
 version = "0.0.9"
+default-features = false
 
 # requires return impl trait feature
 [package.metadata]

@@ -21,10 +21,10 @@ targets = []
 
 [target.'cfg(windows)'.dependencies]
 # this dep is required on windows to have the support libs.
-mssf-metadata = "0.0.1"
+mssf-metadata = { version = "0.0.1", optional = true }
 
 [target.'cfg(unix)'.dependencies]
-mssf-pal = { path = "../pal" , version = "0.0.9"}
+mssf-pal = { path = "../pal" , version = "0.0.9" }
 
 [dependencies]
 windows-core = "0.57"
@@ -35,3 +35,7 @@ features = [
     "Win32_Foundation",
     "implement"
 ]
+
+[features]
+default = ["bundled_libs"]
+bundled_libs = ["dep:mssf-metadata"]

@@ -1,0 +1,15 @@
+[package]
+name = "no_default_features"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["cdylib","staticlib"]
+
+[dependencies.mssf-com]
+path = "../../libs/com"
+
+[dependencies.mssf-core]
+path = "../../libs/core"
+default-features = false

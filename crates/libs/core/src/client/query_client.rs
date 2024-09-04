@@ -26,6 +26,7 @@ use crate::{
     },
 };
 
+#[derive(Debug, Clone)]
 pub struct QueryClient {
     com: IFabricQueryClient10,
 }
@@ -99,6 +100,8 @@ impl QueryClient {
         timeout: Duration,
         cancellation_token: Option<crate::sync::CancellationToken>,
     ) -> windows_core::Result<NodeList> {
+        // Note that the SF raw structs are scoped to avoid having them across await points.
+        // This makes api Send. All FabricClient api should follow this pattern.
         let com = {
             let ex3 = FABRIC_NODE_QUERY_DESCRIPTION_EX3 {
                 MaxResults: desc.paged_query.max_results.unwrap_or(0),

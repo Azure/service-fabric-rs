@@ -31,6 +31,7 @@ use crate::{
 };
 
 // Service Management Client
+#[derive(Debug, Clone)]
 pub struct ServiceManagementClient {
     com: IFabricServiceManagementClient6,
 }

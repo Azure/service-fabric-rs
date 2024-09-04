@@ -32,7 +32,14 @@ async fn test_fabric_client() {
             },
             ..Default::default()
         };
-        let list = qc.get_node_list(&desc, timeout, None).await.unwrap();
+        let qc_cp = qc.clone();
+        let list = tokio::spawn(async move {
+            // make sure api is Send.
+            qc_cp.get_node_list(&desc, timeout, None).await
+        })
+        .await
+        .unwrap()
+        .unwrap();
         paging_status = list.get_paging_status();
         let v = list.iter().collect::<Vec<_>>();
         assert_ne!(v.len(), 0);

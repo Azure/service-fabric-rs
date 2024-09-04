@@ -26,6 +26,7 @@ use crate::{
     },
 };
 
+#[derive(Debug, Clone)]
 pub struct QueryClient {
     com: IFabricQueryClient10,
 }
@@ -99,8 +100,9 @@ impl QueryClient {
         timeout: Duration,
         cancellation_token: Option<crate::sync::CancellationToken>,
     ) -> windows_core::Result<NodeList> {
-        let fu;
-        {
+        // Note that the SF raw structs are scoped to avoid having them across await points.
+        // This makes api Send. All FabricClient api should follow this pattern.
+        let com = {
             let ex3 = FABRIC_NODE_QUERY_DESCRIPTION_EX3 {
                 MaxResults: desc.paged_query.max_results.unwrap_or(0),
                 Reserved: std::ptr::null_mut(),
@@ -120,14 +122,14 @@ impl QueryClient {
                 NodeNameFilter: get_pcwstr_from_opt(&desc.node_name_filter),
                 Reserved: std::ptr::addr_of!(ex1) as *mut c_void,
             };
-            fu = self.get_node_list_internal(
+            self.get_node_list_internal(
                 &arg,
                 timeout.as_millis().try_into().unwrap(),
                 cancellation_token,
-            );
+            )
         }
-        let res = fu.await??;
-        Ok(NodeList::from_com(res))
+        .await??;
+        Ok(NodeList::from_com(com))
     }
 
     pub async fn get_partition_list(
@@ -136,11 +138,12 @@ impl QueryClient {
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<ServicePartitionList> {
-        let raw: FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION = desc.into();
-        let mili = timeout.as_millis() as u32;
-        let com = self
-            .get_partition_list_internal(&raw, mili, cancellation_token)
-            .await??;
+        let com = {
+            let raw: FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION = desc.into();
+            let mili = timeout.as_millis() as u32;
+            self.get_partition_list_internal(&raw, mili, cancellation_token)
+        }
+        .await??;
         Ok(ServicePartitionList::new(com))
     }
 
@@ -150,11 +153,12 @@ impl QueryClient {
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<ServiceReplicaList> {
-        let raw: FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION = desc.into();
-        let mili = timeout.as_millis() as u32;
-        let com = self
-            .get_replica_list_internal(&raw, mili, cancellation_token)
-            .await??;
+        let com = {
+            let raw: FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION = desc.into();
+            let mili = timeout.as_millis() as u32;
+            self.get_replica_list_internal(&raw, mili, cancellation_token)
+        }
+        .await??;
         Ok(ServiceReplicaList::new(com))
     }
 }

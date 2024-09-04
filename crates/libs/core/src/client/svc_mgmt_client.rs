@@ -152,22 +152,23 @@ impl ServiceManagementClient {
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
     ) -> windows_core::Result<ResolvedServicePartition> {
-        let uri = FABRIC_URI(name.as_ptr() as *mut u16);
-        // supply prev as null if not present
-        let prev_opt = prev.map(|x| &x.com);
+        let com = {
+            let uri = FABRIC_URI(name.as_ptr() as *mut u16);
+            // supply prev as null if not present
+            let prev_opt = prev.map(|x| &x.com);
 
-        let part_key_opt = key_type.get_raw_opt();
+            let part_key_opt = key_type.get_raw_opt();
 
-        let fu = self.resolve_service_partition_internal(
-            uri,
-            key_type.into(),
-            part_key_opt,
-            prev_opt,
-            timeout.as_millis().try_into().unwrap(),
-            cancellation_token,
-        );
-
-        let com = fu.await??;
+            self.resolve_service_partition_internal(
+                uri,
+                key_type.into(),
+                part_key_opt,
+                prev_opt,
+                timeout.as_millis().try_into().unwrap(),
+                cancellation_token,
+            )
+        }
+        .await??;
         let res = ResolvedServicePartition::from_com(com);
         Ok(res)
     }
@@ -182,9 +183,11 @@ impl ServiceManagementClient {
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<()> {
-        let raw: FABRIC_RESTART_REPLICA_DESCRIPTION = desc.into();
-        self.restart_replica_internal(&raw, timeout.as_millis() as u32, cancellation_token)
-            .await?
+        {
+            let raw: FABRIC_RESTART_REPLICA_DESCRIPTION = desc.into();
+            self.restart_replica_internal(&raw, timeout.as_millis() as u32, cancellation_token)
+        }
+        .await?
     }
 
     /// This API gives a running replica the chance to cleanup its state and be gracefully shutdown.
@@ -198,9 +201,11 @@ impl ServiceManagementClient {
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<()> {
-        let raw: FABRIC_REMOVE_REPLICA_DESCRIPTION = desc.into();
-        self.remove_replica_internal(&raw, timeout.as_millis() as u32, cancellation_token)
-            .await?
+        {
+            let raw: FABRIC_REMOVE_REPLICA_DESCRIPTION = desc.into();
+            self.remove_replica_internal(&raw, timeout.as_millis() as u32, cancellation_token)
+        }
+        .await?
     }
 
     /// Remarks:
@@ -219,14 +224,15 @@ impl ServiceManagementClient {
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<FilterIdHandle> {
-        let raw: FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION = desc.into();
-        let id = self
-            .register_service_notification_filter_internal(
+        let id = {
+            let raw: FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION = desc.into();
+            self.register_service_notification_filter_internal(
                 &raw,
                 timeout.as_millis() as u32,
                 cancellation_token,
             )
-            .await??;
+        }
+        .await??;
         Ok(FilterIdHandle { id })
     }
 

@@ -13,16 +13,11 @@ use std::{
     task::{Context, Poll},
 };
 
-use mssf_com::{
-    FabricClient::FabricCreateLocalClient,
-    FabricCommon::{
-        IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
-        IFabricAsyncOperationContext,
-    },
+use mssf_com::FabricCommon::{
+    IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl, IFabricAsyncOperationContext,
 };
 use tokio::sync::oneshot::Receiver;
 use windows::core::implement;
-use windows_core::Interface;
 
 mod proxy;
 pub mod wait;
@@ -35,11 +30,6 @@ pub mod cancel;
 pub use cancel::*;
 
 // fabric code begins here
-
-// Creates the local client
-pub fn CreateLocalClient<T: Interface>() -> T {
-    unsafe { T::from_raw(FabricCreateLocalClient(&T::IID).expect("cannot get localclient")) }
-}
 
 pub trait Callback:
     FnOnce(::core::option::Option<&IFabricAsyncOperationContext>) + 'static
@@ -183,7 +173,7 @@ mod tests {
     use windows::core::implement;
     use windows_core::{Interface, HSTRING};
 
-    use super::{oneshot_channel, CreateLocalClient, FabricReceiver, SBox};
+    use super::{oneshot_channel, FabricReceiver, SBox};
 
     use super::AwaitableCallback2;
 
@@ -242,7 +232,7 @@ mod tests {
                 pub fn new() -> $name {
                     return $name {
                         com: paste::item! {
-                            crate::sync::CreateLocalClient::<mssf_com::FabricClient::[<I $name>]>()
+                            crate::client::create_local_client_default::<mssf_com::FabricClient::[<I $name>]>()
                         },
                     };
                 }
@@ -330,7 +320,7 @@ mod tests {
     impl FabricQueryClient {
         pub fn new() -> FabricQueryClient {
             FabricQueryClient {
-                com: CreateLocalClient::<IFabricQueryClient>(),
+                com: crate::client::create_local_client_default::<IFabricQueryClient>(),
             }
         }
 
@@ -520,7 +510,7 @@ mod tests {
 
     #[test]
     fn local_client_create() {
-        let _mgmt = CreateLocalClient::<IFabricClusterManagementClient3>();
+        let _mgmt = crate::client::create_local_client_default::<IFabricClusterManagementClient3>();
     }
 
     #[tokio::test]

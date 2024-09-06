@@ -3,18 +3,70 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use connection::{
+    ClientConnectionEventHandler, ClientConnectionEventHandlerBridge,
+    DefaultClientConnectionEventHandler,
+};
 use mssf_com::FabricClient::{
-    IFabricPropertyManagementClient2, IFabricQueryClient10, IFabricServiceManagementClient6,
+    FabricCreateLocalClient4, IFabricPropertyManagementClient2, IFabricQueryClient10,
+    IFabricServiceManagementClient6,
+};
+use notification::{
+    DefaultServiceNotificationEventHandler, ServiceNotificationEventHandler,
+    ServiceNotificationEventHandlerBridge,
 };
 use windows_core::Interface;
 
+use crate::types::ClientRole;
+
 use self::{query_client::QueryClient, svc_mgmt_client::ServiceManagementClient};
 
+mod connection;
+mod notification;
 pub mod query_client;
 pub mod svc_mgmt_client;
 
 #[cfg(test)]
 mod tests;
+
+// Fabric Client creation
+// Creates the local client
+pub fn create_local_client<T: Interface>(
+    service_notification_handler: Option<impl ServiceNotificationEventHandler>,
+    client_connection_handler: Option<impl ClientConnectionEventHandler>,
+    client_role: Option<ClientRole>,
+) -> T {
+    let sn_handler =
+        service_notification_handler.map(|sn| ServiceNotificationEventHandlerBridge::new_com(sn));
+    let cc_handler =
+        client_connection_handler.map(|cc| ClientConnectionEventHandlerBridge::new_com(cc));
+    let role = client_role.unwrap_or(ClientRole::User);
+    assert_ne!(
+        role,
+        ClientRole::Unknown,
+        "Unknown role should not be used."
+    );
+    let raw = unsafe {
+        FabricCreateLocalClient4(
+            sn_handler.as_ref(),
+            cc_handler.as_ref(),
+            role.into(),
+            &T::IID,
+        )
+    }
+    .expect("failed to create fabric client");
+    // if params are right, client should be created. There is no network call involved during obj creation.
+    unsafe { T::from_raw(raw) }
+}
+
+// Used for convenience.
+pub(crate) fn create_local_client_default<T: Interface>() -> T {
+    create_local_client::<T>(
+        None::<DefaultServiceNotificationEventHandler>,
+        None::<DefaultClientConnectionEventHandler>,
+        None,
+    )
+}
 
 // FabricClient safe wrapper
 // The design of FabricClient follows from the csharp client:
@@ -34,7 +86,7 @@ impl Default for FabricClient {
 
 impl FabricClient {
     pub fn new() -> Self {
-        let com = crate::sync::CreateLocalClient::<IFabricPropertyManagementClient2>();
+        let com = create_local_client_default::<IFabricPropertyManagementClient2>();
         Self::from_com(com)
     }
 

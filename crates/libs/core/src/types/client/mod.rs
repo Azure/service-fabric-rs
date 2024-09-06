@@ -6,8 +6,9 @@
 // This mod contains fabric client related types
 mod partition;
 use mssf_com::FabricTypes::{
-    FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION, FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS,
-    FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS_NAME_PREFIX,
+    FABRIC_CLIENT_ROLE, FABRIC_CLIENT_ROLE_ADMIN, FABRIC_CLIENT_ROLE_UNKNOWN,
+    FABRIC_CLIENT_ROLE_USER, FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
+    FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS, FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS_NAME_PREFIX,
     FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS_NONE,
     FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS_PRIMARY_ONLY, FABRIC_URI,
 };
@@ -51,6 +52,37 @@ impl From<&ServiceNotificationFilterDescription>
             Name: FABRIC_URI(value.name.as_ptr() as *mut u16),
             Flags: (&value.flags).into(),
             Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+// FABRIC_CLIENT_ROLE
+#[derive(Debug, PartialEq, Clone)]
+pub enum ClientRole {
+    Unknown, // Do not pass this in SF api, use User instead.
+    User,
+    Admin,
+    // ElevatedAdmin not supported by SF 6.x sdk yet.
+}
+
+impl From<FABRIC_CLIENT_ROLE> for ClientRole {
+    fn from(value: FABRIC_CLIENT_ROLE) -> Self {
+        match value {
+            FABRIC_CLIENT_ROLE_UNKNOWN => Self::Unknown,
+            FABRIC_CLIENT_ROLE_USER => Self::User,
+            FABRIC_CLIENT_ROLE_ADMIN => Self::Admin,
+            // FABRIC_CLIENT_ROLE_ELEVATED_ADMIN => Self::ElevatedAdmin,
+            _ => Self::Unknown,
+        }
+    }
+}
+
+impl From<ClientRole> for FABRIC_CLIENT_ROLE {
+    fn from(value: ClientRole) -> Self {
+        match value {
+            ClientRole::Unknown => FABRIC_CLIENT_ROLE_UNKNOWN,
+            ClientRole::User => FABRIC_CLIENT_ROLE_USER,
+            ClientRole::Admin => FABRIC_CLIENT_ROLE_ADMIN,
         }
     }
 }

@@ -11,7 +11,7 @@ use bitflags::bitflags;
 use mssf_com::{
     FabricClient::IFabricGetNodeListResult2,
     FabricTypes::{
-        FABRIC_NODE_QUERY_RESULT_ITEM, FABRIC_NODE_QUERY_RESULT_ITEM_EX1,
+        FABRIC_NODE_ID, FABRIC_NODE_QUERY_RESULT_ITEM, FABRIC_NODE_QUERY_RESULT_ITEM_EX1,
         FABRIC_NODE_QUERY_RESULT_ITEM_EX2, FABRIC_PAGING_STATUS,
         FABRIC_QUERY_NODE_STATUS_FILTER_ALL, FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT,
         FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED, FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING,
@@ -142,6 +142,22 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for Node {
             upgrade_domain: HSTRINGWrap::from(raw.UpgradeDomain).into(),
             fault_domain: HSTRINGWrap::from(windows_core::PCWSTR(raw.FaultDomain.0)).into(),
             node_instance_id: raw2.NodeInstanceId,
+        }
+    }
+}
+
+// FABRIC_NODE_ID
+#[derive(Debug, Clone)]
+pub struct NodeId {
+    pub low: u64,
+    pub high: u64,
+}
+
+impl From<FABRIC_NODE_ID> for NodeId {
+    fn from(value: FABRIC_NODE_ID) -> Self {
+        Self {
+            low: value.Low,
+            high: value.High,
         }
     }
 }

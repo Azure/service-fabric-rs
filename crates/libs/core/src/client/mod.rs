@@ -108,7 +108,9 @@ impl FabricClientBuilder {
         if self.cc_handler.is_none() {
             self.cc_handler = Some(LambdaClientConnectionNotificationHandler::new());
         }
-        self.cc_handler.as_mut().map(|cc| cc.set_f_conn(f));
+        if let Some(cc) = self.cc_handler.as_mut() {
+            cc.set_f_conn(f)
+        }
         self
     }
 
@@ -121,7 +123,9 @@ impl FabricClientBuilder {
         if self.cc_handler.is_none() {
             self.cc_handler = Some(LambdaClientConnectionNotificationHandler::new());
         }
-        self.cc_handler.as_mut().map(|cc| cc.set_f_disconn(f));
+        if let Some(cc) = self.cc_handler.as_mut() {
+            cc.set_f_disconn(f)
+        }
         self
     }
 
@@ -144,7 +148,7 @@ impl FabricClientBuilder {
     pub fn build_interface<T: Interface>(self) -> T {
         let cc_handler = self
             .cc_handler
-            .map(|cc| ClientConnectionEventHandlerBridge::new_com(cc));
+            .map(ClientConnectionEventHandlerBridge::new_com);
         create_local_client_internal::<T>(
             self.sn_handler.as_ref(),
             cc_handler.as_ref(),

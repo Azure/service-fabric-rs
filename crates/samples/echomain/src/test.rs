@@ -121,19 +121,21 @@ async fn test_fabric_client() {
     // channel for client connection notification
     let (cc_tx, mut cc_rx) = tokio::sync::mpsc::channel::<GatewayInformationResult>(1);
     let fc = FabricClientBuilder::new()
-        .with_service_notification_handler_fn(move |notification| {
+        .with_on_service_notification(move |notification| {
             sn_tx
                 .blocking_send(notification.clone())
                 .expect("cannot send notification");
             Ok(())
         })
-        .with_client_connection_handler_fn(
-            move |gw| {
-                cc_tx.blocking_send(gw.clone()).expect("cannot send");
-                Ok(())
-            },
-            |_| Ok(()), // we only care about connection even in this test.
-        )
+        .with_on_client_connect(move |gw| {
+            cc_tx.blocking_send(gw.clone()).expect("cannot send");
+            Ok(())
+        })
+        .with_on_client_disconnect(move |_| {
+            // This is not invoked in this test. FabricClient does not invoke this on drop.
+            panic!("client disconnected");
+        })
+        .with_client_role(mssf_core::types::ClientRole::User)
         .build();
 
     let ec = EchoTestClient::new(fc.clone());

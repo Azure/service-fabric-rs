@@ -18,10 +18,13 @@ use crate::{
 
 use super::svc_mgmt_client::ResolvedServiceEndpoint;
 
+/// Rust trait to turn rust code into IFabricServiceNotificationEventHandler.
+/// Not exposed to user
 pub trait ServiceNotificationEventHandler: 'static {
     fn on_notification(&self, notification: &ServiceNotification) -> crate::Result<()>;
 }
 
+/// Content of the service notification callback.
 #[derive(Debug, Clone)]
 pub struct ServiceNotification {
     pub partition_info: ServicePartitionInformation,
@@ -59,6 +62,7 @@ impl ServiceEndpointList {
     }
 }
 
+/// mssf_core iterator infrastructure implementation
 impl FabricListAccessor<FABRIC_RESOLVED_SERVICE_ENDPOINT> for ServiceEndpointList {
     fn get_count(&self) -> u32 {
         let raw = unsafe { self.com.get_Notification().as_ref().unwrap() };
@@ -74,6 +78,7 @@ impl FabricListAccessor<FABRIC_RESOLVED_SERVICE_ENDPOINT> for ServiceEndpointLis
 type ServiceEndpointListIter<'a> =
     FabricIter<'a, FABRIC_RESOLVED_SERVICE_ENDPOINT, ResolvedServiceEndpoint, ServiceEndpointList>;
 
+/// IFabricServiceEndpointsVersion wrapper.
 pub struct ServiceEndpointsVersion {
     com: IFabricServiceEndpointsVersion,
 }
@@ -89,7 +94,7 @@ impl ServiceEndpointsVersion {
     }
 }
 
-// Bridge implementation for the notification handler
+// Bridge implementation for the notification handler to turn rust code into SF com object.
 #[windows_core::implement(IFabricServiceNotificationEventHandler)]
 pub struct ServiceNotificationEventHandlerBridge<T>
 where
@@ -125,7 +130,9 @@ where
     }
 }
 
-/// Turns a Fn into service notification handler.
+/// Lambda implemnentation of ServiceNotificationEventHandler trait.
+/// This is used in FabricClientBuilder to build function into handler.
+/// Not exposed to user.
 pub struct LambdaServiceNotificationHandler<T>
 where
     T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,

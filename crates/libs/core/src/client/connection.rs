@@ -10,12 +10,15 @@ use mssf_com::FabricClient::{
 
 use crate::{strings::HSTRINGWrap, types::NodeId};
 
+/// Internal trait that rust code implements that can be bridged into IFabricClientConnectionEventHandler.
+/// Not exposed to user.
 pub trait ClientConnectionEventHandler: 'static {
     fn on_connected(&self, info: &GatewayInformationResult) -> crate::Result<()>;
     fn on_disconnected(&self, info: &GatewayInformationResult) -> crate::Result<()>;
 }
 
-// IFabricGatewayInformationResult
+/// FabricClient connection information.
+/// Traslated from IFabricGatewayInformationResult
 #[derive(Debug, Clone)]
 pub struct GatewayInformationResult {
     pub node_address: crate::HSTRING,
@@ -36,7 +39,8 @@ impl GatewayInformationResult {
     }
 }
 
-// IFabricClientConnectionEventHandler
+/// Bridge for IFabricClientConnectionEventHandler.
+/// Turn rust trait into SF com object.
 #[windows_core::implement(IFabricClientConnectionEventHandler)]
 pub struct ClientConnectionEventHandlerBridge<T>
 where
@@ -78,51 +82,57 @@ where
     }
 }
 
-// Default implementation of ClientConnectionEventHandler
-pub struct DefaultClientConnectionEventHandler {}
+/// Connection notification function signature to avoid code repeatition.
+/// Trait alias feature in rust (not yet stable) would eliminate this trait definition.
+pub trait ConnectionNotificationFn:
+    Fn(&GatewayInformationResult) -> crate::Result<()> + 'static
+{
+}
+impl<T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static> ConnectionNotificationFn
+    for T
+{
+}
 
-impl ClientConnectionEventHandler for DefaultClientConnectionEventHandler {
+/// Lambda implementation of the ClientConnectionEventHandler trait.
+/// This is used in FabricClientBuilder to build handler from functions.
+pub struct LambdaClientConnectionNotificationHandler {
+    f_conn: Option<Box<dyn ConnectionNotificationFn>>,
+    f_disconn: Option<Box<dyn ConnectionNotificationFn>>,
+}
+
+impl LambdaClientConnectionNotificationHandler {
+    pub fn new() -> Self {
+        Self {
+            f_conn: None,
+            f_disconn: None,
+        }
+    }
+
+    /// Set the on_connected callback.
+    pub fn set_f_conn(&mut self, f: impl ConnectionNotificationFn) {
+        self.f_conn = Some(Box::new(f));
+    }
+
+    /// Set the on_disconnected callback.
+    pub fn set_f_disconn(&mut self, f: impl ConnectionNotificationFn) {
+        self.f_disconn = Some(Box::new(f));
+    }
+}
+
+impl ClientConnectionEventHandler for LambdaClientConnectionNotificationHandler {
     fn on_connected(&self, info: &GatewayInformationResult) -> crate::Result<()> {
-        tracing::debug!("on_connected: {:?}", info);
-        Ok(())
+        if let Some(f) = &self.f_conn {
+            f(info)
+        } else {
+            Ok(())
+        }
     }
 
     fn on_disconnected(&self, info: &GatewayInformationResult) -> crate::Result<()> {
-        tracing::debug!("on_disconnected: {:?}", info);
-        Ok(())
-    }
-}
-
-/// Turns a Fn into client connection notification handler.
-pub struct LambdaClientConnectionNotificationHandler<T, K>
-where
-    T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
-    K: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
-{
-    f_conn: T,
-    f_disconn: K,
-}
-
-impl<T, K> LambdaClientConnectionNotificationHandler<T, K>
-where
-    T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
-    K: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
-{
-    pub fn new(f_conn: T, f_disconn: K) -> Self {
-        Self { f_conn, f_disconn }
-    }
-}
-
-impl<T, K> ClientConnectionEventHandler for LambdaClientConnectionNotificationHandler<T, K>
-where
-    T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
-    K: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
-{
-    fn on_connected(&self, info: &GatewayInformationResult) -> crate::Result<()> {
-        (self.f_conn)(info)
-    }
-
-    fn on_disconnected(&self, info: &GatewayInformationResult) -> crate::Result<()> {
-        (self.f_disconn)(info)
+        if let Some(f) = &self.f_disconn {
+            f(info)
+        } else {
+            Ok(())
+        }
     }
 }

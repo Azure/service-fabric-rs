@@ -3,16 +3,16 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use connection::{
-    ClientConnectionEventHandler, ClientConnectionEventHandlerBridge,
-    LambdaClientConnectionNotificationHandler,
-};
+use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use mssf_com::FabricClient::{
     FabricCreateLocalClient4, IFabricClientConnectionEventHandler,
     IFabricPropertyManagementClient2, IFabricQueryClient10, IFabricServiceManagementClient6,
     IFabricServiceNotificationEventHandler,
 };
-use notification::{LambdaServiceNotificationHandler, ServiceNotificationEventHandlerBridge};
+use notification::{
+    LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
+    ServiceNotificationEventHandlerBridge,
+};
 use windows_core::Interface;
 
 use crate::types::ClientRole;
@@ -26,12 +26,12 @@ pub mod svc_mgmt_client;
 
 // reexport
 pub use connection::GatewayInformationResult;
-pub use notification::{ServiceNotification, ServiceNotificationEventHandler};
+pub use notification::ServiceNotification;
 
 #[cfg(test)]
 mod tests;
 
-// Fabric Client creation
+/// Creates FabricClient com object using SF com API.
 fn create_local_client_internal<T: Interface>(
     service_notification_handler: Option<&IFabricServiceNotificationEventHandler>,
     client_connection_handler: Option<&IFabricClientConnectionEventHandler>,
@@ -59,7 +59,7 @@ fn create_local_client_internal<T: Interface>(
 // Builder for FabricClient
 pub struct FabricClientBuilder {
     sn_handler: Option<IFabricServiceNotificationEventHandler>,
-    cc_handler: Option<IFabricClientConnectionEventHandler>,
+    cc_handler: Option<LambdaClientConnectionNotificationHandler>,
     client_role: ClientRole,
 }
 
@@ -70,6 +70,7 @@ impl Default for FabricClientBuilder {
 }
 
 impl FabricClientBuilder {
+    /// Creates the builder.
     pub fn new() -> Self {
         Self {
             sn_handler: None,
@@ -78,8 +79,8 @@ impl FabricClientBuilder {
         }
     }
 
-    /// Configures the service notification handler.
-    pub fn with_service_notification_handler(
+    /// Configures the service notification handler internally.
+    fn with_service_notification_handler(
         mut self,
         handler: impl ServiceNotificationEventHandler,
     ) -> Self {
@@ -87,8 +88,11 @@ impl FabricClientBuilder {
         self
     }
 
-    /// Configures the service notification handler, but using a function.
-    pub fn with_service_notification_handler_fn<T>(self, f: T) -> Self
+    /// Configures the service notification handler.
+    /// See details in `register_service_notification_filter` API.
+    /// If the service endpoint change matches the registered filter,
+    /// this notification is invoked
+    pub fn with_on_service_notification<T>(self, f: T) -> Self
     where
         T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,
     {
@@ -96,25 +100,35 @@ impl FabricClientBuilder {
         self.with_service_notification_handler(handler)
     }
 
-    /// Configures client connection handler.
-    pub fn with_client_connection_handler(
-        mut self,
-        handler: impl ClientConnectionEventHandler,
-    ) -> Self {
-        self.cc_handler = Some(ClientConnectionEventHandlerBridge::new_com(handler));
+    /// When FabricClient connects to the SF cluster, this callback is invoked.
+    pub fn with_on_client_connect<T>(mut self, f: T) -> Self
+    where
+        T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+    {
+        if self.cc_handler.is_none() {
+            self.cc_handler = Some(LambdaClientConnectionNotificationHandler::new());
+        }
+        self.cc_handler.as_mut().map(|cc| cc.set_f_conn(f));
         self
     }
 
-    /// Configures client connection handler, but functions.
-    /// f_conn and f_disconn is invoked when fabric client connects and disconnects
-    /// to SF cluster respectively.
-    pub fn with_client_connection_handler_fn<T, K>(self, f_conn: T, f_disconn: K) -> Self
+    /// When FabricClient disconnets to the SF cluster, this callback is called.
+    /// This callback is not called on Drop of FabricClient.
+    pub fn with_on_client_disconnect<T>(mut self, f: T) -> Self
     where
         T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
-        K: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
     {
-        let handler = LambdaClientConnectionNotificationHandler::new(f_conn, f_disconn);
-        self.with_client_connection_handler(handler)
+        if self.cc_handler.is_none() {
+            self.cc_handler = Some(LambdaClientConnectionNotificationHandler::new());
+        }
+        self.cc_handler.as_mut().map(|cc| cc.set_f_disconn(f));
+        self
+    }
+
+    /// Sets the role of the client connection. Default is User if not set.
+    pub fn with_client_role(mut self, role: ClientRole) -> Self {
+        self.client_role = role;
+        self
     }
 
     /// Build the fabricclient
@@ -128,9 +142,12 @@ impl FabricClientBuilder {
 
     /// Build the specific com interface of the fabric client.
     pub fn build_interface<T: Interface>(self) -> T {
+        let cc_handler = self
+            .cc_handler
+            .map(|cc| ClientConnectionEventHandlerBridge::new_com(cc));
         create_local_client_internal::<T>(
             self.sn_handler.as_ref(),
-            self.cc_handler.as_ref(),
+            cc_handler.as_ref(),
             Some(self.client_role),
         )
     }

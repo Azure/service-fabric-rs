@@ -63,6 +63,12 @@ pub struct FabricClientBuilder {
     client_role: ClientRole,
 }
 
+impl Default for FabricClientBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FabricClientBuilder {
     pub fn new() -> Self {
         Self {

@@ -92,3 +92,37 @@ impl ClientConnectionEventHandler for DefaultClientConnectionEventHandler {
         Ok(())
     }
 }
+
+/// Turns a Fn into client connection notification handler.
+pub struct LambdaClientConnectionNotificationHandler<T, K>
+where
+    T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+    K: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+{
+    f_conn: T,
+    f_disconn: K,
+}
+
+impl<T, K> LambdaClientConnectionNotificationHandler<T, K>
+where
+    T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+    K: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+{
+    pub fn new(f_conn: T, f_disconn: K) -> Self {
+        Self { f_conn, f_disconn }
+    }
+}
+
+impl<T, K> ClientConnectionEventHandler for LambdaClientConnectionNotificationHandler<T, K>
+where
+    T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+    K: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+{
+    fn on_connected(&self, info: &GatewayInformationResult) -> crate::Result<()> {
+        (self.f_conn)(info)
+    }
+
+    fn on_disconnected(&self, info: &GatewayInformationResult) -> crate::Result<()> {
+        (self.f_disconn)(info)
+    }
+}

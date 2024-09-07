@@ -5,16 +5,14 @@
 
 use connection::{
     ClientConnectionEventHandler, ClientConnectionEventHandlerBridge,
-    DefaultClientConnectionEventHandler,
+    LambdaClientConnectionNotificationHandler,
 };
 use mssf_com::FabricClient::{
-    FabricCreateLocalClient4, IFabricPropertyManagementClient2, IFabricQueryClient10,
-    IFabricServiceManagementClient6,
+    FabricCreateLocalClient4, IFabricClientConnectionEventHandler,
+    IFabricPropertyManagementClient2, IFabricQueryClient10, IFabricServiceManagementClient6,
+    IFabricServiceNotificationEventHandler,
 };
-use notification::{
-    DefaultServiceNotificationEventHandler, ServiceNotificationEventHandler,
-    ServiceNotificationEventHandlerBridge,
-};
+use notification::{LambdaServiceNotificationHandler, ServiceNotificationEventHandlerBridge};
 use windows_core::Interface;
 
 use crate::types::ClientRole;
@@ -26,20 +24,19 @@ mod notification;
 pub mod query_client;
 pub mod svc_mgmt_client;
 
+// reexport
+pub use connection::GatewayInformationResult;
+pub use notification::{ServiceNotification, ServiceNotificationEventHandler};
+
 #[cfg(test)]
 mod tests;
 
 // Fabric Client creation
-// Creates the local client
-pub fn create_local_client<T: Interface>(
-    service_notification_handler: Option<impl ServiceNotificationEventHandler>,
-    client_connection_handler: Option<impl ClientConnectionEventHandler>,
+fn create_local_client_internal<T: Interface>(
+    service_notification_handler: Option<&IFabricServiceNotificationEventHandler>,
+    client_connection_handler: Option<&IFabricClientConnectionEventHandler>,
     client_role: Option<ClientRole>,
 ) -> T {
-    let sn_handler =
-        service_notification_handler.map(|sn| ServiceNotificationEventHandlerBridge::new_com(sn));
-    let cc_handler =
-        client_connection_handler.map(|cc| ClientConnectionEventHandlerBridge::new_com(cc));
     let role = client_role.unwrap_or(ClientRole::User);
     assert_ne!(
         role,
@@ -48,8 +45,8 @@ pub fn create_local_client<T: Interface>(
     );
     let raw = unsafe {
         FabricCreateLocalClient4(
-            sn_handler.as_ref(),
-            cc_handler.as_ref(),
+            service_notification_handler,
+            client_connection_handler,
             role.into(),
             &T::IID,
         )
@@ -59,13 +56,78 @@ pub fn create_local_client<T: Interface>(
     unsafe { T::from_raw(raw) }
 }
 
-// Used for convenience.
-pub(crate) fn create_local_client_default<T: Interface>() -> T {
-    create_local_client::<T>(
-        None::<DefaultServiceNotificationEventHandler>,
-        None::<DefaultClientConnectionEventHandler>,
-        None,
-    )
+// Builder for FabricClient
+pub struct FabricClientBuilder {
+    sn_handler: Option<IFabricServiceNotificationEventHandler>,
+    cc_handler: Option<IFabricClientConnectionEventHandler>,
+    client_role: ClientRole,
+}
+
+impl FabricClientBuilder {
+    pub fn new() -> Self {
+        Self {
+            sn_handler: None,
+            cc_handler: None,
+            client_role: ClientRole::User,
+        }
+    }
+
+    /// Configures the service notification handler.
+    pub fn with_service_notification_handler(
+        mut self,
+        handler: impl ServiceNotificationEventHandler,
+    ) -> Self {
+        self.sn_handler = Some(ServiceNotificationEventHandlerBridge::new_com(handler));
+        self
+    }
+
+    /// Configures the service notification handler, but using a function.
+    pub fn with_service_notification_handler_fn<T>(self, f: T) -> Self
+    where
+        T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,
+    {
+        let handler = LambdaServiceNotificationHandler::new(f);
+        self.with_service_notification_handler(handler)
+    }
+
+    /// Configures client connection handler.
+    pub fn with_client_connection_handler(
+        mut self,
+        handler: impl ClientConnectionEventHandler,
+    ) -> Self {
+        self.cc_handler = Some(ClientConnectionEventHandlerBridge::new_com(handler));
+        self
+    }
+
+    /// Configures client connection handler, but functions.
+    /// f_conn and f_disconn is invoked when fabric client connects and disconnects
+    /// to SF cluster respectively.
+    pub fn with_client_connection_handler_fn<T, K>(self, f_conn: T, f_disconn: K) -> Self
+    where
+        T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+        K: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+    {
+        let handler = LambdaClientConnectionNotificationHandler::new(f_conn, f_disconn);
+        self.with_client_connection_handler(handler)
+    }
+
+    /// Build the fabricclient
+    /// Remarks: FabricClient connect to SF cluster when
+    /// the first API call is triggered. Build/create of the object does not
+    /// establish connection.
+    pub fn build(self) -> FabricClient {
+        let c = Self::build_interface(self);
+        FabricClient::from_com(c)
+    }
+
+    /// Build the specific com interface of the fabric client.
+    pub fn build_interface<T: Interface>(self) -> T {
+        create_local_client_internal::<T>(
+            self.sn_handler.as_ref(),
+            self.cc_handler.as_ref(),
+            Some(self.client_role),
+        )
+    }
 }
 
 // FabricClient safe wrapper
@@ -78,18 +140,7 @@ pub struct FabricClient {
     com_query_client: IFabricQueryClient10,
 }
 
-impl Default for FabricClient {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl FabricClient {
-    pub fn new() -> Self {
-        let com = create_local_client_default::<IFabricPropertyManagementClient2>();
-        Self::from_com(com)
-    }
-
     // Get a copy of COM object
     pub fn get_com(&self) -> IFabricPropertyManagementClient2 {
         self.com_property_client.clone()

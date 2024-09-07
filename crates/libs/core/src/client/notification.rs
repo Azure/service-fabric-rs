@@ -125,12 +125,28 @@ where
     }
 }
 
-// default implementation of ServiceNotificationEventHandler
-pub struct DefaultServiceNotificationEventHandler {}
+/// Turns a Fn into service notification handler.
+pub struct LambdaServiceNotificationHandler<T>
+where
+    T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,
+{
+    f: T,
+}
 
-impl ServiceNotificationEventHandler for DefaultServiceNotificationEventHandler {
+impl<T> LambdaServiceNotificationHandler<T>
+where
+    T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,
+{
+    pub fn new(f: T) -> Self {
+        Self { f }
+    }
+}
+
+impl<T> ServiceNotificationEventHandler for LambdaServiceNotificationHandler<T>
+where
+    T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,
+{
     fn on_notification(&self, notification: &ServiceNotification) -> crate::Result<()> {
-        tracing::debug!("Got service notification {:?}", notification);
-        Ok(())
+        (self.f)(notification)
     }
 }

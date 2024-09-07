@@ -232,7 +232,7 @@ mod tests {
                 pub fn new() -> $name {
                     return $name {
                         com: paste::item! {
-                            crate::client::create_local_client_default::<mssf_com::FabricClient::[<I $name>]>()
+                            crate::client::FabricClientBuilder::new().build_interface::<mssf_com::FabricClient::[<I $name>]>()
                         },
                     };
                 }
@@ -320,7 +320,8 @@ mod tests {
     impl FabricQueryClient {
         pub fn new() -> FabricQueryClient {
             FabricQueryClient {
-                com: crate::client::create_local_client_default::<IFabricQueryClient>(),
+                com: crate::client::FabricClientBuilder::new()
+                    .build_interface::<IFabricQueryClient>(),
             }
         }
 
@@ -510,7 +511,8 @@ mod tests {
 
     #[test]
     fn local_client_create() {
-        let _mgmt = crate::client::create_local_client_default::<IFabricClusterManagementClient3>();
+        let _mgmt = crate::client::FabricClientBuilder::new()
+            .build_interface::<IFabricClusterManagementClient3>();
     }
 
     #[tokio::test]

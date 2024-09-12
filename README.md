@@ -27,26 +27,26 @@ The setup is similar to the regular Ubuntu setup, but with some twicks to avoid 
 
 Remove `/mnt/c` paths to speed up installation by adding the following to `/etc/wsl.conf` and restart WSL to apply the changes:
 ```sh
-# This removes windows path
+# Remove windows path
 [interop]
 appendWindowsPath = false
 
-# This do not mount windows drive
+# Do not mount windows drive
 [automount]
 enabled = false
 ```
 
 Now, proceed to the regular Ubuntu setup: [Getting Started - Ubuntu](#Getting-Started---Ubuntu)
 
-Edit the `/etc/wsl.conf` to the following and restart WSL to apply the changes:
+Edit the `/etc/wsl.conf` to the following to re-enable automount and restart WSL to apply the changes:
 ```sh
-# This removes windows path
+# Remove windows path
 [interop]
 appendWindowsPath = false
 
-# This do not mount windows drive
-# [automount]
-# enabled = true
+# Mount windows drive
+[automount]
+enabled = true
 ```
 
 ## Quick Build

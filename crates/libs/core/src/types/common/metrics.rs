@@ -4,9 +4,9 @@
 // ------------------------------------------------------------
 
 // mod for handling fabric metrics
+use crate::{HSTRING, PCWSTR};
 use mssf_com::FabricTypes::FABRIC_LOAD_METRIC;
 use std::marker::PhantomData;
-use windows_core::{HSTRING, PCWSTR};
 
 // FABRIC_LOAD_METRIC
 pub struct LoadMetric {

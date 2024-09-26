@@ -127,21 +127,21 @@ where
 }
 
 impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3<T> {
-    fn IsCompleted(&self) -> ::windows::Win32::Foundation::BOOLEAN {
+    fn IsCompleted(&self) -> crate::BOOLEAN {
         self.is_completed.get().into()
     }
 
     // This always returns false because we defer all tasks in the background executuor.
-    fn CompletedSynchronously(&self) -> ::windows::Win32::Foundation::BOOLEAN {
+    fn CompletedSynchronously(&self) -> crate::BOOLEAN {
         self.is_completed_synchronously.into()
     }
 
-    fn Callback(&self) -> ::windows_core::Result<IFabricAsyncOperationCallback> {
+    fn Callback(&self) -> crate::Result<IFabricAsyncOperationCallback> {
         let cp = self.callback.clone();
         Ok(cp)
     }
 
-    fn Cancel(&self) -> ::windows_core::Result<()> {
+    fn Cancel(&self) -> crate::Result<()> {
         self.token.cancel();
         Ok(())
     }

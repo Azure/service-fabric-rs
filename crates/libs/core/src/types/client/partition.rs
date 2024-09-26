@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::{GUID, HSTRING};
 use mssf_com::{
     FabricClient::IFabricGetPartitionListResult2,
     FabricTypes::{
@@ -18,7 +19,6 @@ use mssf_com::{
         FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM, FABRIC_URI,
     },
 };
-use windows_core::{GUID, HSTRING};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},

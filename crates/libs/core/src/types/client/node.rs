@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::HSTRING;
 use crate::{
     iter::{FabricIter, FabricListAccessor},
     strings::HSTRINGWrap,
@@ -20,7 +21,6 @@ use mssf_com::{
         FABRIC_QUERY_NODE_STATUS_FILTER_UP,
     },
 };
-use windows_core::HSTRING;
 
 pub struct PagingStatus {
     pub continuation_token: HSTRING,

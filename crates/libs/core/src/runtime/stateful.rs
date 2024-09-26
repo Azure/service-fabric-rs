@@ -5,8 +5,8 @@
 
 // stateful contains rs definition of stateful traits that user needs to implement
 
+use crate::{GUID, HSTRING};
 use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
-use windows_core::{Error, HSTRING};
 
 use crate::sync::CancellationToken;
 use crate::types::{LoadMetric, LoadMetricListRef, ReplicaRole};
@@ -23,9 +23,9 @@ pub trait StatefulServiceFactory {
         servicetypename: &HSTRING,
         servicename: &HSTRING,
         initializationdata: &[u8],
-        partitionid: &::windows::core::GUID,
+        partitionid: &GUID,
         replicaid: i64,
-    ) -> Result<impl StatefulServiceReplica, Error>;
+    ) -> crate::Result<impl StatefulServiceReplica>;
 }
 
 /// Defines behavior that governs the lifecycle of a replica, such as startup, initialization, role changes, and shutdown.
@@ -41,7 +41,7 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
         openmode: OpenMode,
         partition: &StatefulServicePartition,
         cancellation_token: CancellationToken,
-    ) -> windows::core::Result<impl PrimaryReplicator>;
+    ) -> crate::Result<impl PrimaryReplicator>;
 
     /// Changes the role of the service replica to one of the ReplicaRole.
     /// Returns the service’s new connection address that is to be associated with the replica via Service Fabric Naming.
@@ -54,10 +54,10 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
         &self,
         newrole: ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<HSTRING>;
+    ) -> crate::Result<HSTRING>;
 
     /// Closes the service replica gracefully when it is being shut down.
-    async fn close(&self, cancellation_token: CancellationToken) -> windows::core::Result<()>;
+    async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
 
     /// Ungracefully terminates the service replica.
     /// Remarks: Network issues resulting in Service Fabric process shutdown
@@ -95,14 +95,14 @@ impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
 /// TODO: replicator has no public documentation
 #[trait_variant::make(Replicator: Send)]
 pub trait LocalReplicator: Send + Sync + 'static {
-    async fn open(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<HSTRING>; // replicator address
-    async fn close(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<()>;
+    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<HSTRING>; // replicator address
+    async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
     async fn change_role(
         &self,
         epoch: &Epoch,
         role: &ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<()>;
+    ) -> crate::Result<()>;
 
     /// (TODO: This doc is from IStateProvider but not Replicator.)
     /// Indicates to a replica that the configuration of a replica set has changed due to
@@ -116,9 +116,9 @@ pub trait LocalReplicator: Send + Sync + 'static {
         &self,
         epoch: &Epoch,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<()>;
-    fn get_current_progress(&self) -> ::windows_core::Result<i64>;
-    fn get_catch_up_capability(&self) -> ::windows_core::Result<i64>;
+    ) -> crate::Result<()>;
+    fn get_current_progress(&self) -> crate::Result<i64>;
+    fn get_catch_up_capability(&self) -> crate::Result<i64>;
     fn abort(&self);
 }
 
@@ -128,28 +128,25 @@ pub trait LocalPrimaryReplicator: Replicator {
     // SF calls this to indicate that possible data loss has occurred (write quorum loss),
     // returns is isStateChanged. If true, SF will re-create other secondaries.
     // The default SF impl might be a pass through to the state provider.
-    async fn on_data_loss(
-        &self,
-        cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<u8>;
+    async fn on_data_loss(&self, cancellation_token: CancellationToken) -> crate::Result<u8>;
     fn update_catch_up_replica_set_configuration(
         &self,
         currentconfiguration: &ReplicaSetConfig,
         previousconfiguration: &ReplicaSetConfig,
-    ) -> ::windows_core::Result<()>;
+    ) -> crate::Result<()>;
     async fn wait_for_catch_up_quorum(
         &self,
         catchupmode: ReplicaSetQuarumMode,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<()>;
+    ) -> crate::Result<()>;
     fn update_current_replica_set_configuration(
         &self,
         currentconfiguration: &ReplicaSetConfig,
-    ) -> ::windows_core::Result<()>;
+    ) -> crate::Result<()>;
     async fn build_replica(
         &self,
         replica: &ReplicaInfo,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<()>;
-    fn remove_replica(&self, replicaid: i64) -> ::windows_core::Result<()>;
+    ) -> crate::Result<()>;
+    fn remove_replica(&self, replicaid: i64) -> crate::Result<()>;
 }

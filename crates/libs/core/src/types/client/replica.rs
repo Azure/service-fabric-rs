@@ -1,3 +1,4 @@
+use crate::{GUID, HSTRING, PCWSTR};
 use mssf_com::{
     FabricClient::IFabricGetReplicaListResult2,
     FabricTypes::{
@@ -12,7 +13,6 @@ use mssf_com::{
         FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
     },
 };
-use windows_core::{GUID, HSTRING, PCWSTR};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},

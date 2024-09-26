@@ -3,17 +3,7 @@ name = "samples_client"
 version = "0.0.1"
 edition = "2018"
 
-[dependencies.windows]
-version = "0.57"
-features = [
-    "implement"
-]
-
-[dependencies.mssf-com]
-path = "../../libs/com"
-
-[dependencies.mssf-core]
-path = "../../libs/core"
-
 [dependencies]
-windows-core = "0.57"
+windows-core.workspace = true
+mssf-com.workspace = true
+mssf-core.workspace = true

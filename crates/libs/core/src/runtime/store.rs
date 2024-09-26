@@ -5,6 +5,7 @@
 
 use std::ffi::c_void;
 
+use crate::{Interface, HSTRING, PCWSTR};
 use mssf_com::{
     FabricRuntime::{
         FabricCreateKeyValueStoreReplica, IFabricKeyValueStoreReplica2, IFabricStoreEventHandler,
@@ -13,8 +14,7 @@ use mssf_com::{
     FabricTypes::{FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND},
 };
 use tracing::info;
-use windows::core::implement;
-use windows_core::{Error, Interface, HSTRING, PCWSTR};
+use windows_core::implement;
 
 use super::store_types::{EseLocalStoreSettings, LocalStoreKind, ReplicatorSettings};
 
@@ -35,7 +35,7 @@ pub fn create_com_key_value_store_replica(
     localstorekind: LocalStoreKind,
     localstoresettings: Option<&EseLocalStoreSettings>,
     storeeventhandler: &IFabricStoreEventHandler,
-) -> Result<IFabricKeyValueStoreReplica2, Error> {
+) -> crate::Result<IFabricKeyValueStoreReplica2> {
     let kind: FABRIC_LOCAL_STORE_KIND = localstorekind.into();
     let local_settings: Option<FABRIC_ESE_LOCAL_STORE_SETTINGS> =
         localstoresettings.map(|x| x.get_raw());

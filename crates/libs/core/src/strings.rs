@@ -3,8 +3,9 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::{HSTRING, PCWSTR};
 use mssf_com::FabricCommon::{IFabricStringResult, IFabricStringResult_Impl};
-use windows_core::{implement, HSTRING, PCWSTR};
+use windows_core::implement;
 
 // Basic implementation of fabric string result
 // usually used as string return value to fabric runtime.
@@ -89,8 +90,8 @@ mod test {
     use crate::strings::HSTRINGWrap;
 
     use super::StringResult;
+    use crate::HSTRING;
     use mssf_com::FabricCommon::IFabricStringResult;
-    use windows_core::HSTRING;
 
     #[test]
     fn test_str_addr() {

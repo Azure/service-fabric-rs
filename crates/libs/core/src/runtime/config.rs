@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::BOOLEAN;
+use crate::{error::FabricErrorCode, HSTRING};
 use mssf_com::{
     FabricRuntime::IFabricConfigurationPackage,
     FabricTypes::{
@@ -11,8 +13,6 @@ use mssf_com::{
         FABRIC_CONFIGURATION_SECTION_LIST,
     },
 };
-use windows::Win32::Foundation::{BOOLEAN, E_POINTER};
-use windows_core::HSTRING;
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
@@ -92,10 +92,7 @@ impl ConfigurationPackage {
         HSTRINGWrap::from(raw).into()
     }
 
-    pub fn get_section(
-        &self,
-        section_name: &HSTRING,
-    ) -> windows_core::Result<ConfigurationSection> {
+    pub fn get_section(&self, section_name: &HSTRING) -> crate::Result<ConfigurationSection> {
         let raw = unsafe { self.com.GetSection(section_name) }?;
         let raw_ref = unsafe { raw.as_ref() };
         match raw_ref {
@@ -104,7 +101,7 @@ impl ConfigurationPackage {
                 res.owner = Some(self.com.clone());
                 Ok(res)
             }
-            None => Err(E_POINTER.into()),
+            None => Err(FabricErrorCode::ArgumentNull.into()),
         }
     }
 
@@ -112,7 +109,7 @@ impl ConfigurationPackage {
         &self,
         section_name: &HSTRING,
         parameter_name: &HSTRING,
-    ) -> windows_core::Result<(HSTRING, bool)> {
+    ) -> crate::Result<(HSTRING, bool)> {
         let mut is_encrypted: BOOLEAN = Default::default();
         let raw = unsafe {
             self.com.GetValue(

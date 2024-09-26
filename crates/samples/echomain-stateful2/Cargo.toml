@@ -8,19 +8,7 @@ edition = "2021"
 [dependencies]
 tracing.workspace = true
 tracing-subscriber.workspace = true
-tokio = { version = "1", features = ["full"] }
+tokio.workspace = true
 tokio-util.workspace = true
-windows-core = "0.57"
-trait-variant = "0.1.1"
-
-[dependencies.windows]
-version = "0.57"
-features = [
-    "implement"
-]
-
-[dependencies.mssf-com]
-path = "../../libs/com"
-
-[dependencies.mssf-core]
-path = "../../libs/core"
+trait-variant.workspace = true
+mssf-core.workspace = true

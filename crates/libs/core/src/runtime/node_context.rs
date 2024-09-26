@@ -1,10 +1,10 @@
 use std::time::Duration;
 
+use crate::{Interface, HSTRING};
 use mssf_com::FabricRuntime::{
     FabricBeginGetNodeContext, FabricEndGetNodeContext, FabricGetNodeContext,
     IFabricNodeContextResult, IFabricNodeContextResult2,
 };
-use windows_core::{Interface, HSTRING};
 
 use crate::{
     strings::HSTRINGWrap,
@@ -48,14 +48,14 @@ impl NodeContext {
     pub async fn get(
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
-    ) -> ::windows_core::Result<Self> {
+    ) -> crate::Result<Self> {
         let com = get_com_node_context(timeout.as_millis().try_into().unwrap(), cancellation_token)
             .await??;
         Ok(Self::from(&com))
     }
 
     // Get the node context synchronously
-    pub fn get_sync() -> ::windows_core::Result<Self> {
+    pub fn get_sync() -> crate::Result<Self> {
         let raw = unsafe { FabricGetNodeContext() }?;
         assert!(!raw.is_null());
         let com = unsafe { IFabricNodeContextResult::from_raw(raw) };

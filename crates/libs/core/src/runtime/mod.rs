@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::{Error, Interface, HSTRING, PCWSTR};
 use mssf_com::{
     FabricRuntime::{
         FabricCreateRuntime, FabricGetActivationContext, IFabricCodePackageActivationContext,
@@ -10,7 +11,6 @@ use mssf_com::{
     },
     FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
 };
-use windows_core::{Error, Interface, HSTRING, PCWSTR};
 
 #[cfg(feature = "tokio_async")]
 use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
@@ -45,13 +45,13 @@ pub mod store_proxy;
 pub mod store_types;
 
 // creates fabric runtime
-pub fn create_com_runtime() -> ::windows_core::Result<IFabricRuntime> {
+pub fn create_com_runtime() -> crate::Result<IFabricRuntime> {
     let rawruntime = unsafe { FabricCreateRuntime(&IFabricRuntime::IID)? };
     let runtime = unsafe { IFabricRuntime::from_raw(rawruntime) };
     Ok(runtime)
 }
 
-pub fn get_com_activation_context() -> ::windows_core::Result<IFabricCodePackageActivationContext> {
+pub fn get_com_activation_context() -> crate::Result<IFabricCodePackageActivationContext> {
     let raw_activation_ctx =
         unsafe { FabricGetActivationContext(&IFabricCodePackageActivationContext::IID)? };
 
@@ -62,11 +62,11 @@ pub fn get_com_activation_context() -> ::windows_core::Result<IFabricCodePackage
 
 #[derive(Debug)]
 pub struct EndpointResourceDesc {
-    pub name: ::windows_core::HSTRING,
-    pub protocol: ::windows_core::HSTRING,
-    pub r#type: ::windows_core::HSTRING,
+    pub name: HSTRING,
+    pub protocol: HSTRING,
+    pub r#type: HSTRING,
     pub port: u32,
-    pub certificate_name: ::windows_core::HSTRING,
+    pub certificate_name: HSTRING,
     //pub Reserved: *mut ::core::ffi::c_void,
 }
 
@@ -95,7 +95,7 @@ impl ActivationContext {
     pub fn get_endpoint_resource(
         &self,
         serviceendpointresourcename: &HSTRING,
-    ) -> Result<EndpointResourceDesc, Error> {
+    ) -> crate::Result<EndpointResourceDesc> {
         let rs = unsafe {
             self.com_impl.GetServiceEndpointResource(PCWSTR::from_raw(
                 serviceendpointresourcename.as_ptr(),
@@ -109,7 +109,7 @@ impl ActivationContext {
     pub fn get_configuration_package(
         &self,
         configpackagename: &HSTRING,
-    ) -> windows_core::Result<ConfigurationPackage> {
+    ) -> crate::Result<ConfigurationPackage> {
         let c = unsafe { self.com_impl.GetConfigurationPackage(configpackagename) }?;
         Ok(ConfigurationPackage::from_com(c))
     }

@@ -3,8 +3,8 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::{Error, HRESULT, HSTRING};
 use mssf_com::FabricCommon::FabricGetLastErrorMessage;
-use windows_core::{Error, HRESULT, HSTRING};
 
 // Fills the error info as string for better debugging.
 // SF has separate last error set and get from windows.
@@ -29,14 +29,14 @@ pub fn fill_fabric_error(e: Error) -> Error {
 #[cfg(test)]
 #[cfg(windows)] // linux error propagate is not working yet
 mod test {
+    use crate::{Error, HSTRING};
     use mssf_com::FabricTypes::FABRIC_E_GATEWAY_NOT_REACHABLE;
-    use windows_core::{Error, HSTRING};
 
     #[test]
     fn test_win_error() {
         let s = HSTRING::from("MyError");
         let e = Error::new(
-            windows_core::HRESULT(FABRIC_E_GATEWAY_NOT_REACHABLE.0),
+            crate::HRESULT(FABRIC_E_GATEWAY_NOT_REACHABLE.0),
             s.clone().to_string(),
         );
         assert_eq!(e.message(), s);

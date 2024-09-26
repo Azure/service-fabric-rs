@@ -41,7 +41,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         openmode: OpenMode,
         partition: &StatefulServicePartition,
         cancellation_token: CancellationToken,
-    ) -> windows::core::Result<impl PrimaryReplicator> {
+    ) -> crate::Result<impl PrimaryReplicator> {
         info!("StatefulServiceReplicaProxy::open with mode {:?}", openmode);
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -63,7 +63,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         &self,
         newrole: ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<HSTRING> {
+    ) -> crate::Result<HSTRING> {
         // replica address
         info!("StatefulServiceReplicaProxy::change_role {:?}", newrole);
         let com1 = &self.com_impl;
@@ -76,7 +76,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         let addr = rx.await??;
         Ok(HSTRINGWrap::from(&addr).into())
     }
-    async fn close(&self, cancellation_token: CancellationToken) -> windows::core::Result<()> {
+    async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()> {
         info!("StatefulServiceReplicaProxy::close");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -104,7 +104,7 @@ impl ReplicatorProxy {
 }
 
 impl Replicator for ReplicatorProxy {
-    async fn open(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<HSTRING> {
+    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<HSTRING> {
         info!("ReplicatorProxy::open");
         // replicator address
         let com1 = &self.com_impl;
@@ -117,7 +117,7 @@ impl Replicator for ReplicatorProxy {
         let addr = rx.await??;
         Ok(HSTRINGWrap::from(&addr).into())
     }
-    async fn close(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<()> {
+    async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()> {
         info!("ReplicatorProxy::close");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -133,7 +133,7 @@ impl Replicator for ReplicatorProxy {
         epoch: &Epoch,
         role: &ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("ReplicatorProxy::change_role");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -148,7 +148,7 @@ impl Replicator for ReplicatorProxy {
         &self,
         epoch: &Epoch,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("ReplicatorProxy::update_epoch");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -159,11 +159,11 @@ impl Replicator for ReplicatorProxy {
         );
         rx.await?
     }
-    fn get_current_progress(&self) -> ::windows_core::Result<i64> {
+    fn get_current_progress(&self) -> crate::Result<i64> {
         info!("ReplicatorProxy::get_current_progress");
         unsafe { self.com_impl.GetCurrentProgress() }
     }
-    fn get_catch_up_capability(&self) -> ::windows_core::Result<i64> {
+    fn get_catch_up_capability(&self) -> crate::Result<i64> {
         info!("ReplicatorProxy::get_catch_up_capability");
         unsafe { self.com_impl.GetCatchUpCapability() }
     }
@@ -186,10 +186,10 @@ impl PrimaryReplicatorProxy {
 }
 
 impl Replicator for PrimaryReplicatorProxy {
-    async fn open(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<HSTRING> {
+    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<HSTRING> {
         self.parent.open(cancellation_token).await
     }
-    async fn close(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<()> {
+    async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()> {
         self.parent.close(cancellation_token).await
     }
     async fn change_role(
@@ -197,7 +197,7 @@ impl Replicator for PrimaryReplicatorProxy {
         epoch: &Epoch,
         role: &ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         self.parent
             .change_role(epoch, role, cancellation_token)
             .await
@@ -206,13 +206,13 @@ impl Replicator for PrimaryReplicatorProxy {
         &self,
         epoch: &Epoch,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         self.parent.update_epoch(epoch, cancellation_token).await
     }
-    fn get_current_progress(&self) -> ::windows_core::Result<i64> {
+    fn get_current_progress(&self) -> crate::Result<i64> {
         self.parent.get_current_progress()
     }
-    fn get_catch_up_capability(&self) -> ::windows_core::Result<i64> {
+    fn get_catch_up_capability(&self) -> crate::Result<i64> {
         self.parent.get_catch_up_capability()
     }
     fn abort(&self) {
@@ -221,10 +221,7 @@ impl Replicator for PrimaryReplicatorProxy {
 }
 
 impl PrimaryReplicator for PrimaryReplicatorProxy {
-    async fn on_data_loss(
-        &self,
-        cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<u8> {
+    async fn on_data_loss(&self, cancellation_token: CancellationToken) -> crate::Result<u8> {
         info!("PrimaryReplicatorProxy::on_data_loss");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -239,7 +236,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         &self,
         currentconfiguration: &ReplicaSetConfig,
         previousconfiguration: &ReplicaSetConfig,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("PrimaryReplicatorProxy::update_catch_up_replica_set_configuration");
         let cc_view = currentconfiguration.get_view();
         let pc_view = previousconfiguration.get_view();
@@ -252,7 +249,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         &self,
         catchupmode: ReplicaSetQuarumMode,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("PrimaryReplicatorProxy::wait_for_catch_up_quorum");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -266,7 +263,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     fn update_current_replica_set_configuration(
         &self,
         currentconfiguration: &ReplicaSetConfig,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("PrimaryReplicatorProxy::update_current_replica_set_configuration");
         unsafe {
             self.com_impl
@@ -277,7 +274,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         &self,
         replica: &ReplicaInfo,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("PrimaryReplicatorProxy::build_replica");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -292,7 +289,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         );
         rx.await?
     }
-    fn remove_replica(&self, replicaid: i64) -> ::windows_core::Result<()> {
+    fn remove_replica(&self, replicaid: i64) -> crate::Result<()> {
         info!("PrimaryReplicatorProxy::remove_replica");
         unsafe { self.com_impl.RemoveReplica(replicaid) }
     }

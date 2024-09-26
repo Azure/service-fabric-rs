@@ -167,7 +167,7 @@ impl TestClient {
     async fn resolve_with_prev(
         &self,
         prev: Option<&ResolvedServicePartition>,
-    ) -> windows_core::Result<ResolvedServicePartition> {
+    ) -> mssf_core::Result<ResolvedServicePartition> {
         let mgmt = self.fc.get_service_manager();
         mgmt.resolve_service_partition(
             &self.service_uri,

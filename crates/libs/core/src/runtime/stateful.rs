@@ -13,7 +13,11 @@ use crate::types::{LoadMetric, LoadMetricListRef, ReplicaRole};
 
 use super::stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode};
 
+/// Represents a stateful service factory that is responsible for creating replicas
+/// of a specific type of stateful service. Stateful service factories are registered with
+/// the FabricRuntime by service hosts via register_stateful_service_factory().
 pub trait StatefulServiceFactory {
+    /// Called by Service Fabric to create a stateful service replica for a particular service.
     fn create_replica(
         &self,
         servicetypename: &HSTRING,
@@ -24,28 +28,41 @@ pub trait StatefulServiceFactory {
     ) -> Result<impl StatefulServiceReplica, Error>;
 }
 
-// safe service instance
-// The trait style is modeled by tonic server trait where send, sync and static are all required.
-// This makes sure that bridge/proxy layer can work with rust async await easier.
+/// Defines behavior that governs the lifecycle of a replica, such as startup, initialization, role changes, and shutdown.
+/// Remarks:
+/// Stateful service types must implement this interface. The logic of a stateful service type includes behavior that is
+/// invoked on primary replicas and behavior that is invoked on secondary replicas.
 #[trait_variant::make(StatefulServiceReplica: Send)]
 pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
-    // Note that open returns PrimaryReplicator instead of Replicator.
-    // The replicator that gives to SF has to implement primary replicator all the time.
-    // Ideally the return type should be Result<impl PrimaryReplicator>, but in bridge impl
-    // primary replicator needs to be stored in a ctx, but impl trait cannot be a variable type and anonymous.
-    // We cannot use rust async trait because dynamic dispatch is not yet supported.
+    /// Opens an initialized service replica so that additional actions can be taken.
+    /// Returns PrimaryReplicator that is used by the stateful service.
     async fn open(
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
         cancellation_token: CancellationToken,
     ) -> windows::core::Result<impl PrimaryReplicator>;
+
+    /// Changes the role of the service replica to one of the ReplicaRole.
+    /// Returns the service’s new connection address that is to be associated with the replica via Service Fabric Naming.
+    /// Remarks:
+    /// The new role is indicated as a parameter. When the service transitions to the new role,
+    /// the service has a chance to update its current listening address. The listening address is the address
+    /// where clients connect to it and the one returned via the ResolveAsync API. This enables the service when
+    /// it is a primary replica to only claim some resources such as ports when communication from clients is expected.
     async fn change_role(
         &self,
         newrole: ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> ::windows_core::Result<HSTRING>; // replica address
+    ) -> ::windows_core::Result<HSTRING>;
+
+    /// Closes the service replica gracefully when it is being shut down.
     async fn close(&self, cancellation_token: CancellationToken) -> windows::core::Result<()>;
+
+    /// Ungracefully terminates the service replica.
+    /// Remarks: Network issues resulting in Service Fabric process shutdown
+    /// and the use of ReportFault(FaultType) to report a Permanent fault are examples of ungraceful termination.
+    /// When this method is invoked, the service replica should immediately release and clean up all references and return.
     fn abort(&self);
 }
 
@@ -75,6 +92,7 @@ impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
     }
 }
 
+/// TODO: replicator has no public documentation
 #[trait_variant::make(Replicator: Send)]
 pub trait LocalReplicator: Send + Sync + 'static {
     async fn open(&self, cancellation_token: CancellationToken) -> ::windows_core::Result<HSTRING>; // replicator address
@@ -85,6 +103,15 @@ pub trait LocalReplicator: Send + Sync + 'static {
         role: &ReplicaRole,
         cancellation_token: CancellationToken,
     ) -> ::windows_core::Result<()>;
+
+    /// (TODO: This doc is from IStateProvider but not Replicator.)
+    /// Indicates to a replica that the configuration of a replica set has changed due to
+    /// a change or attempted change to the primary replica. The change occurs due to failure
+    /// or load balancing of the previous primary replica. Epoch changes act as a barrier by
+    /// segmenting operations into the exact configuration periods in which they were sent
+    /// by a specific primary replica.
+    ///
+    /// Called only on active secondary replicas. Primary replica gets new epoch via change_role call.
     async fn update_epoch(
         &self,
         epoch: &Epoch,
@@ -95,6 +122,7 @@ pub trait LocalReplicator: Send + Sync + 'static {
     fn abort(&self);
 }
 
+/// TODO: primary replicator has no public documentation
 #[trait_variant::make(PrimaryReplicator: Send)]
 pub trait LocalPrimaryReplicator: Replicator {
     // SF calls this to indicate that possible data loss has occurred (write quorum loss),

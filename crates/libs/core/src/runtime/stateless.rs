@@ -5,9 +5,9 @@
 
 #![deny(non_snake_case)] // this file is safe rust
 
+use crate::sync::CancellationToken;
+use crate::HSTRING;
 use mssf_com::FabricRuntime::IFabricStatelessServicePartition;
-use tokio_util::sync::CancellationToken;
-use windows_core::HSTRING;
 
 use crate::types::ServicePartitionInformation;
 
@@ -21,7 +21,7 @@ impl StatelessServicePartition {
         StatelessServicePartition { com_impl }
     }
 
-    pub fn get_partition_info(&self) -> ::windows_core::Result<ServicePartitionInformation> {
+    pub fn get_partition_info(&self) -> crate::Result<ServicePartitionInformation> {
         let raw = unsafe { self.com_impl.GetPartitionInfo() }?;
         let raw_ref = unsafe { raw.as_ref().unwrap() };
         assert!(!raw.is_null());
@@ -41,7 +41,7 @@ pub trait StatelessServiceFactory {
         initializationdata: &[u8],
         partitionid: &::windows::core::GUID,
         instanceid: i64,
-    ) -> windows_core::Result<impl StatelessServiceInstance>;
+    ) -> crate::Result<impl StatelessServiceInstance>;
 }
 
 /// Defines behavior that governs the lifecycle of a stateless service instance, such as startup, initialization, and shutdown.
@@ -57,10 +57,10 @@ pub trait LocalStatelessServiceInstance: Send + Sync + 'static {
         &self,
         partition: &StatelessServicePartition,
         cancellation_token: CancellationToken,
-    ) -> windows::core::Result<HSTRING>;
+    ) -> crate::Result<HSTRING>;
 
     /// Closes this service instance gracefully when the service instance is being shut down.
-    async fn close(&self, cancellation_token: CancellationToken) -> windows::core::Result<()>;
+    async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
 
     /// Terminates this instance ungracefully with this synchronous method call.
     /// Remarks:

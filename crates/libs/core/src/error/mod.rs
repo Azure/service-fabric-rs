@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use super::HRESULT;
+use crate::HRESULT;
 use mssf_com::FabricTypes::{
     FABRIC_ERROR_CODE, FABRIC_E_OPERATION_NOT_COMPLETE, FABRIC_E_OPERATION_NOT_SUPPORTED,
 };

@@ -169,9 +169,9 @@ mod tests {
         },
     };
 
+    use crate::{Interface, HSTRING};
     use tokio::sync::oneshot::Sender;
-    use windows::core::implement;
-    use windows_core::{Interface, HSTRING};
+    use windows_core::implement;
 
     use super::{oneshot_channel, FabricReceiver, SBox};
 

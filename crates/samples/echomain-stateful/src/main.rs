@@ -10,13 +10,13 @@ use mssf_com::FabricRuntime::{
     IFabricRuntime,
 };
 use mssf_core::sync::wait::WaitableCallback;
+use mssf_core::w;
+use mssf_core::{Interface, HSTRING};
 use std::sync::mpsc::channel;
 use tracing::info;
-use windows::core::w;
-use windows::core::{Interface, HSTRING};
 pub mod app;
 
-fn main() -> windows::core::Result<()> {
+fn main() -> mssf_core::Result<()> {
     tracing_subscriber::fmt().init();
     // set ctrc event
     let (tx, rx) = channel();

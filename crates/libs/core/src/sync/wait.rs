@@ -11,7 +11,7 @@ use mssf_com::FabricCommon::{
     IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl,
 };
 use tracing::info;
-use windows::core::implement;
+use windows_core::implement;
 
 #[derive(Debug)]
 #[implement(IFabricAsyncOperationCallback)]
@@ -92,22 +92,22 @@ impl AsyncContext {
 }
 
 impl IFabricAsyncOperationContext_Impl for AsyncContext {
-    fn IsCompleted(&self) -> windows::Win32::Foundation::BOOLEAN {
-        windows::Win32::Foundation::BOOLEAN::from(true)
+    fn IsCompleted(&self) -> crate::BOOLEAN {
+        crate::BOOLEAN::from(true)
     }
 
-    fn CompletedSynchronously(&self) -> windows::Win32::Foundation::BOOLEAN {
-        windows::Win32::Foundation::BOOLEAN::from(true)
+    fn CompletedSynchronously(&self) -> crate::BOOLEAN {
+        crate::BOOLEAN::from(true)
     }
 
-    fn Callback(&self) -> windows::core::Result<IFabricAsyncOperationCallback> {
+    fn Callback(&self) -> crate::Result<IFabricAsyncOperationCallback> {
         info!("AsyncContext::Callback");
         // get a view of the callback
         let callback_copy: IFabricAsyncOperationCallback = self.callback_.clone();
         Ok(callback_copy)
     }
 
-    fn Cancel(&self) -> windows::core::Result<()> {
+    fn Cancel(&self) -> crate::Result<()> {
         info!("AsyncContext::Cancel");
         Ok(())
     }

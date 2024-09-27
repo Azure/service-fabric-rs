@@ -21,7 +21,7 @@ impl<E> Runtime<E>
 where
     E: Executor,
 {
-    pub fn create(rt: E) -> ::windows_core::Result<Runtime<E>> {
+    pub fn create(rt: E) -> crate::Result<Runtime<E>> {
         let com = create_com_runtime()?;
         Ok(Runtime { com_impl: com, rt })
     }
@@ -30,7 +30,7 @@ where
         &self,
         servicetypename: &HSTRING,
         factory: F,
-    ) -> windows_core::Result<()>
+    ) -> crate::Result<()>
     where
         F: StatelessServiceFactory + 'static,
     {
@@ -47,7 +47,7 @@ where
         &self,
         servicetypename: &HSTRING,
         factory: impl StatefulServiceFactory + 'static,
-    ) -> windows_core::Result<()> {
+    ) -> crate::Result<()> {
         let rt_cp = self.rt.clone();
         let bridge: IFabricStatefulServiceFactory =
             StatefulServiceFactoryBridge::create(factory, rt_cp).into();

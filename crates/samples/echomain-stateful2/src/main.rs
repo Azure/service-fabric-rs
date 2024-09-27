@@ -4,20 +4,12 @@
 // ------------------------------------------------------------
 
 use crate::statefulstore::Factory;
-use mssf_com::{
-    FabricCommon::IFabricAsyncOperationCallback,
-    FabricRuntime::{FabricBeginGetNodeContext, FabricEndGetNodeContext, IFabricNodeContextResult},
+use mssf_core::runtime::{
+    executor::{DefaultExecutor, Executor},
+    ActivationContext,
 };
-use mssf_core::{
-    runtime::{
-        executor::{DefaultExecutor, Executor},
-        ActivationContext,
-    },
-    sync::wait::WaitableCallback,
-};
+use mssf_core::HSTRING;
 use tracing::info;
-use windows::core::Interface;
-use windows_core::HSTRING;
 
 mod echo;
 mod statefulstore;
@@ -26,7 +18,7 @@ mod statefulstore;
 #[cfg(test)]
 mod test;
 
-fn main() -> windows::core::Result<()> {
+fn main() -> mssf_core::Result<()> {
     tracing_subscriber::fmt().init();
     info!("main start");
 
@@ -37,7 +29,7 @@ fn main() -> windows::core::Result<()> {
     let endpoint = actctx
         .get_endpoint_resource(&HSTRING::from("KvReplicatorEndpoint"))
         .unwrap();
-    let hostname = get_hostname();
+    let hostname = get_hostname().expect("cannot get hostname");
 
     let factory = Factory::create(endpoint.port, hostname, e.clone());
     runtime
@@ -48,21 +40,7 @@ fn main() -> windows::core::Result<()> {
     Ok(())
 }
 
-fn get_hostname() -> HSTRING {
-    let (token, callback) = WaitableCallback::channel();
-
-    let callback_arg = callback
-        .cast::<IFabricAsyncOperationCallback>()
-        .expect("castfailed");
-    let ctx = unsafe { FabricBeginGetNodeContext(1000, &callback_arg).expect("getctx failed") };
-
-    token.wait();
-
-    let result_raw = unsafe { FabricEndGetNodeContext(&ctx).expect("end failed") };
-    let result = unsafe { IFabricNodeContextResult::from_raw(result_raw) };
-    let node_ctx = unsafe { result.get_NodeContext() };
-    let hostname_raw = unsafe { (*node_ctx).IPAddressOrFQDN };
-    let ret = HSTRING::from_wide(unsafe { hostname_raw.as_wide() }).expect("hstring");
-    info!("got hostname: {:?}", ret);
-    ret
+fn get_hostname() -> mssf_core::Result<HSTRING> {
+    let node_ctx = mssf_core::runtime::node_context::NodeContext::get_sync()?;
+    Ok(node_ctx.ip_address_or_fqdn)
 }

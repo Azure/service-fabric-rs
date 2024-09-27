@@ -7,6 +7,7 @@
 
 use std::{ffi::c_void, marker::PhantomData};
 
+use crate::{HSTRING, PCWSTR};
 use mssf_com::FabricTypes::{
     FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1,
     FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_OPEN_MODE_EXISTING, FABRIC_REPLICA_OPEN_MODE_INVALID,
@@ -15,7 +16,6 @@ use mssf_com::FabricTypes::{
     FABRIC_REPLICA_SET_WRITE_QUORUM, FABRIC_REPLICA_STATUS, FABRIC_REPLICA_STATUS_DOWN,
     FABRIC_REPLICA_STATUS_INVALID, FABRIC_REPLICA_STATUS_UP,
 };
-use windows_core::PCWSTR;
 
 use crate::{strings::HSTRINGWrap, types::ReplicaRole};
 
@@ -208,7 +208,7 @@ pub struct ReplicaInfo {
     pub id: i64,
     pub role: ReplicaRole,
     pub status: ReplicaStatus,
-    pub replicator_address: ::windows_core::HSTRING,
+    pub replicator_address: HSTRING,
     pub current_progress: i64,
     pub catch_up_capability: i64,
     pub must_catch_up: bool,
@@ -289,11 +289,11 @@ impl From<ReplicaSetQuarumMode> for FABRIC_REPLICA_SET_QUORUM_MODE {
 mod test {
     use std::ffi::c_void;
 
+    use crate::HSTRING;
     use mssf_com::FabricTypes::{
         FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1, FABRIC_REPLICA_ROLE_PRIMARY,
         FABRIC_REPLICA_STATUS_UP,
     };
-    use windows_core::HSTRING;
 
     use super::{Epoch, ReplicaInfo, ReplicaSetConfig};
 

@@ -419,7 +419,6 @@ version = "0.0.1"
 dependencies = [
  "mssf-com",
  "mssf-core",
- "windows",
  "windows-core",
 ]
 
@@ -445,7 +444,6 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
- "windows",
  "windows-core",
 ]
 
@@ -453,15 +451,12 @@ dependencies = [
 name = "samples_echomain_stateful2"
 version = "0.1.0"
 dependencies = [
- "mssf-com",
  "mssf-core",
  "tokio",
  "tokio-util",
  "tracing",
  "tracing-subscriber",
  "trait-variant",
- "windows",
- "windows-core",
 ]
 
 [[package]]

@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::PCWSTR;
 use mssf_com::{
     FabricRuntime::{
         IFabricKeyValueStoreItemResult, IFabricKeyValueStoreReplica2, IFabricTransaction,
@@ -10,7 +11,6 @@ use mssf_com::{
     FabricTypes::{FABRIC_KEY_VALUE_STORE_ITEM, FABRIC_KEY_VALUE_STORE_ITEM_METADATA},
 };
 use tracing::info;
-use windows_core::PCWSTR;
 
 use crate::sync::{fabric_begin_end_proxy2, CancellationToken};
 
@@ -56,28 +56,19 @@ impl KVStoreProxy {
         KVStoreProxy { com_impl }
     }
 
-    pub fn create_transaction(&self) -> ::windows_core::Result<TransactionProxy> {
+    pub fn create_transaction(&self) -> crate::Result<TransactionProxy> {
         let tx = unsafe { self.com_impl.CreateTransaction() }?;
         Ok(TransactionProxy { com_impl: tx })
     }
 
-    pub fn add(
-        &self,
-        tx: &TransactionProxy,
-        key: &[u16],
-        value: &[u8],
-    ) -> ::windows_core::Result<()> {
+    pub fn add(&self, tx: &TransactionProxy, key: &[u16], value: &[u8]) -> crate::Result<()> {
         unsafe {
             self.com_impl
                 .Add(&tx.com_impl, PCWSTR::from_raw(key.as_ptr()), value)
         }
     }
 
-    pub fn get(
-        &self,
-        tx: &TransactionProxy,
-        key: &[u16],
-    ) -> ::windows_core::Result<KVStoreItemProxy> {
+    pub fn get(&self, tx: &TransactionProxy, key: &[u16]) -> crate::Result<KVStoreItemProxy> {
         let com = unsafe {
             self.com_impl
                 .Get(&tx.com_impl, PCWSTR::from_raw(key.as_ptr()))
@@ -93,7 +84,7 @@ impl KVStoreProxy {
         tx: &TransactionProxy,
         key: &[u16],
         checksequencenumber: i64,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         unsafe {
             self.com_impl.Remove(
                 &tx.com_impl,
@@ -105,7 +96,7 @@ impl KVStoreProxy {
 }
 
 impl TransactionProxy {
-    pub fn get_id(&self) -> &::windows_core::GUID {
+    pub fn get_id(&self) -> &crate::GUID {
         unsafe { self.com_impl.get_Id().as_ref().unwrap() }
     }
 
@@ -117,7 +108,7 @@ impl TransactionProxy {
         &self,
         timeoutmilliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> ::windows_core::Result<i64> {
+    ) -> crate::Result<i64> {
         info!("TransactionProxy::commit");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();

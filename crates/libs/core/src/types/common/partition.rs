@@ -3,13 +3,13 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::{GUID, HSTRING};
 use mssf_com::FabricTypes::{
     FABRIC_INT64_RANGE_PARTITION_INFORMATION, FABRIC_NAMED_PARTITION_INFORMATION,
     FABRIC_SERVICE_PARTITION_INFORMATION, FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE,
     FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
     FABRIC_SERVICE_PARTITION_KIND_SINGLETON, FABRIC_SINGLETON_PARTITION_INFORMATION,
 };
-use windows_core::GUID;
 
 use crate::strings::HSTRINGWrap;
 
@@ -29,15 +29,15 @@ pub struct SingletonPartitionInfomation {
 
 #[derive(Debug, Clone)]
 pub struct Int64PartitionInfomation {
-    pub id: ::windows_core::GUID,
+    pub id: GUID,
     pub low_key: i64,
     pub high_key: i64,
 }
 
 #[derive(Debug, Clone)]
 pub struct NamedPartitionInfomation {
-    pub id: ::windows_core::GUID,
-    pub name: ::windows_core::HSTRING,
+    pub id: GUID,
+    pub name: HSTRING,
 }
 
 impl From<&FABRIC_SINGLETON_PARTITION_INFORMATION> for SingletonPartitionInfomation {

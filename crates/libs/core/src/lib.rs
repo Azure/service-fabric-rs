@@ -33,4 +33,7 @@ pub mod sync;
 pub mod types;
 
 // re-export some windows types
-pub use windows_core::{Error, Result, GUID, HRESULT, HSTRING, PCWSTR};
+pub use windows_core::{w, Error, Interface, Result, GUID, HRESULT, HSTRING, PCWSTR};
+// Note cannot re-export windows_core::implement because the macro using it has hard coded mod name.
+
+pub use windows::Win32::Foundation::BOOLEAN;

@@ -9,7 +9,7 @@ use mssf_com::FabricTypes::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RES
 use mssf_core::sync::wait::WaitableCallback;
 use windows_core::Interface;
 
-fn main() -> windows::core::Result<()> {
+fn main() -> mssf_core::Result<()> {
     println!("GetNodeCli");
 
     let rawclient = unsafe {

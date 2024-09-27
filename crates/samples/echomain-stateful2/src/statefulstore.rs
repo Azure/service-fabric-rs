@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FabricTypes::FABRIC_REPLICATOR_ADDRESS;
 use mssf_core::{
     runtime::{
         executor::{DefaultExecutor, Executor},
@@ -12,14 +11,13 @@ use mssf_core::{
             StatefulServiceReplica,
         },
         stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode},
-        store_types::ReplicatorSettings,
     },
     types::ReplicaRole,
 };
+use mssf_core::{Error, HSTRING};
 use std::{cell::Cell, sync::Mutex};
 use tokio_util::sync::CancellationToken;
 use tracing::info;
-use windows_core::{Error, HSTRING};
 
 use crate::echo;
 
@@ -63,14 +61,14 @@ impl AppFabricReplicator {
 
 // This is basic implementation of Replicator
 impl Replicator for AppFabricReplicator {
-    async fn open(&self, _: CancellationToken) -> windows::core::Result<HSTRING> {
+    async fn open(&self, _: CancellationToken) -> mssf_core::Result<HSTRING> {
         info!("AppFabricReplicator2::Replicator::Open");
         let addr = get_addr(self.port_, self.hostname_.clone());
         let str_res = HSTRING::from(addr);
         Ok(str_res)
     }
 
-    async fn close(&self, _: CancellationToken) -> windows::core::Result<()> {
+    async fn close(&self, _: CancellationToken) -> mssf_core::Result<()> {
         info!("AppFabricReplicator2::Replicator::close");
         Ok(())
     }
@@ -80,26 +78,22 @@ impl Replicator for AppFabricReplicator {
         _epoch: &Epoch,
         _role: &ReplicaRole,
         _: CancellationToken,
-    ) -> windows::core::Result<()> {
+    ) -> mssf_core::Result<()> {
         info!("AppFabricReplicator2::Replicator::change_role");
         Ok(())
     }
 
-    async fn update_epoch(
-        &self,
-        _epoch: &Epoch,
-        _: CancellationToken,
-    ) -> windows::core::Result<()> {
+    async fn update_epoch(&self, _epoch: &Epoch, _: CancellationToken) -> mssf_core::Result<()> {
         info!("AppFabricReplicator2::Replicator::update_epoch");
         Ok(())
     }
 
-    fn get_current_progress(&self) -> windows::core::Result<i64> {
+    fn get_current_progress(&self) -> mssf_core::Result<i64> {
         info!("AppFabricReplicator2::Replicator::get_current_progress");
         Ok(0)
     }
 
-    fn get_catch_up_capability(&self) -> windows::core::Result<i64> {
+    fn get_catch_up_capability(&self) -> mssf_core::Result<i64> {
         info!("AppFabricReplicator2::Replicator::get_catch_up_capability");
         Ok(0)
     }
@@ -111,7 +105,7 @@ impl Replicator for AppFabricReplicator {
 
 // This is basic implementation of PrimaryReplicator
 impl PrimaryReplicator for AppFabricReplicator {
-    async fn on_data_loss(&self, _: CancellationToken) -> windows::core::Result<u8> {
+    async fn on_data_loss(&self, _: CancellationToken) -> mssf_core::Result<u8> {
         info!("AppFabricReplicator2::PrimaryReplicator::on_data_loss");
         Ok(0)
     }
@@ -120,7 +114,7 @@ impl PrimaryReplicator for AppFabricReplicator {
         &self,
         _currentconfiguration: &ReplicaSetConfig,
         _previousconfiguration: &ReplicaSetConfig,
-    ) -> windows::core::Result<()> {
+    ) -> mssf_core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::update_catch_up_replica_set_configuration");
         Ok(())
     }
@@ -129,7 +123,7 @@ impl PrimaryReplicator for AppFabricReplicator {
         &self,
         _catchupmode: ReplicaSetQuarumMode,
         _: CancellationToken,
-    ) -> windows::core::Result<()> {
+    ) -> mssf_core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::wait_for_catch_up_quorum");
         Ok(())
     }
@@ -137,7 +131,7 @@ impl PrimaryReplicator for AppFabricReplicator {
     fn update_current_replica_set_configuration(
         &self,
         _currentconfiguration: &ReplicaSetConfig,
-    ) -> windows::core::Result<()> {
+    ) -> mssf_core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::update_current_replica_set_configuration");
         Ok(())
     }
@@ -146,12 +140,12 @@ impl PrimaryReplicator for AppFabricReplicator {
         &self,
         _replica: &ReplicaInfo,
         _: CancellationToken,
-    ) -> windows::core::Result<()> {
+    ) -> mssf_core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::build_replica");
         Ok(())
     }
 
-    fn remove_replica(&self, _replicaid: i64) -> windows::core::Result<()> {
+    fn remove_replica(&self, _replicaid: i64) -> mssf_core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::remove_replica");
         Ok(())
     }
@@ -160,10 +154,10 @@ impl PrimaryReplicator for AppFabricReplicator {
 impl StatefulServiceFactory for Factory {
     fn create_replica(
         &self,
-        servicetypename: &windows_core::HSTRING,
-        servicename: &windows_core::HSTRING,
+        servicetypename: &mssf_core::HSTRING,
+        servicename: &mssf_core::HSTRING,
         initializationdata: &[u8],
-        partitionid: &windows::core::GUID,
+        partitionid: &mssf_core::GUID,
         replicaid: i64,
     ) -> Result<impl StatefulServiceReplica + 'static, Error> {
         info!(
@@ -173,19 +167,6 @@ impl StatefulServiceFactory for Factory {
             initializationdata.len(),
             partitionid,
             replicaid
-        );
-        let settings = ReplicatorSettings {
-            flags: FABRIC_REPLICATOR_ADDRESS.0 as u32,
-            replicator_address: HSTRING::from(get_addr(
-                self.replication_port,
-                self.hostname.clone(),
-            )),
-            ..Default::default()
-        };
-
-        info!(
-            "Factory::create_replica using address {}",
-            settings.replicator_address
         );
 
         let svc = Service::new(
@@ -260,7 +241,7 @@ impl StatefulServiceReplica for Replica {
         openmode: OpenMode,
         partition: &StatefulServicePartition,
         _: CancellationToken,
-    ) -> windows::core::Result<impl PrimaryReplicator + 'static> {
+    ) -> mssf_core::Result<impl PrimaryReplicator + 'static> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
         self.svc.start_loop_in_background(partition);
@@ -270,7 +251,7 @@ impl StatefulServiceReplica for Replica {
         &self,
         newrole: ReplicaRole,
         _: CancellationToken,
-    ) -> ::windows_core::Result<HSTRING> {
+    ) -> mssf_core::Result<HSTRING> {
         info!("Replica::change_role {:?}", newrole);
         if newrole == ReplicaRole::Primary {
             info!("primary {:?}", self.svc.tcp_port);
@@ -280,7 +261,7 @@ impl StatefulServiceReplica for Replica {
         let str_res = HSTRING::from(addr);
         Ok(str_res)
     }
-    async fn close(&self, _: CancellationToken) -> windows::core::Result<()> {
+    async fn close(&self, _: CancellationToken) -> mssf_core::Result<()> {
         info!("Replica::close");
         self.svc.stop();
         Ok(())

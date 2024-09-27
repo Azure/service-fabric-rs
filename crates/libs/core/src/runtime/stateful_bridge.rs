@@ -11,7 +11,7 @@
 use std::sync::Arc;
 
 use tracing::info;
-use windows::core::implement;
+use windows_core::implement;
 use windows_core::{Interface, HSTRING};
 
 use mssf_com::{
@@ -71,15 +71,15 @@ where
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn CreateReplica(
         &self,
-        servicetypename: &::windows_core::PCWSTR,
+        servicetypename: &crate::PCWSTR,
         servicename: FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
-        partitionid: &::windows_core::GUID,
+        partitionid: &crate::GUID,
         replicaid: i64,
-    ) -> ::windows_core::Result<IFabricStatefulServiceReplica> {
+    ) -> crate::Result<IFabricStatefulServiceReplica> {
         info!("StatefulServiceFactoryBridge::CreateReplica");
-        let p_servicename = ::windows_core::PCWSTR::from_raw(servicename.0);
+        let p_servicename = crate::PCWSTR::from_raw(servicename.0);
         let h_servicename = HSTRING::from_wide(unsafe { p_servicename.as_wide() }).unwrap();
         let h_servicetypename = HSTRING::from_wide(unsafe { servicetypename.as_wide() }).unwrap();
         let data = unsafe {
@@ -145,7 +145,7 @@ where
     fn BeginOpen(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricReplicatorBridge::BeginOpen");
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext3::make(callback);
@@ -160,7 +160,7 @@ where
     fn EndOpen(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<IFabricStringResult> {
+    ) -> crate::Result<IFabricStringResult> {
         info!("IFabricReplicatorBridge::EndOpen");
         BridgeContext3::result(context)?
     }
@@ -171,7 +171,7 @@ where
         epoch: *const FABRIC_EPOCH,
         role: FABRIC_REPLICA_ROLE,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         let inner = self.inner.clone();
         let epoch2: Epoch = unsafe { epoch.as_ref().unwrap().into() };
         let role2: ReplicaRole = (&role).into();
@@ -189,7 +189,7 @@ where
     fn EndChangeRole(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("IFabricReplicatorBridge::EndChangeRole");
         BridgeContext3::result(context)?
     }
@@ -199,7 +199,7 @@ where
         &self,
         epoch: *const FABRIC_EPOCH,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         let inner = self.inner.clone();
         let epoch2: Epoch = unsafe { epoch.as_ref().unwrap().into() };
         info!(
@@ -216,7 +216,7 @@ where
     fn EndUpdateEpoch(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("IFabricReplicatorBridge::BeginUpdateEpoch");
         BridgeContext3::result(context)?
     }
@@ -224,7 +224,7 @@ where
     fn BeginClose(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricReplicatorBridge::BeginClose");
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext3::make(callback);
@@ -234,7 +234,7 @@ where
     fn EndClose(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("IFabricReplicatorBridge::EndClose");
         BridgeContext3::result(context)?
     }
@@ -244,13 +244,13 @@ where
         self.inner.abort();
     }
 
-    fn GetCurrentProgress(&self) -> ::windows_core::Result<i64> {
+    fn GetCurrentProgress(&self) -> crate::Result<i64> {
         let lsn = self.inner.get_current_progress();
         info!("IFabricReplicatorBridge::GetCurrentProgress: {:?}", lsn);
         lsn
     }
 
-    fn GetCatchUpCapability(&self) -> ::windows_core::Result<i64> {
+    fn GetCatchUpCapability(&self) -> crate::Result<i64> {
         let lsn = self.inner.get_catch_up_capability();
         info!("IFabricReplicatorBridge::GetCatchUpCapability: {:?}", lsn);
         lsn
@@ -306,14 +306,14 @@ where
     fn BeginOpen(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         self.rplctr.BeginOpen(callback)
     }
 
     fn EndOpen(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<IFabricStringResult> {
+    ) -> crate::Result<IFabricStringResult> {
         self.rplctr.EndOpen(context)
     }
 
@@ -322,14 +322,14 @@ where
         epoch: *const FABRIC_EPOCH,
         role: FABRIC_REPLICA_ROLE,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         self.rplctr.BeginChangeRole(epoch, role, callback)
     }
 
     fn EndChangeRole(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         self.rplctr.EndChangeRole(context)
     }
 
@@ -337,28 +337,28 @@ where
         &self,
         epoch: *const FABRIC_EPOCH,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         self.rplctr.BeginUpdateEpoch(epoch, callback)
     }
 
     fn EndUpdateEpoch(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         self.rplctr.EndUpdateEpoch(context)
     }
 
     fn BeginClose(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         self.rplctr.BeginClose(callback)
     }
 
     fn EndClose(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         self.rplctr.EndClose(context)
     }
 
@@ -366,11 +366,11 @@ where
         self.rplctr.Abort()
     }
 
-    fn GetCurrentProgress(&self) -> ::windows_core::Result<i64> {
+    fn GetCurrentProgress(&self) -> crate::Result<i64> {
         self.rplctr.GetCurrentProgress()
     }
 
-    fn GetCatchUpCapability(&self) -> ::windows_core::Result<i64> {
+    fn GetCatchUpCapability(&self) -> crate::Result<i64> {
         self.rplctr.GetCatchUpCapability()
     }
 }
@@ -383,7 +383,7 @@ where
     fn BeginOnDataLoss(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricPrimaryReplicatorBridge::BeginOnDataLoss");
         let inner = self.inner.clone();
 
@@ -394,7 +394,7 @@ where
     fn EndOnDataLoss(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<u8> {
+    ) -> crate::Result<u8> {
         info!("IFabricPrimaryReplicatorBridge::EndOnDataLoss");
         BridgeContext3::result(context)?
     }
@@ -404,7 +404,7 @@ where
         &self,
         currentconfiguration: *const FABRIC_REPLICA_SET_CONFIGURATION,
         previousconfiguration: *const FABRIC_REPLICA_SET_CONFIGURATION,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         let cc = ReplicaSetConfig::from(unsafe { currentconfiguration.as_ref().unwrap() });
         let pc = ReplicaSetConfig::from(unsafe { previousconfiguration.as_ref().unwrap() });
         info!("IFabricPrimaryReplicatorBridge::UpdateCatchUpReplicaSetConfiguration: curr {:?}, prev {:?}", cc, pc);
@@ -416,7 +416,7 @@ where
         &self,
         catchupmode: FABRIC_REPLICA_SET_QUORUM_MODE,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         info!(
             "IFabricPrimaryReplicatorBridge::BeginWaitForCatchUpQuorum: mode {:?}",
             catchupmode
@@ -433,7 +433,7 @@ where
     fn EndWaitForCatchUpQuorum(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("IFabricPrimaryReplicatorBridge::BeginWaitForCatchUpQuorum");
         BridgeContext3::result(context)?
     }
@@ -442,7 +442,7 @@ where
     fn UpdateCurrentReplicaSetConfiguration(
         &self,
         currentconfiguration: *const FABRIC_REPLICA_SET_CONFIGURATION,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         let c = ReplicaSetConfig::from(unsafe { currentconfiguration.as_ref() }.unwrap());
         info!(
             "IFabricPrimaryReplicatorBridge::UpdateCurrentReplicaSetConfiguration {:?}",
@@ -456,7 +456,7 @@ where
         &self,
         replica: *const FABRIC_REPLICA_INFORMATION,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         let inner = self.inner.clone();
         let r = ReplicaInfo::from(unsafe { replica.as_ref().unwrap() });
         info!("IFabricPrimaryReplicatorBridge::BeginBuildReplica: {:?}", r);
@@ -470,12 +470,12 @@ where
     fn EndBuildReplica(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("IFabricPrimaryReplicatorBridge::EndBuildReplica");
         BridgeContext3::result(context)?
     }
 
-    fn RemoveReplica(&self, replicaid: i64) -> ::windows_core::Result<()> {
+    fn RemoveReplica(&self, replicaid: i64) -> crate::Result<()> {
         info!("IFabricPrimaryReplicatorBridge::RemoveReplica");
         self.inner.remove_replica(replicaid)
     }
@@ -517,7 +517,7 @@ where
         openmode: FABRIC_REPLICA_OPEN_MODE,
         partition: ::core::option::Option<&IFabricStatefulServicePartition>,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         let inner = self.inner.clone();
         let rt_cp = self.rt.clone();
         let openmode2: OpenMode = openmode.into();
@@ -539,7 +539,7 @@ where
     fn EndOpen(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<IFabricReplicator> {
+    ) -> crate::Result<IFabricReplicator> {
         info!("IFabricStatefulReplicaBridge::EndOpen");
         BridgeContext3::result(context)?
     }
@@ -548,7 +548,7 @@ where
         &self,
         newrole: FABRIC_REPLICA_ROLE,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         let inner = self.inner.clone();
         let newrole2: ReplicaRole = (&newrole).into();
         info!(
@@ -567,7 +567,7 @@ where
     fn EndChangeRole(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<IFabricStringResult> {
+    ) -> crate::Result<IFabricStringResult> {
         info!("IFabricStatefulReplicaBridge::EndChangeRole");
         BridgeContext3::result(context)?
     }
@@ -575,7 +575,7 @@ where
     fn BeginClose(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricStatefulReplicaBridge::BeginClose");
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext3::make(callback);
@@ -585,7 +585,7 @@ where
     fn EndClose(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("IFabricStatefulReplicaBridge::EndClose");
         BridgeContext3::result(context)?
     }

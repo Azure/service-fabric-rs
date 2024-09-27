@@ -6,22 +6,9 @@ edition = "2018"
 [dependencies]
 tracing.workspace = true
 tracing-subscriber.workspace = true
-ctrlc = { version = "3.0", features = ["termination"] }
-tokio = { version = "1", features = ["full"] }
-windows-core = "0.57"
-
-[dependencies.windows]
-version = "0.57"
-features = [
-    "implement"
-]
-
-[dependencies.mssf-com]
-path = "../../libs/com"
-
-[dependencies.mssf-core]
-path = "../../libs/core"
-# We don't showcase config integration in this particular example
-default-features = false
-features = ["tokio_async"]
+ctrlc.workspace = true
+tokio.workspace = true
+windows-core.workspace = true
+mssf-com.workspace = true
+mssf-core = { workspace = true, features = []} # do not use any features
 

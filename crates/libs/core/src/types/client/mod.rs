@@ -16,8 +16,8 @@ pub use partition::*;
 mod node;
 pub use node::*;
 mod replica;
+use crate::HSTRING;
 pub use replica::*;
-use windows_core::HSTRING;
 
 // FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS
 bitflags::bitflags! {

@@ -9,12 +9,12 @@ use std::io::Error;
 
 use mssf_core::runtime::stateful::StatefulServicePartition;
 use mssf_core::types::LoadMetric;
+use mssf_core::HSTRING;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 use tracing::{error, info};
-use windows::core::HSTRING;
 
 pub fn get_addr(port: u32, hostname: HSTRING) -> String {
     let mut addr = String::new();

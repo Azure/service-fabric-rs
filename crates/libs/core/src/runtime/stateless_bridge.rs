@@ -8,6 +8,7 @@
 
 use std::sync::Arc;
 
+use crate::HSTRING;
 use crate::{
     runtime::stateless::StatelessServicePartition, strings::HSTRINGWrap, sync::BridgeContext3,
 };
@@ -22,7 +23,6 @@ use mssf_com::{
 };
 use tracing::info;
 use windows::core::implement;
-use windows_core::HSTRING;
 
 use super::{
     executor::Executor,
@@ -57,15 +57,15 @@ where
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn CreateInstance(
         &self,
-        servicetypename: &::windows_core::PCWSTR,
+        servicetypename: &crate::PCWSTR,
         servicename: FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
-        partitionid: &::windows_core::GUID,
+        partitionid: &crate::GUID,
         instanceid: i64,
-    ) -> ::windows_core::Result<IFabricStatelessServiceInstance> {
+    ) -> crate::Result<IFabricStatelessServiceInstance> {
         info!("StatelessServiceFactoryBridge::CreateInstance");
-        let p_servicename = ::windows_core::PCWSTR::from_raw(servicename.0);
+        let p_servicename = crate::PCWSTR::from_raw(servicename.0);
         let h_servicename = HSTRING::from_wide(unsafe { p_servicename.as_wide() }).unwrap();
         let h_servicetypename = HSTRING::from_wide(unsafe { servicetypename.as_wide() }).unwrap();
         let data = unsafe {
@@ -127,7 +127,7 @@ where
         &self,
         partition: ::core::option::Option<&IFabricStatelessServicePartition>,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricStatelessServiceInstanceBridge::BeginOpen");
         let partition_cp = partition.unwrap().clone();
         let partition_bridge = StatelessServicePartition::new(partition_cp);
@@ -144,7 +144,7 @@ where
     fn EndOpen(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<IFabricStringResult> {
+    ) -> crate::Result<IFabricStringResult> {
         info!("IFabricStatelessServiceInstanceBridge::EndOpen");
         BridgeContext3::result(context)?
     }
@@ -152,7 +152,7 @@ where
     fn BeginClose(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
-    ) -> ::windows_core::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
         info!("IFabricStatelessServiceInstanceBridge::BeginClose");
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext3::make(callback);
@@ -162,7 +162,7 @@ where
     fn EndClose(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
-    ) -> ::windows_core::Result<()> {
+    ) -> crate::Result<()> {
         info!("IFabricStatelessServiceInstanceBridge::EndClose");
         BridgeContext3::result(context)?
     }

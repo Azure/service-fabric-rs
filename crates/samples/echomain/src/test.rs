@@ -11,7 +11,7 @@ use mssf_core::{
             PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartitionInfo,
             ServiceEndpointRole, ServicePartitionKind,
         },
-        FabricClient,
+        FabricClient, FabricClientBuilder, GatewayInformationResult, ServiceNotification,
     },
     error::FabricErrorCode,
     types::{
@@ -25,6 +25,8 @@ use mssf_core::{
 };
 
 static ECHO_SVC_URI: &str = "fabric:/EchoApp/EchoAppService";
+static MAX_RETRY_COUNT: i32 = 5;
+static RETRY_DURATION_SHORT: Duration = Duration::from_secs(1);
 
 // Test client for echo server.
 pub struct EchoTestClient {
@@ -114,7 +116,28 @@ impl EchoTestClient {
 // Uses fabric client to perform various actions to the app.
 #[tokio::test]
 async fn test_fabric_client() {
-    let fc = FabricClient::new();
+    // channel for service notification
+    let (sn_tx, mut sn_rx) = tokio::sync::mpsc::channel::<ServiceNotification>(1);
+    // channel for client connection notification
+    let (cc_tx, mut cc_rx) = tokio::sync::mpsc::channel::<GatewayInformationResult>(1);
+    let fc = FabricClientBuilder::new()
+        .with_on_service_notification(move |notification| {
+            sn_tx
+                .blocking_send(notification.clone())
+                .expect("cannot send notification");
+            Ok(())
+        })
+        .with_on_client_connect(move |gw| {
+            cc_tx.blocking_send(gw.clone()).expect("cannot send");
+            Ok(())
+        })
+        .with_on_client_disconnect(move |_| {
+            // This is not invoked in this test. FabricClient does not invoke this on drop.
+            panic!("client disconnected");
+        })
+        .with_client_role(mssf_core::types::ClientRole::User)
+        .build();
+
     let ec = EchoTestClient::new(fc.clone());
 
     let timeout = Duration::from_secs(1);
@@ -127,6 +150,10 @@ async fn test_fabric_client() {
     // For some reason the state is unknown
     // assert_eq!(stateless.health_state, HealthState::Ok);
     assert_ne!(single.id, GUID::zeroed());
+
+    // Connection event notification should be received since we already sent a request.
+    let gw = cc_rx.try_recv().expect("notification not present");
+    assert!(!gw.node_name.is_empty());
 
     // Get replica info
     let stateless_replica = ec.get_replica(single.id).await.unwrap();
@@ -182,16 +209,36 @@ async fn test_fabric_client() {
         if replica2.instance_id != stateless_replica.instance_id {
             break;
         } else {
-            if count > 5 {
+            if count > MAX_RETRY_COUNT {
                 panic!(
                     "replica id not changed after retry. original {}, new {}",
                     stateless_replica.instance_id, replica2.instance_id
                 );
             }
             // replica has not changed yet.
-            tokio::time::sleep(Duration::from_secs(1)).await;
+            tokio::time::sleep(RETRY_DURATION_SHORT).await;
         }
         count += 1;
+    }
+
+    // check service notification is invoked because service addr is changed for
+    // replica removal and recreation.
+    for i in 0..MAX_RETRY_COUNT {
+        match sn_rx.try_recv() {
+            Ok(sn) => {
+                assert_eq!(sn.partition_id, single.id);
+                break;
+            }
+            Err(e) => {
+                if e == tokio::sync::mpsc::error::TryRecvError::Disconnected {
+                    panic!("channnel should not be closed");
+                }
+                if i == MAX_RETRY_COUNT {
+                    panic!("notification not received");
+                }
+                tokio::time::sleep(RETRY_DURATION_SHORT).await;
+            }
+        };
     }
 
     // unregisters the notification

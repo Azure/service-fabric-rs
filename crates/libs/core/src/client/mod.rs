@@ -3,18 +3,159 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use mssf_com::FabricClient::{
+    FabricCreateLocalClient4, IFabricClientConnectionEventHandler,
     IFabricPropertyManagementClient2, IFabricQueryClient10, IFabricServiceManagementClient6,
+    IFabricServiceNotificationEventHandler,
+};
+use notification::{
+    LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
+    ServiceNotificationEventHandlerBridge,
 };
 use windows_core::Interface;
 
+use crate::types::ClientRole;
+
 use self::{query_client::QueryClient, svc_mgmt_client::ServiceManagementClient};
 
+mod connection;
+mod notification;
 pub mod query_client;
 pub mod svc_mgmt_client;
 
+// reexport
+pub use connection::GatewayInformationResult;
+pub use notification::ServiceNotification;
+
 #[cfg(test)]
 mod tests;
+
+/// Creates FabricClient com object using SF com API.
+fn create_local_client_internal<T: Interface>(
+    service_notification_handler: Option<&IFabricServiceNotificationEventHandler>,
+    client_connection_handler: Option<&IFabricClientConnectionEventHandler>,
+    client_role: Option<ClientRole>,
+) -> T {
+    let role = client_role.unwrap_or(ClientRole::User);
+    assert_ne!(
+        role,
+        ClientRole::Unknown,
+        "Unknown role should not be used."
+    );
+    let raw = unsafe {
+        FabricCreateLocalClient4(
+            service_notification_handler,
+            client_connection_handler,
+            role.into(),
+            &T::IID,
+        )
+    }
+    .expect("failed to create fabric client");
+    // if params are right, client should be created. There is no network call involved during obj creation.
+    unsafe { T::from_raw(raw) }
+}
+
+// Builder for FabricClient
+pub struct FabricClientBuilder {
+    sn_handler: Option<IFabricServiceNotificationEventHandler>,
+    cc_handler: Option<LambdaClientConnectionNotificationHandler>,
+    client_role: ClientRole,
+}
+
+impl Default for FabricClientBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl FabricClientBuilder {
+    /// Creates the builder.
+    pub fn new() -> Self {
+        Self {
+            sn_handler: None,
+            cc_handler: None,
+            client_role: ClientRole::User,
+        }
+    }
+
+    /// Configures the service notification handler internally.
+    fn with_service_notification_handler(
+        mut self,
+        handler: impl ServiceNotificationEventHandler,
+    ) -> Self {
+        self.sn_handler = Some(ServiceNotificationEventHandlerBridge::new_com(handler));
+        self
+    }
+
+    /// Configures the service notification handler.
+    /// See details in `register_service_notification_filter` API.
+    /// If the service endpoint change matches the registered filter,
+    /// this notification is invoked
+    pub fn with_on_service_notification<T>(self, f: T) -> Self
+    where
+        T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,
+    {
+        let handler = LambdaServiceNotificationHandler::new(f);
+        self.with_service_notification_handler(handler)
+    }
+
+    /// When FabricClient connects to the SF cluster, this callback is invoked.
+    pub fn with_on_client_connect<T>(mut self, f: T) -> Self
+    where
+        T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+    {
+        if self.cc_handler.is_none() {
+            self.cc_handler = Some(LambdaClientConnectionNotificationHandler::new());
+        }
+        if let Some(cc) = self.cc_handler.as_mut() {
+            cc.set_f_conn(f)
+        }
+        self
+    }
+
+    /// When FabricClient disconnets to the SF cluster, this callback is called.
+    /// This callback is not called on Drop of FabricClient.
+    pub fn with_on_client_disconnect<T>(mut self, f: T) -> Self
+    where
+        T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+    {
+        if self.cc_handler.is_none() {
+            self.cc_handler = Some(LambdaClientConnectionNotificationHandler::new());
+        }
+        if let Some(cc) = self.cc_handler.as_mut() {
+            cc.set_f_disconn(f)
+        }
+        self
+    }
+
+    /// Sets the role of the client connection. Default is User if not set.
+    pub fn with_client_role(mut self, role: ClientRole) -> Self {
+        self.client_role = role;
+        self
+    }
+
+    /// Build the fabricclient
+    /// Remarks: FabricClient connect to SF cluster when
+    /// the first API call is triggered. Build/create of the object does not
+    /// establish connection.
+    pub fn build(self) -> FabricClient {
+        let c = Self::build_interface(self);
+        FabricClient::from_com(c)
+    }
+
+    /// Build the specific com interface of the fabric client.
+    pub fn build_interface<T: Interface>(self) -> T {
+        let cc_handler = self
+            .cc_handler
+            .map(ClientConnectionEventHandlerBridge::new_com);
+        create_local_client_internal::<T>(
+            self.sn_handler.as_ref(),
+            cc_handler.as_ref(),
+            Some(self.client_role),
+        )
+    }
+}
 
 // FabricClient safe wrapper
 // The design of FabricClient follows from the csharp client:
@@ -26,18 +167,7 @@ pub struct FabricClient {
     com_query_client: IFabricQueryClient10,
 }
 
-impl Default for FabricClient {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl FabricClient {
-    pub fn new() -> Self {
-        let com = crate::sync::CreateLocalClient::<IFabricPropertyManagementClient2>();
-        Self::from_com(com)
-    }
-
     // Get a copy of COM object
     pub fn get_com(&self) -> IFabricPropertyManagementClient2 {
         self.com_property_client.clone()

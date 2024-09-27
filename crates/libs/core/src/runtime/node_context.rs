@@ -9,6 +9,7 @@ use windows_core::{Interface, HSTRING};
 use crate::{
     strings::HSTRINGWrap,
     sync::{fabric_begin_end_proxy2, CancellationToken},
+    types::NodeId,
 };
 
 pub fn get_com_node_context(
@@ -25,12 +26,6 @@ pub fn get_com_node_context(
         },
         cancellation_token,
     )
-}
-
-#[derive(Debug)]
-pub struct NodeId {
-    pub low: u64,
-    pub high: u64,
 }
 
 #[derive(Debug)]
@@ -81,10 +76,7 @@ impl From<&IFabricNodeContextResult> for NodeContext {
             node_type: HSTRINGWrap::from(raw_ref.NodeType).into(),
             ip_address_or_fqdn: HSTRINGWrap::from(raw_ref.IPAddressOrFQDN).into(),
             node_instance_id: raw_ref.NodeInstanceId,
-            node_id: NodeId {
-                low: raw_ref.NodeId.Low,
-                high: raw_ref.NodeId.High,
-            },
+            node_id: raw_ref.NodeId.into(),
         }
     }
 }

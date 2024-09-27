@@ -11,7 +11,7 @@ use mssf_core::{
             PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartition,
             ServiceEndpointRole, ServicePartitionKind,
         },
-        FabricClient,
+        FabricClient, FabricClientBuilder,
     },
     error::FabricErrorCode,
     types::{
@@ -233,7 +233,7 @@ impl TestClient {
 // Uses fabric client to perform various actions for this service.
 #[tokio::test]
 async fn test_partition_info() {
-    let fc = FabricClient::new();
+    let fc = FabricClientBuilder::new().build();
     let tc = TestClient::new(fc.clone());
     let timeout = Duration::from_secs(1);
 

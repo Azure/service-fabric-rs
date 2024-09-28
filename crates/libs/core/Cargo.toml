@@ -1,6 +1,6 @@
 [package]
 name = "mssf-core"
-version = "0.0.10"
+version = "0.0.11"
 edition = "2021"
 license = "MIT"
 description = "Rust for Azure Service Fabric. Rust safe APIs."
@@ -49,9 +49,5 @@ features = [
 
 [dependencies.mssf-com]
 path = "../com"
-version = "0.0.10"
+version = "0.0.11"
 default-features = false
-
-# requires return impl trait feature
-[package.metadata]
-rust-version = "1.75"

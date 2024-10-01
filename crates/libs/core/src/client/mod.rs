@@ -5,7 +5,7 @@
 
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use mssf_com::FabricClient::{
-    FabricCreateLocalClient4, IFabricClientConnectionEventHandler,
+    FabricCreateLocalClient3, FabricCreateLocalClient4, IFabricClientConnectionEventHandler,
     IFabricPropertyManagementClient2, IFabricQueryClient10, IFabricServiceManagementClient6,
     IFabricServiceNotificationEventHandler,
 };
@@ -37,19 +37,25 @@ fn create_local_client_internal<T: Interface>(
     client_connection_handler: Option<&IFabricClientConnectionEventHandler>,
     client_role: Option<ClientRole>,
 ) -> T {
-    let role = client_role.unwrap_or(ClientRole::User);
-    assert_ne!(
-        role,
-        ClientRole::Unknown,
-        "Unknown role should not be used."
-    );
-    let raw = unsafe {
-        FabricCreateLocalClient4(
-            service_notification_handler,
-            client_connection_handler,
-            role.into(),
-            &T::IID,
-        )
+    let role = client_role.unwrap_or(ClientRole::Unknown);
+    let raw = if role == ClientRole::Unknown {
+        // unknown role should use the SF function without role param.
+        unsafe {
+            FabricCreateLocalClient3(
+                service_notification_handler,
+                client_connection_handler,
+                &T::IID,
+            )
+        }
+    } else {
+        unsafe {
+            FabricCreateLocalClient4(
+                service_notification_handler,
+                client_connection_handler,
+                role.into(),
+                &T::IID,
+            )
+        }
     }
     .expect("failed to create fabric client");
     // if params are right, client should be created. There is no network call involved during obj creation.
@@ -75,7 +81,7 @@ impl FabricClientBuilder {
         Self {
             sn_handler: None,
             cc_handler: None,
-            client_role: ClientRole::User,
+            client_role: ClientRole::Unknown,
         }
     }
 
@@ -168,6 +174,11 @@ pub struct FabricClient {
 }
 
 impl FabricClient {
+    /// Get a builder
+    pub fn builder() -> FabricClientBuilder {
+        FabricClientBuilder::new()
+    }
+
     // Get a copy of COM object
     pub fn get_com(&self) -> IFabricPropertyManagementClient2 {
         self.com_property_client.clone()

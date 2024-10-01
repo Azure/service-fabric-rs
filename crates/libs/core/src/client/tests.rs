@@ -12,14 +12,14 @@ use tokio_util::sync::CancellationToken;
 use windows_core::HSTRING;
 
 use crate::{
-    client::{svc_mgmt_client::PartitionKeyType, FabricClientBuilder},
+    client::{svc_mgmt_client::PartitionKeyType, FabricClient},
     error::FabricErrorCode,
     types::{NodeQueryDescription, NodeStatusFilter, PagedQueryDescription},
 };
 
 #[tokio::test]
 async fn test_fabric_client() {
-    let c = FabricClientBuilder::new().build();
+    let c = FabricClient::builder().build();
     let qc = c.get_query_manager();
     let timeout = Duration::from_secs(1);
     let paging_status;

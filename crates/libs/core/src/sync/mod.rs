@@ -320,8 +320,7 @@ mod tests {
     impl FabricQueryClient {
         pub fn new() -> FabricQueryClient {
             FabricQueryClient {
-                com: crate::client::FabricClientBuilder::new()
-                    .build_interface::<IFabricQueryClient>(),
+                com: crate::client::FabricClient::builder().build_interface::<IFabricQueryClient>(),
             }
         }
 
@@ -511,7 +510,7 @@ mod tests {
 
     #[test]
     fn local_client_create() {
-        let _mgmt = crate::client::FabricClientBuilder::new()
+        let _mgmt = crate::client::FabricClient::builder()
             .build_interface::<IFabricClusterManagementClient3>();
     }
 

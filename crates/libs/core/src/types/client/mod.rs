@@ -59,8 +59,8 @@ impl From<&ServiceNotificationFilterDescription>
 // FABRIC_CLIENT_ROLE
 #[derive(Debug, PartialEq, Clone)]
 pub enum ClientRole {
-    Unknown, // Do not pass this in SF api, use User instead.
-    User,
+    Unknown, // Default client role.
+    User,    // User client role. Must set client certificate for tls endpoints.
     Admin,
     // ElevatedAdmin not supported by SF 6.x sdk yet.
 }

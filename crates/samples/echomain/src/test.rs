@@ -11,7 +11,7 @@ use mssf_core::{
             PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartitionInfo,
             ServiceEndpointRole, ServicePartitionKind,
         },
-        FabricClient, FabricClientBuilder, GatewayInformationResult, ServiceNotification,
+        FabricClient, GatewayInformationResult, ServiceNotification,
     },
     error::FabricErrorCode,
     types::{
@@ -120,7 +120,7 @@ async fn test_fabric_client() {
     let (sn_tx, mut sn_rx) = tokio::sync::mpsc::channel::<ServiceNotification>(1);
     // channel for client connection notification
     let (cc_tx, mut cc_rx) = tokio::sync::mpsc::channel::<GatewayInformationResult>(1);
-    let fc = FabricClientBuilder::new()
+    let fc = FabricClient::builder()
         .with_on_service_notification(move |notification| {
             sn_tx
                 .blocking_send(notification.clone())

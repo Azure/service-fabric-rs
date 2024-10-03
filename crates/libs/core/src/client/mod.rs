@@ -5,9 +5,9 @@
 
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use mssf_com::FabricClient::{
-    FabricCreateLocalClient3, FabricCreateLocalClient4, IFabricClientConnectionEventHandler,
-    IFabricPropertyManagementClient2, IFabricQueryClient10, IFabricServiceManagementClient6,
-    IFabricServiceNotificationEventHandler,
+    FabricCreateClient3, FabricCreateLocalClient3, FabricCreateLocalClient4,
+    IFabricClientConnectionEventHandler, IFabricPropertyManagementClient2, IFabricQueryClient10,
+    IFabricServiceManagementClient6, IFabricServiceNotificationEventHandler,
 };
 use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
@@ -33,21 +33,44 @@ mod tests;
 
 /// Creates FabricClient com object using SF com API.
 fn create_local_client_internal<T: Interface>(
+    connection_strings: Option<&Vec<crate::HSTRING>>,
     service_notification_handler: Option<&IFabricServiceNotificationEventHandler>,
     client_connection_handler: Option<&IFabricClientConnectionEventHandler>,
     client_role: Option<ClientRole>,
 ) -> T {
     let role = client_role.unwrap_or(ClientRole::Unknown);
+
+    // create raw conn str ptrs.
+    let connection_strings_ptrs = connection_strings.map(|addrs| {
+        addrs
+            .iter()
+            .map(|s| crate::PCWSTR(s.as_ptr()))
+            .collect::<Vec<_>>()
+    });
     let raw = if role == ClientRole::Unknown {
         // unknown role should use the SF function without role param.
-        unsafe {
-            FabricCreateLocalClient3(
-                service_notification_handler,
-                client_connection_handler,
-                &T::IID,
-            )
+        match connection_strings_ptrs {
+            Some(addrs) => unsafe {
+                FabricCreateClient3(
+                    &addrs,
+                    service_notification_handler,
+                    client_connection_handler,
+                    &T::IID,
+                )
+            },
+            None => unsafe {
+                FabricCreateLocalClient3(
+                    service_notification_handler,
+                    client_connection_handler,
+                    &T::IID,
+                )
+            },
         }
     } else {
+        assert!(
+            !connection_strings.is_some(),
+            "Local ClientRole cannot be used for connecting to remote cluster."
+        );
         unsafe {
             FabricCreateLocalClient4(
                 service_notification_handler,
@@ -58,6 +81,7 @@ fn create_local_client_internal<T: Interface>(
         }
     }
     .expect("failed to create fabric client");
+
     // if params are right, client should be created. There is no network call involved during obj creation.
     unsafe { T::from_raw(raw) }
 }
@@ -67,6 +91,7 @@ pub struct FabricClientBuilder {
     sn_handler: Option<IFabricServiceNotificationEventHandler>,
     cc_handler: Option<LambdaClientConnectionNotificationHandler>,
     client_role: ClientRole,
+    connection_strings: Option<Vec<crate::HSTRING>>,
 }
 
 impl Default for FabricClientBuilder {
@@ -82,6 +107,7 @@ impl FabricClientBuilder {
             sn_handler: None,
             cc_handler: None,
             client_role: ClientRole::Unknown,
+            connection_strings: None,
         }
     }
 
@@ -135,9 +161,18 @@ impl FabricClientBuilder {
         self
     }
 
-    /// Sets the role of the client connection. Default is User if not set.
+    /// Sets the role of the client connection. Default is Unknown if not set.
+    /// None Unknown role cannot be used for remote client connection.
+    /// If connection strings are set, only Unknown is allowed.
     pub fn with_client_role(mut self, role: ClientRole) -> Self {
         self.client_role = role;
+        self
+    }
+
+    /// Sets the client connection strings.
+    /// Example value: localhost:19000
+    pub fn with_connection_strings(mut self, addrs: Vec<crate::HSTRING>) -> Self {
+        self.connection_strings = Some(addrs);
         self
     }
 
@@ -156,6 +191,7 @@ impl FabricClientBuilder {
             .cc_handler
             .map(ClientConnectionEventHandlerBridge::new_com);
         create_local_client_internal::<T>(
+            self.connection_strings.as_ref(),
             self.sn_handler.as_ref(),
             cc_handler.as_ref(),
             Some(self.client_role),

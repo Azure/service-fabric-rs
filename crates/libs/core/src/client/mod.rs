@@ -162,7 +162,7 @@ impl FabricClientBuilder {
     }
 
     /// Sets the role of the client connection. Default is Unknown if not set.
-    /// None Unknown role cannot be used for remote client connection.
+    /// Unknown role cannot be used for remote client connection.
     /// If connection strings are set, only Unknown is allowed.
     pub fn with_client_role(mut self, role: ClientRole) -> Self {
         self.client_role = role;

@@ -47,37 +47,40 @@ fn create_local_client_internal<T: Interface>(
             .map(|s| crate::PCWSTR(s.as_ptr()))
             .collect::<Vec<_>>()
     });
-    let raw = if role == ClientRole::Unknown {
-        // unknown role should use the SF function without role param.
-        match connection_strings_ptrs {
-            Some(addrs) => unsafe {
-                FabricCreateClient3(
-                    &addrs,
-                    service_notification_handler,
-                    client_connection_handler,
-                    &T::IID,
-                )
-            },
-            None => unsafe {
-                FabricCreateLocalClient3(
-                    service_notification_handler,
-                    client_connection_handler,
-                    &T::IID,
-                )
-            },
-        }
-    } else {
-        assert!(
-            !connection_strings.is_some(),
-            "Local ClientRole cannot be used for connecting to remote cluster."
-        );
-        unsafe {
-            FabricCreateLocalClient4(
+
+    let raw = match connection_strings_ptrs {
+        Some(addrs) => unsafe {
+            assert!(
+                role == ClientRole::Unknown,
+                "ClientRole is for local client only and cannot be used for connecting to remote cluster."
+            );
+            FabricCreateClient3(
+                &addrs,
                 service_notification_handler,
                 client_connection_handler,
-                role.into(),
                 &T::IID,
             )
+        },
+        None => {
+            if role == ClientRole::Unknown {
+                // unknown role should use the SF function without role param.
+                unsafe {
+                    FabricCreateLocalClient3(
+                        service_notification_handler,
+                        client_connection_handler,
+                        &T::IID,
+                    )
+                }
+            } else {
+                unsafe {
+                    FabricCreateLocalClient4(
+                        service_notification_handler,
+                        client_connection_handler,
+                        role.into(),
+                        &T::IID,
+                    )
+                }
+            }
         }
     }
     .expect("failed to create fabric client");

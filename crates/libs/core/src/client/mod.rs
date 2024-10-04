@@ -97,7 +97,8 @@ impl FabricClientBuilder {
     /// Configures the service notification handler.
     /// See details in `register_service_notification_filter` API.
     /// If the service endpoint change matches the registered filter,
-    /// this notification is invoked
+    /// this notification is invoked.
+    ///
     pub fn with_on_service_notification<T>(self, f: T) -> Self
     where
         T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,

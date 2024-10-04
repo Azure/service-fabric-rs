@@ -217,7 +217,11 @@ impl ServiceManagementClient {
     /// pass null for the ResolvedServicePartition argument during resolution.
     /// This will always return the endpoints in the client cache updated by the latest notification.
     /// The notification mechanism itself will keep the client cache updated when service endpoints change.
-    /// TODO: explore the relation to IFabricServiceNotification.
+    ///
+    /// Notification callback is delivered on `FabricClientBuilder::with_on_service_notification` as well.
+    /// The callback contains minimum info only as a signal, user can call resolve_service_partition()
+    /// again to retrieve full info from the cache.
+    ///
     /// This is observed to have 1~4 secs delay compared with brute force complaint based resolve.
     pub async fn register_service_notification_filter(
         &self,

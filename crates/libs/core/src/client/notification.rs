@@ -13,6 +13,7 @@ use mssf_com::{
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
+    strings::HSTRINGWrap,
     types::ServicePartitionInformation,
 };
 
@@ -25,9 +26,12 @@ pub trait ServiceNotificationEventHandler: 'static {
 }
 
 /// Content of the service notification callback.
+/// Remarks:
+/// If endpoint list is empty, the service is removed.
 #[derive(Debug, Clone)]
 pub struct ServiceNotification {
-    pub partition_info: ServicePartitionInformation,
+    pub service_name: crate::HSTRING,
+    pub partition_info: Option<ServicePartitionInformation>,
     pub partition_id: crate::GUID,
     pub endpoints: ServiceEndpointList,
     com: IFabricServiceNotification,
@@ -35,9 +39,18 @@ pub struct ServiceNotification {
 
 impl ServiceNotification {
     fn from_com(com: IFabricServiceNotification) -> Self {
+        // SF guarantees this is not null.
         let raw = unsafe { com.get_Notification().as_ref().unwrap() };
         Self {
-            partition_info: unsafe { raw.PartitionInfo.as_ref().unwrap().into() },
+            service_name: HSTRINGWrap::from(crate::PCWSTR(raw.ServiceName.0)).into(),
+            partition_info: unsafe {
+                // It is possible for partition info to be null,
+                // that is why we make the field as an option.
+                // See: https://github.com/microsoft/service-fabric/blob/93545a62e8f6c2407bd538c0f092b33419f77c30/src/prod/src/client/ServiceNotificationResult.cpp#L120
+                raw.PartitionInfo
+                    .as_ref()
+                    .map(ServicePartitionInformation::from)
+            },
             partition_id: raw.PartitionId,
             endpoints: ServiceEndpointList { com: com.clone() },
             com,

@@ -135,7 +135,8 @@ async fn test_fabric_client() {
             // This is not invoked in this test. FabricClient does not invoke this on drop.
             panic!("client disconnected");
         })
-        .with_client_role(mssf_core::types::ClientRole::User)
+        .with_client_role(mssf_core::types::ClientRole::Unknown)
+        .with_connection_strings(vec![HSTRING::from("localhost:19000")])
         .build();
 
     let ec = EchoTestClient::new(fc.clone());

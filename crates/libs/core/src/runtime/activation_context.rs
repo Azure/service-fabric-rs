@@ -13,7 +13,10 @@ pub struct CodePackageActivationContext {
     com_impl: IFabricCodePackageActivationContext6,
 }
 
-/// Info from the context
+/// Code package information is propagated here from the ActivationContext
+/// provided when the service is started. This information can be used to setup
+/// log directories and other resources needed which require information
+/// about the code package and the local runtime environment.
 #[derive(Debug, Clone)]
 pub struct CodePackageInfo {
     pub context_id: HSTRING,

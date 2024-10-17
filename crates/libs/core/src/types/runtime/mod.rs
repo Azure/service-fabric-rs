@@ -16,7 +16,6 @@ pub struct EndpointResourceDesc {
     pub r#type: HSTRING,
     pub port: u32,
     pub certificate_name: HSTRING,
-    //pub Reserved: *mut ::core::ffi::c_void,
 }
 
 impl From<&FABRIC_ENDPOINT_RESOURCE_DESCRIPTION> for EndpointResourceDesc {

@@ -15,6 +15,7 @@ use mssf_core::{
     },
     error::FabricErrorCode,
     types::{
+        PartitionLoadInformation, PartitionLoadInformationQueryDescription,
         QueryServiceReplicaStatus, ReplicaRole, RestartReplicaDescription,
         ServiceNotificationFilterDescription, ServiceNotificationFilterFlags, ServicePartition,
         ServicePartitionInformation, ServicePartitionQueryDescription, ServicePartitionStatus,
@@ -66,6 +67,19 @@ impl TestClient {
             _ => panic!("not singleton"),
         };
         Ok((stateful, single))
+    }
+
+    async fn get_partition_loads(
+        &self,
+        partition_id: GUID,
+    ) -> mssf_core::Result<PartitionLoadInformation> {
+        let qc = self.fc.get_query_manager();
+        let desc = PartitionLoadInformationQueryDescription { partition_id };
+        let partition_load_info = qc
+            .get_partition_load_information(&desc, self.timeout, None)
+            .await?;
+
+        Ok(partition_load_info)
     }
 
     // primary replica is returned first.
@@ -349,4 +363,17 @@ async fn test_partition_info() {
             count += 1;
         }
     }
+
+    // Test get partition load
+    let partition_load_info = tc.get_partition_loads(single.id).await.unwrap();
+    let primary_loads = partition_load_info
+        .primary_load_metric_reports
+        .iter()
+        .collect::<Vec<_>>();
+    println!("Primary metric loads: {:?}", primary_loads);
+    let secondary_loads = partition_load_info
+        .secondary_load_metric_reports
+        .iter()
+        .collect::<Vec<_>>();
+    println!("Secondary metric loads: {:?}", secondary_loads);
 }

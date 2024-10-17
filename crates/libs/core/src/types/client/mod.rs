@@ -3,8 +3,6 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-// This mod contains fabric client related types
-mod partition;
 use mssf_com::FabricTypes::{
     FABRIC_CLIENT_ROLE, FABRIC_CLIENT_ROLE_ADMIN, FABRIC_CLIENT_ROLE_UNKNOWN,
     FABRIC_CLIENT_ROLE_USER, FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
@@ -12,12 +10,16 @@ use mssf_com::FabricTypes::{
     FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS_NONE,
     FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS_PRIMARY_ONLY, FABRIC_URI,
 };
+
+// This mod contains fabric client related types
+mod partition;
 pub use partition::*;
 mod node;
 pub use node::*;
 mod replica;
 use crate::HSTRING;
 pub use replica::*;
+mod metrics;
 
 // FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS
 bitflags::bitflags! {

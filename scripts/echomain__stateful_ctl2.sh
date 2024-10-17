@@ -2,7 +2,7 @@
 
 sfctl application upload --path build/echoapp_root_stateful2
 
-sfctl application provision --application-type-build-path echoapp_root_stateful
+sfctl application provision --application-type-build-path echoapp_root_stateful2
 
 sfctl application create --app-name fabric:/StatefulEchoApp --app-type StatefulEchoApp --app-version 0.0.1
 

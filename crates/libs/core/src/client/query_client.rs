@@ -7,12 +7,14 @@ use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{
     FabricClient::{
-        IFabricGetNodeListResult2, IFabricGetPartitionListResult2, IFabricGetReplicaListResult2,
+        IFabricGetNodeListResult2, IFabricGetPartitionListResult2,
+        IFabricGetPartitionLoadInformationResult, IFabricGetReplicaListResult2,
         IFabricQueryClient10,
     },
     FabricTypes::{
         FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION_EX1,
         FABRIC_NODE_QUERY_DESCRIPTION_EX2, FABRIC_NODE_QUERY_DESCRIPTION_EX3,
+        FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
         FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION, FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
     },
 };
@@ -21,8 +23,9 @@ use crate::{
     strings::get_pcwstr_from_opt,
     sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2},
     types::{
-        NodeList, NodeQueryDescription, ServicePartitionList, ServicePartitionQueryDescription,
-        ServiceReplicaList, ServiceReplicaQueryDescription,
+        NodeList, NodeQueryDescription, PartitionLoadInformation,
+        PartitionLoadInformationQueryDescription, ServicePartitionList,
+        ServicePartitionQueryDescription, ServiceReplicaList, ServiceReplicaQueryDescription,
     },
 };
 
@@ -83,6 +86,23 @@ impl QueryClient {
                 com1.BeginGetReplicaList(desc, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndGetReplicaList2(ctx) },
+            cancellation_token,
+        )
+    }
+
+    fn get_partition_load_information_internal(
+        &self,
+        desc: &FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<CancellationToken>,
+    ) -> FabricReceiver2<crate::Result<IFabricGetPartitionLoadInformationResult>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy2(
+            move |callback| unsafe {
+                com1.BeginGetPartitionLoadInformation(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetPartitionLoadInformation(ctx) },
             cancellation_token,
         )
     }
@@ -160,5 +180,20 @@ impl QueryClient {
         }
         .await??;
         Ok(ServiceReplicaList::new(com))
+    }
+
+    pub async fn get_partition_load_information(
+        &self,
+        desc: &PartitionLoadInformationQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<CancellationToken>,
+    ) -> crate::Result<PartitionLoadInformation> {
+        let com = {
+            let raw: FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION = desc.into();
+            let timeout_ms = timeout.as_micros() as u32;
+            self.get_partition_load_information_internal(&raw, timeout_ms, cancellation_token)
+        }
+        .await??;
+        Ok(PartitionLoadInformation::new(com))
     }
 }

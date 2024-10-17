@@ -6,7 +6,7 @@
 use crate::statefulstore::Factory;
 use mssf_core::runtime::{
     executor::{DefaultExecutor, Executor},
-    ActivationContext,
+    CodePackageActivationContext,
 };
 use mssf_core::HSTRING;
 use tracing::info;
@@ -25,7 +25,7 @@ fn main() -> mssf_core::Result<()> {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let e = DefaultExecutor::new(rt.handle().clone());
     let runtime = mssf_core::runtime::Runtime::create(e.clone()).unwrap();
-    let actctx = ActivationContext::create().unwrap();
+    let actctx = CodePackageActivationContext::create().unwrap();
     let endpoint = actctx
         .get_endpoint_resource(&HSTRING::from("KvReplicatorEndpoint"))
         .unwrap();

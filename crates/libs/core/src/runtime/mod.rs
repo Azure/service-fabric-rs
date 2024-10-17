@@ -3,19 +3,11 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{Error, Interface, HSTRING, PCWSTR};
-use mssf_com::{
-    FabricRuntime::{
-        FabricCreateRuntime, FabricGetActivationContext, IFabricCodePackageActivationContext,
-        IFabricRuntime,
-    },
-    FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION,
-};
+use crate::Interface;
+use mssf_com::FabricRuntime::{FabricCreateRuntime, FabricGetActivationContext, IFabricRuntime};
 
 #[cfg(feature = "tokio_async")]
 use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
-
-use self::config::ConfigurationPackage;
 
 #[cfg(feature = "tokio_async")]
 pub use self::runtime_wrapper::Runtime;
@@ -44,6 +36,9 @@ pub mod store;
 pub mod store_proxy;
 pub mod store_types;
 
+mod activation_context;
+pub use activation_context::{CodePackageActivationContext, CodePackageInfo};
+
 // creates fabric runtime
 pub fn create_com_runtime() -> crate::Result<IFabricRuntime> {
     let rawruntime = unsafe { FabricCreateRuntime(&IFabricRuntime::IID)? };
@@ -51,76 +46,9 @@ pub fn create_com_runtime() -> crate::Result<IFabricRuntime> {
     Ok(runtime)
 }
 
-pub fn get_com_activation_context() -> crate::Result<IFabricCodePackageActivationContext> {
-    let raw_activation_ctx =
-        unsafe { FabricGetActivationContext(&IFabricCodePackageActivationContext::IID)? };
+pub fn get_com_activation_context<T: Interface>() -> crate::Result<T> {
+    let raw_activation_ctx = unsafe { FabricGetActivationContext(&T::IID)? };
 
-    let activation_ctx =
-        unsafe { IFabricCodePackageActivationContext::from_raw(raw_activation_ctx) };
+    let activation_ctx = unsafe { T::from_raw(raw_activation_ctx) };
     Ok(activation_ctx)
-}
-
-#[derive(Debug)]
-pub struct EndpointResourceDesc {
-    pub name: HSTRING,
-    pub protocol: HSTRING,
-    pub r#type: HSTRING,
-    pub port: u32,
-    pub certificate_name: HSTRING,
-    //pub Reserved: *mut ::core::ffi::c_void,
-}
-
-impl From<&FABRIC_ENDPOINT_RESOURCE_DESCRIPTION> for EndpointResourceDesc {
-    fn from(e: &FABRIC_ENDPOINT_RESOURCE_DESCRIPTION) -> Self {
-        EndpointResourceDesc {
-            name: HSTRING::from_wide(unsafe { e.Name.as_wide() }).unwrap(),
-            protocol: HSTRING::from_wide(unsafe { e.Protocol.as_wide() }).unwrap(),
-            r#type: HSTRING::from_wide(unsafe { e.Type.as_wide() }).unwrap(),
-            port: e.Port,
-            certificate_name: HSTRING::from_wide(unsafe { e.CertificateName.as_wide() }).unwrap(),
-        }
-    }
-}
-
-pub struct ActivationContext {
-    com_impl: IFabricCodePackageActivationContext,
-}
-
-impl ActivationContext {
-    pub fn create() -> Result<ActivationContext, Error> {
-        let com = get_com_activation_context()?;
-        Ok(Self::from(com))
-    }
-
-    pub fn get_endpoint_resource(
-        &self,
-        serviceendpointresourcename: &HSTRING,
-    ) -> crate::Result<EndpointResourceDesc> {
-        let rs = unsafe {
-            self.com_impl.GetServiceEndpointResource(PCWSTR::from_raw(
-                serviceendpointresourcename.as_ptr(),
-            ))?
-        };
-        let res_ref = unsafe { rs.as_ref().unwrap() };
-        let desc = EndpointResourceDesc::from(res_ref);
-        Ok(desc)
-    }
-
-    pub fn get_configuration_package(
-        &self,
-        configpackagename: &HSTRING,
-    ) -> crate::Result<ConfigurationPackage> {
-        let c = unsafe { self.com_impl.GetConfigurationPackage(configpackagename) }?;
-        Ok(ConfigurationPackage::from_com(c))
-    }
-
-    pub fn get_com(&self) -> IFabricCodePackageActivationContext {
-        self.com_impl.clone()
-    }
-}
-
-impl From<IFabricCodePackageActivationContext> for ActivationContext {
-    fn from(value: IFabricCodePackageActivationContext) -> Self {
-        ActivationContext { com_impl: value }
-    }
 }

@@ -10,7 +10,7 @@ use mssf_core::conf::{Config, FabricConfigSource};
 use mssf_core::debug::wait_for_debugger;
 use mssf_core::runtime::executor::{DefaultExecutor, Executor};
 use mssf_core::runtime::node_context::NodeContext;
-use mssf_core::runtime::ActivationContext;
+use mssf_core::runtime::CodePackageActivationContext;
 use mssf_core::HSTRING;
 use tracing::{error, info};
 
@@ -39,10 +39,13 @@ fn main() -> mssf_core::Result<()> {
     if has_debug_arg() {
         wait_for_debugger();
     }
-    let actctx = ActivationContext::create().inspect_err(|e| {
+    let actctx = CodePackageActivationContext::create().inspect_err(|e| {
         error!("Fail to create activation context: {e}");
     })?;
     validate_configs(&actctx);
+
+    let code_info = actctx.get_code_package_info();
+    info!("code package info: {:?}", code_info);
 
     // get listening port
     let endpoint = actctx
@@ -70,7 +73,7 @@ fn main() -> mssf_core::Result<()> {
 }
 
 // validates the configs in the config package have the right values.
-fn validate_configs(actctx: &ActivationContext) {
+fn validate_configs(actctx: &CodePackageActivationContext) {
     // loop and print all configs
     let config = actctx
         .get_configuration_package(&HSTRING::from("Config"))

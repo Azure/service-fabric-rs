@@ -10,11 +10,11 @@
 //!
 //! This sample demonstrates it is possible to use the library with default-features = false and ensures that that scenario remains compiling as PRs go into the repository.
 //!
-use mssf_core::runtime::ActivationContext;
+use mssf_core::runtime::CodePackageActivationContext;
 #[no_mangle]
 fn test_fn() {
     // Make sure we link something
     //
-    let my_ctx = ActivationContext::create();
+    let my_ctx = CodePackageActivationContext::create();
     my_ctx.unwrap();
 }

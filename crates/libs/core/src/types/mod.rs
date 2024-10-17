@@ -8,3 +8,5 @@ mod common;
 pub use common::*;
 mod client;
 pub use client::*;
+mod runtime;
+pub use runtime::EndpointResourceDesc;

@@ -85,7 +85,7 @@ impl EchoTestClient {
                 _ => panic!("not stateless"),
             }),
             // replica might be restarting
-            None => Err(FabricErrorCode::OperationFailed.into()),
+            None => Err(FabricErrorCode::E_FAIL.into()),
         }
     }
 

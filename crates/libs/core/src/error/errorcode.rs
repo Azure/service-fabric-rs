@@ -3,33 +3,76 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use mssf_com::FabricTypes::FABRIC_ERROR_CODE;
 use windows_core::HRESULT;
 
 use super::FabricError;
 
+// Common HRESULT codes that SF reuses from windows.
+const S_OK: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::S_OK.0);
+const E_ABORT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::E_ABORT.0);
+const E_ACCESSDENIED: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(windows::Win32::Foundation::E_ACCESSDENIED.0);
+const E_FAIL: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::E_FAIL.0);
+const E_HANDLE: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::E_HANDLE.0);
+const E_INVALIDARG: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(windows::Win32::Foundation::E_INVALIDARG.0);
+const E_NOINTERFACE: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(windows::Win32::Foundation::E_NOINTERFACE.0);
+const E_NOTIMPL: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::E_NOTIMPL.0);
+const E_OUTOFMEMORY: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(windows::Win32::Foundation::E_OUTOFMEMORY.0);
+const E_POINTER: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::E_POINTER.0);
+const E_UNEXPECTED: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(windows::Win32::Foundation::E_UNEXPECTED.0);
+
+// HRESULT codes from win32 errors that SF resuses.
+const E_FILE_EXISTS: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(HRESULT::from_win32(windows::Win32::Foundation::ERROR_FILE_EXISTS.0).0);
+const E_DIR_NOT_EMPTY: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(HRESULT::from_win32(windows::Win32::Foundation::ERROR_DIR_NOT_EMPTY.0).0);
+const E_NOT_FOUND: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(HRESULT::from_win32(windows::Win32::Foundation::ERROR_NOT_FOUND.0).0);
+
 /// Hepler macro to define fabric error code.
 /// SF uses win32 hresult code together with the custom fabric error code.
-/// This enum helps passing errors between Rust and SF API, and is easy to
-/// debug.
+/// This enum helps passing errors between Rust and SF API, and is easy to debug.
+/// code1 list are windows errors, lit is a dummy string literal, code list are fabric errors.
+/// The macro defines windows errors first, then followed by fabric errors.
+// Need to match cs impl:
+// https://github.com/microsoft/service-fabric/blob/19791eb97c8d876517daa030e5a403f4bcad25b1/src/prod/src/managed/Api/src/System/Fabric/Interop/NativeTypes.cs#L57
 macro_rules! define_fabric_error_code{
-    ($( $code:ident ),*) =>{
+    ($( $code1:ident ),* ,($lit:literal), $( $code:ident ),*) =>{
         #[allow(non_camel_case_types)]
         #[derive(Debug, Clone)]
+        #[repr(i32)]
         pub enum FabricErrorCode {
-            // SF error codes reusing windows errors.
-            Success = windows::Win32::Foundation::S_OK.0 as isize,
-            InvalidArgument = windows::Win32::Foundation::E_INVALIDARG.0 as isize,
-            AccessDenied = windows::Win32::Foundation::E_ACCESSDENIED.0 as isize,
-            ArgumentNull = windows::Win32::Foundation::E_POINTER.0 as isize,
-            OperationCanceled = windows::Win32::Foundation::E_ABORT.0 as isize,
-            OperationFailed = windows::Win32::Foundation::E_FAIL.0 as isize,
-            OutOfMemory = windows::Win32::Foundation::E_OUTOFMEMORY.0 as isize,
-            NotImplemented = windows::Win32::Foundation::E_NOTIMPL.0 as isize,
+            // Define windows error codes for SF
+            $(
+                $code1 = $code1 .0,
+            )*
 
             // defines SF error codes.
             $(
-                $code = mssf_com::ServiceFabric::FabricTypes::$code .0 as isize,
+                $code = mssf_com::ServiceFabric::FabricTypes::$code .0,
             )*
+        }
+
+        impl TryFrom<FABRIC_ERROR_CODE> for FabricErrorCode {
+            type Error = &'static str;
+
+            fn try_from(value: FABRIC_ERROR_CODE) -> Result<Self, Self::Error> {
+                match value {
+                    $(
+                        $code1 => Ok(Self::$code1),
+                    )*
+                    // SF code converts.
+                    $(
+                        mssf_com::ServiceFabric::FabricTypes::$code => Ok(Self::$code),
+                    )*
+                    _ => Err("Unknown FABRIC_ERROR_CODE")
+                }
+            }
         }
     }
 }
@@ -53,9 +96,30 @@ impl From<FabricErrorCode> for crate::Error {
     }
 }
 
+impl core::fmt::Display for FabricErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        core::write!(f, "{:?}", self) // use the debug string
+    }
+}
+
 // This defines all the fabric error codes.
 // list copied from https://github.com/microsoft/service-fabric/blob/19791eb97c8d876517daa030e5a403f4bcad25b1/src/prod/src/idl/public/FabricTypes.idl#L60C18-L60C35
 define_fabric_error_code!(
+    S_OK,
+    E_ABORT,
+    E_ACCESSDENIED,
+    E_FAIL,
+    E_HANDLE,
+    E_INVALIDARG,
+    E_NOINTERFACE,
+    E_NOTIMPL,
+    E_OUTOFMEMORY,
+    E_POINTER,
+    E_UNEXPECTED,
+    E_FILE_EXISTS,
+    E_DIR_NOT_EMPTY,
+    E_NOT_FOUND,
+    ("Literal for breaking up first error chunk and the fabric errors"),
     FABRIC_E_COMMUNICATION_ERROR,
     FABRIC_E_INVALID_ADDRESS,
     FABRIC_E_INVALID_NAME_URI,

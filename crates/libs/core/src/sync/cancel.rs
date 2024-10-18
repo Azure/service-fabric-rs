@@ -110,7 +110,7 @@ where
             Some(x) => Ok(x),
             None => {
                 if !self.IsCompleted().as_bool() {
-                    return Err(FabricErrorCode::AsyncOperationNotComplete.into());
+                    return Err(FabricErrorCode::FABRIC_E_OPERATION_NOT_COMPLETE.into());
                 }
                 if self.token.is_cancelled() {
                     Err(FabricErrorCode::OperationCanceled.into())

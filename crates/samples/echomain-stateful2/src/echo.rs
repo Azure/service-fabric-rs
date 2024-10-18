@@ -67,7 +67,7 @@ async fn echo_loop(listener: TcpListener, token: CancellationToken) -> Result<()
     }
 }
 
-// report load for the app via SF partition api periodically
+/// Report load for the app via SF partition api periodically
 pub async fn report_load_loop(partition: StatefulServicePartition, token: CancellationToken) {
     let mut value = 0;
     let metric_name = HSTRING::from("MyLoad");

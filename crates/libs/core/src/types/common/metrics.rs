@@ -3,12 +3,13 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-// mod for handling fabric metrics
+//! Module for handling fabric metrics
+
 use crate::{HSTRING, PCWSTR};
 use mssf_com::FabricTypes::FABRIC_LOAD_METRIC;
 use std::marker::PhantomData;
 
-// FABRIC_LOAD_METRIC
+/// FABRIC_LOAD_METRIC
 pub struct LoadMetric {
     // TODO: support static string without heap allocation
     pub name: HSTRING,
@@ -32,8 +33,7 @@ impl From<&LoadMetric> for FABRIC_LOAD_METRIC {
     }
 }
 
-/// Temporary type to hold the buffer of raw metrics
-/// passed into SF api.
+/// Temporary type to hold the buffer of raw metrics passed into Service Fabric API call.
 pub struct LoadMetricListRef<'a> {
     metrics: Vec<FABRIC_LOAD_METRIC>,
     owner: PhantomData<&'a [LoadMetric]>,

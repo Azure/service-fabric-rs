@@ -3,11 +3,11 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{GUID, HSTRING};
 use mssf_com::{
-    FabricClient::IFabricGetPartitionListResult2,
+    FabricClient::{IFabricGetPartitionListResult2, IFabricGetPartitionLoadInformationResult},
     FabricTypes::{
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS, FABRIC_QUERY_SERVICE_PARTITION_STATUS_DELETING,
+        FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION, FABRIC_QUERY_SERVICE_PARTITION_STATUS,
+        FABRIC_QUERY_SERVICE_PARTITION_STATUS_DELETING,
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_INVALID,
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_IN_QUORUM_LOSS,
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_NOT_READY,
@@ -19,11 +19,14 @@ use mssf_com::{
         FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM, FABRIC_URI,
     },
 };
+use windows_core::{GUID, HSTRING};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
     types::{HealthState, ServicePartitionInformation},
 };
+
+use super::metrics::{PrimaryLoadMetricReportList, SecondaryLoadMetricReportList};
 
 // Partition related types
 // FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION
@@ -178,6 +181,56 @@ impl From<&FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM> for StatelessSe
             instance_count: value.InstanceCount,
             health_state: (&value.HealthState).into(),
             partition_status: (&value.PartitionStatus).into(),
+        }
+    }
+}
+
+/// Wrapper around FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION
+pub struct PartitionLoadInformationQueryDescription {
+    pub partition_id: GUID,
+}
+
+impl From<&PartitionLoadInformationQueryDescription>
+    for FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION
+{
+    fn from(value: &PartitionLoadInformationQueryDescription) -> Self {
+        Self {
+            PartitionId: value.partition_id,
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+/// Wrapper around FABRIC_PARTITION_LOAD_INFORMATION
+///
+/// Note that the COM object IFabricGetPartitionLoadInformationResult passed in from the constructor is
+/// the owner of this structure, and therefore the primary load metric reports and the secondary load
+/// metric reports must be retreived from the owner COM object and cannot be owned by this wrapper structure.
+/// Therefore, we created PrimaryLoadMetricReportList and SecondaryLoadMetricReportList to represent the
+/// load metric reports for primary and secondary respectively, instead of using a same wrapper type for
+///  FABRIC_LOAD_METRIC_REPORT_LIST.
+pub struct PartitionLoadInformation {
+    pub partition_id: GUID,
+    pub primary_load_metric_reports: PrimaryLoadMetricReportList,
+    pub secondary_load_metric_reports: SecondaryLoadMetricReportList,
+    // TODO: implement Reserved
+}
+
+impl PartitionLoadInformation {
+    pub fn new(com: IFabricGetPartitionLoadInformationResult) -> Self {
+        let partition_id = unsafe {
+            com.get_PartitionLoadInformation()
+                .as_ref()
+                .unwrap()
+                .PartitionId
+        };
+        let primary_load_metric_reports = PrimaryLoadMetricReportList::new(com.clone());
+        let secondary_load_metric_reports = SecondaryLoadMetricReportList::new(com.clone());
+
+        Self {
+            partition_id,
+            primary_load_metric_reports,
+            secondary_load_metric_reports,
         }
     }
 }

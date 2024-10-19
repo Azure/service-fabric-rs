@@ -101,7 +101,7 @@ impl ConfigurationPackage {
                 res.owner = Some(self.com.clone());
                 Ok(res)
             }
-            None => Err(FabricErrorCode::ArgumentNull.into()),
+            None => Err(FabricErrorCode::E_POINTER.into()),
         }
     }
 

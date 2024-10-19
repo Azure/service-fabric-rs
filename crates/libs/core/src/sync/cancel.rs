@@ -110,10 +110,10 @@ where
             Some(x) => Ok(x),
             None => {
                 if !self.IsCompleted().as_bool() {
-                    return Err(FabricErrorCode::AsyncOperationNotComplete.into());
+                    return Err(FabricErrorCode::FABRIC_E_OPERATION_NOT_COMPLETE.into());
                 }
                 if self.token.is_cancelled() {
-                    Err(FabricErrorCode::OperationCanceled.into())
+                    Err(FabricErrorCode::E_ABORT.into())
                 } else {
                     panic!("content is consumed twice.")
                 }
@@ -238,7 +238,7 @@ impl<T> Future for FabricReceiver2<T> {
                     if let Err(e) = self.cancel_inner_ctx() {
                         Poll::Ready(Err(e))
                     } else {
-                        Poll::Ready(Err(FabricErrorCode::OperationCanceled.into()))
+                        Poll::Ready(Err(FabricErrorCode::E_ABORT.into()))
                     }
                 } else {
                     panic!("sender dropped without sending")
@@ -437,10 +437,7 @@ mod test {
             let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
             token.cancel();
             std::mem::drop(tx);
-            assert_eq!(
-                rx.await.unwrap_err(),
-                FabricErrorCode::OperationCanceled.into()
-            );
+            assert_eq!(rx.await.unwrap_err(), FabricErrorCode::E_ABORT.into());
         }
     }
 
@@ -490,7 +487,7 @@ mod test {
                     select! {
                         _ = t.cancelled() => {
                             // The token was cancelled
-                            Err(FabricErrorCode::OperationCanceled.into())
+                            Err(FabricErrorCode::E_ABORT.into())
                         }
                         _ = tokio::time::sleep(delay) => {
                             Ok(self.get_data())
@@ -519,7 +516,7 @@ mod test {
                     select! {
                         _ = t.cancelled() => {
                             // The token was cancelled
-                            Err(FabricErrorCode::OperationCanceled.into())
+                            Err(FabricErrorCode::E_ABORT.into())
                         }
                         _ = tokio::time::sleep(delay) => {
                             Ok(self.set_data(input))
@@ -701,7 +698,7 @@ mod test {
             let fu = obj.get_data_delay(Duration::from_secs(5), false, Some(token.clone()));
             token.cancel();
             let err = fu.await.unwrap_err();
-            assert_eq!(err, FabricErrorCode::OperationCanceled.into());
+            assert_eq!(err, FabricErrorCode::E_ABORT.into());
         }
         // get with cancel but ignore cancel from inner impl.
         // Because the cancel is ignored by inner implementation, success will be returned.
@@ -724,7 +721,7 @@ mod test {
             );
             token.cancel();
             let err = fu.await.unwrap_err();
-            assert_eq!(err, FabricErrorCode::OperationCanceled.into());
+            assert_eq!(err, FabricErrorCode::E_ABORT.into());
         }
         // because of cancel, data should not be changed.
         {

@@ -104,7 +104,7 @@ impl TestClient {
             .collect::<Vec<_>>();
         if replicas.len() < 3 {
             // replica are not ready.
-            return Err(FabricErrorCode::OperationFailed.into());
+            return Err(FabricErrorCode::E_FAIL.into());
         }
         let stateful = replicas
             .iter()
@@ -156,14 +156,14 @@ impl TestClient {
         let endpoints = partition.get_endpoint_list().iter().collect::<Vec<_>>();
         if endpoints.len() < 3 {
             // not available yet.
-            return Err(FabricErrorCode::OperationFailed.into());
+            return Err(FabricErrorCode::E_FAIL.into());
         }
         let primary = endpoints
             .iter()
             .find(|r| r.role == ServiceEndpointRole::StatefulPrimary);
         if primary.is_none() {
             // primary not available yet.
-            return Err(FabricErrorCode::OperationFailed.into());
+            return Err(FabricErrorCode::E_FAIL.into());
         }
         let secondary = endpoints
             .iter()

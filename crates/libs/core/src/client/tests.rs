@@ -73,7 +73,7 @@ async fn test_fabric_client() {
         let list = qc.get_node_list(&desc, timeout, Some(token.clone()));
         token.cancel();
         let err = list.await.expect_err("request should be cancelled");
-        assert_eq!(err, FabricErrorCode::OperationCanceled.into());
+        assert_eq!(err, FabricErrorCode::E_ABORT.into());
     }
 
     let smgr = c.get_service_manager();

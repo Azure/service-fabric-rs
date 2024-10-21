@@ -420,15 +420,7 @@ impl PartialOrd for ResolvedServicePartition {
     /// a is newer and up to date.
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         match self.compare_version(other) {
-            Ok(i) => {
-                if i == 0 {
-                    Some(std::cmp::Ordering::Equal)
-                } else if i > 0 {
-                    Some(std::cmp::Ordering::Greater)
-                } else {
-                    Some(std::cmp::Ordering::Less)
-                }
-            }
+            Ok(i) => Some(i.cmp(&0)),
             // If you compare version of different service you get error
             Err(_) => None,
         }

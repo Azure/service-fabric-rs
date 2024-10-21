@@ -405,6 +405,36 @@ impl ResolvedServicePartition {
     }
 }
 
+impl PartialEq for ResolvedServicePartition {
+    fn eq(&self, other: &Self) -> bool {
+        match self.compare_version(other) {
+            Ok(i) => i == 0,
+            Err(_) => false, // error comparing different services
+        }
+    }
+}
+
+impl PartialOrd for ResolvedServicePartition {
+    /// Compare the version of the resolved result.
+    /// a > b means partial_cmp(a,b) == Some(Greater) i.e. a.compare_version(b) > 0.
+    /// a is newer and up to date.
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match self.compare_version(other) {
+            Ok(i) => {
+                if i == 0 {
+                    Some(std::cmp::Ordering::Equal)
+                } else if i > 0 {
+                    Some(std::cmp::Ordering::Greater)
+                } else {
+                    Some(std::cmp::Ordering::Less)
+                }
+            }
+            // If you compare version of different service you get error
+            Err(_) => None,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum ServiceEndpointRole {
     Invalid,

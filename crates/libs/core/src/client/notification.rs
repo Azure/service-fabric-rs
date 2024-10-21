@@ -101,9 +101,44 @@ impl ServiceEndpointsVersion {
         Self { com }
     }
 
-    /// TODO: documentation.
+    /// CSharp doc: Zero if this and other are equivalent,
+    /// a negative value if this is less than other, and a positive value if this is greater than other.
+    ///
+    /// This is not usually used in CSharp apps, but the implementation is provided here for completeness.
+    /// Ideally one should use mssf_core::client::svc_mgmt_client::ResolvedServicePartition instead, by
+    /// doing an additional FabricClient resolve call to retrieve from FabricClient cache.
     pub fn compare(&self, other: &ServiceEndpointsVersion) -> crate::Result<i32> {
         unsafe { self.com.Compare(&other.com) }
+    }
+}
+
+impl PartialEq for ServiceEndpointsVersion {
+    fn eq(&self, other: &Self) -> bool {
+        match self.compare(other) {
+            Ok(i) => i == 0,
+            Err(_) => false, // error comparing different services
+        }
+    }
+}
+
+impl PartialOrd for ServiceEndpointsVersion {
+    /// Compare the version of the resolved result.
+    /// a > b means partial_cmp(a,b) == Some(Greater) i.e. a.compare_version(b) > 0.
+    /// a is newer and up to date.
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match self.compare(other) {
+            Ok(i) => {
+                if i == 0 {
+                    Some(std::cmp::Ordering::Equal)
+                } else if i > 0 {
+                    Some(std::cmp::Ordering::Greater)
+                } else {
+                    Some(std::cmp::Ordering::Less)
+                }
+            }
+            // If you compare version of different service you get error
+            Err(_) => None,
+        }
     }
 }
 

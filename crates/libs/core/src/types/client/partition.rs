@@ -26,7 +26,7 @@ use crate::{
     types::{HealthState, ServicePartitionInformation},
 };
 
-use super::metrics::{PrimaryLoadMetricReportList, SecondaryLoadMetricReportList};
+use super::metrics::{LoadMetricReport, PrimaryLoadMetricReportList, SecondaryLoadMetricReportList};
 
 // Partition related types
 // FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION
@@ -217,6 +217,7 @@ pub struct PartitionLoadInformation {
 }
 
 impl PartitionLoadInformation {
+    /// Constructs the partition load information from the COM owner
     pub fn new(com: IFabricGetPartitionLoadInformationResult) -> Self {
         let partition_id = unsafe {
             com.get_PartitionLoadInformation()
@@ -232,5 +233,26 @@ impl PartitionLoadInformation {
             primary_load_metric_reports,
             secondary_load_metric_reports,
         }
+    }
+
+    /// Returns the partition id
+    pub fn partition_id(&self) -> GUID {
+        self.partition_id
+    }
+
+    /// Returns a list of load metric reports for primary replica
+    pub fn primary_load_metric_reports(&self) -> Vec<LoadMetricReport> {
+        self
+            .primary_load_metric_reports
+            .iter()
+            .collect::<Vec<_>>()
+    }
+
+    /// Returns a list of the load metric reports for secondary replica
+    pub fn secondary_load_metric_reports(&self) -> Vec<LoadMetricReport> {
+        self
+            .secondary_load_metric_reports
+            .iter()
+            .collect::<Vec<_>>()
     }
 }

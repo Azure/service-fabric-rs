@@ -20,6 +20,7 @@ mod replica;
 use crate::HSTRING;
 pub use replica::*;
 mod metrics;
+pub use metrics::*;
 
 // FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS
 bitflags::bitflags! {

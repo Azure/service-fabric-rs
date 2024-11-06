@@ -10,7 +10,9 @@ use mssf_core::{
             PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServicePartition,
             StatefulServiceReplica,
         },
-        stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode},
+        stateful_types::{
+            Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuarumMode,
+        },
     },
     types::ReplicaRole,
 };
@@ -138,7 +140,7 @@ impl PrimaryReplicator for AppFabricReplicator {
 
     async fn build_replica(
         &self,
-        _replica: &ReplicaInfo,
+        _replica: &ReplicaInformation,
         _: CancellationToken,
     ) -> mssf_core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::build_replica");
@@ -241,7 +243,7 @@ impl StatefulServiceReplica for Replica {
         openmode: OpenMode,
         partition: &StatefulServicePartition,
         _: CancellationToken,
-    ) -> mssf_core::Result<impl PrimaryReplicator + 'static> {
+    ) -> mssf_core::Result<impl PrimaryReplicator> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
         self.svc.start_loop_in_background(partition);

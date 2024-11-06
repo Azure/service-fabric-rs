@@ -9,7 +9,8 @@
 use std::ffi::c_void;
 
 use mssf_com::FabricRuntime::{
-    IFabricPrimaryReplicator, IFabricReplicator, IFabricStatefulServiceReplica,
+    IFabricPrimaryReplicator, IFabricReplicator, IFabricReplicatorCatchupSpecificQuorum,
+    IFabricStatefulServiceReplica,
 };
 use tracing::info;
 use windows_core::{Interface, HSTRING};
@@ -22,7 +23,7 @@ use crate::{
 
 use super::{
     stateful::{PrimaryReplicator, Replicator, StatefulServicePartition, StatefulServiceReplica},
-    stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode},
+    stateful_types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuarumMode},
 };
 
 pub struct StatefulServiceReplicaProxy {
@@ -53,9 +54,20 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
             Some(cancellation_token),
         );
         let rplctr = rx.await??;
+
+        // Check COM interface is implemented.
+        let catchup_specific_quorum = rplctr
+            .cast::<IFabricReplicatorCatchupSpecificQuorum>()
+            .is_ok();
+        assert!(
+            catchup_specific_quorum,
+            "mssf does not support replicator without catchup_specific_quorum interface"
+        );
+
         // TODO: cast without clone will cause access violation on AddRef in SF runtime.
         let p_rplctr: IFabricPrimaryReplicator = rplctr.clone().cast().unwrap(); // must work
                                                                                  // Replicator must impl primary replicator as well.
+
         let res = PrimaryReplicatorProxy::new(p_rplctr);
         Ok(res)
     }
@@ -272,7 +284,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     }
     async fn build_replica(
         &self,
-        replica: &ReplicaInfo,
+        replica: &ReplicaInformation,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
         info!("PrimaryReplicatorProxy::build_replica");

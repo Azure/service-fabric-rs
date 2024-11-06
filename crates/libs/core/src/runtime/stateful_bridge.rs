@@ -10,14 +10,15 @@
 
 use std::sync::Arc;
 
+use crate::{Interface, HSTRING};
 use tracing::info;
 use windows_core::implement;
-use windows_core::{Interface, HSTRING};
 
 use mssf_com::{
     FabricCommon::IFabricStringResult,
     FabricRuntime::{
         IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl, IFabricReplicator,
+        IFabricReplicatorCatchupSpecificQuorum, IFabricReplicatorCatchupSpecificQuorum_Impl,
         IFabricReplicator_Impl, IFabricStatefulServiceFactory, IFabricStatefulServiceFactory_Impl,
         IFabricStatefulServicePartition, IFabricStatefulServiceReplica,
         IFabricStatefulServiceReplica_Impl,
@@ -31,7 +32,7 @@ use mssf_com::{
 use crate::{
     runtime::{
         stateful::StatefulServicePartition,
-        stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig},
+        stateful_types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig},
     },
     strings::HSTRINGWrap,
     sync::BridgeContext3,
@@ -42,6 +43,9 @@ use super::{
     executor::Executor,
     stateful::{PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServiceReplica},
 };
+// bridges from rs into com
+
+// region: StatefulServiceFactoryBridge
 
 #[implement(IFabricStatefulServiceFactory)]
 pub struct StatefulServiceFactoryBridge<E, F>
@@ -103,9 +107,11 @@ where
     }
 }
 
-// bridges from rs into com
+// endregion: StatefulServiceFactoryBridge
 
-// bridge from safe service instance to com
+// region: IFabricReplicatorBridge
+
+/// bridge from safe service instance to com
 #[implement(IFabricReplicator)]
 
 pub struct IFabricReplicatorBridge<E, R>
@@ -257,8 +263,17 @@ where
     }
 }
 
-// primary replicator bridge
-#[implement(IFabricPrimaryReplicator)]
+// endregion: IFabricReplicatorBridge
+
+// region: IFabricPrimaryReplicatorBridge
+
+/// Primary replicator bridge.
+/// mssf_core only supports primary replicator with IFabricReplicatorCatchupSpecificQuorum enabled,
+/// which allows an IReplicator to indicate that it supports catching up specific quorums with the
+/// use of the MustCatchup flag in ReplicaInformation.
+// Nearly all replicators in cpp and csharp all enables CatchupSpecificQuorum, and not enabling it
+// is a rare case.
+#[implement(IFabricPrimaryReplicator, IFabricReplicatorCatchupSpecificQuorum)]
 pub struct IFabricPrimaryReplicatorBridge<E, P>
 where
     E: Executor,
@@ -458,7 +473,7 @@ where
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> crate::Result<super::IFabricAsyncOperationContext> {
         let inner = self.inner.clone();
-        let r = ReplicaInfo::from(unsafe { replica.as_ref().unwrap() });
+        let r = ReplicaInformation::from(unsafe { replica.as_ref().unwrap() });
         info!("IFabricPrimaryReplicatorBridge::BeginBuildReplica: {:?}", r);
         let (ctx, token) = BridgeContext3::make(callback);
         ctx.spawn(
@@ -481,8 +496,18 @@ where
     }
 }
 
-// bridge for replica
-// bridge from safe service instance to com
+impl<E, P> IFabricReplicatorCatchupSpecificQuorum_Impl for IFabricPrimaryReplicatorBridge<E, P>
+where
+    E: Executor,
+    P: PrimaryReplicator,
+{
+}
+// endregion: IFabricPrimaryReplicatorBridge
+
+// region: IFabricStatefulServiceReplicaBridge
+
+// Bridge for stateful service replica
+// Bridge from safe service instance to com
 #[implement(IFabricStatefulServiceReplica)]
 
 pub struct IFabricStatefulServiceReplicaBridge<E, R>
@@ -594,3 +619,5 @@ where
         self.inner.as_ref().abort();
     }
 }
+
+// endregion: IFabricStatefulServiceReplicaBridge

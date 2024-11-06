@@ -12,7 +12,7 @@
   </ServiceManifestImport>
   <DefaultServices>
     <Service Name="KvStoreService">
-      <StatefulService ServiceTypeName="KvStoreService" TargetReplicaSetSize="1" MinReplicaSetSize="1">
+      <StatefulService ServiceTypeName="KvStoreService" TargetReplicaSetSize="3" MinReplicaSetSize="3">
         <SingletonPartition />
       </StatefulService>
     </Service>

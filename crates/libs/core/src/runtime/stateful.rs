@@ -4,14 +4,14 @@
 // ------------------------------------------------------------
 
 // stateful contains rs definition of stateful traits that user needs to implement
-
-use crate::{GUID, HSTRING};
 use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
 
 use crate::sync::CancellationToken;
 use crate::types::{LoadMetric, LoadMetricListRef, ReplicaRole};
 
-use super::stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode};
+use super::stateful_types::{
+    Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuarumMode,
+};
 
 /// Represents a stateful service factory that is responsible for creating replicas
 /// of a specific type of stateful service. Stateful service factories are registered with
@@ -20,10 +20,10 @@ pub trait StatefulServiceFactory {
     /// Called by Service Fabric to create a stateful service replica for a particular service.
     fn create_replica(
         &self,
-        servicetypename: &HSTRING,
-        servicename: &HSTRING,
+        servicetypename: &crate::HSTRING,
+        servicename: &crate::HSTRING,
         initializationdata: &[u8],
-        partitionid: &GUID,
+        partitionid: &crate::GUID,
         replicaid: i64,
     ) -> crate::Result<impl StatefulServiceReplica>;
 }
@@ -54,7 +54,7 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
         &self,
         newrole: ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> crate::Result<HSTRING>;
+    ) -> crate::Result<crate::HSTRING>;
 
     /// Closes the service replica gracefully when it is being shut down.
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
@@ -95,7 +95,7 @@ impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
 /// TODO: replicator has no public documentation
 #[trait_variant::make(Replicator: Send)]
 pub trait LocalReplicator: Send + Sync + 'static {
-    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<HSTRING>; // replicator address
+    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<crate::HSTRING>; // replicator address
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
     async fn change_role(
         &self,
@@ -123,6 +123,7 @@ pub trait LocalReplicator: Send + Sync + 'static {
 }
 
 /// TODO: primary replicator has no public documentation
+/// IFabricPrimaryReplicator com interface wrapper.
 #[trait_variant::make(PrimaryReplicator: Send)]
 pub trait LocalPrimaryReplicator: Replicator {
     // SF calls this to indicate that possible data loss has occurred (write quorum loss),
@@ -145,7 +146,7 @@ pub trait LocalPrimaryReplicator: Replicator {
     ) -> crate::Result<()>;
     async fn build_replica(
         &self,
-        replica: &ReplicaInfo,
+        replica: &ReplicaInformation,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()>;
     fn remove_replica(&self, replicaid: i64) -> crate::Result<()>;

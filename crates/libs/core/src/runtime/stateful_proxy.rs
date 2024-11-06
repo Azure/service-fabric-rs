@@ -195,10 +195,6 @@ impl PrimaryReplicatorProxy {
         let parent = ReplicatorProxy::new(com_impl.clone().cast().unwrap());
         PrimaryReplicatorProxy { com_impl, parent }
     }
-
-    pub fn get_com(&self) -> &IFabricPrimaryReplicator {
-        &self.com_impl
-    }
 }
 
 impl Replicator for PrimaryReplicatorProxy {

@@ -36,8 +36,6 @@ pub trait StatefulServiceFactory {
 pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
     /// Opens an initialized service replica so that additional actions can be taken.
     /// Returns PrimaryReplicator that is used by the stateful service.
-    // Note: we use async trait and cannot use dynamic dispatch to build a similar
-    // interface hierachy for COM objects. The return type is subject to change in future.
     async fn open(
         &self,
         openmode: OpenMode,
@@ -153,7 +151,3 @@ pub trait LocalPrimaryReplicator: Replicator {
     ) -> crate::Result<()>;
     fn remove_replica(&self, replicaid: i64) -> crate::Result<()>;
 }
-
-// IFabricReplicatorCatchupSpecificQuorum
-// replicator is checked to have this interface
-// implemented: https://github.com/microsoft/service-fabric/blob/9d25e17d9e19ca46bbd1142bfcbae8416ba45e61/src/prod/src/Reliability/Failover/ra/ComProxyReplicator.h#L25

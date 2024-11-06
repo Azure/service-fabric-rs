@@ -9,7 +9,8 @@
 use std::ffi::c_void;
 
 use mssf_com::FabricRuntime::{
-    IFabricPrimaryReplicator, IFabricReplicator, IFabricStatefulServiceReplica,
+    IFabricPrimaryReplicator, IFabricReplicator, IFabricReplicatorCatchupSpecificQuorum,
+    IFabricStatefulServiceReplica,
 };
 use tracing::info;
 use windows_core::{Interface, HSTRING};
@@ -21,7 +22,10 @@ use crate::{
 };
 
 use super::{
-    stateful::{PrimaryReplicator, Replicator, StatefulServicePartition, StatefulServiceReplica},
+    stateful::{
+        PrimaryReplicator, Replicator, ReplicatorKind, StatefulServicePartition,
+        StatefulServiceReplica,
+    },
     stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode},
 };
 
@@ -41,7 +45,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         openmode: OpenMode,
         partition: &StatefulServicePartition,
         cancellation_token: CancellationToken,
-    ) -> crate::Result<impl PrimaryReplicator> {
+    ) -> crate::Result<(impl PrimaryReplicator, ReplicatorKind)> {
         info!("StatefulServiceReplicaProxy::open with mode {:?}", openmode);
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -56,8 +60,15 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         // TODO: cast without clone will cause access violation on AddRef in SF runtime.
         let p_rplctr: IFabricPrimaryReplicator = rplctr.clone().cast().unwrap(); // must work
                                                                                  // Replicator must impl primary replicator as well.
+        let rplctr_kind = match p_rplctr
+            .cast::<IFabricReplicatorCatchupSpecificQuorum>()
+            .is_ok()
+        {
+            true => ReplicatorKind::CatchupSpecificQuorum,
+            false => ReplicatorKind::Default,
+        };
         let res = PrimaryReplicatorProxy::new(p_rplctr);
-        Ok(res)
+        Ok((res, rplctr_kind))
     }
     async fn change_role(
         &self,
@@ -182,6 +193,10 @@ impl PrimaryReplicatorProxy {
     pub fn new(com_impl: IFabricPrimaryReplicator) -> PrimaryReplicatorProxy {
         let parent = ReplicatorProxy::new(com_impl.clone().cast().unwrap());
         PrimaryReplicatorProxy { com_impl, parent }
+    }
+
+    pub fn get_com(&self) -> &IFabricPrimaryReplicator {
+        &self.com_impl
     }
 }
 

@@ -10,7 +10,7 @@ use mssf_core::{
     runtime::{
         executor::{DefaultExecutor, Executor},
         stateful::{
-            PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition,
+            PrimaryReplicator, ReplicatorKind, StatefulServiceFactory, StatefulServicePartition,
             StatefulServiceReplica,
         },
         stateful_proxy::StatefulServiceReplicaProxy,
@@ -189,7 +189,7 @@ impl StatefulServiceReplica for Replica {
         openmode: OpenMode,
         partition: &StatefulServicePartition,
         cancellation_token: CancellationToken,
-    ) -> mssf_core::Result<impl PrimaryReplicator> {
+    ) -> mssf_core::Result<(impl PrimaryReplicator, ReplicatorKind)> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
         self.kv.open(openmode, partition, cancellation_token).await

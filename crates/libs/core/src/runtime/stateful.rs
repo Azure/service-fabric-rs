@@ -4,14 +4,23 @@
 // ------------------------------------------------------------
 
 // stateful contains rs definition of stateful traits that user needs to implement
-
-use crate::{GUID, HSTRING};
 use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
 
 use crate::sync::CancellationToken;
 use crate::types::{LoadMetric, LoadMetricListRef, ReplicaRole};
 
 use super::stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode};
+
+/// Indicates whether the PrimaryReplicator supports CatchupSpecificQuorum.
+#[derive(Debug, PartialEq)]
+pub enum ReplicatorKind {
+    // Regular PrimaryReplicator without CatchupSpecificQuorum support.
+    Default,
+    // IFabricReplicatorCatchupSpecificQuorum
+    // replicator is checked to have this interface
+    // implemented: https://github.com/microsoft/service-fabric/blob/9d25e17d9e19ca46bbd1142bfcbae8416ba45e61/src/prod/src/Reliability/Failover/ra/ComProxyReplicator.h#L25
+    CatchupSpecificQuorum,
+}
 
 /// Represents a stateful service factory that is responsible for creating replicas
 /// of a specific type of stateful service. Stateful service factories are registered with
@@ -20,10 +29,10 @@ pub trait StatefulServiceFactory {
     /// Called by Service Fabric to create a stateful service replica for a particular service.
     fn create_replica(
         &self,
-        servicetypename: &HSTRING,
-        servicename: &HSTRING,
+        servicetypename: &crate::HSTRING,
+        servicename: &crate::HSTRING,
         initializationdata: &[u8],
-        partitionid: &GUID,
+        partitionid: &crate::GUID,
         replicaid: i64,
     ) -> crate::Result<impl StatefulServiceReplica>;
 }
@@ -36,12 +45,14 @@ pub trait StatefulServiceFactory {
 pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
     /// Opens an initialized service replica so that additional actions can be taken.
     /// Returns PrimaryReplicator that is used by the stateful service.
+    // Note: we use async trait and cannot use dynamic dispatch to build a similar
+    // interface hierachy for COM objects. The return type is subject to change in future.
     async fn open(
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
         cancellation_token: CancellationToken,
-    ) -> crate::Result<impl PrimaryReplicator>;
+    ) -> crate::Result<(impl PrimaryReplicator, ReplicatorKind)>;
 
     /// Changes the role of the service replica to one of the ReplicaRole.
     /// Returns the service’s new connection address that is to be associated with the replica via Service Fabric Naming.
@@ -54,7 +65,7 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
         &self,
         newrole: ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> crate::Result<HSTRING>;
+    ) -> crate::Result<crate::HSTRING>;
 
     /// Closes the service replica gracefully when it is being shut down.
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
@@ -95,7 +106,7 @@ impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
 /// TODO: replicator has no public documentation
 #[trait_variant::make(Replicator: Send)]
 pub trait LocalReplicator: Send + Sync + 'static {
-    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<HSTRING>; // replicator address
+    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<crate::HSTRING>; // replicator address
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
     async fn change_role(
         &self,
@@ -123,6 +134,7 @@ pub trait LocalReplicator: Send + Sync + 'static {
 }
 
 /// TODO: primary replicator has no public documentation
+/// IFabricPrimaryReplicator com interface wrapper.
 #[trait_variant::make(PrimaryReplicator: Send)]
 pub trait LocalPrimaryReplicator: Replicator {
     // SF calls this to indicate that possible data loss has occurred (write quorum loss),
@@ -150,3 +162,9 @@ pub trait LocalPrimaryReplicator: Replicator {
     ) -> crate::Result<()>;
     fn remove_replica(&self, replicaid: i64) -> crate::Result<()>;
 }
+
+// IFabricReplicatorCatchupSpecificQuorum
+// replicator is checked to have this interface
+// implemented: https://github.com/microsoft/service-fabric/blob/9d25e17d9e19ca46bbd1142bfcbae8416ba45e61/src/prod/src/Reliability/Failover/ra/ComProxyReplicator.h#L25
+// pub trait PrimaryReplicatorCatchupSpecificQuorum: PrimaryReplicator {
+// }

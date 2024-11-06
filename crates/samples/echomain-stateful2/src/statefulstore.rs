@@ -7,8 +7,8 @@ use mssf_core::{
     runtime::{
         executor::{DefaultExecutor, Executor},
         stateful::{
-            PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServicePartition,
-            StatefulServiceReplica,
+            PrimaryReplicator, Replicator, ReplicatorKind, StatefulServiceFactory,
+            StatefulServicePartition, StatefulServiceReplica,
         },
         stateful_types::{Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode},
     },
@@ -241,11 +241,14 @@ impl StatefulServiceReplica for Replica {
         openmode: OpenMode,
         partition: &StatefulServicePartition,
         _: CancellationToken,
-    ) -> mssf_core::Result<impl PrimaryReplicator + 'static> {
+    ) -> mssf_core::Result<(impl PrimaryReplicator, ReplicatorKind)> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
         self.svc.start_loop_in_background(partition);
-        Ok(AppFabricReplicator::new(self.port_, self.hostname_.clone()))
+        Ok((
+            AppFabricReplicator::new(self.port_, self.hostname_.clone()),
+            ReplicatorKind::CatchupSpecificQuorum,
+        ))
     }
     async fn change_role(
         &self,

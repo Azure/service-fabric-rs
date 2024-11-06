@@ -10,14 +10,16 @@
 
 use std::sync::Arc;
 
+use crate::{runtime::stateful::ReplicatorKind, Interface, HSTRING};
+use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
 use tracing::info;
 use windows_core::implement;
-use windows_core::{Interface, HSTRING};
 
 use mssf_com::{
     FabricCommon::IFabricStringResult,
     FabricRuntime::{
         IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl, IFabricReplicator,
+        IFabricReplicatorCatchupSpecificQuorum, IFabricReplicatorCatchupSpecificQuorum_Impl,
         IFabricReplicator_Impl, IFabricStatefulServiceFactory, IFabricStatefulServiceFactory_Impl,
         IFabricStatefulServicePartition, IFabricStatefulServiceReplica,
         IFabricStatefulServiceReplica_Impl,
@@ -42,6 +44,9 @@ use super::{
     executor::Executor,
     stateful::{PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServiceReplica},
 };
+// bridges from rs into com
+
+// region: StatefulServiceFactoryBridge
 
 #[implement(IFabricStatefulServiceFactory)]
 pub struct StatefulServiceFactoryBridge<E, F>
@@ -103,9 +108,11 @@ where
     }
 }
 
-// bridges from rs into com
+// endregion: StatefulServiceFactoryBridge
 
-// bridge from safe service instance to com
+// region: IFabricReplicatorBridge
+
+/// bridge from safe service instance to com
 #[implement(IFabricReplicator)]
 
 pub struct IFabricReplicatorBridge<E, R>
@@ -257,7 +264,11 @@ where
     }
 }
 
-// primary replicator bridge
+// endregion: IFabricReplicatorBridge
+
+// region: IFabricPrimaryReplicatorBridge
+
+/// primary replicator bridge
 #[implement(IFabricPrimaryReplicator)]
 pub struct IFabricPrimaryReplicatorBridge<E, P>
 where
@@ -481,8 +492,167 @@ where
     }
 }
 
-// bridge for replica
-// bridge from safe service instance to com
+// endregion: IFabricPrimaryReplicatorBridge
+
+// region: IFabricPrimaryReplicatorCatchupSpecificQuorumBridge
+
+/// Same as IFabricPrimaryReplicatorBridge but supports CatchupSpecificQuorum
+/// It makes any IFabricPrimaryReplicator to implement IFabricReplicatorCatchupSpecificQuorum
+/// as well.
+#[implement(IFabricPrimaryReplicator, IFabricReplicatorCatchupSpecificQuorum)]
+pub struct IFabricPrimaryReplicatorCatchupSpecificQuorumBridge {
+    inner: IFabricPrimaryReplicator,
+}
+
+impl IFabricPrimaryReplicatorCatchupSpecificQuorumBridge {
+    fn new(inner: IFabricPrimaryReplicator) -> Self {
+        Self { inner }
+    }
+}
+
+impl IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorCatchupSpecificQuorumBridge {
+    fn BeginOnDataLoss(
+        &self,
+        callback: Option<&IFabricAsyncOperationCallback>,
+    ) -> crate::Result<IFabricAsyncOperationContext> {
+        unsafe { self.inner.BeginOnDataLoss(callback) }
+    }
+
+    fn EndOnDataLoss(&self, context: Option<&IFabricAsyncOperationContext>) -> crate::Result<u8> {
+        unsafe { self.inner.EndOnDataLoss(context) }
+    }
+
+    fn UpdateCatchUpReplicaSetConfiguration(
+        &self,
+        currentconfiguration: *const FABRIC_REPLICA_SET_CONFIGURATION,
+        previousconfiguration: *const FABRIC_REPLICA_SET_CONFIGURATION,
+    ) -> crate::Result<()> {
+        unsafe {
+            self.inner
+                .UpdateCatchUpReplicaSetConfiguration(currentconfiguration, previousconfiguration)
+        }
+    }
+
+    fn BeginWaitForCatchUpQuorum(
+        &self,
+        catchupmode: FABRIC_REPLICA_SET_QUORUM_MODE,
+        callback: Option<&IFabricAsyncOperationCallback>,
+    ) -> crate::Result<IFabricAsyncOperationContext> {
+        unsafe { self.inner.BeginWaitForCatchUpQuorum(catchupmode, callback) }
+    }
+
+    fn EndWaitForCatchUpQuorum(
+        &self,
+        context: Option<&super::IFabricAsyncOperationContext>,
+    ) -> crate::Result<()> {
+        unsafe { self.inner.EndWaitForCatchUpQuorum(context) }
+    }
+
+    fn UpdateCurrentReplicaSetConfiguration(
+        &self,
+        currentconfiguration: *const FABRIC_REPLICA_SET_CONFIGURATION,
+    ) -> crate::Result<()> {
+        unsafe {
+            self.inner
+                .UpdateCurrentReplicaSetConfiguration(currentconfiguration)
+        }
+    }
+
+    fn BeginBuildReplica(
+        &self,
+        replica: *const FABRIC_REPLICA_INFORMATION,
+        callback: Option<&IFabricAsyncOperationCallback>,
+    ) -> crate::Result<IFabricAsyncOperationContext> {
+        unsafe { self.inner.BeginBuildReplica(replica, callback) }
+    }
+
+    fn EndBuildReplica(&self, context: Option<&IFabricAsyncOperationContext>) -> crate::Result<()> {
+        unsafe { self.inner.EndBuildReplica(context) }
+    }
+
+    fn RemoveReplica(&self, replicaid: i64) -> crate::Result<()> {
+        unsafe { self.inner.RemoveReplica(replicaid) }
+    }
+}
+
+impl IFabricReplicator_Impl for IFabricPrimaryReplicatorCatchupSpecificQuorumBridge {
+    fn BeginOpen(
+        &self,
+        callback: Option<&IFabricAsyncOperationCallback>,
+    ) -> crate::Result<IFabricAsyncOperationContext> {
+        unsafe { self.inner.BeginOpen(callback) }
+    }
+
+    fn EndOpen(
+        &self,
+        context: Option<&IFabricAsyncOperationContext>,
+    ) -> crate::Result<IFabricStringResult> {
+        unsafe { self.inner.EndOpen(context) }
+    }
+
+    fn BeginChangeRole(
+        &self,
+        epoch: *const FABRIC_EPOCH,
+        role: FABRIC_REPLICA_ROLE,
+        callback: Option<&IFabricAsyncOperationCallback>,
+    ) -> crate::Result<IFabricAsyncOperationContext> {
+        unsafe { self.inner.BeginChangeRole(epoch, role, callback) }
+    }
+
+    fn EndChangeRole(&self, context: Option<&IFabricAsyncOperationContext>) -> crate::Result<()> {
+        unsafe { self.inner.EndChangeRole(context) }
+    }
+
+    fn BeginUpdateEpoch(
+        &self,
+        epoch: *const FABRIC_EPOCH,
+        callback: Option<&IFabricAsyncOperationCallback>,
+    ) -> crate::Result<super::IFabricAsyncOperationContext> {
+        unsafe { self.inner.BeginUpdateEpoch(epoch, callback) }
+    }
+
+    fn EndUpdateEpoch(
+        &self,
+        context: Option<&super::IFabricAsyncOperationContext>,
+    ) -> crate::Result<()> {
+        unsafe { self.inner.EndUpdateEpoch(context) }
+    }
+
+    fn BeginClose(
+        &self,
+        callback: Option<&IFabricAsyncOperationCallback>,
+    ) -> crate::Result<IFabricAsyncOperationContext> {
+        unsafe { self.inner.BeginClose(callback) }
+    }
+
+    fn EndClose(&self, context: Option<&IFabricAsyncOperationContext>) -> crate::Result<()> {
+        unsafe { self.inner.EndClose(context) }
+    }
+
+    fn Abort(&self) {
+        unsafe { self.inner.Abort() };
+    }
+
+    fn GetCurrentProgress(&self) -> crate::Result<i64> {
+        unsafe { self.inner.GetCurrentProgress() }
+    }
+
+    fn GetCatchUpCapability(&self) -> crate::Result<i64> {
+        unsafe { self.inner.GetCatchUpCapability() }
+    }
+}
+
+impl IFabricReplicatorCatchupSpecificQuorum_Impl
+    for IFabricPrimaryReplicatorCatchupSpecificQuorumBridge
+{
+}
+
+// endregion: IFabricPrimaryReplicatorCatchupSpecificQuorumBridge
+
+// region: IFabricStatefulServiceReplicaBridge
+
+// Bridge for stateful service replica
+// Bridge from safe service instance to com
 #[implement(IFabricStatefulServiceReplica)]
 
 pub struct IFabricStatefulServiceReplicaBridge<E, R>
@@ -528,11 +698,26 @@ where
         );
         let (ctx, token) = BridgeContext3::make(callback);
         ctx.spawn(&self.rt, async move {
-            inner.open(openmode2, &partition2, token).await.map(|s| {
-                let bridge: IFabricPrimaryReplicator =
-                    IFabricPrimaryReplicatorBridge::create(s, rt_cp).into();
-                bridge.clone().cast::<IFabricReplicator>().unwrap()
-            })
+            inner
+                .open(openmode2, &partition2, token)
+                .await
+                .map(|(rplctr, kind)| {
+                    let primary: IFabricPrimaryReplicator =
+                        IFabricPrimaryReplicatorBridge::create(rplctr, rt_cp).into();
+                    match kind {
+                        // return raw bridge
+                        ReplicatorKind::Default => {
+                            primary.clone().cast::<IFabricReplicator>().unwrap()
+                        }
+                        ReplicatorKind::CatchupSpecificQuorum => {
+                            // bridge with CatchupSpecificQuorum interface enabled.
+                            let bridge: IFabricPrimaryReplicator =
+                                IFabricPrimaryReplicatorCatchupSpecificQuorumBridge::new(primary)
+                                    .into();
+                            bridge.clone().cast::<IFabricReplicator>().unwrap()
+                        }
+                    }
+                })
         })
     }
 
@@ -592,5 +777,240 @@ where
 
     fn Abort(&self) {
         self.inner.as_ref().abort();
+    }
+}
+
+// endregion: IFabricStatefulServiceReplicaBridge
+
+#[cfg(test)]
+mod tests {
+    use windows_core::implement;
+
+    use crate::runtime::executor::DefaultExecutor;
+    use crate::runtime::stateful_bridge::IFabricStatefulServiceReplicaBridge;
+    use crate::runtime::stateful_proxy::StatefulServiceReplicaProxy;
+    use crate::types::ReplicaRole;
+    use crate::HSTRING;
+
+    use crate::runtime::stateful_types::{
+        Epoch, OpenMode, ReplicaInfo, ReplicaSetConfig, ReplicaSetQuarumMode,
+    };
+    use crate::sync::CancellationToken;
+
+    use crate::runtime::stateful::{
+        PrimaryReplicator, Replicator, ReplicatorKind, StatefulServicePartition,
+        StatefulServiceReplica,
+    };
+
+    use mssf_com::FabricRuntime::{
+        IFabricStatefulServicePartition, IFabricStatefulServicePartition_Impl,
+    };
+
+    /// Replicator for testing
+    /// None of the impl details is used.
+    struct MyReplicator {}
+
+    impl Replicator for MyReplicator {
+        async fn open(&self, _cancellation_token: CancellationToken) -> crate::Result<HSTRING> {
+            Ok(HSTRING::from("myaddr"))
+        }
+
+        async fn close(&self, _cancellation_token: CancellationToken) -> crate::Result<()> {
+            todo!()
+        }
+
+        async fn change_role(
+            &self,
+            _epoch: &Epoch,
+            _role: &ReplicaRole,
+            _cancellation_token: CancellationToken,
+        ) -> crate::Result<()> {
+            todo!()
+        }
+
+        async fn update_epoch(
+            &self,
+            _epoch: &Epoch,
+            _cancellation_token: CancellationToken,
+        ) -> crate::Result<()> {
+            todo!()
+        }
+
+        fn get_current_progress(&self) -> crate::Result<i64> {
+            todo!()
+        }
+
+        fn get_catch_up_capability(&self) -> crate::Result<i64> {
+            todo!()
+        }
+
+        fn abort(&self) {
+            todo!()
+        }
+    }
+
+    impl PrimaryReplicator for MyReplicator {
+        async fn on_data_loss(&self, _cancellation_token: CancellationToken) -> crate::Result<u8> {
+            todo!()
+        }
+
+        fn update_catch_up_replica_set_configuration(
+            &self,
+            _currentconfiguration: &ReplicaSetConfig,
+            _previousconfiguration: &ReplicaSetConfig,
+        ) -> crate::Result<()> {
+            todo!()
+        }
+
+        async fn wait_for_catch_up_quorum(
+            &self,
+            _catchupmode: ReplicaSetQuarumMode,
+            _cancellation_token: CancellationToken,
+        ) -> crate::Result<()> {
+            todo!()
+        }
+
+        fn update_current_replica_set_configuration(
+            &self,
+            _currentconfiguration: &ReplicaSetConfig,
+        ) -> crate::Result<()> {
+            todo!()
+        }
+
+        async fn build_replica(
+            &self,
+            _replica: &ReplicaInfo,
+            _cancellation_token: CancellationToken,
+        ) -> crate::Result<()> {
+            todo!()
+        }
+
+        fn remove_replica(&self, _replicaid: i64) -> crate::Result<()> {
+            todo!()
+        }
+    }
+
+    /// Replica for testing.
+    /// Opens replicator based on catchup specific quorum flag
+    struct MyServiceReplica {
+        catchup_specific_quorum: bool,
+    }
+
+    impl StatefulServiceReplica for MyServiceReplica {
+        async fn open(
+            &self,
+            _openmode: OpenMode,
+            _partition: &StatefulServicePartition,
+            _cancellation_token: CancellationToken,
+        ) -> crate::Result<(impl PrimaryReplicator, ReplicatorKind)> {
+            let kind = match self.catchup_specific_quorum {
+                true => ReplicatorKind::CatchupSpecificQuorum,
+                false => ReplicatorKind::Default,
+            };
+            Ok((MyReplicator {}, kind))
+        }
+        async fn change_role(
+            &self,
+            _newrole: ReplicaRole,
+            _cancellation_token: CancellationToken,
+        ) -> crate::Result<crate::HSTRING> {
+            todo!()
+        }
+
+        async fn close(&self, _cancellation_token: CancellationToken) -> crate::Result<()> {
+            todo!()
+        }
+
+        fn abort(&self) {
+            todo!()
+        }
+    }
+
+    /// Partition COM obj for testing. None of the function is called.
+    #[implement(IFabricStatefulServicePartition)]
+    struct MyComPartition {}
+
+    impl IFabricStatefulServicePartition_Impl for MyComPartition {
+        fn GetPartitionInfo(
+            &self,
+        ) -> crate::Result<
+            *mut mssf_com::ServiceFabric::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION,
+        > {
+            todo!()
+        }
+
+        fn GetReadStatus(
+            &self,
+        ) -> crate::Result<
+            mssf_com::ServiceFabric::FabricTypes::FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
+        > {
+            todo!()
+        }
+
+        fn GetWriteStatus(
+            &self,
+        ) -> crate::Result<
+            mssf_com::ServiceFabric::FabricTypes::FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
+        > {
+            todo!()
+        }
+
+        fn CreateReplicator(
+            &self,
+            _stateprovider: Option<&mssf_com::FabricRuntime::IFabricStateProvider>,
+            _replicatorsettings: *const mssf_com::ServiceFabric::FabricTypes::FABRIC_REPLICATOR_SETTINGS,
+            _replicator: *mut Option<mssf_com::FabricRuntime::IFabricReplicator>,
+        ) -> crate::Result<mssf_com::FabricRuntime::IFabricStateReplicator> {
+            todo!()
+        }
+
+        fn ReportLoad(
+            &self,
+            _metriccount: u32,
+            _metrics: *const mssf_com::ServiceFabric::FabricTypes::FABRIC_LOAD_METRIC,
+        ) -> crate::Result<()> {
+            todo!()
+        }
+
+        fn ReportFault(
+            &self,
+            _faulttype: mssf_com::ServiceFabric::FabricTypes::FABRIC_FAULT_TYPE,
+        ) -> crate::Result<()> {
+            todo!()
+        }
+    }
+
+    #[tokio::test]
+    async fn replicator_bridge_test() {
+        replicator_bridge_test_inner(true).await;
+        replicator_bridge_test_inner(false).await;
+    }
+
+    /// Use service replica proxy to create replica and check
+    /// the replica kind is currectly bridged and proxyed.
+    async fn replicator_bridge_test_inner(catchup_specific_quorum: bool) {
+        let rt = DefaultExecutor::new(tokio::runtime::Handle::current());
+        // make a mock service replica
+        let replica = MyServiceReplica {
+            catchup_specific_quorum,
+        };
+        let replica_bridge = IFabricStatefulServiceReplicaBridge::create(replica, rt).into();
+        let replica_proxy = StatefulServiceReplicaProxy::new(replica_bridge);
+
+        let com_partition: IFabricStatefulServicePartition = MyComPartition {}.into();
+        let partition = StatefulServicePartition::from(&com_partition);
+
+        // create replicator from replica and check replicator kind
+        let (rplctr, kind) = replica_proxy
+            .open(OpenMode::Existing, &partition, CancellationToken::new())
+            .await
+            .unwrap();
+
+        match catchup_specific_quorum {
+            true => assert_eq!(kind, ReplicatorKind::CatchupSpecificQuorum),
+            false => assert_eq!(kind, ReplicatorKind::Default),
+        }
+        let addr = rplctr.open(CancellationToken::new()).await.unwrap();
+        assert_eq!(addr, "myaddr");
     }
 }

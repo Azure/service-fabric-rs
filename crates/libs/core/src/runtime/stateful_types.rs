@@ -128,7 +128,7 @@ impl From<FABRIC_REPLICA_STATUS> for ReplicaStatus {
 // Safe wrapping for FABRIC_REPLICA_SET_CONFIGURATION
 #[derive(Debug)]
 pub struct ReplicaSetConfig {
-    pub replicas: Vec<ReplicaInfo>,
+    pub replicas: Vec<ReplicaInformation>,
     pub write_quorum: u32,
 }
 
@@ -142,7 +142,7 @@ impl From<&FABRIC_REPLICA_SET_CONFIGURATION> for ReplicaSetConfig {
         for i in 0..r.ReplicaCount {
             let replica = unsafe { r.Replicas.offset(i as isize) };
             let replica_ref = unsafe { replica.as_ref().unwrap() };
-            res.replicas.push(ReplicaInfo::from(replica_ref))
+            res.replicas.push(ReplicaInformation::from(replica_ref))
         }
         res
     }
@@ -202,19 +202,20 @@ impl ReplicaSetConfigView<'_> {
     }
 }
 
-// Safe wrapping for FABRIC_REPLICA_INFORMATION
+/// Safe wrapping for FABRIC_REPLICA_INFORMATION
 #[derive(Debug, PartialEq, Clone)]
-pub struct ReplicaInfo {
+pub struct ReplicaInformation {
     pub id: i64,
     pub role: ReplicaRole,
     pub status: ReplicaStatus,
     pub replicator_address: HSTRING,
     pub current_progress: i64,
     pub catch_up_capability: i64,
+    /// indicating whether the replica must be caught up as part of a WaitForQuorumCatchup
     pub must_catch_up: bool,
 }
 
-impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
+impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInformation {
     fn from(r: &FABRIC_REPLICA_INFORMATION) -> Self {
         let ex1 = r.Reserved as *const FABRIC_REPLICA_INFORMATION_EX1;
         let mut must_catchup = false;
@@ -223,7 +224,7 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
                 must_catchup = ex1ref.MustCatchup.as_bool();
             }
         }
-        ReplicaInfo {
+        ReplicaInformation {
             id: r.Id,
             role: (&r.Role).into(),
             status: r.Status.into(),
@@ -235,7 +236,7 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInfo {
     }
 }
 
-impl ReplicaInfo {
+impl ReplicaInformation {
     // The parts have the same lifetime as self.
     // Caller needs to stitch the parts together, i.e.
     // FABRIC_REPLICA_INFORMATION::Reserved needs to point at FABRIC_REPLICA_INFORMATION_EX1
@@ -295,7 +296,7 @@ mod test {
         FABRIC_REPLICA_STATUS_UP,
     };
 
-    use super::{Epoch, ReplicaInfo, ReplicaSetConfig};
+    use super::{Epoch, ReplicaInformation, ReplicaSetConfig};
 
     // caller needs to stitch the reserved ptr.
     fn create_test_data(id: i64) -> (FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1) {
@@ -321,7 +322,7 @@ mod test {
         info.Reserved = std::ptr::addr_of!(ex1) as *mut c_void;
 
         // test raw -> wrap
-        let wrap = ReplicaInfo::from(&info);
+        let wrap = ReplicaInformation::from(&info);
         assert_eq!(wrap.id, 123);
         assert!(wrap.must_catch_up);
 
@@ -333,7 +334,7 @@ mod test {
 
     #[test]
     fn test_replica_set_config_conv() {
-        let replica1 = ReplicaInfo {
+        let replica1 = ReplicaInformation {
             id: 1,
             role: super::ReplicaRole::Primary,
             status: super::ReplicaStatus::Up,
@@ -343,7 +344,7 @@ mod test {
             must_catch_up: true,
         };
 
-        let replica2 = ReplicaInfo {
+        let replica2 = ReplicaInformation {
             id: 2,
             role: super::ReplicaRole::ActiveSecondary,
             status: super::ReplicaStatus::Up,

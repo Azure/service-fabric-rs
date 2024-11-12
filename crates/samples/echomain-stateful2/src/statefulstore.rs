@@ -6,10 +6,8 @@
 use mssf_core::{
     runtime::{
         executor::{DefaultExecutor, Executor},
-        stateful::{
-            PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServicePartition,
-            StatefulServiceReplica,
-        },
+        stateful::{PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServiceReplica},
+        stateful_proxy::StatefulServicePartition,
     },
     types::{
         Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig, ReplicaSetQuorumMode,

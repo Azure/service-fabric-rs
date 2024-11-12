@@ -4,12 +4,13 @@
 // ------------------------------------------------------------
 
 // stateful contains rs definition of stateful traits that user needs to implement
-use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
 
 use crate::sync::CancellationToken;
-use crate::types::{LoadMetric, LoadMetricListRef, ReplicaRole};
+use crate::types::ReplicaRole;
 
 use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuorumMode};
+
+use super::stateful_proxy::StatefulServicePartition;
 
 /// Represents a stateful service factory that is responsible for creating replicas
 /// of a specific type of stateful service. Stateful service factories are registered with
@@ -62,32 +63,6 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
     /// and the use of ReportFault(FaultType) to report a Permanent fault are examples of ungraceful termination.
     /// When this method is invoked, the service replica should immediately release and clean up all references and return.
     fn abort(&self);
-}
-
-#[derive(Debug, Clone)]
-pub struct StatefulServicePartition {
-    com_impl: IFabricStatefulServicePartition,
-}
-
-impl StatefulServicePartition {
-    pub fn get_com(&self) -> &IFabricStatefulServicePartition {
-        &self.com_impl
-    }
-
-    /// Reports load for the current replica in the partition.
-    pub fn report_load(&self, metrics: &[LoadMetric]) -> crate::Result<()> {
-        let metrics_ref = LoadMetricListRef::from_slice(metrics);
-        let raw = metrics_ref.as_raw_slice();
-        unsafe { self.com_impl.ReportLoad(raw) }
-    }
-}
-
-impl From<&IFabricStatefulServicePartition> for StatefulServicePartition {
-    fn from(e: &IFabricStatefulServicePartition) -> Self {
-        StatefulServicePartition {
-            com_impl: e.clone(),
-        }
-    }
 }
 
 /// TODO: replicator has no public documentation

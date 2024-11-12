@@ -24,7 +24,7 @@ use crate::{
 use super::stateful::{
     PrimaryReplicator, Replicator, StatefulServicePartition, StatefulServiceReplica,
 };
-use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuarumMode};
+use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuorumMode};
 
 pub struct StatefulServiceReplicaProxy {
     com_impl: IFabricStatefulServiceReplica,
@@ -259,7 +259,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     }
     async fn wait_for_catch_up_quorum(
         &self,
-        catchupmode: ReplicaSetQuarumMode,
+        catchupmode: ReplicaSetQuorumMode,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
         info!("PrimaryReplicatorProxy::wait_for_catch_up_quorum: catchupmode {catchupmode:?}");

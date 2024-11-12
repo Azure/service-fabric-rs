@@ -260,29 +260,29 @@ impl ReplicaInformation {
 
 // FABRIC_REPLICA_SET_QUORUM_MODE
 #[derive(Debug, Clone, PartialEq)]
-pub enum ReplicaSetQuarumMode {
+pub enum ReplicaSetQuorumMode {
     All,
     Invalid,
     Write,
 }
 
-impl From<FABRIC_REPLICA_SET_QUORUM_MODE> for ReplicaSetQuarumMode {
+impl From<FABRIC_REPLICA_SET_QUORUM_MODE> for ReplicaSetQuorumMode {
     fn from(r: FABRIC_REPLICA_SET_QUORUM_MODE) -> Self {
         match r {
-            FABRIC_REPLICA_SET_QUORUM_ALL => ReplicaSetQuarumMode::All,
-            FABRIC_REPLICA_SET_QUORUM_INVALID => ReplicaSetQuarumMode::Invalid,
-            FABRIC_REPLICA_SET_WRITE_QUORUM => ReplicaSetQuarumMode::Write,
-            _ => ReplicaSetQuarumMode::Invalid,
+            FABRIC_REPLICA_SET_QUORUM_ALL => ReplicaSetQuorumMode::All,
+            FABRIC_REPLICA_SET_QUORUM_INVALID => ReplicaSetQuorumMode::Invalid,
+            FABRIC_REPLICA_SET_WRITE_QUORUM => ReplicaSetQuorumMode::Write,
+            _ => ReplicaSetQuorumMode::Invalid,
         }
     }
 }
 
-impl From<ReplicaSetQuarumMode> for FABRIC_REPLICA_SET_QUORUM_MODE {
-    fn from(val: ReplicaSetQuarumMode) -> Self {
+impl From<ReplicaSetQuorumMode> for FABRIC_REPLICA_SET_QUORUM_MODE {
+    fn from(val: ReplicaSetQuorumMode) -> Self {
         match val {
-            ReplicaSetQuarumMode::All => FABRIC_REPLICA_SET_QUORUM_ALL,
-            ReplicaSetQuarumMode::Invalid => FABRIC_REPLICA_SET_QUORUM_INVALID,
-            ReplicaSetQuarumMode::Write => FABRIC_REPLICA_SET_WRITE_QUORUM,
+            ReplicaSetQuorumMode::All => FABRIC_REPLICA_SET_QUORUM_ALL,
+            ReplicaSetQuorumMode::Invalid => FABRIC_REPLICA_SET_QUORUM_INVALID,
+            ReplicaSetQuorumMode::Write => FABRIC_REPLICA_SET_WRITE_QUORUM,
         }
     }
 }

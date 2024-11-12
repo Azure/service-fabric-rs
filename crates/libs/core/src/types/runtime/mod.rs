@@ -5,12 +5,15 @@
 
 // Runtime related types.
 
+pub mod stateful;
+pub mod store;
+
 use mssf_com::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION;
 
 use crate::HSTRING;
 
 #[derive(Debug)]
-pub struct EndpointResourceDesc {
+pub struct EndpointResourceDescription {
     pub name: HSTRING,
     pub protocol: HSTRING,
     pub r#type: HSTRING,
@@ -18,9 +21,9 @@ pub struct EndpointResourceDesc {
     pub certificate_name: HSTRING,
 }
 
-impl From<&FABRIC_ENDPOINT_RESOURCE_DESCRIPTION> for EndpointResourceDesc {
+impl From<&FABRIC_ENDPOINT_RESOURCE_DESCRIPTION> for EndpointResourceDescription {
     fn from(e: &FABRIC_ENDPOINT_RESOURCE_DESCRIPTION) -> Self {
-        EndpointResourceDesc {
+        EndpointResourceDescription {
             name: HSTRING::from_wide(unsafe { e.Name.as_wide() }).unwrap(),
             protocol: HSTRING::from_wide(unsafe { e.Protocol.as_wide() }).unwrap(),
             r#type: HSTRING::from_wide(unsafe { e.Type.as_wide() }).unwrap(),

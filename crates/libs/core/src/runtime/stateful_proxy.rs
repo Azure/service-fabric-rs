@@ -21,10 +21,10 @@ use crate::{
     types::ReplicaRole,
 };
 
-use super::{
-    stateful::{PrimaryReplicator, Replicator, StatefulServicePartition, StatefulServiceReplica},
-    stateful_types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuarumMode},
+use super::stateful::{
+    PrimaryReplicator, Replicator, StatefulServicePartition, StatefulServiceReplica,
 };
+use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuarumMode};
 
 pub struct StatefulServiceReplicaProxy {
     com_impl: IFabricStatefulServiceReplica,

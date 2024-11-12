@@ -16,10 +16,10 @@ use mssf_core::{
     error::FabricErrorCode,
     types::{
         QueryServiceReplicaStatus, RemoveReplicaDescription, ServiceNotificationFilterDescription,
-        ServiceNotificationFilterFlags, ServicePartition, ServicePartitionInformation,
-        ServicePartitionQueryDescription, ServicePartitionStatus, ServiceReplicaQueryDescription,
-        ServiceReplicaQueryResult, SingletonPartitionInfomation,
-        StatelessServiceInstanceQueryResult, StatelessServicePartition,
+        ServiceNotificationFilterFlags, ServicePartitionInformation,
+        ServicePartitionQueryDescription, ServicePartitionQueryResult, ServicePartitionStatus,
+        ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
+        StatelessServiceInstanceQueryResult, StatelessServicePartitionQueryResult,
     },
     GUID, HSTRING,
 };
@@ -44,7 +44,12 @@ impl EchoTestClient {
         }
     }
 
-    pub async fn get_partition(&self) -> (StatelessServicePartition, SingletonPartitionInfomation) {
+    pub async fn get_partition(
+        &self,
+    ) -> (
+        StatelessServicePartitionQueryResult,
+        SingletonPartitionInfomation,
+    ) {
         let qc = self.fc.get_query_manager();
         let desc = ServicePartitionQueryDescription {
             service_name: self.service_uri.clone(),
@@ -57,7 +62,7 @@ impl EchoTestClient {
         // there is only one partition
         let p = list.iter().next().unwrap();
         let stateless = match p {
-            ServicePartition::Stateless(s) => s,
+            ServicePartitionQueryResult::Stateless(s) => s,
             _ => panic!("not stateless"),
         };
         let info = stateless.clone().partition_information;

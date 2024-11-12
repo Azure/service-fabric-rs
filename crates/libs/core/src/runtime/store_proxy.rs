@@ -14,7 +14,7 @@ use tracing::info;
 
 use crate::sync::{fabric_begin_end_proxy2, CancellationToken};
 
-use super::store_types::TransactionIsolationLevel;
+use crate::types::TransactionIsolationLevel;
 
 // wrapp for kv store
 #[derive(Clone)]

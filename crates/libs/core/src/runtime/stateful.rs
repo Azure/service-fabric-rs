@@ -9,9 +9,7 @@ use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
 use crate::sync::CancellationToken;
 use crate::types::{LoadMetric, LoadMetricListRef, ReplicaRole};
 
-use super::stateful_types::{
-    Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuarumMode,
-};
+use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuarumMode};
 
 /// Represents a stateful service factory that is responsible for creating replicas
 /// of a specific type of stateful service. Stateful service factories are registered with

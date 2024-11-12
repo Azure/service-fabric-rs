@@ -57,7 +57,7 @@ pub struct ServicePartitionList {
 type ServicePartitionListIter<'a> = FabricIter<
     'a,
     FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM,
-    ServicePartition,
+    ServicePartitionQueryResult,
     ServicePartitionList,
 >;
 
@@ -84,13 +84,13 @@ impl ServicePartitionList {
 }
 
 // FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM
-pub enum ServicePartition {
+pub enum ServicePartitionQueryResult {
     Invalid,
-    Stateful(StatefulServicePartition),
-    Stateless(StatelessServicePartition),
+    Stateful(StatefulServicePartitionQueryResult),
+    Stateless(StatelessServicePartitionQueryResult),
 }
 
-impl From<&FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartition {
+impl From<&FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartitionQueryResult {
     fn from(value: &FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM) -> Self {
         match value.Kind {
             FABRIC_SERVICE_KIND_STATEFUL => {
@@ -140,7 +140,7 @@ impl From<&FABRIC_QUERY_SERVICE_PARTITION_STATUS> for ServicePartitionStatus {
 
 // FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM
 #[derive(Debug, Clone)]
-pub struct StatefulServicePartition {
+pub struct StatefulServicePartitionQueryResult {
     pub partition_information: ServicePartitionInformation,
     pub target_replica_set_size: u32,
     pub min_replica_set_size: u32,
@@ -151,7 +151,9 @@ pub struct StatefulServicePartition {
     //pub Reserved: *mut core::ffi::c_void,
 }
 
-impl From<&FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM> for StatefulServicePartition {
+impl From<&FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM>
+    for StatefulServicePartitionQueryResult
+{
     fn from(value: &FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM) -> Self {
         Self {
             partition_information: unsafe { value.PartitionInformation.as_ref().unwrap().into() },
@@ -165,7 +167,7 @@ impl From<&FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM> for StatefulServ
 }
 
 #[derive(Debug, Clone)]
-pub struct StatelessServicePartition {
+pub struct StatelessServicePartitionQueryResult {
     pub partition_information: ServicePartitionInformation,
     pub instance_count: u32,
     pub health_state: HealthState,
@@ -174,7 +176,9 @@ pub struct StatelessServicePartition {
     // pub Reserved: *mut core::ffi::c_void,
 }
 
-impl From<&FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM> for StatelessServicePartition {
+impl From<&FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM>
+    for StatelessServicePartitionQueryResult
+{
     fn from(value: &FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM) -> Self {
         Self {
             partition_information: unsafe { value.PartitionInformation.as_ref().unwrap().into() },

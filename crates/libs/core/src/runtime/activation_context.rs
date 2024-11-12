@@ -5,7 +5,7 @@
 
 use mssf_com::FabricRuntime::IFabricCodePackageActivationContext6;
 
-use crate::{strings::HSTRINGWrap, types::EndpointResourceDesc, Error, HSTRING, PCWSTR};
+use crate::{strings::HSTRINGWrap, types::EndpointResourceDescription, Error, HSTRING, PCWSTR};
 
 use super::config::ConfigurationPackage;
 
@@ -40,14 +40,14 @@ impl CodePackageActivationContext {
     pub fn get_endpoint_resource(
         &self,
         serviceendpointresourcename: &HSTRING,
-    ) -> crate::Result<EndpointResourceDesc> {
+    ) -> crate::Result<EndpointResourceDescription> {
         let rs = unsafe {
             self.com_impl.GetServiceEndpointResource(PCWSTR::from_raw(
                 serviceendpointresourcename.as_ptr(),
             ))?
         };
         let res_ref = unsafe { rs.as_ref().unwrap() };
-        let desc = EndpointResourceDesc::from(res_ref);
+        let desc = EndpointResourceDescription::from(res_ref);
         Ok(desc)
     }
 

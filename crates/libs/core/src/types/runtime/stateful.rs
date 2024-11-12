@@ -259,6 +259,7 @@ impl ReplicaInformation {
 }
 
 // FABRIC_REPLICA_SET_QUORUM_MODE
+#[derive(Debug, Clone, PartialEq)]
 pub enum ReplicaSetQuarumMode {
     All,
     Invalid,

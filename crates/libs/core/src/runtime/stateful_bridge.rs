@@ -429,6 +429,7 @@ where
         catchupmode: FABRIC_REPLICA_SET_QUORUM_MODE,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> crate::Result<super::IFabricAsyncOperationContext> {
+        let catchupmode = catchupmode.into();
         info!(
             "IFabricPrimaryReplicatorBridge::BeginWaitForCatchUpQuorum: mode {:?}",
             catchupmode
@@ -436,9 +437,7 @@ where
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext3::make(callback);
         ctx.spawn(&self.rt, async move {
-            inner
-                .wait_for_catch_up_quorum(catchupmode.into(), token)
-                .await
+            inner.wait_for_catch_up_quorum(catchupmode, token).await
         })
     }
 
@@ -488,7 +487,7 @@ where
     }
 
     fn RemoveReplica(&self, replicaid: i64) -> crate::Result<()> {
-        info!("IFabricPrimaryReplicatorBridge::RemoveReplica");
+        info!("IFabricPrimaryReplicatorBridge::RemoveReplica: replicaid {replicaid}");
         self.inner.remove_replica(replicaid)
     }
 }

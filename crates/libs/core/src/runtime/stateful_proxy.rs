@@ -262,7 +262,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         catchupmode: ReplicaSetQuarumMode,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
-        info!("PrimaryReplicatorProxy::wait_for_catch_up_quorum");
+        info!("PrimaryReplicatorProxy::wait_for_catch_up_quorum: catchupmode {catchupmode:?}");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(

@@ -10,11 +10,10 @@ use mssf_core::{
             PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServicePartition,
             StatefulServiceReplica,
         },
-        stateful_types::{
-            Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuarumMode,
-        },
     },
-    types::ReplicaRole,
+    types::{
+        Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig, ReplicaSetQuarumMode,
+    },
 };
 use mssf_core::{Error, HSTRING};
 use std::{cell::Cell, sync::Mutex};

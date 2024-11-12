@@ -14,13 +14,11 @@ use mssf_core::{
             StatefulServiceReplica,
         },
         stateful_proxy::StatefulServiceReplicaProxy,
-        stateful_types::OpenMode,
         store::{create_com_key_value_store_replica, DummyStoreEventHandler},
         store_proxy::KVStoreProxy,
-        store_types::ReplicatorSettings,
     },
     sync::CancellationToken,
-    types::ReplicaRole,
+    types::{LocalStoreKind, OpenMode, ReplicaRole, ReplicatorSettings},
     Error, GUID, HSTRING,
 };
 use tokio::{
@@ -84,7 +82,7 @@ impl StatefulServiceFactory for Factory {
             *partitionid,
             replicaid,
             &settings,
-            mssf_core::runtime::store_types::LocalStoreKind::Ese,
+            LocalStoreKind::Ese,
             None,
             &handler,
         )?;

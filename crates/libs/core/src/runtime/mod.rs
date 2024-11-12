@@ -26,7 +26,6 @@ pub mod stateful;
 pub mod stateful_bridge;
 #[cfg(feature = "tokio_async")]
 pub mod stateful_proxy;
-pub mod stateful_types;
 #[cfg(feature = "tokio_async")]
 pub mod stateless;
 #[cfg(feature = "tokio_async")]
@@ -34,7 +33,6 @@ pub mod stateless_bridge;
 pub mod store;
 #[cfg(feature = "tokio_async")]
 pub mod store_proxy;
-pub mod store_types;
 
 mod activation_context;
 pub use activation_context::{CodePackageActivationContext, CodePackageInfo};

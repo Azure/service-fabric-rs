@@ -16,7 +16,7 @@ use mssf_com::{
 use tracing::info;
 use windows_core::implement;
 
-use super::store_types::{EseLocalStoreSettings, LocalStoreKind, ReplicatorSettings};
+use crate::types::{EseLocalStoreSettings, LocalStoreKind, ReplicatorSettings};
 
 #[implement(IFabricStoreEventHandler)]
 pub struct DummyStoreEventHandler {}

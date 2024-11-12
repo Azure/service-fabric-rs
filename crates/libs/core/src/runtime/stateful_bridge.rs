@@ -30,13 +30,10 @@ use mssf_com::{
 };
 
 use crate::{
-    runtime::{
-        stateful::StatefulServicePartition,
-        stateful_types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig},
-    },
+    runtime::stateful::StatefulServicePartition,
     strings::HSTRINGWrap,
     sync::BridgeContext3,
-    types::ReplicaRole,
+    types::{Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig},
 };
 
 use super::{

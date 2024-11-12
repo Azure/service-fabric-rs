@@ -17,10 +17,11 @@ use mssf_core::{
     types::{
         PartitionLoadInformation, PartitionLoadInformationQueryDescription,
         QueryServiceReplicaStatus, ReplicaRole, RestartReplicaDescription,
-        ServiceNotificationFilterDescription, ServiceNotificationFilterFlags, ServicePartition,
-        ServicePartitionInformation, ServicePartitionQueryDescription, ServicePartitionStatus,
-        ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
-        StatefulServicePartition, StatefulServiceReplicaQueryResult,
+        ServiceNotificationFilterDescription, ServiceNotificationFilterFlags,
+        ServicePartitionInformation, ServicePartitionQueryDescription, ServicePartitionQueryResult,
+        ServicePartitionStatus, ServiceReplicaQueryDescription, ServiceReplicaQueryResult,
+        SingletonPartitionInfomation, StatefulServicePartitionQueryResult,
+        StatefulServiceReplicaQueryResult,
     },
     GUID, HSTRING,
 };
@@ -45,7 +46,10 @@ impl TestClient {
 
     async fn get_partition(
         &self,
-    ) -> mssf_core::Result<(StatefulServicePartition, SingletonPartitionInfomation)> {
+    ) -> mssf_core::Result<(
+        StatefulServicePartitionQueryResult,
+        SingletonPartitionInfomation,
+    )> {
         let qc = self.fc.get_query_manager();
         let desc = ServicePartitionQueryDescription {
             service_name: self.service_uri.clone(),
@@ -58,7 +62,7 @@ impl TestClient {
         // there is only one partition
         let p = list.iter().next().unwrap();
         let stateful = match p {
-            ServicePartition::Stateful(s) => s,
+            ServicePartitionQueryResult::Stateful(s) => s,
             _ => panic!("not stateless"),
         };
         let info = stateful.clone().partition_information;

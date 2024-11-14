@@ -9,7 +9,7 @@ use mssf_com::FabricRuntime::IFabricStatefulServicePartition;
 use crate::sync::CancellationToken;
 use crate::types::{LoadMetric, LoadMetricListRef, ReplicaRole};
 
-use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuarumMode};
+use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuorumMode};
 
 /// Represents a stateful service factory that is responsible for creating replicas
 /// of a specific type of stateful service. Stateful service factories are registered with
@@ -135,7 +135,7 @@ pub trait LocalPrimaryReplicator: Replicator {
     ) -> crate::Result<()>;
     async fn wait_for_catch_up_quorum(
         &self,
-        catchupmode: ReplicaSetQuarumMode,
+        catchupmode: ReplicaSetQuorumMode,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()>;
     fn update_current_replica_set_configuration(

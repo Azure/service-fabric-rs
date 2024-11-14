@@ -12,7 +12,7 @@ use mssf_core::{
         },
     },
     types::{
-        Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig, ReplicaSetQuarumMode,
+        Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig, ReplicaSetQuorumMode,
     },
 };
 use mssf_core::{Error, HSTRING};
@@ -122,7 +122,7 @@ impl PrimaryReplicator for AppFabricReplicator {
 
     async fn wait_for_catch_up_quorum(
         &self,
-        _catchupmode: ReplicaSetQuarumMode,
+        _catchupmode: ReplicaSetQuorumMode,
         _: CancellationToken,
     ) -> mssf_core::Result<()> {
         info!("AppFabricReplicator2::PrimaryReplicator::wait_for_catch_up_quorum");

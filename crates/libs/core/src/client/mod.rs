@@ -21,6 +21,7 @@ use self::{query_client::QueryClient, svc_mgmt_client::ServiceManagementClient};
 
 mod connection;
 mod notification;
+mod package_change;
 pub mod query_client;
 pub mod svc_mgmt_client;
 
@@ -134,6 +135,28 @@ impl FabricClientBuilder {
     {
         let handler = LambdaServiceNotificationHandler::new(f);
         self.with_service_notification_handler(handler)
+    }
+
+    /// Configures the package change handler internally.
+    fn with_package_change_handler(
+        mut self,
+        handler: impl PackageChangeEventHandler,
+    ) -> Self {
+        self.sn_handler = Some(PackageChangeEventHandlerBridge::new_com(handler));
+        self
+    }
+
+    /// Configures the service notification handler.
+    /// See details in `register_service_notification_filter` API. TODO: update comment
+    /// If the service endpoint change matches the registered filter,
+    /// this notification is invoked.
+    ///
+    pub fn with_on_package_change<T>(self, f: T) -> Self
+    where
+        T: Fn(&PackageChangeNotification) -> crate::Result<()> + 'static,
+    {
+        let handler = LambdaPackageChangeHandler::new(f);
+        self.with_package_change_handler(handler)
     }
 
     /// When FabricClient connects to the SF cluster, this callback is invoked.

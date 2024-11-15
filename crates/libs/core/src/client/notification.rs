@@ -136,6 +136,7 @@ impl PartialOrd for ServiceEndpointsVersion {
 
 // Bridge implementation for the notification handler to turn rust code into SF com object.
 #[windows_core::implement(IFabricServiceNotificationEventHandler)]
+#[allow(non_camel_case_types)] // Suppress lint for _Impl struct
 pub struct ServiceNotificationEventHandlerBridge<T>
 where
     T: ServiceNotificationEventHandler,
@@ -173,6 +174,7 @@ where
 /// Lambda implemnentation of ServiceNotificationEventHandler trait.
 /// This is used in FabricClientBuilder to build function into handler.
 /// Not exposed to user.
+/// This isn't strictly required by the implementation as written. But it leaves open the door to non-lambda implementations in future.
 pub struct LambdaServiceNotificationHandler<T>
 where
     T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,

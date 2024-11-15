@@ -20,6 +20,8 @@ fn test_fn() {
     let my_ctx = CodePackageActivationContext::create();
     my_ctx.unwrap();
 
+    // One might wish to use such a callback to e.g. trigger custom handling of configuration changes
+    // This doesn't require the config feature to be enabled
     let _client = FabricClientBuilder::new()
     .with_on_configuration_package_change(|c|
         {

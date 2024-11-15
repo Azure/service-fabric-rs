@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
+//! Handle callbacks for configuration package changes
+//! TODO: We probably should also provide a helpful callback to use in conjunction with the config-rs support (so that it processes configuration changes)
 use mssf_com::FabricRuntime::{
     IFabricConfigurationPackageChangeHandler, IFabricConfigurationPackageChangeHandler_Impl,
 };

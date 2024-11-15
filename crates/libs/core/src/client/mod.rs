@@ -4,16 +4,22 @@
 // ------------------------------------------------------------
 
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
-use mssf_com::{FabricClient::{
-    FabricCreateClient3, FabricCreateLocalClient3, FabricCreateLocalClient4,
-    IFabricClientConnectionEventHandler, IFabricPropertyManagementClient2, IFabricQueryClient10,
-    IFabricServiceManagementClient6, IFabricServiceNotificationEventHandler,
-}, FabricRuntime::IFabricConfigurationPackageChangeHandler};
+use mssf_com::{
+    FabricClient::{
+        FabricCreateClient3, FabricCreateLocalClient3, FabricCreateLocalClient4,
+        IFabricClientConnectionEventHandler, IFabricPropertyManagementClient2,
+        IFabricQueryClient10, IFabricServiceManagementClient6,
+        IFabricServiceNotificationEventHandler,
+    },
+    FabricRuntime::IFabricConfigurationPackageChangeHandler,
+};
 use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
     ServiceNotificationEventHandlerBridge,
 };
-use package_change::config::{ConfigurationPackageChangeEventHandlerBridge, LambdaConfigurationPackageEventHandler};
+use package_change::config::{
+    ConfigurationPackageChangeEventHandlerBridge, LambdaConfigurationPackageEventHandler,
+};
 use windows_core::Interface;
 
 use crate::types::ClientRole;
@@ -29,7 +35,7 @@ pub mod svc_mgmt_client;
 // reexport
 pub use connection::GatewayInformationResult;
 pub use notification::ServiceNotification;
-pub use package_change::{PackageChangeType, config::ConfigurationPackageChangeEvent};
+pub use package_change::{config::ConfigurationPackageChangeEvent, PackageChangeType};
 
 #[cfg(test)]
 mod tests;
@@ -142,7 +148,7 @@ impl FabricClientBuilder {
     }
 
     /// Configures the configuration package change handler.
-    /// 
+    ///
     /// Notified on addition, removal, or modification of configuration packages
     ///
     pub fn with_on_configuration_package_change<T>(mut self, f: T) -> Self
@@ -150,7 +156,9 @@ impl FabricClientBuilder {
         T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
     {
         let handler = LambdaConfigurationPackageEventHandler::new(f);
-        self.conf_pkg_handler = Some(ConfigurationPackageChangeEventHandlerBridge::new_com(handler));
+        self.conf_pkg_handler = Some(ConfigurationPackageChangeEventHandlerBridge::new_com(
+            handler,
+        ));
         self
     }
 

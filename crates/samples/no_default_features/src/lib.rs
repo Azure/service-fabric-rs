@@ -10,11 +10,25 @@
 //!
 //! This sample demonstrates it is possible to use the library with default-features = false and ensures that that scenario remains compiling as PRs go into the repository.
 //!
-use mssf_core::runtime::CodePackageActivationContext;
+use std::borrow::Borrow;
+
+use mssf_core::{client::FabricClientBuilder, runtime::CodePackageActivationContext};
 #[no_mangle]
 fn test_fn() {
     // Make sure we link something
     //
     let my_ctx = CodePackageActivationContext::create();
     my_ctx.unwrap();
+
+    let _client = FabricClientBuilder::new()
+    .with_on_configuration_package_change(|c|
+        {
+            let change_type = c.change_type;
+            let changed_package_name = c.config_package.as_ref().map(|x |x.get_description().name.to_string_lossy());
+            let changed_package_str = changed_package_name.borrow().as_deref().unwrap_or("Unknown package name");
+            println!("Received config package change of type {change_type:?} to package {changed_package_str}");
+            Ok(())
+        }
+    )
+    .build();
 }

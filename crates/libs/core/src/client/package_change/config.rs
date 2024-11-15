@@ -2,34 +2,36 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
-use mssf_com::FabricRuntime::{IFabricConfigurationPackageChangeHandler, IFabricConfigurationPackageChangeHandler_Impl};
+use mssf_com::FabricRuntime::{
+    IFabricConfigurationPackageChangeHandler, IFabricConfigurationPackageChangeHandler_Impl,
+};
 
 use crate::runtime::config::ConfigurationPackage;
 
 use super::PackageChangeType;
 
 #[derive(Debug, Clone)]
-pub struct ConfigurationPackageChangeEvent
-{
+pub struct ConfigurationPackageChangeEvent {
     pub change_type: PackageChangeType,
     pub config_package: Option<ConfigurationPackage>,
-    pub previous_config_package: Option<ConfigurationPackage>
+    pub previous_config_package: Option<ConfigurationPackage>,
 }
 
-impl ConfigurationPackageChangeEvent
-{
-    fn from_com(change_type: PackageChangeType, 
+impl ConfigurationPackageChangeEvent {
+    fn from_com(
+        change_type: PackageChangeType,
         _source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
         previous_configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
-        configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>) -> Self
-    {
-        let config_package: Option<ConfigurationPackage> = configpackage.map(|c| ConfigurationPackage::from_com(c.clone()));
-        let previous_config_package: Option<ConfigurationPackage> = previous_configpackage.map(|c| ConfigurationPackage::from_com(c.clone()));
-        Self
-        {
-            change_type, 
+        configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
+    ) -> Self {
+        let config_package: Option<ConfigurationPackage> =
+            configpackage.map(|c| ConfigurationPackage::from_com(c.clone()));
+        let previous_config_package: Option<ConfigurationPackage> =
+            previous_configpackage.map(|c| ConfigurationPackage::from_com(c.clone()));
+        Self {
+            change_type,
             config_package,
-            previous_config_package
+            previous_config_package,
         }
     }
 }
@@ -63,7 +65,8 @@ where
     }
 }
 
-impl<T> IFabricConfigurationPackageChangeHandler_Impl for ConfigurationPackageChangeEventHandlerBridge<T>
+impl<T> IFabricConfigurationPackageChangeHandler_Impl
+    for ConfigurationPackageChangeEventHandlerBridge<T>
 where
     T: ConfigurationPackageChangeEventHandler,
 {
@@ -72,7 +75,12 @@ where
         source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
         configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let event = ConfigurationPackageChangeEvent::from_com(PackageChangeType::Addition, source, configpackage, None);
+        let event = ConfigurationPackageChangeEvent::from_com(
+            PackageChangeType::Addition,
+            source,
+            configpackage,
+            None,
+        );
         // TODO: unwrap, or should we change the return type of the lambda to be the empty type?
         self.inner.on_change(&event).unwrap();
     }
@@ -81,8 +89,13 @@ where
         &self,
         source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
         configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
-    ) { 
-        let event = ConfigurationPackageChangeEvent::from_com(PackageChangeType::Removal, source, configpackage, None);
+    ) {
+        let event = ConfigurationPackageChangeEvent::from_com(
+            PackageChangeType::Removal,
+            source,
+            configpackage,
+            None,
+        );
         self.inner.on_change(&event).unwrap();
     }
 
@@ -92,7 +105,12 @@ where
         previousconfigpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
         configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let event = ConfigurationPackageChangeEvent::from_com(PackageChangeType::Modification, source, configpackage, previousconfigpackage);
+        let event = ConfigurationPackageChangeEvent::from_com(
+            PackageChangeType::Modification,
+            source,
+            configpackage,
+            previousconfigpackage,
+        );
         self.inner.on_change(&event).unwrap();
     }
 }

@@ -7,9 +7,11 @@
 pub(super) mod config;
 
 /// The ways a given Service Fabric Package (e.g. ConfigurationPackage or DataPackage) can change
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub enum PackageChangeType {
-    Addition,
-    Removal,
-    Modification,
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum PackageChangeEvent<T> {
+    Addition { new_package: T },
+    Removal { previous_package: T },
+    Modification{ previous_package: T, new_package: T},
 }
+
+pub type ConfigurationPackageChangeEvent = PackageChangeEvent<super::config::ConfigurationPackage>;

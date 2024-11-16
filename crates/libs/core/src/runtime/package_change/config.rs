@@ -5,43 +5,22 @@
 //! Handle callbacks for configuration package changes
 //! TODO: We probably should also provide a helpful callback to use in conjunction with the config-rs support (so that it processes configuration changes)
 use mssf_com::FabricRuntime::{
-    IFabricConfigurationPackageChangeHandler, IFabricConfigurationPackageChangeHandler_Impl,
+    IFabricCodePackageActivationContext6, IFabricConfigurationPackageChangeHandler, IFabricConfigurationPackageChangeHandler_Impl
 };
 
-use crate::runtime::config::ConfigurationPackage;
+use crate::runtime::{config::ConfigurationPackage, CodePackageActivationContext};
 
-use super::PackageChangeType;
-
-#[derive(Debug, Clone)]
-pub struct ConfigurationPackageChangeEvent {
-    pub change_type: PackageChangeType,
-    pub config_package: Option<ConfigurationPackage>,
-    pub previous_config_package: Option<ConfigurationPackage>,
-}
-
-impl ConfigurationPackageChangeEvent {
-    fn from_com(
-        change_type: PackageChangeType,
-        _source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
-        previous_configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
-        configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
-    ) -> Self {
-        let config_package: Option<ConfigurationPackage> =
-            configpackage.map(|c| ConfigurationPackage::from_com(c.clone()));
-        let previous_config_package: Option<ConfigurationPackage> =
-            previous_configpackage.map(|c| ConfigurationPackage::from_com(c.clone()));
-        Self {
-            change_type,
-            config_package,
-            previous_config_package,
-        }
-    }
-}
+use super::ConfigurationPackageChangeEvent;
 
 /// Rust trait to turn rust code into IFabricConfigurationPackageChangeHandler.
 /// Not exposed to user
 pub trait ConfigurationPackageChangeEventHandler: 'static {
     fn on_change(&self, change: &ConfigurationPackageChangeEvent) -> crate::Result<()>;
+}
+
+// Handle to the registered ConfigurationPackageChangeHandle
+pub struct ConfigurationPackageChangeHandlerId {
+    id: i64,
 }
 
 // Bridge implementation for the change handler to turn rust code into SF com object.
@@ -61,10 +40,6 @@ where
     pub fn new(inner: T) -> Self {
         Self { inner }
     }
-
-    pub fn new_com(inner: T) -> IFabricConfigurationPackageChangeHandler {
-        Self::new(inner).into()
-    }
 }
 
 impl<T> IFabricConfigurationPackageChangeHandler_Impl
@@ -77,42 +52,35 @@ where
         source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
         configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let event = ConfigurationPackageChangeEvent::from_com(
-            PackageChangeType::Addition,
-            source,
-            configpackage,
-            None,
-        );
+        let new_package =ConfigurationPackage::from_com(
+            configpackage.unwrap().clone());
+        let event = ConfigurationPackageChangeEvent::Addition { new_package };
         // TODO: unwrap, or should we change the return type of the lambda to be the empty type?
         self.inner.on_change(&event).unwrap();
     }
 
     fn OnPackageRemoved(
         &self,
-        source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
+        _source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
         configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let event = ConfigurationPackageChangeEvent::from_com(
-            PackageChangeType::Removal,
-            source,
-            configpackage,
-            None,
-        );
+        let previous_package =ConfigurationPackage::from_com(
+            configpackage.unwrap().clone());
+        let event = ConfigurationPackageChangeEvent::Removal { previous_package };
         self.inner.on_change(&event).unwrap();
     }
 
     fn OnPackageModified(
         &self,
-        source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
+        _source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
         previousconfigpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
         configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let event = ConfigurationPackageChangeEvent::from_com(
-            PackageChangeType::Modification,
-            source,
-            configpackage,
-            previousconfigpackage,
-        );
+        let new_package= ConfigurationPackage::from_com(
+            configpackage.unwrap().clone());
+        let previous_package =ConfigurationPackage::from_com(
+            previousconfigpackage.unwrap().clone());
+        let event = ConfigurationPackageChangeEvent::Modification { previous_package, new_package };
         self.inner.on_change(&event).unwrap();
     }
 }
@@ -120,7 +88,8 @@ where
 /// Lambda implementation of ConfigurationPackageChangeEventHandler trait.
 /// This is used in FabricClientBuilder to build function into handler.
 /// Not exposed to user.
-pub(crate) struct LambdaConfigurationPackageEventHandler<T>
+/// Strictly speaking we don't need this layer. But it would allow us to open the door to trait implementations someday
+struct LambdaConfigurationPackageEventHandler<T>
 where
     T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
 {
@@ -142,5 +111,37 @@ where
 {
     fn on_change(&self, change: &ConfigurationPackageChangeEvent) -> crate::Result<()> {
         (self.f)(change)
+    }
+}
+
+/// This struct ensures that the handle is retained and deregistered before the implementation is dropped
+struct ConfigurationPackageChangeEventHandlerManager
+{
+    activation_ctx: IFabricCodePackageActivationContext6,
+    implementation: IFabricConfigurationPackageChangeHandler,
+    handle: ConfigurationPackageChangeHandlerId
+}
+
+impl ConfigurationPackageChangeEventHandlerManager
+{
+    pub fn new(activation_context: &CodePackageActivationContext, implementation: IFabricConfigurationPackageChangeHandler) -> crate::Result<Self>
+    {
+        let activation_ctx = activation_context.get_com();
+        // TODO: this is not unwind safe. Is it possible for SF to unwind into us?
+        let registration_result = unsafe { activation_ctx.RegisterConfigurationPackageChangeHandler(&implementation) }?;
+
+        Ok(Self
+        {
+            activation_ctx,
+            implementation,
+            handle: ConfigurationPackageChangeHandlerId { id: registration_result }
+        })
+    }
+}
+
+impl Drop for ConfigurationPackageChangeEventHandlerManager
+{
+    fn drop(&mut self) {
+        unsafe { self.activation_ctx.UnregisterConfigurationPackageChangeHandler(self.handle.id) }.unwrap();
     }
 }

@@ -4,21 +4,15 @@
 // ------------------------------------------------------------
 
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
-use mssf_com::{
-    FabricClient::{
+use mssf_com::FabricClient::{
         FabricCreateClient3, FabricCreateLocalClient3, FabricCreateLocalClient4,
         IFabricClientConnectionEventHandler, IFabricPropertyManagementClient2,
         IFabricQueryClient10, IFabricServiceManagementClient6,
         IFabricServiceNotificationEventHandler,
-    },
-    FabricRuntime::IFabricConfigurationPackageChangeHandler,
-};
+    };
 use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
     ServiceNotificationEventHandlerBridge,
-};
-use package_change::config::{
-    ConfigurationPackageChangeEventHandlerBridge, LambdaConfigurationPackageEventHandler,
 };
 use windows_core::Interface;
 
@@ -28,14 +22,12 @@ use self::{query_client::QueryClient, svc_mgmt_client::ServiceManagementClient};
 
 mod connection;
 mod notification;
-mod package_change;
 pub mod query_client;
 pub mod svc_mgmt_client;
 
 // reexport
 pub use connection::GatewayInformationResult;
 pub use notification::ServiceNotification;
-pub use package_change::{config::ConfigurationPackageChangeEvent, PackageChangeType};
 
 #[cfg(test)]
 mod tests;
@@ -102,7 +94,6 @@ fn create_local_client_internal<T: Interface>(
 pub struct FabricClientBuilder {
     sn_handler: Option<IFabricServiceNotificationEventHandler>,
     cc_handler: Option<LambdaClientConnectionNotificationHandler>,
-    conf_pkg_handler: Option<IFabricConfigurationPackageChangeHandler>,
     client_role: ClientRole,
     connection_strings: Option<Vec<crate::HSTRING>>,
 }
@@ -119,7 +110,6 @@ impl FabricClientBuilder {
         Self {
             sn_handler: None,
             cc_handler: None,
-            conf_pkg_handler: None,
             client_role: ClientRole::Unknown,
             connection_strings: None,
         }
@@ -145,21 +135,6 @@ impl FabricClientBuilder {
     {
         let handler = LambdaServiceNotificationHandler::new(f);
         self.with_service_notification_handler(handler)
-    }
-
-    /// Configures the configuration package change handler.
-    ///
-    /// Notified on addition, removal, or modification of configuration packages
-    ///
-    pub fn with_on_configuration_package_change<T>(mut self, f: T) -> Self
-    where
-        T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
-    {
-        let handler = LambdaConfigurationPackageEventHandler::new(f);
-        self.conf_pkg_handler = Some(ConfigurationPackageChangeEventHandlerBridge::new_com(
-            handler,
-        ));
-        self
     }
 
     /// When FabricClient connects to the SF cluster, this callback is invoked.

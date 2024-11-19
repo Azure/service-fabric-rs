@@ -12,8 +12,10 @@ mod metrics;
 pub use metrics::*;
 
 use mssf_com::FabricTypes::{
-    FABRIC_HEALTH_STATE, FABRIC_HEALTH_STATE_ERROR, FABRIC_HEALTH_STATE_INVALID,
-    FABRIC_HEALTH_STATE_OK, FABRIC_HEALTH_STATE_UNKNOWN, FABRIC_HEALTH_STATE_WARNING,
+    FABRIC_FAULT_TYPE, FABRIC_FAULT_TYPE_INVALID, FABRIC_FAULT_TYPE_PERMANENT,
+    FABRIC_FAULT_TYPE_TRANSIENT, FABRIC_HEALTH_STATE, FABRIC_HEALTH_STATE_ERROR,
+    FABRIC_HEALTH_STATE_INVALID, FABRIC_HEALTH_STATE_OK, FABRIC_HEALTH_STATE_UNKNOWN,
+    FABRIC_HEALTH_STATE_WARNING,
 };
 
 // FABRIC_HEALTH_STATE
@@ -35,6 +37,35 @@ impl From<&FABRIC_HEALTH_STATE> for HealthState {
             FABRIC_HEALTH_STATE_ERROR => Self::Error,
             FABRIC_HEALTH_STATE_UNKNOWN => Self::Unknown,
             _ => Self::Invalid,
+        }
+    }
+}
+
+// FABRIC_FAULT_TYPE
+#[derive(Debug, Clone, PartialEq)]
+pub enum FaultType {
+    Invalid,
+    Permanent,
+    Transient,
+}
+
+impl From<FABRIC_FAULT_TYPE> for FaultType {
+    fn from(value: FABRIC_FAULT_TYPE) -> Self {
+        match value {
+            FABRIC_FAULT_TYPE_INVALID => Self::Invalid,
+            FABRIC_FAULT_TYPE_PERMANENT => Self::Permanent,
+            FABRIC_FAULT_TYPE_TRANSIENT => Self::Transient,
+            _ => Self::Invalid,
+        }
+    }
+}
+
+impl From<FaultType> for FABRIC_FAULT_TYPE {
+    fn from(value: FaultType) -> Self {
+        match value {
+            FaultType::Invalid => FABRIC_FAULT_TYPE_INVALID,
+            FaultType::Permanent => FABRIC_FAULT_TYPE_PERMANENT,
+            FaultType::Transient => FABRIC_FAULT_TYPE_TRANSIENT,
         }
     }
 }

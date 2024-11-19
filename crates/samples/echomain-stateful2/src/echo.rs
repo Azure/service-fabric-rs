@@ -7,7 +7,7 @@
 
 use std::io::Error;
 
-use mssf_core::runtime::stateful::StatefulServicePartition;
+use mssf_core::runtime::stateful_proxy::StatefulServicePartition;
 use mssf_core::types::LoadMetric;
 use mssf_core::HSTRING;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};

@@ -9,11 +9,8 @@ use mssf_com::{
 use mssf_core::{
     runtime::{
         executor::{DefaultExecutor, Executor},
-        stateful::{
-            PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition,
-            StatefulServiceReplica,
-        },
-        stateful_proxy::StatefulServiceReplicaProxy,
+        stateful::{PrimaryReplicator, StatefulServiceFactory, StatefulServiceReplica},
+        stateful_proxy::{StatefulServicePartition, StatefulServiceReplicaProxy},
         store::{create_com_key_value_store_replica, DummyStoreEventHandler},
         store_proxy::KVStoreProxy,
     },

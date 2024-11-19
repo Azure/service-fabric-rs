@@ -10,7 +10,7 @@
 
 use std::sync::Arc;
 
-use crate::{Interface, HSTRING};
+use crate::{runtime::stateful_proxy::StatefulServicePartition, Interface, HSTRING};
 use tracing::info;
 use windows_core::implement;
 
@@ -20,8 +20,8 @@ use mssf_com::{
         IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl, IFabricReplicator,
         IFabricReplicatorCatchupSpecificQuorum, IFabricReplicatorCatchupSpecificQuorum_Impl,
         IFabricReplicator_Impl, IFabricStatefulServiceFactory, IFabricStatefulServiceFactory_Impl,
-        IFabricStatefulServicePartition, IFabricStatefulServiceReplica,
-        IFabricStatefulServiceReplica_Impl,
+        IFabricStatefulServicePartition, IFabricStatefulServicePartition3,
+        IFabricStatefulServiceReplica, IFabricStatefulServiceReplica_Impl,
     },
     FabricTypes::{
         FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_ROLE,
@@ -30,7 +30,6 @@ use mssf_com::{
 };
 
 use crate::{
-    runtime::stateful::StatefulServicePartition,
     strings::HSTRINGWrap,
     sync::BridgeContext3,
     types::{Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig},
@@ -542,14 +541,18 @@ where
         let inner = self.inner.clone();
         let rt_cp = self.rt.clone();
         let openmode2: OpenMode = openmode.into();
-        let partition2: StatefulServicePartition = partition.unwrap().into();
+        let com_partition = partition
+            .unwrap()
+            .cast::<IFabricStatefulServicePartition3>()
+            .expect("cannot query interface");
+        let partition = StatefulServicePartition::from(&com_partition);
         info!(
             "IFabricStatefulReplicaBridge::BeginOpen: mode {:?}",
             openmode2
         );
         let (ctx, token) = BridgeContext3::make(callback);
         ctx.spawn(&self.rt, async move {
-            inner.open(openmode2, &partition2, token).await.map(|s| {
+            inner.open(openmode2, &partition, token).await.map(|s| {
                 let bridge: IFabricPrimaryReplicator =
                     IFabricPrimaryReplicatorBridge::create(s, rt_cp).into();
                 bridge.clone().cast::<IFabricReplicator>().unwrap()

@@ -25,7 +25,14 @@ where
     T: 'static,
 {
     content: Cell<Option<T>>,
-    is_completed: Cell<bool>,
+    /// Indicates the async operation has completed or not.
+    /// This is a memory barrier for making the content available
+    /// from writer thread to the reader thread. It is needed because
+    /// in SF COM API, the caller can call Begin operation, poll on this
+    /// status until complete, and End operation without barriers.
+    is_completed: std::sync::atomic::AtomicBool,
+    /// mssf never completes async operations synchronously.
+    /// This is always false.
     is_completed_synchronously: bool,
     callback: IFabricAsyncOperationCallback,
     token: CancellationToken,
@@ -38,7 +45,7 @@ where
     fn new(callback: IFabricAsyncOperationCallback, token: CancellationToken) -> Self {
         Self {
             content: Cell::new(None),
-            is_completed: Cell::new(false),
+            is_completed: std::sync::atomic::AtomicBool::new(false),
             is_completed_synchronously: false,
             callback,
             token,
@@ -76,7 +83,6 @@ where
             let ok = future.await;
             let self_impl: &BridgeContext3<T> = unsafe { self_cp.as_impl() };
             self_impl.set_content(ok);
-            self_impl.set_complete();
             let cb = self_impl.Callback().unwrap();
             unsafe { cb.Invoke(&self_cp) };
         });
@@ -95,40 +101,48 @@ where
         self_impl.consume_content()
     }
 
-    // TODO: send and comsume is expected to happend accross threads.
-    // Even though we use a oneshot channel to send the signal,
-    // it might be safer to add another memory barrier here.
+    /// Set the content for the ctx.
+    /// Marks the ctx as completed.
     fn set_content(&self, content: T) {
         let prev = self.content.replace(Some(content));
-        assert!(prev.is_none())
+        assert!(prev.is_none());
+        self.set_complete();
     }
 
-    // can only be called once after set content.
+    /// Consumes the content set by set_content().
+    /// can only be called once after set content.
     fn consume_content(&self) -> crate::Result<T> {
-        let opt = self.content.take();
-        match opt {
-            Some(x) => Ok(x),
-            None => {
-                if !self.IsCompleted().as_bool() {
-                    return Err(FabricErrorCode::FABRIC_E_OPERATION_NOT_COMPLETE.into());
-                }
+        match self.check_complete() {
+            true => Ok(self.content.take().expect("content is consumed twice.")),
+            false => {
                 if self.token.is_cancelled() {
                     Err(FabricErrorCode::E_ABORT.into())
                 } else {
-                    panic!("content is consumed twice.")
+                    Err(FabricErrorCode::FABRIC_E_OPERATION_NOT_COMPLETE.into())
                 }
             }
         }
     }
 
+    /// Set the ctx as completed. Requires the ctx content to be set. Makes
+    /// the content available for access from other threads using barrier.
     fn set_complete(&self) {
-        self.is_completed.set(true);
+        self.is_completed
+            .store(true, std::sync::atomic::Ordering::Release);
+    }
+
+    /// Checks ctx is completed.
+    /// Makes sure content sets by other threads is visible from this thread.
+    fn check_complete(&self) -> bool {
+        self.is_completed.load(std::sync::atomic::Ordering::Acquire)
     }
 }
 
 impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3<T> {
     fn IsCompleted(&self) -> crate::BOOLEAN {
-        self.is_completed.get().into()
+        self.is_completed
+            .load(std::sync::atomic::Ordering::Relaxed)
+            .into()
     }
 
     // This always returns false because we defer all tasks in the background executuor.

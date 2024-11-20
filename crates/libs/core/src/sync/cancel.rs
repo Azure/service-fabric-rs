@@ -16,7 +16,10 @@ use mssf_com::FabricCommon::{
 pub use tokio_util::sync::CancellationToken;
 use windows_core::{implement, AsImpl};
 
-use crate::{error::FabricErrorCode, runtime::executor::Executor};
+use crate::{
+    error::FabricErrorCode,
+    runtime::executor::{Executor, JoinHandle},
+};
 
 /// Async operation context for bridging rust code into SF COM api that supports cancellation.
 #[implement(IFabricAsyncOperationContext)]
@@ -79,10 +82,13 @@ where
     {
         let self_cp: IFabricAsyncOperationContext = self.into();
         let self_cp2 = self_cp.clone();
+        let rt_cp = rt.clone();
         rt.spawn(async move {
-            let ok = future.await;
+            // Run user code in a task and record its status.
+            let task_res = rt_cp.spawn(async move { future.await }).join().await;
+
             let self_impl: &BridgeContext3<T> = unsafe { self_cp.as_impl() };
-            self_impl.set_content(ok);
+            // TODO: self_impl.set_content(ok);
             let cb = self_impl.Callback().unwrap();
             unsafe { cb.Invoke(&self_cp) };
         });

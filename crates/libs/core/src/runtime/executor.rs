@@ -15,19 +15,24 @@ use crate::error::FabricErrorCode;
 pub trait Executor: Clone + Sync + Send + 'static {
     // Required functions
 
-    // spawns the task to run in background
+    /// spawns the task to run in background, and returns a join handle
+    /// where the future's result can be awaited.
+    /// If the future panics, the join handle should return an error code.
+    /// This is primarily used by mssf Bridge to execute user app async callbacks/notifications.
+    /// User app impl future may panic, and mssf propagates panic as an error in JoinHandle
+    /// to SF.
     fn spawn<F>(&self, future: F) -> impl JoinHandle<F::Output>
     where
         F: Future + Send + 'static,
         F::Output: Send;
 
-    // run the future on the executor until completion.
+    /// run the future on the executor until completion.
     fn block_on<F: Future>(&self, future: F) -> F::Output;
 
     // provided functions
 
-    // Run the executor and block the current thread until ctrl-c event is
-    // Received.
+    /// Run the executor and block the current thread until ctrl-c event is
+    /// Received.
     fn run_until_ctrl_c(&self) {
         info!("DefaultExecutor: setting up ctrl-c event.");
         // set ctrc event
@@ -77,7 +82,7 @@ impl Executor for DefaultExecutor {
         F: Future + Send + 'static,
         F::Output: Send,
     {
-        let h = self.rt.spawn(async move { future.await });
+        let h = self.rt.spawn(future);
         DefaultJoinHandle::<F::Output> { inner: h }
     }
 
@@ -91,14 +96,16 @@ impl<T: Send> JoinHandle<T> for DefaultJoinHandle<T> {
         match self.inner.await {
             Ok(x) => Ok(x),
             Err(e) => {
-                if e.is_cancelled() {
+                let e = if e.is_cancelled() {
                     // we never cancel in executor
-                    Err(FabricErrorCode::E_ABORT.into())
+                    FabricErrorCode::E_ABORT
                 } else if e.is_panic() {
-                    Err(FabricErrorCode::E_UNEXPECTED.into())
+                    FabricErrorCode::E_UNEXPECTED
                 } else {
-                    Err(FabricErrorCode::E_FAIL.into())
-                }
+                    FabricErrorCode::E_FAIL
+                };
+                tracing::error!("DefaultJoinHandle: background task failed: {e}");
+                Err(e.into())
             }
         }
     }

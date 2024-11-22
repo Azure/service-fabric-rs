@@ -3,12 +3,20 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FabricRuntime::IFabricCodePackageActivationContext6;
+use mssf_com::{
+    FabricRuntime::IFabricCodePackageActivationContext6,
+    FabricTypes::{FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT_SEND_OPTIONS},
+};
 
-use crate::{strings::HSTRINGWrap, types::EndpointResourceDescription, Error, HSTRING, PCWSTR};
+use crate::{
+    strings::HSTRINGWrap,
+    types::{EndpointResourceDescription, HealthInformation, HealthReportSendOption},
+    Error, HSTRING, PCWSTR,
+};
 
 use super::config::ConfigurationPackage;
 
+#[derive(Debug, Clone)]
 pub struct CodePackageActivationContext {
     com_impl: IFabricCodePackageActivationContext6,
 }
@@ -88,6 +96,20 @@ impl CodePackageActivationContext {
             })
             .into(),
         }
+    }
+
+    pub fn report_application_health(
+        &self,
+        healthinfo: &HealthInformation,
+        send_options: Option<&HealthReportSendOption>,
+    ) -> crate::Result<()> {
+        let raw: FABRIC_HEALTH_INFORMATION = healthinfo.into();
+        let send_options = send_options.map(FABRIC_HEALTH_REPORT_SEND_OPTIONS::from);
+        let raw_options = match send_options.as_ref() {
+            Some(opt) => opt as *const FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+            None => std::ptr::null(),
+        };
+        unsafe { self.com_impl.ReportApplicationHealth2(&raw, raw_options) }
     }
 
     pub fn get_com(&self) -> IFabricCodePackageActivationContext6 {

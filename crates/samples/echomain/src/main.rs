@@ -8,9 +8,11 @@
 
 use mssf_core::conf::{Config, FabricConfigSource};
 use mssf_core::debug::wait_for_debugger;
+use mssf_core::error::FabricError;
 use mssf_core::runtime::executor::{DefaultExecutor, Executor};
 use mssf_core::runtime::node_context::NodeContext;
 use mssf_core::runtime::CodePackageActivationContext;
+use mssf_core::types::{HealthInformation, HealthReportSendOption};
 use mssf_core::HSTRING;
 use tracing::{error, info};
 
@@ -42,6 +44,10 @@ fn main() -> mssf_core::Result<()> {
     let actctx = CodePackageActivationContext::create().inspect_err(|e| {
         error!("Fail to create activation context: {e}");
     })?;
+
+    // send an health report
+    send_health_report(&actctx);
+
     validate_configs(&actctx);
 
     let code_info = actctx.get_code_package_info();
@@ -113,4 +119,26 @@ fn validate_configs(actctx: &CodePackageActivationContext) {
     assert_eq!(sect.my_string, "Value1");
     assert!(sect.my_bool);
     assert_eq!(sect.my_int, 99);
+}
+
+/// Send health ok to SF to validate health reporting code
+fn send_health_report(actctx: &CodePackageActivationContext) {
+    let healthinfo = HealthInformation {
+        source_id: HSTRING::from("echoapp"),
+        property: HSTRING::from("echo-started"),
+        time_to_live_seconds: 300,
+        state: mssf_core::types::HealthState::Ok,
+        description: HSTRING::from("echo app started"),
+        sequence_number: 1,
+        remove_when_expired: true,
+    };
+    if let Err(e) = actctx.report_application_health(
+        &healthinfo,
+        Some(&HealthReportSendOption { immediate: true }),
+    ) {
+        error!(
+            "report application health failed: {:?}",
+            FabricError::from(e)
+        );
+    }
 }

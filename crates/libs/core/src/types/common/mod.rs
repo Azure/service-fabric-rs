@@ -41,6 +41,18 @@ impl From<&FABRIC_HEALTH_STATE> for HealthState {
     }
 }
 
+impl From<&HealthState> for FABRIC_HEALTH_STATE {
+    fn from(value: &HealthState) -> Self {
+        match *value {
+            HealthState::Invalid => FABRIC_HEALTH_STATE_INVALID,
+            HealthState::Ok => FABRIC_HEALTH_STATE_OK,
+            HealthState::Warning => FABRIC_HEALTH_STATE_WARNING,
+            HealthState::Error => FABRIC_HEALTH_STATE_ERROR,
+            HealthState::Unknown => FABRIC_HEALTH_STATE_UNKNOWN,
+        }
+    }
+}
+
 // FABRIC_FAULT_TYPE
 #[derive(Debug, Clone, PartialEq)]
 pub enum FaultType {

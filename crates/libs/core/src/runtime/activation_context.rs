@@ -3,12 +3,20 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FabricRuntime::IFabricCodePackageActivationContext6;
+use mssf_com::{
+    FabricRuntime::IFabricCodePackageActivationContext6,
+    FabricTypes::{FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT_SEND_OPTIONS},
+};
 
-use crate::{strings::HSTRINGWrap, types::EndpointResourceDescription, Error, HSTRING, PCWSTR};
+use crate::{
+    strings::HSTRINGWrap,
+    types::{EndpointResourceDescription, HealthInformation, HealthReportSendOption},
+    Error, HSTRING, PCWSTR,
+};
 
 use super::config::ConfigurationPackage;
 
+#[derive(Debug, Clone)]
 pub struct CodePackageActivationContext {
     com_impl: IFabricCodePackageActivationContext6,
 }
@@ -88,6 +96,34 @@ impl CodePackageActivationContext {
             })
             .into(),
         }
+    }
+
+    /// The health information describes the report details, like the source ID, the property,
+    /// the health state and other relevant details. The code package activation context uses an
+    /// internal health client to send the reports to the health store. The client optimizes messages to
+    /// Health Manager by batching reports per a configured duration (Default: 30 seconds).
+    /// If the report has high priority, you can specify send options to send it immediately.
+    ///
+    /// Possible Errors:
+    ///     FABRIC_E_HEALTH_STALE_REPORT:
+    ///         HealthReport already exist for the same entity,
+    ///         SourceId and Property with same or higher SequenceNumber.
+    ///     FABRIC_E_HEALTH_MAX_REPORTS_REACHED:
+    ///         HeathClient has reached the maximum number of health reports
+    ///         that can accept for processing. More reports will be accepted when progress is done
+    ///         with the currently accepted reports. By default, the FabricClient.HealthClient can accept 10000 different reports.
+    pub fn report_application_health(
+        &self,
+        healthinfo: &HealthInformation,
+        send_options: Option<&HealthReportSendOption>,
+    ) -> crate::Result<()> {
+        let raw: FABRIC_HEALTH_INFORMATION = healthinfo.into();
+        let send_options = send_options.map(FABRIC_HEALTH_REPORT_SEND_OPTIONS::from);
+        let raw_options = match send_options.as_ref() {
+            Some(opt) => opt as *const FABRIC_HEALTH_REPORT_SEND_OPTIONS,
+            None => std::ptr::null(),
+        };
+        unsafe { self.com_impl.ReportApplicationHealth2(&raw, raw_options) }
     }
 
     pub fn get_com(&self) -> IFabricCodePackageActivationContext6 {

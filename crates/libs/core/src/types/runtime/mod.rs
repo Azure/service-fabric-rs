@@ -5,6 +5,7 @@
 
 // Runtime related types.
 
+pub mod health;
 pub mod stateful;
 pub mod store;
 

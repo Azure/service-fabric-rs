@@ -12,7 +12,7 @@ use mssf_com::FabricRuntime::{
     IFabricPrimaryReplicator, IFabricReplicator, IFabricReplicatorCatchupSpecificQuorum,
     IFabricStatefulServicePartition3, IFabricStatefulServiceReplica,
 };
-use tracing::info;
+use tracing::debug;
 use windows_core::{Interface, HSTRING};
 
 use crate::{
@@ -45,7 +45,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         partition: &StatefulServicePartition,
         cancellation_token: CancellationToken,
     ) -> crate::Result<impl PrimaryReplicator> {
-        info!("StatefulServiceReplicaProxy::open with mode {:?}", openmode);
+        debug!("StatefulServiceReplicaProxy::open with mode {:?}", openmode);
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(
@@ -79,7 +79,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         cancellation_token: CancellationToken,
     ) -> crate::Result<HSTRING> {
         // replica address
-        info!("StatefulServiceReplicaProxy::change_role {:?}", newrole);
+        debug!("StatefulServiceReplicaProxy::change_role {:?}", newrole);
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(
@@ -91,7 +91,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         Ok(HSTRINGWrap::from(&addr).into())
     }
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()> {
-        info!("StatefulServiceReplicaProxy::close");
+        debug!("StatefulServiceReplicaProxy::close");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(
@@ -102,7 +102,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         rx.await?
     }
     fn abort(&self) {
-        info!("StatefulServiceReplicaProxy::abort");
+        debug!("StatefulServiceReplicaProxy::abort");
         unsafe { self.com_impl.Abort() }
     }
 }
@@ -119,7 +119,7 @@ impl ReplicatorProxy {
 
 impl Replicator for ReplicatorProxy {
     async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<HSTRING> {
-        info!("ReplicatorProxy::open");
+        debug!("ReplicatorProxy::open");
         // replicator address
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -132,7 +132,7 @@ impl Replicator for ReplicatorProxy {
         Ok(HSTRINGWrap::from(&addr).into())
     }
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()> {
-        info!("ReplicatorProxy::close");
+        debug!("ReplicatorProxy::close");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(
@@ -148,7 +148,7 @@ impl Replicator for ReplicatorProxy {
         role: &ReplicaRole,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
-        info!("ReplicatorProxy::change_role");
+        debug!("ReplicatorProxy::change_role");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(
@@ -163,7 +163,7 @@ impl Replicator for ReplicatorProxy {
         epoch: &Epoch,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
-        info!("ReplicatorProxy::update_epoch");
+        debug!("ReplicatorProxy::update_epoch");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(
@@ -174,15 +174,15 @@ impl Replicator for ReplicatorProxy {
         rx.await?
     }
     fn get_current_progress(&self) -> crate::Result<i64> {
-        info!("ReplicatorProxy::get_current_progress");
+        debug!("ReplicatorProxy::get_current_progress");
         unsafe { self.com_impl.GetCurrentProgress() }
     }
     fn get_catch_up_capability(&self) -> crate::Result<i64> {
-        info!("ReplicatorProxy::get_catch_up_capability");
+        debug!("ReplicatorProxy::get_catch_up_capability");
         unsafe { self.com_impl.GetCatchUpCapability() }
     }
     fn abort(&self) {
-        info!("ReplicatorProxy::abort");
+        debug!("ReplicatorProxy::abort");
         unsafe { self.com_impl.Abort() }
     }
 }
@@ -236,7 +236,7 @@ impl Replicator for PrimaryReplicatorProxy {
 
 impl PrimaryReplicator for PrimaryReplicatorProxy {
     async fn on_data_loss(&self, cancellation_token: CancellationToken) -> crate::Result<u8> {
-        info!("PrimaryReplicatorProxy::on_data_loss");
+        debug!("PrimaryReplicatorProxy::on_data_loss");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(
@@ -251,7 +251,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         currentconfiguration: &ReplicaSetConfig,
         previousconfiguration: &ReplicaSetConfig,
     ) -> crate::Result<()> {
-        info!("PrimaryReplicatorProxy::update_catch_up_replica_set_configuration");
+        debug!("PrimaryReplicatorProxy::update_catch_up_replica_set_configuration");
         let cc_view = currentconfiguration.get_view();
         let pc_view = previousconfiguration.get_view();
         unsafe {
@@ -264,7 +264,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         catchupmode: ReplicaSetQuorumMode,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
-        info!("PrimaryReplicatorProxy::wait_for_catch_up_quorum: catchupmode {catchupmode:?}");
+        debug!("PrimaryReplicatorProxy::wait_for_catch_up_quorum: catchupmode {catchupmode:?}");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(
@@ -278,7 +278,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         &self,
         currentconfiguration: &ReplicaSetConfig,
     ) -> crate::Result<()> {
-        info!("PrimaryReplicatorProxy::update_current_replica_set_configuration");
+        debug!("PrimaryReplicatorProxy::update_current_replica_set_configuration");
         unsafe {
             self.com_impl
                 .UpdateCurrentReplicaSetConfiguration(currentconfiguration.get_view().get_raw())
@@ -289,7 +289,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         replica: &ReplicaInformation,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
-        info!("PrimaryReplicatorProxy::build_replica");
+        debug!("PrimaryReplicatorProxy::build_replica");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(
@@ -304,7 +304,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         rx.await?
     }
     fn remove_replica(&self, replicaid: i64) -> crate::Result<()> {
-        info!("PrimaryReplicatorProxy::remove_replica");
+        debug!("PrimaryReplicatorProxy::remove_replica");
         unsafe { self.com_impl.RemoveReplica(replicaid) }
     }
 }

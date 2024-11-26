@@ -10,7 +10,7 @@ use mssf_com::{
     },
     FabricTypes::{FABRIC_KEY_VALUE_STORE_ITEM, FABRIC_KEY_VALUE_STORE_ITEM_METADATA},
 };
-use tracing::info;
+use tracing::debug;
 
 use crate::sync::{fabric_begin_end_proxy2, CancellationToken};
 
@@ -109,7 +109,7 @@ impl TransactionProxy {
         timeoutmilliseconds: u32,
         cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<i64> {
-        info!("TransactionProxy::commit");
+        debug!("TransactionProxy::commit");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy2(

@@ -10,7 +10,7 @@ use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl,
     IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl,
 };
-use tracing::info;
+use tracing::debug;
 use windows_core::implement;
 
 #[derive(Debug)]
@@ -82,7 +82,7 @@ impl AsyncContext {
     // construct ctx. Note: caller needs to invoke callback.
     // This is different from cpp impl.
     pub fn new(callback: core::option::Option<&IFabricAsyncOperationCallback>) -> AsyncContext {
-        info!("AsyncContext::new");
+        debug!("AsyncContext::new");
         let callback_copy: IFabricAsyncOperationCallback = callback.expect("msg").clone();
 
         AsyncContext {
@@ -101,14 +101,14 @@ impl IFabricAsyncOperationContext_Impl for AsyncContext {
     }
 
     fn Callback(&self) -> crate::Result<IFabricAsyncOperationCallback> {
-        info!("AsyncContext::Callback");
+        debug!("AsyncContext::Callback");
         // get a view of the callback
         let callback_copy: IFabricAsyncOperationCallback = self.callback_.clone();
         Ok(callback_copy)
     }
 
     fn Cancel(&self) -> crate::Result<()> {
-        info!("AsyncContext::Cancel");
+        debug!("AsyncContext::Cancel");
         Ok(())
     }
 }

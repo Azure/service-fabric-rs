@@ -494,6 +494,8 @@ mod test {
             token: Option<CancellationToken>,
         ) -> crate::Result<String> {
             if delay.is_zero() {
+                // This is needed to make future is breakable in bench test in select
+                tokio::task::yield_now().await;
                 return Ok(self.get_data());
             }
             match (token, ignore_cancel) {
@@ -523,6 +525,8 @@ mod test {
             token: Option<CancellationToken>,
         ) -> crate::Result<()> {
             if delay.is_zero() {
+                // This is needed to make future is breakable in bench test in select
+                tokio::task::yield_now().await;
                 return Ok(self.set_data(input));
             }
             match token {
@@ -771,5 +775,70 @@ mod test {
                     .expect("fail to set data");
             }
         }
+    }
+
+    const TEST_DATA: &str = "data";
+    /// Very simple benchmark to check the bridge layer performance.
+    /// Adding a bridge layer should not introduce much perf degradation.
+    #[tokio::test]
+    async fn small_bench_test() {
+        // Run get data function for IMyObj with different layers of wrapping.
+        // All wrappings are run in parallel to reduce test run time.
+        // plain object
+        let j0 = tokio::spawn(async move {
+            let obj0 = MyObj::new(TEST_DATA.to_string());
+            small_bench(&obj0, TEST_DATA).await
+        });
+        // object with 1 layer of bridge proxy wrapping
+        let j1 = tokio::spawn(async {
+            let h = tokio::runtime::Handle::current();
+            let obj1 = MyObjProxy::new(h.clone(), MyObj::new(TEST_DATA.to_string()));
+            small_bench(&obj1, TEST_DATA).await
+        });
+        // object with 2 layers.
+        let j2 = tokio::spawn(async {
+            let h = tokio::runtime::Handle::current();
+            let obj2 = MyObjProxy::new(
+                h.clone(),
+                MyObjProxy::new(h.clone(), MyObj::new(TEST_DATA.to_string())),
+            );
+            small_bench(&obj2, TEST_DATA).await
+        });
+        let count0 = j0.await.unwrap();
+        let count1 = j1.await.unwrap();
+        let count2 = j2.await.unwrap();
+        println!("count0: {count0}, count1: {count1}, count2: {count2}");
+        // Conservative check for 2 layer wrapping does not degrade performance by half.
+        // Usually there is hardly any perf degradation by wrapping.
+        assert!(count0 / count2 <= 2)
+    }
+
+    /// Run bench for 3 seconds and return the number of execution reached.
+    /// It keeps running get_data api and returns how many times it got executed.
+    async fn small_bench(obj: &impl IMyObj, expected_data: &str) -> usize {
+        let (tx, mut rx) = tokio::sync::oneshot::channel::<()>();
+        let join = tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_secs(3)).await;
+            tx.send(()).unwrap();
+        });
+
+        let mut count = 0;
+        loop {
+            tokio::select! {
+                res = &mut rx =>{
+                    res.unwrap();
+                    break;
+                }
+                data = IMyObj::get_data_delay(obj,Duration::ZERO, false, None) =>{
+                    assert_eq!(data.unwrap(), expected_data);
+                    count += 1;
+                    if rx.try_recv().is_ok(){
+                        break;
+                    }
+                }
+            }
+        }
+        join.await.unwrap();
+        count
     }
 }

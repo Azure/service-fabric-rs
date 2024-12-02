@@ -14,7 +14,10 @@ use mssf_core::{
     },
 };
 use mssf_core::{Error, HSTRING};
-use std::{cell::Cell, sync::Mutex};
+use std::{
+    cell::Cell,
+    sync::{Arc, Mutex},
+};
 use tokio_util::sync::CancellationToken;
 use tracing::info;
 
@@ -47,13 +50,15 @@ fn get_addr(port: u32, hostname: HSTRING) -> String {
 pub struct AppFabricReplicator {
     port_: u32,
     hostname_: HSTRING,
+    ctx: ReplicaCtx,
 }
 
 impl AppFabricReplicator {
-    pub fn new(port: u32, hostname: HSTRING) -> AppFabricReplicator {
+    pub fn new(port: u32, hostname: HSTRING, ctx: ReplicaCtx) -> AppFabricReplicator {
         AppFabricReplicator {
             port_: port,
             hostname_: hostname,
+            ctx,
         }
     }
 }
@@ -61,91 +66,146 @@ impl AppFabricReplicator {
 // This is basic implementation of Replicator
 impl Replicator for AppFabricReplicator {
     async fn open(&self, _: CancellationToken) -> mssf_core::Result<HSTRING> {
-        info!("AppFabricReplicator2::Replicator::Open");
+        info!(
+            "AppFabricReplicator2::Replicator::Open: {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         let addr = get_addr(self.port_, self.hostname_.clone());
         let str_res = HSTRING::from(addr);
         Ok(str_res)
     }
 
     async fn close(&self, _: CancellationToken) -> mssf_core::Result<()> {
-        info!("AppFabricReplicator2::Replicator::close");
+        info!(
+            "AppFabricReplicator2::Replicator::close {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         Ok(())
     }
 
     async fn change_role(
         &self,
-        _epoch: &Epoch,
-        _role: &ReplicaRole,
+        epoch: &Epoch,
+        role: &ReplicaRole,
         _: CancellationToken,
     ) -> mssf_core::Result<()> {
-        info!("AppFabricReplicator2::Replicator::change_role");
+        info!(
+            "AppFabricReplicator2::Replicator::change_role epoch:{epoch:?}, role:{role:?}, {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         Ok(())
     }
 
-    async fn update_epoch(&self, _epoch: &Epoch, _: CancellationToken) -> mssf_core::Result<()> {
-        info!("AppFabricReplicator2::Replicator::update_epoch");
+    async fn update_epoch(&self, epoch: &Epoch, _: CancellationToken) -> mssf_core::Result<()> {
+        info!(
+            "AppFabricReplicator2::Replicator::update_epoch: {epoch:?}, {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         Ok(())
     }
 
     fn get_current_progress(&self) -> mssf_core::Result<i64> {
-        info!("AppFabricReplicator2::Replicator::get_current_progress");
+        info!(
+            "AppFabricReplicator2::Replicator::get_current_progress {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         Ok(0)
     }
 
     fn get_catch_up_capability(&self) -> mssf_core::Result<i64> {
-        info!("AppFabricReplicator2::Replicator::get_catch_up_capability");
+        info!(
+            "AppFabricReplicator2::Replicator::get_catch_up_capability {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         Ok(0)
     }
 
     fn abort(&self) {
-        info!("AppFabricReplicator2::Replicator::abort");
+        info!(
+            "AppFabricReplicator2::Replicator::abort {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
     }
 }
 
 // This is basic implementation of PrimaryReplicator
 impl PrimaryReplicator for AppFabricReplicator {
     async fn on_data_loss(&self, _: CancellationToken) -> mssf_core::Result<u8> {
-        info!("AppFabricReplicator2::PrimaryReplicator::on_data_loss");
+        info!(
+            "AppFabricReplicator2::PrimaryReplicator::on_data_loss {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         Ok(0)
     }
 
     fn update_catch_up_replica_set_configuration(
         &self,
-        _currentconfiguration: &ReplicaSetConfig,
-        _previousconfiguration: &ReplicaSetConfig,
+        currentconfiguration: &ReplicaSetConfig,
+        previousconfiguration: &ReplicaSetConfig,
     ) -> mssf_core::Result<()> {
-        info!("AppFabricReplicator2::PrimaryReplicator::update_catch_up_replica_set_configuration");
+        info!("AppFabricReplicator2::PrimaryReplicator::update_catch_up_replica_set_configuration: curr: {currentconfiguration:?}, prev: {previousconfiguration:?},{:?}",
+            self.ctx.get_trace_read_write_status());
         Ok(())
     }
 
     async fn wait_for_catch_up_quorum(
         &self,
-        _catchupmode: ReplicaSetQuorumMode,
+        catchupmode: ReplicaSetQuorumMode,
         _: CancellationToken,
     ) -> mssf_core::Result<()> {
-        info!("AppFabricReplicator2::PrimaryReplicator::wait_for_catch_up_quorum");
+        info!(
+            "AppFabricReplicator2::PrimaryReplicator::wait_for_catch_up_quorum mode:{catchupmode:?} {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
+        // Before demoting a primary to active secondary in graceful failover (MovePrimary api FabricClient trigger),
+        // (R:G, W:P) means read status granted, write status reconfiguration pending.
+        // NA means status NotPrimary.
+        // SF calls this in order:
+        // * update_catch_up_replica_set_configuration
+        // * wait_for_catch_up_quorum write mode, with (R:G, W:G).
+        //   app should catch up making necessary writes. (For example: complete transaction?)
+        //   This may take forever depends on the implementation, if write is faster than catch up.
+        //   App can ignore this call and let the next catch up call handle it all, if the app
+        //   does not need to do write while catching up.
+        // * update epoch,(R:G, W:P). SF revokes write status for the service.
+        // * update_catch_up_replica_set_configuration, with (R:G, W:P)
+        // * wait_for_catch_up_quorum, with (R:G, W:P).
+        //   app should catch up knowing that user/client is not able to write.
+        // * change_role from Primary to ActiveSecondary, with the same epoch from update epoch. (R:NA,W:NA)
+
+        // For newly created or promoted Primary, status starts with ChangeRole Primary (R:P, W:P)
+        // * update_catch_up_replica_set_configuration (R:P, W:P)
+        // * wait_for_catch_up_quorum (R:P, W:P)
+        // * update_current_replica_set_configuration (R:G, W:G)
         Ok(())
     }
 
     fn update_current_replica_set_configuration(
         &self,
-        _currentconfiguration: &ReplicaSetConfig,
+        currentconfiguration: &ReplicaSetConfig,
     ) -> mssf_core::Result<()> {
-        info!("AppFabricReplicator2::PrimaryReplicator::update_current_replica_set_configuration");
+        info!("AppFabricReplicator2::PrimaryReplicator::update_current_replica_set_configuration {currentconfiguration:?} {:?}",
+            self.ctx.get_trace_read_write_status());
         Ok(())
     }
 
     async fn build_replica(
         &self,
-        _replica: &ReplicaInformation,
+        replica: &ReplicaInformation,
         _: CancellationToken,
     ) -> mssf_core::Result<()> {
-        info!("AppFabricReplicator2::PrimaryReplicator::build_replica");
+        info!(
+            "AppFabricReplicator2::PrimaryReplicator::build_replica: info: {replica:?} {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         Ok(())
     }
 
     fn remove_replica(&self, _replicaid: i64) -> mssf_core::Result<()> {
-        info!("AppFabricReplicator2::PrimaryReplicator::remove_replica");
+        info!(
+            "AppFabricReplicator2::PrimaryReplicator::remove_replica {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         Ok(())
     }
 }
@@ -182,6 +242,7 @@ pub struct Replica {
     port_: u32,
     hostname_: HSTRING,
     svc: Service,
+    ctx: ReplicaCtx,
 }
 
 impl Replica {
@@ -190,6 +251,7 @@ impl Replica {
             port_: port,
             hostname_: hostname,
             svc,
+            ctx: ReplicaCtx::empty(),
         }
     }
 }
@@ -241,17 +303,27 @@ impl StatefulServiceReplica for Replica {
         partition: &StatefulServicePartition,
         _: CancellationToken,
     ) -> mssf_core::Result<impl PrimaryReplicator> {
-        // should be primary replicator
-        info!("Replica::open {:?}", openmode);
+        self.ctx.init(partition.clone());
+        info!(
+            "Replica::open {openmode:?}, {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         self.svc.start_loop_in_background(partition);
-        Ok(AppFabricReplicator::new(self.port_, self.hostname_.clone()))
+        Ok(AppFabricReplicator::new(
+            self.port_,
+            self.hostname_.clone(),
+            self.ctx.clone(),
+        ))
     }
     async fn change_role(
         &self,
         newrole: ReplicaRole,
         _: CancellationToken,
     ) -> mssf_core::Result<HSTRING> {
-        info!("Replica::change_role {:?}", newrole);
+        info!(
+            "Replica::change_role {newrole:?}, {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         if newrole == ReplicaRole::Primary {
             info!("primary {:?}", self.svc.tcp_port);
         }
@@ -261,12 +333,54 @@ impl StatefulServiceReplica for Replica {
         Ok(str_res)
     }
     async fn close(&self, _: CancellationToken) -> mssf_core::Result<()> {
-        info!("Replica::close");
+        info!(
+            "Replica::close: {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         self.svc.stop();
         Ok(())
     }
     fn abort(&self) {
-        info!("Replica::abort");
+        info!(
+            "Replica::abort: {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         self.svc.stop();
+    }
+}
+
+/// Stores info shared between replica and replicator
+#[derive(Clone)]
+pub struct ReplicaCtx {
+    pub partition: Arc<Mutex<Option<StatefulServicePartition>>>,
+}
+
+impl ReplicaCtx {
+    fn empty() -> Self {
+        Self {
+            partition: Arc::new(Mutex::new(None)),
+        }
+    }
+    fn init(&self, partition: StatefulServicePartition) {
+        let prev = self.partition.lock().unwrap().replace(partition);
+        assert!(prev.is_none())
+    }
+
+    fn get_partition(&self) -> StatefulServicePartition {
+        self.partition
+            .lock()
+            .unwrap()
+            .as_ref()
+            .expect("option null")
+            .clone()
+    }
+
+    fn get_trace_read_write_status(&self) -> String {
+        let p = self.get_partition();
+        format!(
+            "read: {:?}, write {:?}",
+            p.get_read_status(),
+            p.get_write_status()
+        )
     }
 }

@@ -5,10 +5,11 @@
 
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use mssf_com::FabricClient::{
-    FabricCreateClient3, FabricCreateLocalClient3, FabricCreateLocalClient4,
-    IFabricClientConnectionEventHandler, IFabricPropertyManagementClient2, IFabricQueryClient10,
-    IFabricServiceManagementClient6, IFabricServiceNotificationEventHandler,
-};
+        FabricCreateClient3, FabricCreateLocalClient3, FabricCreateLocalClient4,
+        IFabricClientConnectionEventHandler, IFabricPropertyManagementClient2,
+        IFabricQueryClient10, IFabricServiceManagementClient6,
+        IFabricServiceNotificationEventHandler,
+    };
 use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
     ServiceNotificationEventHandlerBridge,

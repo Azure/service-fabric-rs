@@ -2,8 +2,9 @@
 resolver = "2"
 members = [
     "crates/tools/*",
-    "crates/samples/*",
-    "crates/libs/*"
+    # "crates/samples/*",
+    "crates/libs/com",
+    "crates/libs/pal",
 ]
 
 [workspace.dependencies]

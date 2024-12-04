@@ -25,3 +25,4 @@ features = [
 
 [dependencies]
 libc = "0.2"
+windows-core = "0.57"

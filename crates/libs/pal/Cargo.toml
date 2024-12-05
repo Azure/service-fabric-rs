@@ -17,11 +17,5 @@ path = "src/lib.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies.windows]
-version = "0.57"
-features = [
-    "Win32_Foundation"
-]
-
 [dependencies]
-libc = "0.2"
+windows-core = "0.58"

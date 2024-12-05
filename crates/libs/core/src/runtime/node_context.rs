@@ -60,7 +60,7 @@ impl NodeContext {
     // Retrieves the directory path for the directory at node level.
     pub fn get_directory(&self, logical_directory_name: &HSTRING) -> windows_core::Result<HSTRING> {
         let com2 = self.com.cast::<IFabricNodeContextResult2>()?;
-        let dir = unsafe { com2.GetDirectory(logical_directory_name) }?;
+        let dir = unsafe { com2.GetDirectory(logical_directory_name.as_pcwstr()) }?;
         Ok(HSTRINGWrap::from(&dir).into())
     }
 }

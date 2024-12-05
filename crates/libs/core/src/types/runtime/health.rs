@@ -75,7 +75,7 @@ pub struct HealthReportSendOption {
 impl From<&FABRIC_HEALTH_REPORT_SEND_OPTIONS> for HealthReportSendOption {
     fn from(value: &FABRIC_HEALTH_REPORT_SEND_OPTIONS) -> Self {
         Self {
-            immediate: value.Immediate.into(),
+            immediate: value.Immediate.as_bool(),
         }
     }
 }

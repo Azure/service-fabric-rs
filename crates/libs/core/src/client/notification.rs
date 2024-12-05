@@ -156,7 +156,8 @@ where
     }
 }
 
-impl<T> IFabricServiceNotificationEventHandler_Impl for ServiceNotificationEventHandlerBridge<T>
+impl<T> IFabricServiceNotificationEventHandler_Impl
+    for ServiceNotificationEventHandlerBridge_Impl<T>
 where
     T: ServiceNotificationEventHandler,
 {

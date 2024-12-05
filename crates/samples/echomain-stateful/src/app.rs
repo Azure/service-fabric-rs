@@ -24,7 +24,6 @@ use mssf_com::FabricTypes::{
     FABRIC_REPLICA_OPEN_MODE_INVALID, FABRIC_REPLICA_ROLE, FABRIC_REPLICA_SET_CONFIGURATION,
     FABRIC_REPLICA_SET_QUORUM_MODE, FABRIC_URI,
 };
-use mssf_core::w;
 use mssf_core::HSTRING;
 use mssf_core::{strings::HSTRINGWrap, sync::wait::AsyncContext};
 use tokio::sync::oneshot::{self, Sender};
@@ -37,8 +36,8 @@ pub fn run(runtime: &IFabricRuntime, port: u32, hostname: HSTRING) {
     info!("port: {}, host: {:?}", port, hostname);
 
     let factory: IFabricStatefulServiceFactory = StatefulServiceFactory::new(port, hostname).into();
-    let service_type_name = w!("StatefulEchoAppService");
-    unsafe { runtime.RegisterStatefulServiceFactory(service_type_name, &factory) }
+    let service_type_name = mssf_core::HSTRING::from("StatefulEchoAppService");
+    unsafe { runtime.RegisterStatefulServiceFactory(service_type_name.as_pcwstr(), &factory) }
         .expect("register failed");
 }
 
@@ -58,7 +57,7 @@ impl StatefulServiceFactory {
     }
 }
 
-impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory {
+impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory_Impl {
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn CreateReplica(
         &self,
@@ -81,7 +80,7 @@ impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory {
         }
         info!(
             "servicetypename: {}, servicename: {:?}, initdata: {}, partitionid: {:?}, instanceid {}",
-            unsafe { servicetypename.display() },
+            mssf_core::strings::HSTRINGWrap::from(*servicetypename).into_hstring(),
             servicename,
             init_data,
             partitionid,
@@ -110,7 +109,7 @@ impl AppFabricReplicator {
 }
 
 // This is basic implementation of Replicator
-impl IFabricReplicator_Impl for AppFabricReplicator {
+impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
     fn BeginOpen(
         &self,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
@@ -205,7 +204,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
 }
 
 // This is basic implementation of PrimaryReplicator
-impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
+impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
     fn BeginOnDataLoss(
         &self,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
@@ -308,7 +307,7 @@ impl AppInstance {
     }
 }
 
-impl IFabricStatefulServiceReplica_Impl for AppInstance {
+impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
     fn BeginOpen(
         &self,
         openmode: FABRIC_REPLICA_OPEN_MODE,

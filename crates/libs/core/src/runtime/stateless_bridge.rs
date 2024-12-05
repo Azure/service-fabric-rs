@@ -8,7 +8,6 @@
 
 use std::sync::Arc;
 
-use crate::HSTRING;
 use crate::{
     runtime::stateless::StatelessServicePartition, strings::HSTRINGWrap, sync::BridgeContext3,
 };
@@ -22,7 +21,7 @@ use mssf_com::{
     FabricTypes::FABRIC_URI,
 };
 use tracing::debug;
-use windows::core::implement;
+use windows_core::implement;
 
 use super::{
     executor::Executor,
@@ -49,7 +48,7 @@ where
     }
 }
 
-impl<E, F> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge<E, F>
+impl<E, F> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge_Impl<E, F>
 where
     E: Executor,
     F: StatelessServiceFactory,
@@ -65,9 +64,8 @@ where
         instanceid: i64,
     ) -> crate::Result<IFabricStatelessServiceInstance> {
         debug!("StatelessServiceFactoryBridge::CreateInstance");
-        let p_servicename = crate::PCWSTR::from_raw(servicename.0);
-        let h_servicename = HSTRING::from_wide(unsafe { p_servicename.as_wide() }).unwrap();
-        let h_servicetypename = HSTRING::from_wide(unsafe { servicetypename.as_wide() }).unwrap();
+        let h_servicename = HSTRINGWrap::from(crate::PCWSTR(servicename.0)).into();
+        let h_servicetypename = HSTRINGWrap::from(*servicetypename).into();
         let data = unsafe {
             if !initializationdata.is_null() {
                 std::slice::from_raw_parts(initializationdata, initializationdatalength as usize)
@@ -118,7 +116,7 @@ where
     }
 }
 
-impl<E, S> IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge<E, S>
+impl<E, S> IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge_Impl<E, S>
 where
     E: Executor,
     S: StatelessServiceInstance + 'static,

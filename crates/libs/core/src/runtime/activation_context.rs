@@ -63,7 +63,10 @@ impl CodePackageActivationContext {
         &self,
         configpackagename: &HSTRING,
     ) -> crate::Result<ConfigurationPackage> {
-        let c = unsafe { self.com_impl.GetConfigurationPackage(configpackagename) }?;
+        let c = unsafe {
+            self.com_impl
+                .GetConfigurationPackage(configpackagename.as_pcwstr())
+        }?;
         Ok(ConfigurationPackage::from_com(c))
     }
 

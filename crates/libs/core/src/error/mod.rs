@@ -86,7 +86,7 @@ mod test {
 
     use super::{FabricError, FabricErrorCode};
     use mssf_com::FabricTypes::FABRIC_E_CODE_PACKAGE_NOT_FOUND;
-    use windows::Win32::Foundation::{E_ACCESSDENIED, E_POINTER};
+    use windows_core::Win32::Foundation::{E_ACCESSDENIED, E_POINTER};
     use windows_core::{Error, HRESULT};
 
     #[test]
@@ -115,8 +115,9 @@ mod test {
         let e: Error = FabricErrorCode::E_POINTER.into();
         assert_eq!(e, E_POINTER.into());
 
+        const SEC_E_INTERNAL_ERROR: crate::HRESULT = crate::HRESULT(0x80090304_u32 as _);
         // use an error that is not fabric error
-        let fe = FabricError::from(windows::Win32::Foundation::SEC_E_INTERNAL_ERROR);
+        let fe = FabricError::from(SEC_E_INTERNAL_ERROR);
         // check display string
         assert_eq!(format!("{}", fe), "-2146893052");
         assert_eq!(

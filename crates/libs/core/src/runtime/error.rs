@@ -18,8 +18,8 @@ pub fn fill_fabric_hresult(code: HRESULT) -> Error {
     } else {
         unsafe { err_str_raw.as_wide() }
     };
-    println!("debug std: {}", HSTRING::from_wide(err_str).unwrap());
-    Error::new(code, HSTRING::from_wide(err_str).unwrap().to_string())
+    println!("debug std: {}", HSTRING::from_wide(err_str));
+    Error::new(code, HSTRING::from_wide(err_str).to_string())
 }
 
 pub fn fill_fabric_error(e: Error) -> Error {
@@ -39,6 +39,6 @@ mod test {
             crate::HRESULT(FABRIC_E_GATEWAY_NOT_REACHABLE.0),
             s.clone().to_string(),
         );
-        assert_eq!(e.message(), s);
+        assert_eq!(e.message(), s.to_string_lossy());
     }
 }

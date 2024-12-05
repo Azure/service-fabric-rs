@@ -132,7 +132,7 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for Node {
                 .unwrap()
         };
         Node {
-            name: HSTRING::from_wide(unsafe { raw.NodeName.as_wide() }).unwrap(),
+            name: HSTRINGWrap::from(raw.NodeName).into(),
             ip_address_or_fqdn: HSTRINGWrap::from(raw.IpAddressOrFQDN).into(),
             node_type: HSTRINGWrap::from(raw.NodeType).into(),
             code_version: HSTRINGWrap::from(raw.CodeVersion).into(),

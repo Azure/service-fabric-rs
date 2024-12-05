@@ -45,9 +45,10 @@ fn main() -> mssf_core::Result<()> {
 
     if !node_list.is_null() {
         let node: FABRIC_NODE_QUERY_RESULT_ITEM = unsafe { *node_list };
-        // this is ugly
-        // println!("node info: name: {:#?}", node);
-        println!("node info: name: {}", unsafe { node.NodeName.display() });
+        println!(
+            "node info: name: {}",
+            mssf_core::HSTRING::from(mssf_core::strings::HSTRINGWrap::from(node.NodeName))
+        );
     }
 
     Ok(())

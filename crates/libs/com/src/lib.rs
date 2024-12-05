@@ -14,7 +14,8 @@ pub use ServiceFabric::*;
 #[cfg(all(target_os = "windows", feature = "bundled_libs"))]
 pub use mssf_metadata;
 
-// windows core and windows hack
+// Special usage for mssf_pal.
+// See mssf_pal documentations for why this is used this way.
 use mssf_pal::*;
 extern crate self as windows;
 extern crate self as windows_core;

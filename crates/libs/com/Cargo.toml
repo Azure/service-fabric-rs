@@ -27,16 +27,6 @@ version = "0.0.16"
 # this dep is required on windows to have the support libs.
 mssf-metadata = { version = "0.0.1", optional = true }
 
-
-
-# [dependencies.windows]
-# version = "0.58"
-# features = [
-#     "Win32_Foundation",
-#     "implement",
-#     "Win32"
-# ]
-
 [features]
 default = ["bundled_libs"]
 bundled_libs = ["dep:mssf-metadata"]

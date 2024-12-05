@@ -1,3 +1,10 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
+use std::fmt::Write;
+
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct PCWSTR(pub *const u16);
@@ -12,7 +19,8 @@ impl windows_core::TypeKind for PCWSTR {
     type TypeKind = windows_core::CopyType;
 }
 
-// copied from windows crate
+// Copied minimal impl from windows_core crate which is not available on linux.
+// This is used on windows as well instead of the original defs if you use mssf-pal.
 impl PCWSTR {
     /// Construct a new `PCWSTR` from a raw pointer
     pub const fn from_raw(ptr: *const u16) -> Self {
@@ -87,19 +95,23 @@ impl windows_core::TypeKind for PCSTR {
 // The inner buffer is null terminated u16 vec.
 #[derive(Clone, PartialEq, Eq, Default)]
 pub struct HSTRING(Option<Vec<u16>>);
+const EMPTY: [u16; 1] = [0];
 
 impl HSTRING {
+    /// creates an empty string
     pub const fn new() -> Self {
         Self(None)
     }
 
+    /// returns if the string is empty
     pub const fn is_empty(&self) -> bool {
         self.0.is_none()
     }
 
+    /// len is the utf16 len not including the null terminator bytes
     pub fn len(&self) -> usize {
         match self.0.as_ref() {
-            Some(v) => v.len(),
+            Some(v) => v.len() - 1,
             None => 0,
         }
     }
@@ -113,7 +125,6 @@ impl HSTRING {
             }
             None => &[],
         }
-        //unsafe { core::slice::from_raw_parts(self.as_ptr(), self.len()) }
     }
 
     /// Get the contents of this `HSTRING` as a String lossily.
@@ -125,10 +136,7 @@ impl HSTRING {
     pub fn as_ptr(&self) -> *const u16 {
         match self.0.as_ref() {
             Some(v) => v.as_ptr(),
-            None => {
-                const EMPTY: [u16; 1] = [0];
-                EMPTY.as_ptr()
-            }
+            None => EMPTY.as_ptr(),
         }
     }
 
@@ -136,17 +144,19 @@ impl HSTRING {
         PCWSTR::from_raw(self.as_ptr())
     }
 
+    /// From slice without the null terminator.
     pub fn from_wide(value: &[u16]) -> Self {
-        unsafe { Self::from_wide_iter(value.iter().copied(), value.len()) }
+        // TODO: avoid the clone for the iter.
+        unsafe { Self::from_wide_iter(value.iter().cloned(), value.len()) }
     }
 
     unsafe fn from_wide_iter<I: Iterator<Item = u16>>(iter: I, len: usize) -> Self {
         if len == 0 {
             return Self::new();
         }
-        // TODO: not efficient
-        let mut v = iter.collect::<Vec<_>>();
-        v.push(0); // null terminator
+        // append a null terminator. collect should allocate efficiently from iter.
+        let iter = iter.chain(EMPTY.as_ref().iter().cloned());
+        let v = iter.collect::<Vec<_>>();
         Self(Some(v))
     }
 }
@@ -170,11 +180,15 @@ impl From<&String> for HSTRING {
 
 impl core::fmt::Display for HSTRING {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.to_string_lossy() // not efficient
-        )
+        // convert u16 to char gracefully and write to formatter.
+        let wit = core::char::decode_utf16(self.as_wide().iter().cloned());
+        for c in wit {
+            match c {
+                Ok(c) => f.write_char(c)?,
+                Err(_) => f.write_char(core::char::REPLACEMENT_CHARACTER)?,
+            }
+        }
+        Ok(())
     }
 }
 
@@ -192,14 +206,22 @@ mod tests {
 
     #[test]
     fn string_test() {
-        let s = "hello";
-        let h = HSTRING::from(s);
-        assert_eq!("hello", h.to_string_lossy());
-        assert_eq!(h.as_wide().len(), s.len());
-        let raw = h.as_ptr();
-        let h2 = HSTRING::from_wide(unsafe { PCWSTR(raw).as_wide() });
-        assert_eq!("hello", h2.to_string_lossy());
-        assert_eq!(h, h2);
-        assert_ne!(h, HSTRING::from("dummy"));
+        let test_case = |s: &str| {
+            let h = HSTRING::from(s);
+            assert_eq!(s.len(), h.len());
+            assert_eq!(s.is_empty(), h.is_empty());
+            assert_eq!(format!("{}", h), s);
+            assert_eq!(s, h.to_string_lossy());
+            assert_eq!(h.as_wide().len(), s.len());
+            let raw = h.as_ptr();
+            let h2 = HSTRING::from_wide(unsafe { PCWSTR(raw).as_wide() });
+            assert_eq!(s, h2.to_string_lossy());
+            assert_eq!(h, h2);
+            assert_ne!(h, HSTRING::from("dummy"));
+        };
+
+        test_case("hello");
+        test_case("s");
+        test_case("");
     }
 }

@@ -6,8 +6,16 @@
 #[cfg(unix)]
 pub mod pal;
 
-// expose all windows core has
-pub use windows_core::*;
+// expose all windows core has except string types
+pub mod imp {
+    pub use windows_core::imp::*;
+}
+pub use windows_core::{
+    from_raw_borrowed, implement, AsImpl, ComObject, ComObjectInner, ComObjectInterface, CopyType,
+    Error, IInspectable, IInspectable_Vtbl, IUnknown, IUnknownImpl, IUnknown_Vtbl, Interface,
+    InterfaceRef, OutParam, Param, ParamValue, Result, RuntimeName, RuntimeType, Type, TypeKind,
+    DYNAMIC_CAST_IID, GUID, HRESULT,
+};
 
 // provide other implemenations missing for linux
 // extern crate self as windows_core;

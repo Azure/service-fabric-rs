@@ -44,6 +44,12 @@ pub struct HSTRINGWrap {
     h: HSTRING,
 }
 
+impl HSTRINGWrap {
+    pub fn into_hstring(self) -> HSTRING {
+        self.h
+    }
+}
+
 impl From<HSTRING> for HSTRINGWrap {
     fn from(value: HSTRING) -> Self {
         Self { h: value }

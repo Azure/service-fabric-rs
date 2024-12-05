@@ -39,6 +39,6 @@ mod test {
             crate::HRESULT(FABRIC_E_GATEWAY_NOT_REACHABLE.0),
             s.clone().to_string(),
         );
-        assert_eq!(e.message(), s);
+        assert_eq!(e.message(), s.to_string_lossy());
     }
 }

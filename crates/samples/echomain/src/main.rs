@@ -100,7 +100,7 @@ fn validate_configs(actctx: &CodePackageActivationContext) {
             &HSTRING::from("my_string"),
         )
         .unwrap();
-    assert_eq!(v, "Value1");
+    assert_eq!(v.to_string_lossy(), "Value1");
     assert!(!encrypt);
 
     // Use the config framework

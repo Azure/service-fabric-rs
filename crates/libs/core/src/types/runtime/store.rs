@@ -19,7 +19,7 @@ pub struct ReplicatorSettings {
     pub flags: u32,
     pub retry_interval_milliseconds: u32,
     pub batch_acknowledgement_interval_milliseconds: u32,
-    pub replicator_address: ::windows_core::HSTRING,
+    pub replicator_address: crate::HSTRING,
     pub require_service_ack: bool,
     pub initial_replication_queue_size: u32,
     pub max_replication_queue_size: u32,

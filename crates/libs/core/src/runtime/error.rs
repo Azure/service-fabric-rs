@@ -18,8 +18,8 @@ pub fn fill_fabric_hresult(code: HRESULT) -> Error {
     } else {
         unsafe { err_str_raw.as_wide() }
     };
-    println!("debug std: {}", HSTRING::from_wide(err_str).unwrap());
-    Error::new(code, HSTRING::from_wide(err_str).unwrap().to_string())
+    println!("debug std: {}", HSTRING::from_wide(err_str));
+    Error::new(code, HSTRING::from_wide(err_str).to_string())
 }
 
 pub fn fill_fabric_error(e: Error) -> Error {

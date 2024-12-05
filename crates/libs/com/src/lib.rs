@@ -15,6 +15,6 @@ pub use ServiceFabric::*;
 pub use mssf_metadata;
 
 // windows core and windows hack
-use external_windows_core::*;
+use mssf_pal::*;
 extern crate self as windows;
 extern crate self as windows_core;

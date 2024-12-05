@@ -39,7 +39,7 @@ where
             StatelessServiceFactoryBridge::create(factory, rt_cp).into();
         unsafe {
             self.com_impl
-                .RegisterStatelessServiceFactory(servicetypename, &bridge)
+                .RegisterStatelessServiceFactory(servicetypename.as_pcwstr(), &bridge)
         }
     }
 
@@ -53,7 +53,7 @@ where
             StatefulServiceFactoryBridge::create(factory, rt_cp).into();
         unsafe {
             self.com_impl
-                .RegisterStatefulServiceFactory(servicetypename, &bridge)
+                .RegisterStatefulServiceFactory(servicetypename.as_pcwstr(), &bridge)
         }
     }
 }

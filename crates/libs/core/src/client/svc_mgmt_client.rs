@@ -24,6 +24,7 @@ use windows_core::{HSTRING, PCWSTR};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
+    strings::HSTRINGWrap,
     sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2},
     types::{
         RemoveReplicaDescription, RestartReplicaDescription, ServiceNotificationFilterDescription,
@@ -286,7 +287,7 @@ impl PartitionKeyType {
             ServicePartitionKind::Named => {
                 let x = data as *mut u16;
                 assert!(!x.is_null());
-                let s = HSTRING::from_wide(unsafe { PCWSTR::from_raw(x).as_wide() }).unwrap();
+                let s = HSTRINGWrap::from(PCWSTR::from_raw(x)).into();
                 PartitionKeyType::String(s)
             }
         }
@@ -378,8 +379,7 @@ impl ResolvedServicePartition {
     // Get the service partition info/metadata
     pub fn get_info(&self) -> ResolvedServicePartitionInfo {
         let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
-        let service_name =
-            HSTRING::from_wide(unsafe { PCWSTR::from_raw(raw.ServiceName.0).as_wide() }).unwrap();
+        let service_name = HSTRINGWrap::from(PCWSTR::from_raw(raw.ServiceName.0)).into();
         let kind_raw = raw.Info.Kind;
         let val = raw.Info.Value;
         let service_partition_kind: ServicePartitionKind = kind_raw.into();
@@ -496,7 +496,7 @@ impl From<&FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpoint {
     fn from(value: &FABRIC_RESOLVED_SERVICE_ENDPOINT) -> Self {
         let raw = value;
         Self {
-            address: HSTRING::from_wide(unsafe { raw.Address.as_wide() }).unwrap(),
+            address: HSTRINGWrap::from(raw.Address).into(),
             role: raw.Role.into(),
         }
     }
@@ -529,8 +529,7 @@ mod tests {
         // check the raw ptr is ok
         let raw = k.get_raw_opt();
         let s =
-            HSTRING::from_wide(unsafe { PCWSTR::from_raw(raw.unwrap() as *const u16).as_wide() })
-                .unwrap();
+            HSTRING::from_wide(unsafe { PCWSTR::from_raw(raw.unwrap() as *const u16).as_wide() });
         assert_eq!(s, src);
 
         let service_type = ServicePartitionKind::Named;

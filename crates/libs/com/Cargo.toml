@@ -19,8 +19,7 @@ include = [
 default-target = "x86_64-pc-windows-msvc"
 targets = []
 
-[dependencies.external_windows_core]
-package = "mssf-pal"
+[dependencies.mssf-pal]
 path = "../pal"
 version = "0.0.16"
 

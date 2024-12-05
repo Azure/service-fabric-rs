@@ -7,12 +7,15 @@
 use std::ffi::c_void;
 
 use libc::{__errno_location, malloc};
-use windows::core::imp::LOAD_LIBRARY_FLAGS;
-use windows::Win32::Foundation::{ERROR_NOT_ENOUGH_MEMORY, STATUS_HEAP_CORRUPTION};
-use windows::{
-    core::{HRESULT, PCSTR, PWSTR},
-    Win32::Foundation::{HANDLE, HMODULE},
-};
+// use windows::core::imp::LOAD_LIBRARY_FLAGS;
+// use windows::Win32::Foundation::{ERROR_NOT_ENOUGH_MEMORY, STATUS_HEAP_CORRUPTION};
+// use windows::{
+//     core::{HRESULT, PCSTR, PWSTR},
+//     Win32::Foundation::{HANDLE, HMODULE},
+// };
+
+pub const ERROR_NOT_ENOUGH_MEMORY: u32 = 8u32;
+pub const STATUS_HEAP_CORRUPTION: u32 = 0xC0000374_u32 as _;
 
 static DUMMY_HEAP: isize = 0x01020304;
 
@@ -59,7 +62,7 @@ pub unsafe extern "system" fn HeapAlloc(heap: isize, _flags: u32, len: usize) ->
 
     let p = malloc(len);
     if p.is_null() {
-        SetLastError(ERROR_NOT_ENOUGH_MEMORY.0)
+        SetLastError(ERROR_NOT_ENOUGH_MEMORY)
     }
     p
 }
@@ -70,7 +73,7 @@ pub unsafe extern "system" fn HeapAlloc(heap: isize, _flags: u32, len: usize) ->
 #[no_mangle]
 pub unsafe extern "system" fn HeapFree(heap: isize, _flags: u32, ptr: *const c_void) -> i32 {
     if heap != DUMMY_HEAP {
-        SetLastError(STATUS_HEAP_CORRUPTION.0 as u32);
+        SetLastError(STATUS_HEAP_CORRUPTION);
         return 0; // fail to free
     }
 
@@ -82,23 +85,26 @@ pub unsafe extern "system" fn HeapFree(heap: isize, _flags: u32, ptr: *const c_v
 ///
 /// safe
 #[no_mangle]
-pub unsafe extern "system" fn GetErrorInfo(_reserved: u32, _info: *mut *mut c_void) -> HRESULT {
-    HRESULT(0)
+pub unsafe extern "system" fn GetErrorInfo(
+    _reserved: u32,
+    _info: *mut *mut c_void,
+) -> crate::HRESULT {
+    crate::HRESULT(0)
 }
 
 /// # Safety
 ///
 /// safe
 #[no_mangle]
-pub unsafe extern "system" fn SetErrorInfo(_reserved: u32, _info: *const c_void) -> HRESULT {
-    HRESULT(0)
+pub unsafe extern "system" fn SetErrorInfo(_reserved: u32, _info: *const c_void) -> crate::HRESULT {
+    crate::HRESULT(0)
 }
 
 /// # Safety
 ///
 /// safe
 #[no_mangle]
-pub unsafe extern "system" fn LoadLibraryA(_name: PCSTR) -> isize {
+pub unsafe extern "system" fn LoadLibraryA(_name: crate::PCSTR) -> isize {
     0
 }
 
@@ -107,11 +113,11 @@ pub unsafe extern "system" fn LoadLibraryA(_name: PCSTR) -> isize {
 /// safe
 #[no_mangle]
 pub unsafe extern "system" fn LoadLibraryExA(
-    _lplibfilename: PCSTR,
-    _hfile: HANDLE,
-    _dwflags: LOAD_LIBRARY_FLAGS,
-) -> HMODULE {
-    windows::Win32::Foundation::HMODULE(0)
+    _lplibfilename: crate::PCSTR,
+    _hfile: isize,
+    _dwflags: u32,
+) -> isize {
+    0
 }
 
 /// # Safety
@@ -126,7 +132,10 @@ pub unsafe extern "system" fn FreeLibrary(_library: isize) -> i32 {
 ///
 /// safe
 #[no_mangle]
-pub unsafe extern "system" fn GetProcAddress(_library: isize, _name: PCSTR) -> *const c_void {
+pub unsafe extern "system" fn GetProcAddress(
+    _library: isize,
+    _name: crate::PCSTR,
+) -> *const c_void {
     std::ptr::null()
 }
 
@@ -153,7 +162,7 @@ pub unsafe extern "system" fn FormatMessageW(
     _source: *const c_void,
     _code: u32,
     _lang: u32,
-    _buffer: PWSTR,
+    _buffer: *mut u16,
     _len: u32,
     _args: *const *const i8,
 ) -> u32 {

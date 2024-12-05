@@ -13,8 +13,8 @@ tracing-subscriber = { version = "0.3",  default-features = false, features = ["
 tokio-util = "0.7"
 ctrlc = { version = "3.0", features = ["termination"] }
 tokio = { version = "1", features = ["full"] }
-windows = {version = "0.57", features = ["implement"]}
-windows-core = "0.57"
+windows = {version = "0.58", features = ["implement"]}
+windows-core = "0.58"
 trait-variant = "0.1"
 serde = "*"
 serde_derive = "*"

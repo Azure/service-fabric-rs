@@ -30,12 +30,13 @@ mssf-metadata = { version = "0.0.1", optional = true }
 
 
 
-[dependencies.windows]
-version = "0.57"
-features = [
-    "Win32_Foundation",
-    "implement"
-]
+# [dependencies.windows]
+# version = "0.58"
+# features = [
+#     "Win32_Foundation",
+#     "implement",
+#     "Win32"
+# ]
 
 [features]
 default = ["bundled_libs"]

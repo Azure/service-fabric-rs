@@ -26,3 +26,27 @@ impl AsRef<PCWSTR> for PCWSTR {
 impl windows_core::TypeKind for PCWSTR {
     type TypeKind = windows_core::CopyType;
 }
+
+#[repr(transparent)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct PCSTR(pub *const u8);
+
+impl AsRef<PCSTR> for PCSTR {
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
+
+impl windows_core::TypeKind for PCSTR {
+    type TypeKind = windows_core::CopyType;
+}
+
+// pal implementation for windows types
+#[allow(
+    non_snake_case,
+    non_upper_case_globals,
+    non_camel_case_types,
+    dead_code,
+    clippy::all
+)]
+pub mod Win32;

@@ -1,7 +1,7 @@
 use mssf_com::FabricTypes::{FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT_SEND_OPTIONS};
 use windows_core::PCWSTR;
 
-use crate::{strings::HSTRINGWrap, types::HealthState, HSTRING};
+use crate::{strings::WStringWrap, types::HealthState, WString};
 
 pub type SequenceNumber = i64;
 
@@ -17,16 +17,16 @@ pub const AUTO_SEQUENCE_NUMBER: SequenceNumber = 0;
 #[derive(Debug, Clone)]
 pub struct HealthInformation {
     /// source name which identifies the watchdog/system component which generated the health information.
-    pub source_id: HSTRING,
+    pub source_id: WString,
     /// the property of the health report.
-    pub property: HSTRING,
+    pub property: WString,
     /// how long the health report is valid. Must be larger than TimeSpan.Zero.
     pub time_to_live_seconds: u32,
     /// health state that describes the severity of the monitored condition used for reporting.
     pub state: HealthState,
     /// description of the health information. It represents free text used to add human readable
     /// information about the monitored condition.
-    pub description: HSTRING,
+    pub description: WString,
     /// sequence number associated with the health information, used by the health store for staleness detection.
     /// Must be greater than UNKNOWN_SEQUENCE_NUMBER.
     pub sequence_number: SequenceNumber,
@@ -34,17 +34,17 @@ pub struct HealthInformation {
     /// If set to false, the report is treated as an error when expired.
     pub remove_when_expired: bool,
     // TODO: not in rust yet
-    // health_report_id: HSTRING,
+    // health_report_id: WString,
 }
 
 impl From<&FABRIC_HEALTH_INFORMATION> for HealthInformation {
     fn from(value: &FABRIC_HEALTH_INFORMATION) -> Self {
         Self {
-            source_id: HSTRINGWrap::from(value.SourceId).into(),
-            property: HSTRINGWrap::from(value.Property).into(),
+            source_id: WStringWrap::from(value.SourceId).into(),
+            property: WStringWrap::from(value.Property).into(),
             time_to_live_seconds: value.TimeToLiveSeconds,
             state: HealthState::from(&value.State),
-            description: HSTRINGWrap::from(value.Description).into(),
+            description: WStringWrap::from(value.Description).into(),
             sequence_number: value.SequenceNumber,
             remove_when_expired: value.RemoveWhenExpired.as_bool(),
         }

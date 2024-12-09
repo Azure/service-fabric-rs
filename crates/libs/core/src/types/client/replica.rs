@@ -1,4 +1,4 @@
-use crate::{GUID, HSTRING, PCWSTR};
+use crate::{WString, GUID, PCWSTR};
 use mssf_com::{
     FabricClient::IFabricGetReplicaListResult2,
     FabricTypes::{
@@ -16,7 +16,7 @@ use mssf_com::{
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
-    strings::HSTRINGWrap,
+    strings::WStringWrap,
     types::{HealthState, ReplicaRole},
 };
 
@@ -110,8 +110,8 @@ pub struct StatefulServiceReplicaQueryResult {
     pub replica_role: ReplicaRole,
     pub replica_status: QueryServiceReplicaStatus,
     pub aggregated_health_state: HealthState,
-    pub replica_address: HSTRING,
-    pub node_name: HSTRING,
+    pub replica_address: WString,
+    pub node_name: WString,
     pub last_in_build_duration_in_seconds: i64,
     // pub Reserved: *mut core::ffi::c_void,
 }
@@ -125,8 +125,8 @@ impl From<&FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM>
             replica_role: (&value.ReplicaRole).into(),
             replica_status: (&value.ReplicaStatus).into(),
             aggregated_health_state: (&value.AggregatedHealthState).into(),
-            replica_address: HSTRINGWrap::from(value.ReplicaAddress).into(),
-            node_name: HSTRINGWrap::from(value.NodeName).into(),
+            replica_address: WStringWrap::from(value.ReplicaAddress).into(),
+            node_name: WStringWrap::from(value.NodeName).into(),
             last_in_build_duration_in_seconds: value.LastInBuildDurationInSeconds,
         }
     }
@@ -163,8 +163,8 @@ pub struct StatelessServiceInstanceQueryResult {
     pub instance_id: i64,
     pub replica_status: QueryServiceReplicaStatus,
     pub aggregated_health_state: HealthState,
-    pub replica_address: HSTRING,
-    pub node_name: HSTRING,
+    pub replica_address: WString,
+    pub node_name: WString,
     pub last_in_build_duration_in_seconds: i64,
     // pub Reserved: *mut core::ffi::c_void,
 }
@@ -177,8 +177,8 @@ impl From<&FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM>
             instance_id: value.InstanceId,
             replica_status: (&value.ReplicaStatus).into(),
             aggregated_health_state: (&value.AggregatedHealthState).into(),
-            replica_address: HSTRINGWrap::from(value.ReplicaAddress).into(),
-            node_name: HSTRINGWrap::from(value.NodeName).into(),
+            replica_address: WStringWrap::from(value.ReplicaAddress).into(),
+            node_name: WStringWrap::from(value.NodeName).into(),
             last_in_build_duration_in_seconds: value.LastInBuildDurationInSeconds,
         }
     }
@@ -186,7 +186,7 @@ impl From<&FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM>
 
 // FABRIC_RESTART_REPLICA_DESCRIPTION
 pub struct RestartReplicaDescription {
-    pub node_name: HSTRING,
+    pub node_name: WString,
     pub partition_id: GUID,
     pub replica_or_instance_id: i64,
 }
@@ -204,7 +204,7 @@ impl From<&RestartReplicaDescription> for FABRIC_RESTART_REPLICA_DESCRIPTION {
 
 // FABRIC_REMOVE_REPLICA_DESCRIPTION
 pub struct RemoveReplicaDescription {
-    pub node_name: HSTRING,
+    pub node_name: WString,
     pub partition_id: GUID,
     pub replica_or_instance_id: i64,
     // TODO: support force flag

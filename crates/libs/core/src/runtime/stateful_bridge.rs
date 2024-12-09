@@ -30,7 +30,7 @@ use mssf_com::{
 };
 
 use crate::{
-    strings::HSTRINGWrap,
+    strings::WStringWrap,
     sync::BridgeContext3,
     types::{Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig},
 };
@@ -80,8 +80,8 @@ where
     ) -> crate::Result<IFabricStatefulServiceReplica> {
         debug!("StatefulServiceFactoryBridge::CreateReplica");
         let p_servicename = crate::PCWSTR::from_raw(servicename.0);
-        let h_servicename = HSTRINGWrap::from(p_servicename).into();
-        let h_servicetypename = HSTRINGWrap::from(*servicetypename).into();
+        let h_servicename = WStringWrap::from(p_servicename).into();
+        let h_servicetypename = WStringWrap::from(*servicetypename).into();
         let data = unsafe {
             if !initializationdata.is_null() {
                 std::slice::from_raw_parts(initializationdata, initializationdatalength as usize)
@@ -155,7 +155,7 @@ where
             inner
                 .open(token)
                 .await
-                .map(|s| IFabricStringResult::from(HSTRINGWrap::from(s)))
+                .map(|s| IFabricStringResult::from(WStringWrap::from(s)))
         })
     }
 
@@ -591,7 +591,7 @@ where
             inner
                 .change_role(newrole2, token)
                 .await
-                .map(|s| IFabricStringResult::from(HSTRINGWrap::from(s)))
+                .map(|s| IFabricStringResult::from(WStringWrap::from(s)))
         })
     }
 

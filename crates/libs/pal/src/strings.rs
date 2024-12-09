@@ -90,14 +90,14 @@ impl windows_core::TypeKind for PCSTR {
     type TypeKind = windows_core::CopyType;
 }
 
-// HSTRING implementation that is not compatible with winrt standard.
-// This will be renamed to WString in a separate PR.
+/// WString is the utf16 string, similar to std::wstring in cpp.
+/// It is used for passing utf16 string buffers between Rust and COM.
 // The inner buffer is null terminated u16 vec.
 #[derive(Clone, PartialEq, Eq, Default)]
-pub struct HSTRING(Option<Vec<u16>>);
+pub struct WString(Option<Vec<u16>>);
 const EMPTY: [u16; 1] = [0];
 
-impl HSTRING {
+impl WString {
     /// creates an empty string
     pub const fn new() -> Self {
         Self(None)
@@ -127,12 +127,12 @@ impl HSTRING {
         }
     }
 
-    /// Get the contents of this `HSTRING` as a String lossily.
+    /// Get the contents of this `WString` as a String lossily.
     pub fn to_string_lossy(&self) -> String {
         String::from_utf16_lossy(self.as_wide())
     }
 
-    /// Returns a raw pointer to the `HSTRING` buffer.
+    /// Returns a raw pointer to the `WString` buffer.
     pub fn as_ptr(&self) -> *const u16 {
         match self.0.as_ref() {
             Some(v) => v.as_ptr(),
@@ -161,24 +161,24 @@ impl HSTRING {
     }
 }
 
-impl From<&str> for HSTRING {
+impl From<&str> for WString {
     fn from(value: &str) -> Self {
         unsafe { Self::from_wide_iter(value.encode_utf16(), value.len()) }
     }
 }
 
-impl From<String> for HSTRING {
+impl From<String> for WString {
     fn from(value: String) -> Self {
         value.as_str().into()
     }
 }
-impl From<&String> for HSTRING {
+impl From<&String> for WString {
     fn from(value: &String) -> Self {
         value.as_str().into()
     }
 }
 
-impl core::fmt::Display for HSTRING {
+impl core::fmt::Display for WString {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         // convert u16 to char gracefully and write to formatter.
         let wit = core::char::decode_utf16(self.as_wide().iter().cloned());
@@ -192,7 +192,7 @@ impl core::fmt::Display for HSTRING {
     }
 }
 
-impl core::fmt::Debug for HSTRING {
+impl core::fmt::Debug for WString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "\"{}\"", self)
     }
@@ -202,22 +202,22 @@ impl core::fmt::Debug for HSTRING {
 mod tests {
     use crate::PCWSTR;
 
-    use super::HSTRING;
+    use super::WString;
 
     #[test]
     fn string_test() {
         let test_case = |s: &str| {
-            let h = HSTRING::from(s);
+            let h = WString::from(s);
             assert_eq!(s.len(), h.len());
             assert_eq!(s.is_empty(), h.is_empty());
             assert_eq!(format!("{}", h), s);
             assert_eq!(s, h.to_string_lossy());
             assert_eq!(h.as_wide().len(), s.len());
             let raw = h.as_ptr();
-            let h2 = HSTRING::from_wide(unsafe { PCWSTR(raw).as_wide() });
+            let h2 = WString::from_wide(unsafe { PCWSTR(raw).as_wide() });
             assert_eq!(s, h2.to_string_lossy());
             assert_eq!(h, h2);
-            assert_ne!(h, HSTRING::from("dummy"));
+            assert_ne!(h, WString::from("dummy"));
         };
 
         test_case("hello");

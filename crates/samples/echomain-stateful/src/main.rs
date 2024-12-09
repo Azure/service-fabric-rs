@@ -10,7 +10,7 @@ use mssf_com::FabricRuntime::{
     IFabricRuntime,
 };
 use mssf_core::sync::wait::WaitableCallback;
-use mssf_core::{Interface, HSTRING};
+use mssf_core::{Interface, WString};
 use std::sync::mpsc::channel;
 use tracing::info;
 pub mod app;
@@ -55,7 +55,7 @@ fn run_app(runtime: &IFabricRuntime, activation_ctx: &IFabricCodePackageActivati
 
 fn get_port(activation_ctx: &IFabricCodePackageActivationContext) -> u32 {
     info!("trying to get port");
-    let endpoint_name = mssf_core::HSTRING::from("ServiceEndpoint1");
+    let endpoint_name = mssf_core::WString::from("ServiceEndpoint1");
     let endpoint = unsafe {
         activation_ctx
             .GetServiceEndpointResource(endpoint_name.as_pcwstr())
@@ -64,7 +64,7 @@ fn get_port(activation_ctx: &IFabricCodePackageActivationContext) -> u32 {
     unsafe { (*endpoint).Port }
 }
 
-fn get_hostname() -> HSTRING {
+fn get_hostname() -> WString {
     let (token, callback) = WaitableCallback::channel();
 
     let callback_arg = callback
@@ -82,7 +82,7 @@ fn get_hostname() -> HSTRING {
 
     let hostname_raw = unsafe { (*node_ctx).IPAddressOrFQDN };
 
-    let ret = HSTRING::from_wide(unsafe { hostname_raw.as_wide() });
+    let ret = WString::from_wide(unsafe { hostname_raw.as_wide() });
     info!("got hostname: {:?}", ret);
     ret
 }

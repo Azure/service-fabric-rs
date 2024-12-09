@@ -13,7 +13,7 @@ use mssf_core::runtime::executor::{DefaultExecutor, Executor};
 use mssf_core::runtime::node_context::NodeContext;
 use mssf_core::runtime::CodePackageActivationContext;
 use mssf_core::types::{HealthInformation, HealthReportSendOption};
-use mssf_core::HSTRING;
+use mssf_core::WString;
 use tracing::{error, info};
 
 use crate::config::MySettings;
@@ -55,7 +55,7 @@ fn main() -> mssf_core::Result<()> {
 
     // get listening port
     let endpoint = actctx
-        .get_endpoint_resource(&HSTRING::from("ServiceEndpoint1"))
+        .get_endpoint_resource(&WString::from("ServiceEndpoint1"))
         .unwrap();
     info!("Get ServiceEndpoint1: {:?}", endpoint);
     let port = endpoint.port;
@@ -71,7 +71,7 @@ fn main() -> mssf_core::Result<()> {
     let runtime = mssf_core::runtime::Runtime::create(e.clone()).unwrap();
     let factory = app::Factory::new(port, hostname, rt.handle().clone());
     runtime
-        .register_stateless_service_factory(&HSTRING::from("EchoAppService"), factory)
+        .register_stateless_service_factory(&WString::from("EchoAppService"), factory)
         .unwrap();
 
     e.run_until_ctrl_c();
@@ -82,7 +82,7 @@ fn main() -> mssf_core::Result<()> {
 fn validate_configs(actctx: &CodePackageActivationContext) {
     // loop and print all configs
     let config = actctx
-        .get_configuration_package(&HSTRING::from("Config"))
+        .get_configuration_package(&WString::from("Config"))
         .unwrap();
     let settings = config.get_settings();
     settings.sections.iter().for_each(|section| {
@@ -96,8 +96,8 @@ fn validate_configs(actctx: &CodePackageActivationContext) {
     // get the required config
     let (v, encrypt) = config
         .get_value(
-            &HSTRING::from("my_config_section"),
-            &HSTRING::from("my_string"),
+            &WString::from("my_config_section"),
+            &WString::from("my_string"),
         )
         .unwrap();
     assert_eq!(v.to_string_lossy(), "Value1");
@@ -124,11 +124,11 @@ fn validate_configs(actctx: &CodePackageActivationContext) {
 /// Send health ok to SF to validate health reporting code
 fn send_health_report(actctx: &CodePackageActivationContext) {
     let healthinfo = HealthInformation {
-        source_id: HSTRING::from("echoapp"),
-        property: HSTRING::from("echo-started"),
+        source_id: WString::from("echoapp"),
+        property: WString::from("echo-started"),
         time_to_live_seconds: 300,
         state: mssf_core::types::HealthState::Ok,
-        description: HSTRING::from("echo app started"),
+        description: WString::from("echo app started"),
         sequence_number: 1,
         remove_when_expired: true,
     };

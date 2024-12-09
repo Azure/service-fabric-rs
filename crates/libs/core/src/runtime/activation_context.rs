@@ -9,9 +9,9 @@ use mssf_com::{
 };
 
 use crate::{
-    strings::HSTRINGWrap,
+    strings::WStringWrap,
     types::{EndpointResourceDescription, HealthInformation, HealthReportSendOption},
-    Error, HSTRING, PCWSTR,
+    Error, WString, PCWSTR,
 };
 
 use super::config::ConfigurationPackage;
@@ -27,16 +27,16 @@ pub struct CodePackageActivationContext {
 /// about the code package and the local runtime environment.
 #[derive(Debug, Clone)]
 pub struct CodePackageInfo {
-    pub context_id: HSTRING,
-    pub code_package_name: HSTRING,
-    pub code_package_version: HSTRING,
-    pub work_directory: HSTRING,
-    pub log_directory: HSTRING,
-    pub temp_directory: HSTRING,
-    pub application_name: HSTRING,
-    pub application_type_name: HSTRING,
-    pub service_listen_address: HSTRING,
-    pub service_publish_address: HSTRING,
+    pub context_id: WString,
+    pub code_package_name: WString,
+    pub code_package_version: WString,
+    pub work_directory: WString,
+    pub log_directory: WString,
+    pub temp_directory: WString,
+    pub application_name: WString,
+    pub application_type_name: WString,
+    pub service_listen_address: WString,
+    pub service_publish_address: WString,
 }
 
 impl CodePackageActivationContext {
@@ -47,7 +47,7 @@ impl CodePackageActivationContext {
 
     pub fn get_endpoint_resource(
         &self,
-        serviceendpointresourcename: &HSTRING,
+        serviceendpointresourcename: &WString,
     ) -> crate::Result<EndpointResourceDescription> {
         let rs = unsafe {
             self.com_impl.GetServiceEndpointResource(PCWSTR::from_raw(
@@ -61,7 +61,7 @@ impl CodePackageActivationContext {
 
     pub fn get_configuration_package(
         &self,
-        configpackagename: &HSTRING,
+        configpackagename: &WString,
     ) -> crate::Result<ConfigurationPackage> {
         let c = unsafe {
             self.com_impl
@@ -72,29 +72,29 @@ impl CodePackageActivationContext {
 
     pub fn get_code_package_info(&self) -> CodePackageInfo {
         CodePackageInfo {
-            context_id: HSTRINGWrap::from(unsafe { self.com_impl.get_ContextId() }).into(),
-            code_package_name: HSTRINGWrap::from(unsafe { self.com_impl.get_CodePackageName() })
+            context_id: WStringWrap::from(unsafe { self.com_impl.get_ContextId() }).into(),
+            code_package_name: WStringWrap::from(unsafe { self.com_impl.get_CodePackageName() })
                 .into(),
-            code_package_version: HSTRINGWrap::from(unsafe {
+            code_package_version: WStringWrap::from(unsafe {
                 self.com_impl.get_CodePackageVersion()
             })
             .into(),
-            work_directory: HSTRINGWrap::from(unsafe { self.com_impl.get_WorkDirectory() }).into(),
-            log_directory: HSTRINGWrap::from(unsafe { self.com_impl.get_LogDirectory() }).into(),
-            temp_directory: HSTRINGWrap::from(unsafe { self.com_impl.get_TempDirectory() }).into(),
-            application_name: HSTRINGWrap::from(PCWSTR(unsafe {
+            work_directory: WStringWrap::from(unsafe { self.com_impl.get_WorkDirectory() }).into(),
+            log_directory: WStringWrap::from(unsafe { self.com_impl.get_LogDirectory() }).into(),
+            temp_directory: WStringWrap::from(unsafe { self.com_impl.get_TempDirectory() }).into(),
+            application_name: WStringWrap::from(PCWSTR(unsafe {
                 self.com_impl.get_ApplicationName().0
             }))
             .into(),
-            application_type_name: HSTRINGWrap::from(unsafe {
+            application_type_name: WStringWrap::from(unsafe {
                 self.com_impl.get_ApplicationTypeName()
             })
             .into(),
-            service_listen_address: HSTRINGWrap::from(unsafe {
+            service_listen_address: WStringWrap::from(unsafe {
                 self.com_impl.get_ServiceListenAddress()
             })
             .into(),
-            service_publish_address: HSTRINGWrap::from(unsafe {
+            service_publish_address: WStringWrap::from(unsafe {
                 self.com_impl.get_ServicePublishAddress()
             })
             .into(),

@@ -19,8 +19,8 @@ pub trait StatefulServiceFactory {
     /// Called by Service Fabric to create a stateful service replica for a particular service.
     fn create_replica(
         &self,
-        servicetypename: &crate::HSTRING,
-        servicename: &crate::HSTRING,
+        servicetypename: &crate::WString,
+        servicename: &crate::WString,
         initializationdata: &[u8],
         partitionid: &crate::GUID,
         replicaid: i64,
@@ -57,7 +57,7 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
         &self,
         newrole: ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> crate::Result<crate::HSTRING>;
+    ) -> crate::Result<crate::WString>;
 
     /// Closes the service replica gracefully when it is being shut down.
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
@@ -76,7 +76,7 @@ pub trait LocalReplicator: Send + Sync + 'static {
     /// in ReplicaInformation.
     /// Remarks:
     /// Replicator does not have an assigned role yet and should setup listening endpoint.
-    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<crate::HSTRING>;
+    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<crate::WString>;
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
 
     /// Change the replicator role.

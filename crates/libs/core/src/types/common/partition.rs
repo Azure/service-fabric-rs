@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{GUID, HSTRING};
+use crate::{WString, GUID};
 use mssf_com::FabricTypes::{
     FABRIC_INT64_RANGE_PARTITION_INFORMATION, FABRIC_NAMED_PARTITION_INFORMATION,
     FABRIC_SERVICE_PARTITION_ACCESS_STATUS, FABRIC_SERVICE_PARTITION_ACCESS_STATUS_GRANTED,
@@ -16,7 +16,7 @@ use mssf_com::FabricTypes::{
     FABRIC_SERVICE_PARTITION_KIND_SINGLETON, FABRIC_SINGLETON_PARTITION_INFORMATION,
 };
 
-use crate::strings::HSTRINGWrap;
+use crate::strings::WStringWrap;
 
 // FABRIC_SERVICE_PARTITION_INFORMATION
 #[derive(Debug, Clone)]
@@ -42,7 +42,7 @@ pub struct Int64PartitionInfomation {
 #[derive(Debug, Clone)]
 pub struct NamedPartitionInfomation {
     pub id: GUID,
-    pub name: HSTRING,
+    pub name: WString,
 }
 
 impl From<&FABRIC_SINGLETON_PARTITION_INFORMATION> for SingletonPartitionInfomation {
@@ -65,7 +65,7 @@ impl From<&FABRIC_NAMED_PARTITION_INFORMATION> for NamedPartitionInfomation {
     fn from(value: &FABRIC_NAMED_PARTITION_INFORMATION) -> Self {
         Self {
             id: value.Id,
-            name: HSTRINGWrap::from(value.Name).into(),
+            name: WStringWrap::from(value.Name).into(),
         }
     }
 }

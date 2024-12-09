@@ -93,7 +93,7 @@ impl ConfigurationPackage {
     }
 
     pub fn get_section(&self, section_name: &HSTRING) -> crate::Result<ConfigurationSection> {
-        let raw = unsafe { self.com.GetSection(section_name) }?;
+        let raw = unsafe { self.com.GetSection(section_name.as_pcwstr()) }?;
         let raw_ref = unsafe { raw.as_ref() };
         match raw_ref {
             Some(c) => {
@@ -113,8 +113,8 @@ impl ConfigurationPackage {
         let mut is_encrypted: BOOLEAN = Default::default();
         let raw = unsafe {
             self.com.GetValue(
-                section_name,
-                parameter_name,
+                section_name.as_pcwstr(),
+                parameter_name.as_pcwstr(),
                 std::ptr::addr_of_mut!(is_encrypted.0),
             )
         }?;
@@ -122,7 +122,7 @@ impl ConfigurationPackage {
     }
 
     pub fn decrypt_value(&self, encryptedvalue: &HSTRING) -> windows_core::Result<HSTRING> {
-        let s = unsafe { self.com.DecryptValue(encryptedvalue) }?;
+        let s = unsafe { self.com.DecryptValue(encryptedvalue.as_pcwstr()) }?;
         Ok(HSTRINGWrap::from(&s).into())
     }
 }

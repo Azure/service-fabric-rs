@@ -23,10 +23,10 @@ impl StringResult {
     }
 }
 
-impl IFabricStringResult_Impl for StringResult {
-    fn get_String(&self) -> windows::core::PCWSTR {
+impl IFabricStringResult_Impl for StringResult_Impl {
+    fn get_String(&self) -> windows_core::PCWSTR {
         // This is some hack to get the raw pointer out.
-        windows::core::PCWSTR::from_raw(self.data.as_ptr())
+        windows_core::PCWSTR::from_raw(self.data.as_ptr())
     }
 }
 
@@ -36,12 +36,18 @@ fn safe_pwstr_to_hstring(raw: PCWSTR) -> HSTRING {
     if raw.is_null() {
         return HSTRING::new();
     }
-    HSTRING::from_wide(unsafe { raw.as_wide() }).unwrap()
+    HSTRING::from_wide(unsafe { raw.as_wide() })
 }
 
 // Convert helper for HSTRING and PCWSTR and IFabricStringResult
 pub struct HSTRINGWrap {
     h: HSTRING,
+}
+
+impl HSTRINGWrap {
+    pub fn into_hstring(self) -> HSTRING {
+        self.h
+    }
 }
 
 impl From<HSTRING> for HSTRINGWrap {

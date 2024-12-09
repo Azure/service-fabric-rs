@@ -61,7 +61,7 @@ where
     }
 }
 
-impl<T> IFabricClientConnectionEventHandler_Impl for ClientConnectionEventHandlerBridge<T>
+impl<T> IFabricClientConnectionEventHandler_Impl for ClientConnectionEventHandlerBridge_Impl<T>
 where
     T: ClientConnectionEventHandler,
 {

@@ -46,7 +46,7 @@ impl WaitableCallback {
     }
 }
 
-impl IFabricAsyncOperationCallback_Impl for WaitableCallback {
+impl IFabricAsyncOperationCallback_Impl for WaitableCallback_Impl {
     // notify the function has been invoked.
     fn Invoke(&self, _context: ::core::option::Option<&IFabricAsyncOperationContext>) {
         //println!("WaitableCallback Invoke.");
@@ -91,7 +91,7 @@ impl AsyncContext {
     }
 }
 
-impl IFabricAsyncOperationContext_Impl for AsyncContext {
+impl IFabricAsyncOperationContext_Impl for AsyncContext_Impl {
     fn IsCompleted(&self) -> crate::BOOLEAN {
         crate::BOOLEAN::from(true)
     }

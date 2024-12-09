@@ -17,7 +17,7 @@ use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationCallback_Impl, IFabricAsyncOperationContext,
 };
 use tokio::sync::oneshot::Receiver;
-use windows::core::implement;
+use windows_core::implement;
 
 mod proxy;
 pub mod wait;
@@ -48,7 +48,7 @@ where
     callback: Cell<Option<F>>,
 }
 
-impl<F: Callback> IFabricAsyncOperationCallback_Impl for AwaitableCallback2<F> {
+impl<F: Callback> IFabricAsyncOperationCallback_Impl for AwaitableCallback2_Impl<F> {
     // notify the function has been invoked.
     fn Invoke(&self, context: ::core::option::Option<&IFabricAsyncOperationContext>) {
         let cb_opt = self.callback.take();
@@ -148,6 +148,10 @@ impl<T> SBox<T> {
     pub fn new(x: T) -> SBox<T> {
         SBox { b: Box::new(x) }
     }
+
+    pub fn into_inner(self) -> T {
+        *self.b
+    }
 }
 
 #[cfg(test)]
@@ -169,9 +173,9 @@ mod tests {
         },
     };
 
-    use crate::{Interface, HSTRING};
+    use crate::Interface;
     use tokio::sync::oneshot::Sender;
-    use windows_core::implement;
+    use windows_core::{implement, PCWSTR};
 
     use super::{oneshot_channel, FabricReceiver, SBox};
 
@@ -199,7 +203,7 @@ mod tests {
         }
     }
 
-    impl IFabricAsyncOperationCallback_Impl for AwaitableCallback {
+    impl IFabricAsyncOperationCallback_Impl for AwaitableCallback_Impl {
         // notify the function has been invoked.
         fn Invoke(&self, _context: ::core::option::Option<&IFabricAsyncOperationContext>) {
             let tx = self.tx.take();
@@ -251,7 +255,7 @@ mod tests {
             , [<$param_opt _name>]: SBox<$param_opt>
         )*
 
-        ) -> ::windows::core::Result<$res> {
+        ) -> crate::Result<$res> {
             let ctx: SBox<IFabricAsyncOperationContext>;
             let token: AwaitableToken;
 
@@ -269,7 +273,7 @@ mod tests {
                         self.com
                         .[<Begin $inner_name>](
                             $(
-                                [<$param_opt _name>].b.as_ref(),
+                                [<$param_opt _name>].into_inner(),
                             )*
                             p.b.as_ref(), 1000, &callback_arg)?
                     });
@@ -303,7 +307,7 @@ mod tests {
             GetNodeHealth,
             mssf_com::FabricTypes::FABRIC_CLUSTER_HEALTH_POLICY,
             mssf_com::FabricClient::IFabricNodeHealthResult,
-            HSTRING
+            PCWSTR
         );
     }
 
@@ -349,7 +353,7 @@ mod tests {
         pub async fn get_node_list_example(
             &self,
             p: SBox<FABRIC_NODE_QUERY_DESCRIPTION>,
-        ) -> ::windows::core::Result<IFabricGetNodeListResult> {
+        ) -> crate::Result<IFabricGetNodeListResult> {
             let ctx: SBox<IFabricAsyncOperationContext>;
             let token: AwaitableToken;
 
@@ -372,7 +376,7 @@ mod tests {
         pub fn get_node_list_example2(
             &self,
             querydescription: &FABRIC_NODE_QUERY_DESCRIPTION,
-        ) -> FabricReceiver<::windows::core::Result<IFabricGetNodeListResult>> {
+        ) -> FabricReceiver<crate::Result<IFabricGetNodeListResult>> {
             let (tx, rx) = oneshot_channel();
 
             let com_cp = self.com.clone();
@@ -393,7 +397,7 @@ mod tests {
         pub fn get_node_list_sync_example(
             &self,
             querydescription: &FABRIC_NODE_QUERY_DESCRIPTION,
-        ) -> ::windows::core::Result<IFabricGetNodeListResult> {
+        ) -> crate::Result<IFabricGetNodeListResult> {
             let rx = self.get_node_list_example2(querydescription);
             rx.blocking_recv()
         }
@@ -420,9 +424,7 @@ mod tests {
 
         if !node_list.is_null() {
             let node: FABRIC_NODE_QUERY_RESULT_ITEM = unsafe { *node_list };
-            println!("id {}: node info: name: {}", id, unsafe {
-                node.NodeName.display()
-            });
+            println!("id {}: node info: name: {:?}", id, node.NodeName);
         }
     }
 
@@ -449,9 +451,7 @@ mod tests {
 
         if !node_list.is_null() {
             let node: FABRIC_NODE_QUERY_RESULT_ITEM = unsafe { *node_list };
-            println!("id {}: node info: name: {}", id, unsafe {
-                node.NodeName.display()
-            });
+            println!("id {}: node info: name: {:?}", id, node.NodeName);
         }
     }
 

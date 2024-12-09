@@ -96,7 +96,7 @@ where
             // We trust the code in mssf here to not panic, or we have bigger problem (memory corruption etc.).
             let self_impl: &BridgeContext3<T> = unsafe { self_cp.as_impl() };
             self_impl.set_content(task_res);
-            let cb = self_impl.Callback().unwrap();
+            let cb = unsafe { self_cp.Callback().unwrap() };
             unsafe { cb.Invoke(&self_cp) };
         });
         Ok(self_cp2)
@@ -151,7 +151,7 @@ where
     }
 }
 
-impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3<T> {
+impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3_Impl<T> {
     fn IsCompleted(&self) -> crate::BOOLEAN {
         self.is_completed
             .load(std::sync::atomic::Ordering::Relaxed)

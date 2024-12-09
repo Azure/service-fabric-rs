@@ -21,7 +21,7 @@ use crate::types::{EseLocalStoreSettings, LocalStoreKind, ReplicatorSettings};
 #[implement(IFabricStoreEventHandler)]
 pub struct DummyStoreEventHandler {}
 
-impl IFabricStoreEventHandler_Impl for DummyStoreEventHandler {
+impl IFabricStoreEventHandler_Impl for DummyStoreEventHandler_Impl {
     fn OnDataLoss(&self) {
         info!("DummyStoreEventHandler::OnDataLoss");
     }

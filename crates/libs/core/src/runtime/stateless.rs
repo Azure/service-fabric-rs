@@ -39,7 +39,7 @@ pub trait StatelessServiceFactory {
         servicetypename: &HSTRING,
         servicename: &HSTRING,
         initializationdata: &[u8],
-        partitionid: &::windows::core::GUID,
+        partitionid: &crate::GUID,
         instanceid: i64,
     ) -> crate::Result<impl StatelessServiceInstance>;
 }

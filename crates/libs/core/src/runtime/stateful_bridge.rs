@@ -10,7 +10,7 @@
 
 use std::sync::Arc;
 
-use crate::{runtime::stateful_proxy::StatefulServicePartition, Interface, HSTRING};
+use crate::{runtime::stateful_proxy::StatefulServicePartition, Interface};
 use tracing::debug;
 use windows_core::implement;
 
@@ -63,7 +63,7 @@ where
     }
 }
 
-impl<E, F> IFabricStatefulServiceFactory_Impl for StatefulServiceFactoryBridge<E, F>
+impl<E, F> IFabricStatefulServiceFactory_Impl for StatefulServiceFactoryBridge_Impl<E, F>
 where
     E: Executor,
     F: StatefulServiceFactory,
@@ -80,8 +80,8 @@ where
     ) -> crate::Result<IFabricStatefulServiceReplica> {
         debug!("StatefulServiceFactoryBridge::CreateReplica");
         let p_servicename = crate::PCWSTR::from_raw(servicename.0);
-        let h_servicename = HSTRING::from_wide(unsafe { p_servicename.as_wide() }).unwrap();
-        let h_servicetypename = HSTRING::from_wide(unsafe { servicetypename.as_wide() }).unwrap();
+        let h_servicename = HSTRINGWrap::from(p_servicename).into();
+        let h_servicetypename = HSTRINGWrap::from(*servicetypename).into();
         let data = unsafe {
             if !initializationdata.is_null() {
                 std::slice::from_raw_parts(initializationdata, initializationdatalength as usize)
@@ -139,7 +139,7 @@ where
     }
 }
 
-impl<E, R> IFabricReplicator_Impl for IFabricReplicatorBridge<E, R>
+impl<E, R> IFabricReplicator_Impl for IFabricReplicatorBridge_Impl<E, R>
 where
     E: Executor,
     R: Replicator,
@@ -277,7 +277,7 @@ where
 {
     inner: Arc<P>,
     rt: E,
-    rplctr: IFabricReplicatorBridge<E, P>,
+    rplctr: IFabricReplicator,
 }
 
 impl<E, P> IFabricPrimaryReplicatorBridge<E, P>
@@ -303,13 +303,13 @@ where
         IFabricPrimaryReplicatorBridge {
             inner,
             rt,
-            rplctr: replicator_bridge,
+            rplctr: replicator_bridge.into(),
         }
     }
 }
 
 // TODO: this impl has duplicate code with replicator bridge
-impl<E, P> IFabricReplicator_Impl for IFabricPrimaryReplicatorBridge<E, P>
+impl<E, P> IFabricReplicator_Impl for IFabricPrimaryReplicatorBridge_Impl<E, P>
 where
     E: Executor,
     P: PrimaryReplicator,
@@ -318,75 +318,77 @@ where
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> crate::Result<super::IFabricAsyncOperationContext> {
-        self.rplctr.BeginOpen(callback)
+        unsafe { self.rplctr.BeginOpen(callback) }
     }
 
     fn EndOpen(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> crate::Result<IFabricStringResult> {
-        self.rplctr.EndOpen(context)
+        unsafe { self.rplctr.EndOpen(context) }
     }
 
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn BeginChangeRole(
         &self,
         epoch: *const FABRIC_EPOCH,
         role: FABRIC_REPLICA_ROLE,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> crate::Result<super::IFabricAsyncOperationContext> {
-        self.rplctr.BeginChangeRole(epoch, role, callback)
+        unsafe { self.rplctr.BeginChangeRole(epoch, role, callback) }
     }
 
     fn EndChangeRole(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> crate::Result<()> {
-        self.rplctr.EndChangeRole(context)
+        unsafe { self.rplctr.EndChangeRole(context) }
     }
 
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn BeginUpdateEpoch(
         &self,
         epoch: *const FABRIC_EPOCH,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> crate::Result<super::IFabricAsyncOperationContext> {
-        self.rplctr.BeginUpdateEpoch(epoch, callback)
+        unsafe { self.rplctr.BeginUpdateEpoch(epoch, callback) }
     }
 
     fn EndUpdateEpoch(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> crate::Result<()> {
-        self.rplctr.EndUpdateEpoch(context)
+        unsafe { self.rplctr.EndUpdateEpoch(context) }
     }
 
     fn BeginClose(
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> crate::Result<super::IFabricAsyncOperationContext> {
-        self.rplctr.BeginClose(callback)
+        unsafe { self.rplctr.BeginClose(callback) }
     }
 
     fn EndClose(
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> crate::Result<()> {
-        self.rplctr.EndClose(context)
+        unsafe { self.rplctr.EndClose(context) }
     }
 
     fn Abort(&self) {
-        self.rplctr.Abort()
+        unsafe { self.rplctr.Abort() }
     }
 
     fn GetCurrentProgress(&self) -> crate::Result<i64> {
-        self.rplctr.GetCurrentProgress()
+        unsafe { self.rplctr.GetCurrentProgress() }
     }
 
     fn GetCatchUpCapability(&self) -> crate::Result<i64> {
-        self.rplctr.GetCatchUpCapability()
+        unsafe { self.rplctr.GetCatchUpCapability() }
     }
 }
 
-impl<E, P> IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorBridge<E, P>
+impl<E, P> IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorBridge_Impl<E, P>
 where
     E: Executor,
     P: PrimaryReplicator,
@@ -496,7 +498,7 @@ where
     }
 }
 
-impl<E, P> IFabricReplicatorCatchupSpecificQuorum_Impl for IFabricPrimaryReplicatorBridge<E, P>
+impl<E, P> IFabricReplicatorCatchupSpecificQuorum_Impl for IFabricPrimaryReplicatorBridge_Impl<E, P>
 where
     E: Executor,
     P: PrimaryReplicator,
@@ -532,7 +534,7 @@ where
     }
 }
 
-impl<E, R> IFabricStatefulServiceReplica_Impl for IFabricStatefulServiceReplicaBridge<E, R>
+impl<E, R> IFabricStatefulServiceReplica_Impl for IFabricStatefulServiceReplicaBridge_Impl<E, R>
 where
     E: Executor,
     R: StatefulServiceReplica,

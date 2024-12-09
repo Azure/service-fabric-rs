@@ -19,22 +19,13 @@ include = [
 default-target = "x86_64-pc-windows-msvc"
 targets = []
 
+[dependencies.mssf-pal]
+path = "../pal"
+version = "0.0.16"
+
 [target.'cfg(windows)'.dependencies]
 # this dep is required on windows to have the support libs.
 mssf-metadata = { version = "0.0.1", optional = true }
-
-[target.'cfg(unix)'.dependencies]
-mssf-pal = { path = "../pal" , version = "0.0.16"}
-
-[dependencies]
-windows-core = "0.57"
-
-[dependencies.windows]
-version = "0.57"
-features = [
-    "Win32_Foundation",
-    "implement"
-]
 
 [features]
 default = ["bundled_libs"]

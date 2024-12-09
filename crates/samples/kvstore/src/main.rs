@@ -1,4 +1,4 @@
-use mssf_core::HSTRING;
+use mssf_core::WString;
 use mssf_core::{
     debug::wait_for_debugger,
     runtime::{
@@ -34,12 +34,12 @@ fn main() -> mssf_core::Result<()> {
     let runtime = mssf_core::runtime::Runtime::create(e.clone()).unwrap();
     let actctx = CodePackageActivationContext::create().unwrap();
     let endpoint = actctx
-        .get_endpoint_resource(&HSTRING::from("KvReplicatorEndpoint"))
+        .get_endpoint_resource(&WString::from("KvReplicatorEndpoint"))
         .unwrap();
 
     let factory = Factory::create(endpoint.port, e.clone());
     runtime
-        .register_stateful_service_factory(&HSTRING::from("KvStoreService"), factory)
+        .register_stateful_service_factory(&WString::from("KvStoreService"), factory)
         .unwrap();
 
     e.run_until_ctrl_c();

@@ -21,7 +21,7 @@ use mssf_core::{
         ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
         StatelessServiceInstanceQueryResult, StatelessServicePartitionQueryResult,
     },
-    GUID, HSTRING,
+    WString, GUID,
 };
 
 static ECHO_SVC_URI: &str = "fabric:/EchoApp/EchoAppService";
@@ -31,7 +31,7 @@ static RETRY_DURATION_SHORT: Duration = Duration::from_secs(1);
 // Test client for echo server.
 pub struct EchoTestClient {
     fc: FabricClient,
-    service_uri: HSTRING,
+    service_uri: WString,
     timeout: Duration,
 }
 
@@ -39,7 +39,7 @@ impl EchoTestClient {
     pub fn new(fc: FabricClient) -> Self {
         Self {
             fc,
-            service_uri: HSTRING::from(ECHO_SVC_URI),
+            service_uri: WString::from(ECHO_SVC_URI),
             timeout: Duration::from_secs(1),
         }
     }
@@ -141,13 +141,13 @@ async fn test_fabric_client() {
             panic!("client disconnected");
         })
         .with_client_role(mssf_core::types::ClientRole::Unknown)
-        .with_connection_strings(vec![HSTRING::from("localhost:19000")])
+        .with_connection_strings(vec![WString::from("localhost:19000")])
         .build();
 
     let ec = EchoTestClient::new(fc.clone());
 
     let timeout = Duration::from_secs(1);
-    let service_uri = HSTRING::from(ECHO_SVC_URI);
+    let service_uri = WString::from(ECHO_SVC_URI);
 
     // Get partition info
     let (stateless, single) = ec.get_partition().await;
@@ -170,7 +170,7 @@ async fn test_fabric_client() {
         stateless_replica.replica_status,
         QueryServiceReplicaStatus::Ready
     );
-    assert_ne!(stateless_replica.node_name, HSTRING::new());
+    assert_ne!(stateless_replica.node_name, WString::new());
 
     let mgmt = fc.get_service_manager();
     // register service notification filter

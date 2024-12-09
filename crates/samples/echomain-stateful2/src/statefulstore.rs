@@ -13,7 +13,7 @@ use mssf_core::{
         Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig, ReplicaSetQuorumMode,
     },
 };
-use mssf_core::{Error, HSTRING};
+use mssf_core::{Error, WString};
 use std::{
     cell::Cell,
     sync::{Arc, Mutex},
@@ -25,12 +25,12 @@ use crate::echo;
 
 pub struct Factory {
     replication_port: u32,
-    hostname: HSTRING,
+    hostname: WString,
     rt: DefaultExecutor,
 }
 
 impl Factory {
-    pub fn create(replication_port: u32, hostname: HSTRING, rt: DefaultExecutor) -> Factory {
+    pub fn create(replication_port: u32, hostname: WString, rt: DefaultExecutor) -> Factory {
         Factory {
             replication_port,
             hostname,
@@ -39,7 +39,7 @@ impl Factory {
     }
 }
 
-fn get_addr(port: u32, hostname: HSTRING) -> String {
+fn get_addr(port: u32, hostname: WString) -> String {
     let mut addr = String::new();
     addr.push_str(&hostname.to_string());
     addr.push(':');
@@ -49,12 +49,12 @@ fn get_addr(port: u32, hostname: HSTRING) -> String {
 
 pub struct AppFabricReplicator {
     port_: u32,
-    hostname_: HSTRING,
+    hostname_: WString,
     ctx: ReplicaCtx,
 }
 
 impl AppFabricReplicator {
-    pub fn new(port: u32, hostname: HSTRING, ctx: ReplicaCtx) -> AppFabricReplicator {
+    pub fn new(port: u32, hostname: WString, ctx: ReplicaCtx) -> AppFabricReplicator {
         AppFabricReplicator {
             port_: port,
             hostname_: hostname,
@@ -65,13 +65,13 @@ impl AppFabricReplicator {
 
 // This is basic implementation of Replicator
 impl Replicator for AppFabricReplicator {
-    async fn open(&self, _: CancellationToken) -> mssf_core::Result<HSTRING> {
+    async fn open(&self, _: CancellationToken) -> mssf_core::Result<WString> {
         info!(
             "AppFabricReplicator2::Replicator::Open: {:?}",
             self.ctx.get_trace_read_write_status()
         );
         let addr = get_addr(self.port_, self.hostname_.clone());
-        let str_res = HSTRING::from(addr);
+        let str_res = WString::from(addr);
         Ok(str_res)
     }
 
@@ -213,8 +213,8 @@ impl PrimaryReplicator for AppFabricReplicator {
 impl StatefulServiceFactory for Factory {
     fn create_replica(
         &self,
-        servicetypename: &mssf_core::HSTRING,
-        servicename: &mssf_core::HSTRING,
+        servicetypename: &mssf_core::WString,
+        servicename: &mssf_core::WString,
         initializationdata: &[u8],
         partitionid: &mssf_core::GUID,
         replicaid: i64,
@@ -240,13 +240,13 @@ impl StatefulServiceFactory for Factory {
 
 pub struct Replica {
     port_: u32,
-    hostname_: HSTRING,
+    hostname_: WString,
     svc: Service,
     ctx: ReplicaCtx,
 }
 
 impl Replica {
-    pub fn new(port: u32, hostname: HSTRING, svc: Service) -> Replica {
+    pub fn new(port: u32, hostname: WString, svc: Service) -> Replica {
         Replica {
             port_: port,
             hostname_: hostname,
@@ -257,14 +257,14 @@ impl Replica {
 }
 pub struct Service {
     tcp_port: u32,
-    hostname_: HSTRING,
+    hostname_: WString,
 
     cancel: Mutex<Cell<Option<CancellationToken>>>,
     rt: DefaultExecutor,
 }
 
 impl Service {
-    pub fn new(rt: DefaultExecutor, tcp_port: u32, hostname: HSTRING) -> Service {
+    pub fn new(rt: DefaultExecutor, tcp_port: u32, hostname: WString) -> Service {
         Service {
             tcp_port,
             hostname_: hostname,
@@ -319,7 +319,7 @@ impl StatefulServiceReplica for Replica {
         &self,
         newrole: ReplicaRole,
         _: CancellationToken,
-    ) -> mssf_core::Result<HSTRING> {
+    ) -> mssf_core::Result<WString> {
         info!(
             "Replica::change_role {newrole:?}, {:?}",
             self.ctx.get_trace_read_write_status()
@@ -329,7 +329,7 @@ impl StatefulServiceReplica for Replica {
         }
         // return the address
         let addr = get_addr(self.port_, self.hostname_.clone());
-        let str_res = HSTRING::from(addr);
+        let str_res = WString::from(addr);
         Ok(str_res)
     }
     async fn close(&self, _: CancellationToken) -> mssf_core::Result<()> {

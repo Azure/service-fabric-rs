@@ -33,7 +33,7 @@ mod tests;
 
 /// Creates FabricClient com object using SF com API.
 fn create_local_client_internal<T: Interface>(
-    connection_strings: Option<&Vec<crate::HSTRING>>,
+    connection_strings: Option<&Vec<crate::WString>>,
     service_notification_handler: Option<&IFabricServiceNotificationEventHandler>,
     client_connection_handler: Option<&IFabricClientConnectionEventHandler>,
     client_role: Option<ClientRole>,
@@ -94,7 +94,7 @@ pub struct FabricClientBuilder {
     sn_handler: Option<IFabricServiceNotificationEventHandler>,
     cc_handler: Option<LambdaClientConnectionNotificationHandler>,
     client_role: ClientRole,
-    connection_strings: Option<Vec<crate::HSTRING>>,
+    connection_strings: Option<Vec<crate::WString>>,
 }
 
 impl Default for FabricClientBuilder {
@@ -175,7 +175,7 @@ impl FabricClientBuilder {
 
     /// Sets the client connection strings.
     /// Example value: localhost:19000
-    pub fn with_connection_strings(mut self, addrs: Vec<crate::HSTRING>) -> Self {
+    pub fn with_connection_strings(mut self, addrs: Vec<crate::WString>) -> Self {
         self.connection_strings = Some(addrs);
         self
     }

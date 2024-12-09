@@ -47,7 +47,7 @@ fn main() -> mssf_core::Result<()> {
         let node: FABRIC_NODE_QUERY_RESULT_ITEM = unsafe { *node_list };
         println!(
             "node info: name: {}",
-            mssf_core::HSTRING::from(mssf_core::strings::HSTRINGWrap::from(node.NodeName))
+            mssf_core::WString::from(mssf_core::strings::WStringWrap::from(node.NodeName))
         );
     }
 

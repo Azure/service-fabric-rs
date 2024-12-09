@@ -1,13 +1,13 @@
 use std::time::Duration;
 
-use crate::{Interface, HSTRING};
+use crate::{Interface, WString};
 use mssf_com::FabricRuntime::{
     FabricBeginGetNodeContext, FabricEndGetNodeContext, FabricGetNodeContext,
     IFabricNodeContextResult, IFabricNodeContextResult2,
 };
 
 use crate::{
-    strings::HSTRINGWrap,
+    strings::WStringWrap,
     sync::{fabric_begin_end_proxy2, CancellationToken},
     types::NodeId,
 };
@@ -31,9 +31,9 @@ pub fn get_com_node_context(
 #[derive(Debug)]
 pub struct NodeContext {
     com: IFabricNodeContextResult,
-    pub node_name: HSTRING,
-    pub node_type: HSTRING,
-    pub ip_address_or_fqdn: HSTRING,
+    pub node_name: WString,
+    pub node_type: WString,
+    pub ip_address_or_fqdn: WString,
     pub node_instance_id: u64,
     pub node_id: NodeId,
 }
@@ -58,10 +58,10 @@ impl NodeContext {
     }
 
     // Retrieves the directory path for the directory at node level.
-    pub fn get_directory(&self, logical_directory_name: &HSTRING) -> windows_core::Result<HSTRING> {
+    pub fn get_directory(&self, logical_directory_name: &WString) -> windows_core::Result<WString> {
         let com2 = self.com.cast::<IFabricNodeContextResult2>()?;
         let dir = unsafe { com2.GetDirectory(logical_directory_name.as_pcwstr()) }?;
-        Ok(HSTRINGWrap::from(&dir).into())
+        Ok(WStringWrap::from(&dir).into())
     }
 }
 
@@ -72,9 +72,9 @@ impl From<&IFabricNodeContextResult> for NodeContext {
         let raw_ref = unsafe { raw.as_ref() }.unwrap();
         Self {
             com: value.clone(),
-            node_name: HSTRINGWrap::from(raw_ref.NodeName).into(),
-            node_type: HSTRINGWrap::from(raw_ref.NodeType).into(),
-            ip_address_or_fqdn: HSTRINGWrap::from(raw_ref.IPAddressOrFQDN).into(),
+            node_name: WStringWrap::from(raw_ref.NodeName).into(),
+            node_type: WStringWrap::from(raw_ref.NodeType).into(),
+            ip_address_or_fqdn: WStringWrap::from(raw_ref.IPAddressOrFQDN).into(),
             node_instance_id: raw_ref.NodeInstanceId,
             node_id: raw_ref.NodeId.into(),
         }

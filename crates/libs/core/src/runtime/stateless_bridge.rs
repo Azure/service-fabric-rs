@@ -9,7 +9,7 @@
 use std::sync::Arc;
 
 use crate::{
-    runtime::stateless::StatelessServicePartition, strings::HSTRINGWrap, sync::BridgeContext3,
+    runtime::stateless::StatelessServicePartition, strings::WStringWrap, sync::BridgeContext3,
 };
 use mssf_com::{
     FabricCommon::IFabricStringResult,
@@ -64,8 +64,8 @@ where
         instanceid: i64,
     ) -> crate::Result<IFabricStatelessServiceInstance> {
         debug!("StatelessServiceFactoryBridge::CreateInstance");
-        let h_servicename = HSTRINGWrap::from(crate::PCWSTR(servicename.0)).into();
-        let h_servicetypename = HSTRINGWrap::from(*servicetypename).into();
+        let h_servicename = WStringWrap::from(crate::PCWSTR(servicename.0)).into();
+        let h_servicetypename = WStringWrap::from(*servicetypename).into();
         let data = unsafe {
             if !initializationdata.is_null() {
                 std::slice::from_raw_parts(initializationdata, initializationdatalength as usize)
@@ -135,7 +135,7 @@ where
             inner
                 .open(&partition_bridge, token)
                 .await
-                .map(|s| IFabricStringResult::from(HSTRINGWrap::from(s)))
+                .map(|s| IFabricStringResult::from(WStringWrap::from(s)))
         })
     }
 

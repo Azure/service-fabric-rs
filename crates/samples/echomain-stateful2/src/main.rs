@@ -8,7 +8,7 @@ use mssf_core::runtime::{
     executor::{DefaultExecutor, Executor},
     CodePackageActivationContext,
 };
-use mssf_core::HSTRING;
+use mssf_core::WString;
 use tracing::info;
 
 mod echo;
@@ -27,20 +27,20 @@ fn main() -> mssf_core::Result<()> {
     let runtime = mssf_core::runtime::Runtime::create(e.clone()).unwrap();
     let actctx = CodePackageActivationContext::create().unwrap();
     let endpoint = actctx
-        .get_endpoint_resource(&HSTRING::from("KvReplicatorEndpoint"))
+        .get_endpoint_resource(&WString::from("KvReplicatorEndpoint"))
         .unwrap();
     let hostname = get_hostname().expect("cannot get hostname");
 
     let factory = Factory::create(endpoint.port, hostname, e.clone());
     runtime
-        .register_stateful_service_factory(&HSTRING::from("StatefulEchoAppService"), factory)
+        .register_stateful_service_factory(&WString::from("StatefulEchoAppService"), factory)
         .unwrap();
 
     e.run_until_ctrl_c();
     Ok(())
 }
 
-fn get_hostname() -> mssf_core::Result<HSTRING> {
+fn get_hostname() -> mssf_core::Result<WString> {
     let node_ctx = mssf_core::runtime::node_context::NodeContext::get_sync()?;
     Ok(node_ctx.ip_address_or_fqdn)
 }

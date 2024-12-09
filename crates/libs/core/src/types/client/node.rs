@@ -3,10 +3,10 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::HSTRING;
+use crate::WString;
 use crate::{
     iter::{FabricIter, FabricListAccessor},
-    strings::HSTRINGWrap,
+    strings::WStringWrap,
 };
 use bitflags::bitflags;
 use mssf_com::{
@@ -23,20 +23,20 @@ use mssf_com::{
 };
 
 pub struct PagingStatus {
-    pub continuation_token: HSTRING,
+    pub continuation_token: WString,
 }
 
 impl From<&FABRIC_PAGING_STATUS> for PagingStatus {
     fn from(value: &FABRIC_PAGING_STATUS) -> Self {
         Self {
-            continuation_token: HSTRINGWrap::from(value.ContinuationToken).into(),
+            continuation_token: WStringWrap::from(value.ContinuationToken).into(),
         }
     }
 }
 
 #[derive(Default, Debug)]
 pub struct PagedQueryDescription {
-    pub continuation_token: Option<HSTRING>,
+    pub continuation_token: Option<WString>,
     pub max_results: Option<i32>,
 }
 
@@ -63,7 +63,7 @@ impl Default for NodeStatusFilter {
 
 #[derive(Default, Debug)]
 pub struct NodeQueryDescription {
-    pub node_name_filter: Option<HSTRING>,
+    pub node_name_filter: Option<WString>,
     pub node_status_filter: NodeStatusFilter,
     pub paged_query: PagedQueryDescription,
 }
@@ -103,17 +103,17 @@ type NodeListIter<'a> = FabricIter<'a, FABRIC_NODE_QUERY_RESULT_ITEM, Node, Node
 
 #[derive(Debug)]
 pub struct Node {
-    pub name: HSTRING,
-    pub ip_address_or_fqdn: HSTRING,
-    pub node_type: HSTRING,
-    pub code_version: HSTRING,
-    pub config_version: HSTRING,
+    pub name: WString,
+    pub ip_address_or_fqdn: WString,
+    pub node_type: WString,
+    pub code_version: WString,
+    pub config_version: WString,
     // pub node_status
     pub node_up_time_in_seconds: i64,
     // pub AggregatedHealthState
     pub is_seed_node: bool,
-    pub upgrade_domain: HSTRING,
-    pub fault_domain: HSTRING,
+    pub upgrade_domain: WString,
+    pub fault_domain: WString,
     pub node_instance_id: u64,
 }
 
@@ -132,15 +132,15 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for Node {
                 .unwrap()
         };
         Node {
-            name: HSTRINGWrap::from(raw.NodeName).into(),
-            ip_address_or_fqdn: HSTRINGWrap::from(raw.IpAddressOrFQDN).into(),
-            node_type: HSTRINGWrap::from(raw.NodeType).into(),
-            code_version: HSTRINGWrap::from(raw.CodeVersion).into(),
-            config_version: HSTRINGWrap::from(raw.ConfigVersion).into(),
+            name: WStringWrap::from(raw.NodeName).into(),
+            ip_address_or_fqdn: WStringWrap::from(raw.IpAddressOrFQDN).into(),
+            node_type: WStringWrap::from(raw.NodeType).into(),
+            code_version: WStringWrap::from(raw.CodeVersion).into(),
+            config_version: WStringWrap::from(raw.ConfigVersion).into(),
             node_up_time_in_seconds: raw.NodeUpTimeInSeconds,
             is_seed_node: raw.IsSeedNode.as_bool(),
-            upgrade_domain: HSTRINGWrap::from(raw.UpgradeDomain).into(),
-            fault_domain: HSTRINGWrap::from(windows_core::PCWSTR(raw.FaultDomain.0)).into(),
+            upgrade_domain: WStringWrap::from(raw.UpgradeDomain).into(),
+            fault_domain: WStringWrap::from(windows_core::PCWSTR(raw.FaultDomain.0)).into(),
             node_instance_id: raw2.NodeInstanceId,
         }
     }

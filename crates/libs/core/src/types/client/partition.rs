@@ -19,7 +19,7 @@ use mssf_com::{
         FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM, FABRIC_URI,
     },
 };
-use windows_core::{GUID, HSTRING};
+use windows_core::{WString, GUID};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
@@ -31,7 +31,7 @@ use super::metrics::{PrimaryLoadMetricReportList, SecondaryLoadMetricReportList}
 // Partition related types
 // FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION
 pub struct ServicePartitionQueryDescription {
-    pub service_name: HSTRING,
+    pub service_name: WString,
     pub partition_id_filter: Option<GUID>,
     // TODO: continuation token
 }

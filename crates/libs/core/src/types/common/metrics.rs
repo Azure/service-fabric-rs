@@ -5,7 +5,7 @@
 
 //! Module for handling fabric metrics
 
-use crate::{HSTRING, PCWSTR};
+use crate::{WString, PCWSTR};
 use mssf_com::FabricTypes::{
     FABRIC_LOAD_METRIC, FABRIC_MOVE_COST, FABRIC_MOVE_COST_HIGH, FABRIC_MOVE_COST_LOW,
     FABRIC_MOVE_COST_MEDIUM, FABRIC_MOVE_COST_ZERO,
@@ -15,12 +15,12 @@ use std::marker::PhantomData;
 /// FABRIC_LOAD_METRIC
 pub struct LoadMetric {
     // TODO: support static string without heap allocation
-    pub name: HSTRING,
+    pub name: WString,
     pub value: u32,
 }
 
 impl LoadMetric {
-    pub fn new(name: HSTRING, value: u32) -> Self {
+    pub fn new(name: WString, value: u32) -> Self {
         Self { name, value }
     }
 }

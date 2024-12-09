@@ -13,11 +13,11 @@ use mssf_com::FabricRuntime::{
     IFabricStatefulServicePartition3, IFabricStatefulServiceReplica,
 };
 use tracing::debug;
-use windows_core::{Interface, HSTRING};
+use windows_core::{Interface, WString};
 
 use crate::{
     error::FabricErrorCode,
-    strings::HSTRINGWrap,
+    strings::WStringWrap,
     sync::{fabric_begin_end_proxy2, CancellationToken},
     types::{
         FaultType, LoadMetric, LoadMetricListRef, MoveCost, ReplicaRole,
@@ -77,7 +77,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         &self,
         newrole: ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> crate::Result<HSTRING> {
+    ) -> crate::Result<WString> {
         // replica address
         debug!("StatefulServiceReplicaProxy::change_role {:?}", newrole);
         let com1 = &self.com_impl;
@@ -88,7 +88,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
             Some(cancellation_token),
         );
         let addr = rx.await??;
-        Ok(HSTRINGWrap::from(&addr).into())
+        Ok(WStringWrap::from(&addr).into())
     }
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()> {
         debug!("StatefulServiceReplicaProxy::close");
@@ -118,7 +118,7 @@ impl ReplicatorProxy {
 }
 
 impl Replicator for ReplicatorProxy {
-    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<HSTRING> {
+    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<WString> {
         debug!("ReplicatorProxy::open");
         // replicator address
         let com1 = &self.com_impl;
@@ -129,7 +129,7 @@ impl Replicator for ReplicatorProxy {
             Some(cancellation_token),
         );
         let addr = rx.await??;
-        Ok(HSTRINGWrap::from(&addr).into())
+        Ok(WStringWrap::from(&addr).into())
     }
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()> {
         debug!("ReplicatorProxy::close");
@@ -200,7 +200,7 @@ impl PrimaryReplicatorProxy {
 }
 
 impl Replicator for PrimaryReplicatorProxy {
-    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<HSTRING> {
+    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<WString> {
         self.parent.open(cancellation_token).await
     }
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()> {

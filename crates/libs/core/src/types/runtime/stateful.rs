@@ -7,7 +7,7 @@
 
 use std::{ffi::c_void, marker::PhantomData};
 
-use crate::{HSTRING, PCWSTR};
+use crate::{WString, PCWSTR};
 use mssf_com::FabricTypes::{
     FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1,
     FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_OPEN_MODE_EXISTING, FABRIC_REPLICA_OPEN_MODE_INVALID,
@@ -17,7 +17,7 @@ use mssf_com::FabricTypes::{
     FABRIC_REPLICA_STATUS_INVALID, FABRIC_REPLICA_STATUS_UP,
 };
 
-use crate::{strings::HSTRINGWrap, types::ReplicaRole};
+use crate::{strings::WStringWrap, types::ReplicaRole};
 
 #[derive(Debug)]
 pub enum OpenMode {
@@ -208,7 +208,7 @@ pub struct ReplicaInformation {
     pub id: i64,
     pub role: ReplicaRole,
     pub status: ReplicaStatus,
-    pub replicator_address: HSTRING,
+    pub replicator_address: WString,
     pub current_progress: i64,
     pub catch_up_capability: i64,
     /// indicating whether the replica must be caught up as part of a WaitForQuorumCatchup
@@ -228,7 +228,7 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInformation {
             id: r.Id,
             role: (&r.Role).into(),
             status: r.Status.into(),
-            replicator_address: HSTRINGWrap::from(r.ReplicatorAddress).into(),
+            replicator_address: WStringWrap::from(r.ReplicatorAddress).into(),
             current_progress: r.CurrentProgress,
             catch_up_capability: r.CatchUpCapability,
             must_catch_up: must_catchup,
@@ -291,7 +291,7 @@ impl From<ReplicaSetQuorumMode> for FABRIC_REPLICA_SET_QUORUM_MODE {
 mod test {
     use std::ffi::c_void;
 
-    use crate::HSTRING;
+    use crate::WString;
     use mssf_com::FabricTypes::{
         FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1, FABRIC_REPLICA_ROLE_PRIMARY,
         FABRIC_REPLICA_STATUS_UP,
@@ -339,7 +339,7 @@ mod test {
             id: 1,
             role: super::ReplicaRole::Primary,
             status: super::ReplicaStatus::Up,
-            replicator_address: HSTRING::from("addr1"),
+            replicator_address: WString::from("addr1"),
             current_progress: 123,
             catch_up_capability: 123,
             must_catch_up: true,
@@ -349,7 +349,7 @@ mod test {
             id: 2,
             role: super::ReplicaRole::ActiveSecondary,
             status: super::ReplicaStatus::Up,
-            replicator_address: HSTRING::from("addr2"),
+            replicator_address: WString::from("addr2"),
             current_progress: 120,
             catch_up_capability: 120,
             must_catch_up: false,

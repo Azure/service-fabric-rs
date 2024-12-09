@@ -10,17 +10,17 @@ use std::time::SystemTime;
 use mssf_com::{
     FabricClient::IFabricGetPartitionLoadInformationResult, FabricTypes::FABRIC_LOAD_METRIC_REPORT,
 };
-use windows_core::HSTRING;
+use windows_core::WString;
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
-    strings::HSTRINGWrap,
+    strings::WStringWrap,
 };
 
 /// Wrapper for FABRIC_LOAD_METRIC_REPORT
 #[derive(Debug, Clone)]
 pub struct LoadMetricReport {
-    pub name: HSTRING,
+    pub name: WString,
     pub value: u32,
     pub last_reported_utc: std::time::SystemTime,
 }
@@ -28,7 +28,7 @@ pub struct LoadMetricReport {
 impl From<&FABRIC_LOAD_METRIC_REPORT> for LoadMetricReport {
     fn from(value: &FABRIC_LOAD_METRIC_REPORT) -> Self {
         Self {
-            name: HSTRINGWrap::from(value.Name).into(),
+            name: WStringWrap::from(value.Name).into(),
             value: value.Value,
             last_reported_utc: SystemTime::UNIX_EPOCH, // TODO: convert Win32 FILETIME to SystemTime in Unix or Win32 depending on the platform
         }

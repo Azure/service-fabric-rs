@@ -10,7 +10,7 @@ use mssf_core::runtime::stateless::{
 };
 use mssf_core::sync::CancellationToken;
 use mssf_core::types::ServicePartitionInformation;
-use mssf_core::HSTRING;
+use mssf_core::WString;
 use tokio::runtime::Handle;
 use tokio::sync::oneshot::{self, Sender};
 use tokio::sync::Mutex;
@@ -21,12 +21,12 @@ use crate::echo;
 
 pub struct Factory {
     port: u32,
-    hostname: HSTRING,
+    hostname: WString,
     rt: Handle,
 }
 
 impl Factory {
-    pub fn new(port: u32, hostname: HSTRING, rt: Handle) -> Self {
+    pub fn new(port: u32, hostname: WString, rt: Handle) -> Self {
         Self { port, hostname, rt }
     }
 }
@@ -34,8 +34,8 @@ impl Factory {
 impl StatelessServiceFactory for Factory {
     fn create_instance(
         &self,
-        servicetypename: &HSTRING,
-        servicename: &HSTRING,
+        servicetypename: &WString,
+        servicename: &WString,
         initializationdata: &[u8],
         partitionid: &mssf_core::GUID,
         instanceid: i64,
@@ -59,14 +59,14 @@ impl StatelessServiceFactory for Factory {
 #[allow(clippy::type_complexity)]
 pub struct Instance {
     port: u32,
-    hostname: HSTRING,
+    hostname: WString,
     tx_: Mutex<Cell<Option<Sender<()>>>>, // hack to use this mutably
     task_: Mutex<Cell<Option<JoinHandle<Result<(), std::io::Error>>>>>,
     rt: Handle,
 }
 
 impl Instance {
-    pub fn new(port: u32, hostname: HSTRING, rt: Handle) -> Self {
+    pub fn new(port: u32, hostname: WString, rt: Handle) -> Self {
         Self {
             port,
             hostname,
@@ -82,7 +82,7 @@ impl StatelessServiceInstance for Instance {
         &self,
         partition: &StatelessServicePartition,
         _: CancellationToken,
-    ) -> mssf_core::Result<HSTRING> {
+    ) -> mssf_core::Result<WString> {
         info!("Instance::open");
         let info = partition.get_partition_info().unwrap();
         if let ServicePartitionInformation::Singleton(s) = info {
@@ -102,7 +102,7 @@ impl StatelessServiceInstance for Instance {
         self.task_.lock().await.set(Some(t));
         self.tx_.lock().await.set(Some(tx));
         let addr = echo::get_addr(self.port, self.hostname.clone());
-        Ok(HSTRING::from(addr))
+        Ok(WString::from(addr))
     }
     async fn close(&self, _: CancellationToken) -> mssf_core::Result<()> {
         info!("Instance::close");

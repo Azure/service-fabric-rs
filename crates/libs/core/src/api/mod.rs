@@ -15,9 +15,12 @@ use windows_core::{Interface, Param};
 
 lazy_static::lazy_static! {
     static ref LIB_TABLE: LibTable = LibTable::create();
+    /// All SF APIs entrypoints needed for mssf.
+    /// These APIs are lazy loaded at the first time use after app starts.
     pub static ref API_TABLE: ApiTable = ApiTable::create(&LIB_TABLE);
 }
 
+/// Contains all the SF shared libs needs to be loaded for mssf.
 pub struct LibTable {
     fabric_runtime: libloading::Library,
     fabric_common: libloading::Library,
@@ -43,6 +46,8 @@ fn load_fn<T>(lib: &'static libloading::Library, name: &str) -> libloading::Symb
     unsafe { lib.get(name.as_bytes()) }.unwrap_or_else(|e| panic!("cannot load fn {name} :{e}"))
 }
 
+/// Contains all SF APIs loaded from SF libs needed for mssf.
+/// More APIs can be added here when mssf needs them.
 pub struct ApiTable {
     fabric_get_last_error_message_fn: libloading::Symbol<
         'static,

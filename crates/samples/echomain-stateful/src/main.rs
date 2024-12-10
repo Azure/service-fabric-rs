@@ -5,9 +5,7 @@
 
 use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
 use mssf_com::FabricRuntime::{
-    FabricBeginGetNodeContext, FabricCreateRuntime, FabricEndGetNodeContext,
-    FabricGetActivationContext, IFabricCodePackageActivationContext, IFabricNodeContextResult,
-    IFabricRuntime,
+    IFabricCodePackageActivationContext, IFabricNodeContextResult, IFabricRuntime,
 };
 use mssf_core::sync::wait::WaitableCallback;
 use mssf_core::{Interface, WString};
@@ -27,17 +25,13 @@ fn main() -> mssf_core::Result<()> {
     // std::thread::sleep(std::time::Duration::from_secs(90));
     // info!("sleep ended");
 
-    let rawruntime =
-        unsafe { FabricCreateRuntime(&IFabricRuntime::IID).expect("cannot create runtime") };
-    let runtime = unsafe { IFabricRuntime::from_raw(rawruntime) };
+    let runtime = mssf_core::API_TABLE
+        .fabric_create_runtime()
+        .expect("cannot create fabric runtime");
 
-    let raw_activation_ctx = unsafe {
-        FabricGetActivationContext(&IFabricCodePackageActivationContext::IID)
-            .expect("Cannot get activation ctx")
-    };
-
-    let activation_ctx =
-        unsafe { IFabricCodePackageActivationContext::from_raw(raw_activation_ctx) };
+    let activation_ctx = mssf_core::API_TABLE
+        .fabric_get_activation_context()
+        .expect("cannot get activation context");
 
     run_app(&runtime, &activation_ctx);
 
@@ -70,13 +64,15 @@ fn get_hostname() -> WString {
     let callback_arg = callback
         .cast::<IFabricAsyncOperationCallback>()
         .expect("castfailed");
-    let ctx = unsafe { FabricBeginGetNodeContext(1000, &callback_arg).expect("getctx failed") };
+    let ctx = mssf_core::API_TABLE
+        .fabric_begin_get_node_context(1000, Some(&callback_arg))
+        .expect("getctx failed");
 
     token.wait();
 
-    let result_raw = unsafe { FabricEndGetNodeContext(&ctx).expect("end failed") };
-
-    let result = unsafe { IFabricNodeContextResult::from_raw(result_raw) };
+    let result = mssf_core::API_TABLE
+        .fabric_end_get_node_context::<IFabricNodeContextResult>(Some(ctx).as_ref())
+        .expect("cannot end get node context");
 
     let node_ctx = unsafe { result.get_NodeContext() };
 

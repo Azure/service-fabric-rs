@@ -1,10 +1,7 @@
 use std::time::Duration;
 
 use crate::{Interface, WString};
-use mssf_com::FabricRuntime::{
-    FabricBeginGetNodeContext, FabricEndGetNodeContext, FabricGetNodeContext,
-    IFabricNodeContextResult, IFabricNodeContextResult2,
-};
+use mssf_com::FabricRuntime::{IFabricNodeContextResult, IFabricNodeContextResult2};
 
 use crate::{
     strings::WStringWrap,
@@ -17,13 +14,10 @@ pub fn get_com_node_context(
     cancellation_token: Option<CancellationToken>,
 ) -> crate::sync::FabricReceiver2<::windows_core::Result<IFabricNodeContextResult>> {
     fabric_begin_end_proxy2(
-        move |callback| unsafe { FabricBeginGetNodeContext(timeout_milliseconds, callback) },
-        move |ctx| {
-            unsafe { FabricEndGetNodeContext(ctx) }.map(|raw| {
-                assert!(!raw.is_null());
-                unsafe { IFabricNodeContextResult::from_raw(raw) }
-            })
+        move |callback| {
+            crate::API_TABLE.fabric_begin_get_node_context(timeout_milliseconds, callback)
         },
+        move |ctx| crate::API_TABLE.fabric_end_get_node_context(ctx),
         cancellation_token,
     )
 }
@@ -51,9 +45,7 @@ impl NodeContext {
 
     // Get the node context synchronously
     pub fn get_sync() -> crate::Result<Self> {
-        let raw = unsafe { FabricGetNodeContext() }?;
-        assert!(!raw.is_null());
-        let com = unsafe { IFabricNodeContextResult::from_raw(raw) };
+        let com = crate::API_TABLE.fabric_get_node_context()?;
         Ok(Self::from(&com))
     }
 

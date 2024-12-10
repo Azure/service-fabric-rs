@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FabricClient::{FabricCreateLocalClient, IFabricQueryClient};
+use mssf_com::FabricClient::IFabricQueryClient;
 use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
 use mssf_com::FabricTypes::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
 use mssf_core::sync::wait::WaitableCallback;
@@ -12,11 +12,9 @@ use windows_core::Interface;
 fn main() -> mssf_core::Result<()> {
     println!("GetNodeCli");
 
-    let rawclient = unsafe {
-        FabricCreateLocalClient(&IFabricQueryClient::IID).expect("cannot get localclient")
-    };
-    // todo: figure out owner ship
-    let c: IFabricQueryClient = unsafe { IFabricQueryClient::from_raw(rawclient) };
+    let c: IFabricQueryClient = mssf_core::API_TABLE
+        .fabric_create_local_client3::<IFabricQueryClient>(None, None)
+        .expect("cannot get localclient");
 
     let (token, callback) = WaitableCallback::channel();
 

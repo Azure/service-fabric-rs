@@ -19,6 +19,9 @@
 
 // lib that contains all common extensions for the raw fabric apis.
 
+// SF lib entrypoint apis.
+pub mod api;
+pub use api::API_TABLE;
 #[cfg(feature = "tokio_async")]
 pub mod client;
 #[cfg(feature = "config_source")]

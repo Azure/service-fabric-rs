@@ -206,7 +206,7 @@ impl TestClient {
         // restart primary
         let desc = RestartReplicaDescription {
             node_name: p.node_name.clone(),
-            partition_id: partition_id,
+            partition_id,
             replica_or_instance_id: p.replica_id,
         };
         let mgmt = self.fc.get_service_manager();

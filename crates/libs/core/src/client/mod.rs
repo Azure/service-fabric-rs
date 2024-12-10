@@ -5,7 +5,6 @@
 
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use mssf_com::FabricClient::{
-    FabricCreateClient3, FabricCreateLocalClient3, FabricCreateLocalClient4,
     IFabricClientConnectionEventHandler, IFabricPropertyManagementClient2, IFabricQueryClient10,
     IFabricServiceManagementClient6, IFabricServiceNotificationEventHandler,
 };
@@ -48,45 +47,36 @@ fn create_local_client_internal<T: Interface>(
             .collect::<Vec<_>>()
     });
 
-    let raw = match connection_strings_ptrs {
-        Some(addrs) => unsafe {
+    match connection_strings_ptrs {
+        Some(addrs) => {
             assert!(
                 role == ClientRole::Unknown,
                 "ClientRole is for local client only and cannot be used for connecting to remote cluster."
             );
-            FabricCreateClient3(
+            crate::API_TABLE.fabric_create_client3::<T>(
                 &addrs,
                 service_notification_handler,
                 client_connection_handler,
-                &T::IID,
             )
         },
         None => {
             if role == ClientRole::Unknown {
                 // unknown role should use the SF function without role param.
-                unsafe {
-                    FabricCreateLocalClient3(
+                    crate::API_TABLE.fabric_create_local_client3::<T>(
                         service_notification_handler,
                         client_connection_handler,
-                        &T::IID,
                     )
-                }
             } else {
-                unsafe {
-                    FabricCreateLocalClient4(
+                    crate::API_TABLE.fabric_create_local_client4::<T>(
                         service_notification_handler,
                         client_connection_handler,
                         role.into(),
-                        &T::IID,
                     )
-                }
             }
         }
     }
-    .expect("failed to create fabric client");
-
     // if params are right, client should be created. There is no network call involved during obj creation.
-    unsafe { T::from_raw(raw) }
+    .expect("failed to create fabric client")
 }
 
 // Builder for FabricClient

@@ -547,7 +547,8 @@ mod test {
             if delay.is_zero() {
                 // This is needed to make future is breakable in bench test in select
                 tokio::task::yield_now().await;
-                return Ok(self.set_data(input));
+                self.set_data(input);
+                return Ok(());
             }
             match token {
                 Some(t) => {
@@ -557,13 +558,15 @@ mod test {
                             Err(FabricErrorCode::E_ABORT.into())
                         }
                         _ = tokio::time::sleep(delay) => {
-                            Ok(self.set_data(input))
+                            self.set_data(input);
+                            Ok(())
                         }
                     }
                 }
                 None => {
                     tokio::time::sleep(delay).await;
-                    Ok(self.set_data(input))
+                    self.set_data(input);
+                    Ok(())
                 }
             }
         }

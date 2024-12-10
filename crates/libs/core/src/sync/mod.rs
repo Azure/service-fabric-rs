@@ -412,7 +412,7 @@ mod tests {
 
         let result = c.get_node_list_example(querydescription).await;
 
-        assert!(!result.is_err());
+        assert!(result.is_ok());
 
         let result_node_list = result.expect("endcall_failed");
 

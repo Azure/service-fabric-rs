@@ -44,6 +44,13 @@ fn main() -> Result<()> {
             // include types
             "--filter",
             "Microsoft.ServiceFabric.FabricCommon",
+            // exclude functions
+            "!Microsoft.ServiceFabric.FabricCommon.FabricDecryptText",
+            "!Microsoft.ServiceFabric.FabricCommon.FabricDecryptValue",
+            "!Microsoft.ServiceFabric.FabricCommon.FabricEncryptText",
+            "!Microsoft.ServiceFabric.FabricCommon.FabricEncryptText2",
+            "!Microsoft.ServiceFabric.FabricCommon.FabricEncryptValue",
+            "!Microsoft.ServiceFabric.FabricCommon.FabricGetLastErrorMessage",
             "--config",
             "implement",
         ])?;
@@ -63,6 +70,27 @@ fn main() -> Result<()> {
             out_file,
             "--filter",
             "Microsoft.ServiceFabric.FabricRuntime", // include fabric types
+            // exclude functions
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricBeginCreateRuntime",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricBeginGetActivationContext",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricBeginGetCodePackageActivator",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricBeginGetNodeContext",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricCreateKeyValueStoreReplica",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricCreateKeyValueStoreReplica2",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricCreateKeyValueStoreReplica3",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricCreateKeyValueStoreReplica4",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricCreateKeyValueStoreReplica5",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricCreateRuntime",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricEndCreateRuntime",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricEndGetActivationContext",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricEndGetCodePackageActivator",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricEndGetNodeContext",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricGetActivationContext",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricGetCodePackageActivator",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricGetNodeContext",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricLoadEseLocalStoreSettings",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricLoadReplicatorSettings",
+            "!Microsoft.ServiceFabric.FabricRuntime.FabricLoadSecurityCredentials",
             "--config",
             "implement",
         ])?;
@@ -83,6 +111,15 @@ fn main() -> Result<()> {
             out_file,
             "--filter",
             "Microsoft.ServiceFabric.FabricClient", // include fabric types
+            // exclude functions
+            "!Microsoft.ServiceFabric.FabricClient.FabricCreateClient",
+            "!Microsoft.ServiceFabric.FabricClient.FabricCreateClient2",
+            "!Microsoft.ServiceFabric.FabricClient.FabricCreateClient3",
+            "!Microsoft.ServiceFabric.FabricClient.FabricCreateLocalClient",
+            "!Microsoft.ServiceFabric.FabricClient.FabricCreateLocalClient2",
+            "!Microsoft.ServiceFabric.FabricClient.FabricCreateLocalClient3",
+            "!Microsoft.ServiceFabric.FabricClient.FabricCreateLocalClient4",
+            "!Microsoft.ServiceFabric.FabricClient.FabricGetDefaultRollingUpgradeMonitoringPolicy",
             "--config",
             "implement",
         ])?;
@@ -90,26 +127,6 @@ fn main() -> Result<()> {
         let mut lines = read_file_as_lines(out_file);
         remove_namespace(&mut lines, "pub mod ServiceFabric");
         remove_namespace(&mut lines, "pub mod FabricClient");
-        write_content(out_file, lines);
-    }
-
-    // Generate FabricTransport
-    {
-        let out_file = "crates/libs/com/src/ServiceFabric/FabricTransport.rs";
-        let log = bindgen([
-            "--in",
-            winmd,
-            "--out",
-            out_file,
-            "--filter",
-            "Microsoft.ServiceFabric.FabricTransport", // include fabric types
-            "--config",
-            "implement",
-        ])?;
-        println!("{}", log);
-        let mut lines = read_file_as_lines(out_file);
-        remove_namespace(&mut lines, "pub mod ServiceFabric");
-        remove_namespace(&mut lines, "pub mod FabricTransport");
         write_content(out_file, lines);
     }
     Ok(())

@@ -169,6 +169,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8adc4bb1803a324070e64a98ae98f38934d91957a99cfb3a43dcbc01bc56439"
 
 [[package]]
+name = "libloading"
+version = "0.8.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
+dependencies = [
+ "cfg-if",
+ "windows-targets",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -221,7 +231,6 @@ dependencies = [
 name = "mssf-com"
 version = "0.0.16"
 dependencies = [
- "mssf-metadata",
  "mssf-pal",
 ]
 
@@ -232,6 +241,8 @@ dependencies = [
  "bitflags",
  "config",
  "ctrlc",
+ "lazy_static",
+ "libloading",
  "mssf-com",
  "mssf-pal",
  "paste",
@@ -241,12 +252,6 @@ dependencies = [
  "trait-variant",
  "windows",
 ]
-
-[[package]]
-name = "mssf-metadata"
-version = "0.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "39323a0ee935ad85894e31a9f42f2f41f5db403b7d2312d85e77b5a99eb8552d"
 
 [[package]]
 name = "mssf-pal"

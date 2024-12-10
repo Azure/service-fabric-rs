@@ -3,11 +3,10 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::Interface;
-use mssf_com::FabricRuntime::{FabricCreateRuntime, FabricGetActivationContext, IFabricRuntime};
-
 #[cfg(feature = "tokio_async")]
 use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
+use mssf_com::FabricRuntime::IFabricRuntime;
+use windows_core::Interface;
 
 #[cfg(feature = "tokio_async")]
 pub use self::runtime_wrapper::Runtime;
@@ -39,14 +38,9 @@ pub use activation_context::{CodePackageActivationContext, CodePackageInfo};
 
 // creates fabric runtime
 pub fn create_com_runtime() -> crate::Result<IFabricRuntime> {
-    let rawruntime = unsafe { FabricCreateRuntime(&IFabricRuntime::IID)? };
-    let runtime = unsafe { IFabricRuntime::from_raw(rawruntime) };
-    Ok(runtime)
+    crate::API_TABLE.fabric_create_runtime()
 }
 
 pub fn get_com_activation_context<T: Interface>() -> crate::Result<T> {
-    let raw_activation_ctx = unsafe { FabricGetActivationContext(&T::IID)? };
-
-    let activation_ctx = unsafe { T::from_raw(raw_activation_ctx) };
-    Ok(activation_ctx)
+    crate::API_TABLE.fabric_get_activation_context::<T>()
 }

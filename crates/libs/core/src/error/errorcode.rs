@@ -47,7 +47,7 @@ const E_NOT_FOUND: FABRIC_ERROR_CODE =
 macro_rules! define_fabric_error_code{
     ($( $code1:ident ),* ,($lit:literal), $( $code:ident ),*) =>{
         #[allow(non_camel_case_types)]
-        #[derive(Debug, Clone)]
+        #[derive(Debug, Clone, PartialEq)]
         #[repr(i32)]
         pub enum FabricErrorCode {
             // Define windows error codes for SF

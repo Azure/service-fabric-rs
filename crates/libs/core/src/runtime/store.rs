@@ -5,11 +5,10 @@
 
 use std::ffi::c_void;
 
-use crate::{Interface, WString, PCWSTR};
+use crate::{WString, PCWSTR};
 use mssf_com::{
     FabricRuntime::{
-        FabricCreateKeyValueStoreReplica, IFabricKeyValueStoreReplica2, IFabricStoreEventHandler,
-        IFabricStoreEventHandler_Impl,
+        IFabricKeyValueStoreReplica2, IFabricStoreEventHandler, IFabricStoreEventHandler_Impl,
     },
     FabricTypes::{FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND},
 };
@@ -44,19 +43,13 @@ pub fn create_com_key_value_store_replica(
         Some(x) => &x,
         None => std::ptr::null(),
     };
-
-    // let handler:IFabricStoreEventHandler = DummyStoreEventHandler{}.into();
-    let raw = unsafe {
-        FabricCreateKeyValueStoreReplica(
-            &IFabricKeyValueStoreReplica2::IID,
-            PCWSTR::from_raw(storename.as_ptr()),
-            partitionid,
-            replicaid,
-            &replicatorsettings.get_raw(),
-            kind,
-            local_settings_ptr as *const c_void,
-            storeeventhandler,
-        )?
-    };
-    Ok(unsafe { IFabricKeyValueStoreReplica2::from_raw(raw) })
+    crate::API_TABLE.fabric_create_key_value_store_replica::<IFabricKeyValueStoreReplica2>(
+        PCWSTR::from_raw(storename.as_ptr()),
+        partitionid,
+        replicaid,
+        &replicatorsettings.get_raw(),
+        kind,
+        local_settings_ptr as *const c_void,
+        Some(storeeventhandler),
+    )
 }

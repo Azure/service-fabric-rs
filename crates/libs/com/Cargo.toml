@@ -23,10 +23,6 @@ targets = []
 path = "../pal"
 version = "0.0.16"
 
-[target.'cfg(windows)'.dependencies]
-# this dep is required on windows to have the support libs.
-mssf-metadata = { version = "0.0.1", optional = true }
-
 [features]
 default = ["bundled_libs"]
-bundled_libs = ["dep:mssf-metadata"]
+bundled_libs = []

@@ -19,6 +19,11 @@ impl FabricError {
     pub fn new(code: HRESULT) -> Self {
         Self(code)
     }
+
+    /// Convert to fabric error code if possible.
+    pub fn try_as_fabric_error_code(&self) -> Result<FabricErrorCode, &str> {
+        FabricErrorCode::try_from(FABRIC_ERROR_CODE(self.0 .0))
+    }
 }
 
 impl From<HRESULT> for FabricError {
@@ -104,6 +109,10 @@ mod test {
         );
         let e = crate::Error::from(fe.clone());
         assert_eq!(e.code(), fe.into());
+        let ec = FabricError::from(e)
+            .try_as_fabric_error_code()
+            .expect("unknown code");
+        assert_eq!(ec, FabricErrorCode::FABRIC_E_CODE_PACKAGE_NOT_FOUND);
     }
 
     #[test]

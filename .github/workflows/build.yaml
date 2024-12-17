@@ -76,7 +76,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: apt-get
-      run: sudo apt-get update && sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang lld -y
+      run: sudo apt-get update && sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang -y
 
     - name: install sf
       run: |

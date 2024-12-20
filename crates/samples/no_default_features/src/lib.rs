@@ -18,7 +18,7 @@ fn test_fn() {
 
     // One might wish to use such a callback to e.g. trigger custom handling of configuration changes
     // This doesn't require the config feature to be enabled
-    let _handler = my_ctx.register_config_package_change_handler( |c|
+    let _handler = my_ctx.register_configuration_package_change_handler( |c|
         {
             let (some_package, change_type) = match c
             {

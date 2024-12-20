@@ -4,7 +4,9 @@
 // ------------------------------------------------------------
 
 use mssf_com::{
-    FabricRuntime::IFabricCodePackageActivationContext6,
+    FabricRuntime::{
+        IFabricCodePackageActivationContext6, IFabricConfigurationPackageChangeHandler,
+    },
     FabricTypes::{FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT_SEND_OPTIONS},
 };
 
@@ -18,8 +20,8 @@ use super::{
     config::ConfigurationPackage,
     package_change::{
         config::{
-            ConfigurationPackageChangeCallbackAutoHandle,
-            ConfigurationPackageChangeEventHandlerBridge, LambdaConfigurationPackageEventHandler,
+            ConfigurationPackageChangeCallbackHandle, ConfigurationPackageChangeEventHandlerBridge,
+            LambdaConfigurationPackageEventHandler,
         },
         ConfigurationPackageChangeEvent,
     },
@@ -142,19 +144,36 @@ impl CodePackageActivationContext {
         self.com_impl.clone()
     }
 
-    pub fn register_config_package_change_handler<T>(
+    pub fn register_configuration_package_change_handler<T>(
         &self,
         handler: T,
-    ) -> crate::Result<ConfigurationPackageChangeCallbackAutoHandle>
+    ) -> crate::Result<ConfigurationPackageChangeCallbackHandle>
     where
         T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
     {
         let lambda_handler = LambdaConfigurationPackageEventHandler::new(handler);
         let bridge = ConfigurationPackageChangeEventHandlerBridge::new(lambda_handler);
-        ConfigurationPackageChangeCallbackAutoHandle::register_config_package_change_handler(
-            self.get_com(),
-            bridge.into(),
-        )
+        let callback: IFabricConfigurationPackageChangeHandler = bridge.into();
+        // SAFETY: bridge implements the required COM interface
+        let raw_handle = unsafe {
+            self.com_impl
+                .RegisterConfigurationPackageChangeHandler(&callback)
+        }?;
+        // SAFETY: raw_handle is a configuration package change handler id, not some other id.
+        Ok(unsafe { ConfigurationPackageChangeCallbackHandle::from_com(raw_handle) })
+    }
+
+    pub fn unregister_configuration_package_change_handler(
+        &self,
+        handle: ConfigurationPackageChangeCallbackHandle,
+    ) -> crate::Result<()> {
+        // SAFETY: we assume that only 1 activation context can be
+        unsafe {
+            self.com_impl
+                .UnregisterConfigurationPackageChangeHandler(handle.0)
+        }
+        .unwrap();
+        Ok(())
     }
 }
 

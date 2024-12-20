@@ -18,8 +18,8 @@ use super::{
     config::ConfigurationPackage,
     package_change::{
         config::{
-            ConfigurationPackageChangeCallbackHandle, ConfigurationPackageChangeEventHandlerBridge,
-            LambdaConfigurationPackageEventHandler,
+            ConfigurationPackageChangeCallbackAutoHandle,
+            ConfigurationPackageChangeEventHandlerBridge, LambdaConfigurationPackageEventHandler,
         },
         ConfigurationPackageChangeEvent,
     },
@@ -145,13 +145,16 @@ impl CodePackageActivationContext {
     pub fn register_config_package_change_handler<T>(
         &self,
         handler: T,
-    ) -> crate::Result<ConfigurationPackageChangeCallbackHandle>
+    ) -> crate::Result<ConfigurationPackageChangeCallbackAutoHandle>
     where
         T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
     {
         let lambda_handler = LambdaConfigurationPackageEventHandler::new(handler);
         let bridge = ConfigurationPackageChangeEventHandlerBridge::new(lambda_handler);
-        ConfigurationPackageChangeCallbackHandle::register(self.get_com(), bridge.into())
+        ConfigurationPackageChangeCallbackAutoHandle::register_config_package_change_handler(
+            &self.com_impl,
+            bridge.into(),
+        )
     }
 }
 

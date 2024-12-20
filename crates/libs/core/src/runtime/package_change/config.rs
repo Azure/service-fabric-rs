@@ -110,21 +110,44 @@ where
     }
 }
 
-/// This struct ensures that the handle is retained and deregistered before the implementation is dropped
-pub struct ConfigurationPackageChangeCallbackHandle {
-    activation_context: IFabricCodePackageActivationContext6,
-    handle: i64,
-}
+pub struct ConfigurationPackageChangeCallbackHandle(i64);
 
 impl ConfigurationPackageChangeCallbackHandle {
-    pub fn register(
+    pub const unsafe fn from_com(com: i64) -> Self {
+        Self(com)
+    }
+
+    pub fn register_configuration_package_change_handler(
+        activation_context: &IFabricCodePackageActivationContext6,
+        implementation: IFabricConfigurationPackageChangeHandler,
+    ) -> crate::Result<Self> {
+        let raw_handle = unsafe {
+            activation_context.RegisterConfigurationPackageChangeHandler(&implementation)
+        }?;
+        Ok(unsafe { Self::from_com(raw_handle) })
+    }
+
+    pub unsafe fn unregister_configuration_package_change_handler(
+        self,
+        activation_context: &IFabricCodePackageActivationContext6,
+    ) {
+        // SAFETY: caller taking responsibility for ensuring this  is the correct activation context and a live handle.
+        unsafe { activation_context.UnregisterConfigurationPackageChangeHandler(self.0) }.unwrap();
+    }
+}
+
+/// This struct ensures that the handle is retained and deregistered before the implementation is dropped
+pub struct ConfigurationPackageChangeCallbackAutoHandle {
+    activation_context: IFabricCodePackageActivationContext6,
+    handle: ConfigurationPackageChangeCallbackHandle,
+}
+
+impl ConfigurationPackageChangeCallbackAutoHandle {
+    pub fn register_config_package_change_handler(
         activation_context: IFabricCodePackageActivationContext6,
         implementation: IFabricConfigurationPackageChangeHandler,
     ) -> crate::Result<Self> {
-        let handle = unsafe {
-            activation_context.RegisterConfigurationPackageChangeHandler(&implementation)
-        }?;
-
+        let handle =  ConfigurationPackageChangeCallbackHandle::register_configuration_package_change_handler(&activation_context, implementation)?;
         Ok(Self {
             activation_context,
             handle,
@@ -132,11 +155,13 @@ impl ConfigurationPackageChangeCallbackHandle {
     }
 }
 
-impl Drop for ConfigurationPackageChangeCallbackHandle {
+impl Drop for ConfigurationPackageChangeCallbackAutoHandle {
     fn drop(&mut self) {
+        // Note: we don't use the helper as the "raw" handle type should not be cloneable, and we can't mvoe out of a mut reference
+        // So we just do what it would do anyway
         unsafe {
             self.activation_context
-                .UnregisterConfigurationPackageChangeHandler(self.handle)
+                .UnregisterConfigurationPackageChangeHandler(self.handle.0)
         }
         .unwrap();
     }

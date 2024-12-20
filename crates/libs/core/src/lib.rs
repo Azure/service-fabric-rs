@@ -31,7 +31,6 @@ pub mod error;
 mod iter;
 pub mod runtime;
 pub mod strings;
-#[cfg(feature = "tokio_async")]
 pub mod sync;
 pub mod types;
 

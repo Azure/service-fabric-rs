@@ -152,7 +152,7 @@ impl CodePackageActivationContext {
         let lambda_handler = LambdaConfigurationPackageEventHandler::new(handler);
         let bridge = ConfigurationPackageChangeEventHandlerBridge::new(lambda_handler);
         ConfigurationPackageChangeCallbackAutoHandle::register_config_package_change_handler(
-            &self.com_impl,
+            self.get_com(),
             bridge.into(),
         )
     }

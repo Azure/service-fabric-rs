@@ -28,6 +28,8 @@ mod bridge_context;
 
 pub mod cancel;
 pub use cancel::*;
+// TODO: make private?
+pub use bridge_context::BridgeContext3;
 
 // fabric code begins here
 

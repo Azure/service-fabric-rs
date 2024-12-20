@@ -18,11 +18,6 @@ pub trait ConfigurationPackageChangeEventHandler: 'static {
     fn on_change(&self, change: &ConfigurationPackageChangeEvent) -> crate::Result<()>;
 }
 
-// Handle to the registered ConfigurationPackageChangeHandle
-pub struct ConfigurationPackageChangeHandlerId {
-    id: i64,
-}
-
 // Bridge implementation for the change handler to turn rust code into SF com object.
 #[windows_core::implement(IFabricConfigurationPackageChangeHandler)]
 #[allow(non_camel_case_types)] // Suppress lint for _Impl struct
@@ -115,33 +110,29 @@ where
 }
 
 /// This struct ensures that the handle is retained and deregistered before the implementation is dropped
-struct ConfigurationPackageChangeEventHandlerManager
-{
+struct ConfigurationPackageChangeHandle {
     activation_ctx: IFabricCodePackageActivationContext6,
-    implementation: IFabricConfigurationPackageChangeHandler,
-    handle: ConfigurationPackageChangeHandlerId
+    handle: i64
 }
 
-impl ConfigurationPackageChangeEventHandlerManager
+impl ConfigurationPackageChangeHandle
 {
     pub fn new(activation_context: &CodePackageActivationContext, implementation: IFabricConfigurationPackageChangeHandler) -> crate::Result<Self>
     {
         let activation_ctx = activation_context.get_com();
-        // TODO: this is not unwind safe. Is it possible for SF to unwind into us?
-        let registration_result = unsafe { activation_ctx.RegisterConfigurationPackageChangeHandler(&implementation) }?;
+        let handle = unsafe { activation_ctx.RegisterConfigurationPackageChangeHandler(&implementation) }?;
 
         Ok(Self
         {
             activation_ctx,
-            implementation,
-            handle: ConfigurationPackageChangeHandlerId { id: registration_result }
+            handle
         })
     }
 }
 
-impl Drop for ConfigurationPackageChangeEventHandlerManager
+impl Drop for ConfigurationPackageChangeHandle
 {
     fn drop(&mut self) {
-        unsafe { self.activation_ctx.UnregisterConfigurationPackageChangeHandler(self.handle.id) }.unwrap();
+        unsafe { self.activation_ctx.UnregisterConfigurationPackageChangeHandler(self.handle) }.unwrap();
     }
 }

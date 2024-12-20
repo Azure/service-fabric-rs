@@ -17,13 +17,18 @@ mod proxy;
 pub mod wait;
 
 // This is intentional private. User should directly use bridge mod.
+#[cfg(feature = "tokio_async")]
 mod bridge_context;
+#[cfg(feature = "tokio_async")]
 // TODO: make private?
 pub use bridge_context::BridgeContext3;
 
+#[cfg(feature = "tokio_async")]
 pub mod channel;
 
+#[cfg(feature = "tokio_async")]
 pub mod cancel;
+#[cfg(feature = "tokio_async")]
 pub use cancel::*;
 
 // fabric code begins here
@@ -69,8 +74,8 @@ impl<F: Callback> AwaitableCallback2<F> {
     }
 }
 
-#[cfg(test)]
-mod tests {
+#[cfg(all(test, feature = "tokio_async"))]
+mod async_tests {
 
     use std::cell::Cell;
 

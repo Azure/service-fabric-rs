@@ -20,10 +20,11 @@ use mssf_com::{
         FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
     },
 };
-use windows_core::{HSTRING, PCWSTR};
+use windows_core::{WString, PCWSTR};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
+    strings::WStringWrap,
     sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2},
     types::{
         RemoveReplicaDescription, RestartReplicaDescription, ServiceNotificationFilterDescription,
@@ -147,7 +148,7 @@ impl ServiceManagementClient {
     // Resolve service partition
     pub async fn resolve_service_partition(
         &self,
-        name: &HSTRING,
+        name: &WString,
         key_type: &PartitionKeyType,
         prev: Option<&ResolvedServicePartition>,
         timeout: Duration,
@@ -270,7 +271,7 @@ pub enum PartitionKeyType {
     Int64(i64),
     Invalid,
     None,
-    String(HSTRING),
+    String(WString),
 }
 
 impl PartitionKeyType {
@@ -286,7 +287,7 @@ impl PartitionKeyType {
             ServicePartitionKind::Named => {
                 let x = data as *mut u16;
                 assert!(!x.is_null());
-                let s = HSTRING::from_wide(unsafe { PCWSTR::from_raw(x).as_wide() }).unwrap();
+                let s = WStringWrap::from(PCWSTR::from_raw(x)).into();
                 PartitionKeyType::String(s)
             }
         }
@@ -369,7 +370,7 @@ impl ResolvedServicePartition {
 
 #[derive(Debug)]
 pub struct ResolvedServicePartitionInfo {
-    pub service_name: HSTRING,
+    pub service_name: WString,
     pub service_partition_kind: ServicePartitionKind,
     pub partition_key_type: PartitionKeyType,
 }
@@ -378,8 +379,7 @@ impl ResolvedServicePartition {
     // Get the service partition info/metadata
     pub fn get_info(&self) -> ResolvedServicePartitionInfo {
         let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
-        let service_name =
-            HSTRING::from_wide(unsafe { PCWSTR::from_raw(raw.ServiceName.0).as_wide() }).unwrap();
+        let service_name = WStringWrap::from(PCWSTR::from_raw(raw.ServiceName.0)).into();
         let kind_raw = raw.Info.Kind;
         let val = raw.Info.Value;
         let service_partition_kind: ServicePartitionKind = kind_raw.into();
@@ -481,7 +481,7 @@ impl FabricListAccessor<FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEnd
 
 #[derive(Debug, Clone)]
 pub struct ResolvedServiceEndpoint {
-    pub address: HSTRING,
+    pub address: WString,
     pub role: ServiceEndpointRole,
 }
 
@@ -496,7 +496,7 @@ impl From<&FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpoint {
     fn from(value: &FABRIC_RESOLVED_SERVICE_ENDPOINT) -> Self {
         let raw = value;
         Self {
-            address: HSTRING::from_wide(unsafe { raw.Address.as_wide() }).unwrap(),
+            address: WStringWrap::from(raw.Address).into(),
             role: raw.Role.into(),
         }
     }
@@ -504,7 +504,7 @@ impl From<&FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpoint {
 
 #[cfg(test)]
 mod tests {
-    use windows_core::{HSTRING, PCWSTR};
+    use windows_core::{WString, PCWSTR};
 
     use super::{PartitionKeyType, ServicePartitionKind};
 
@@ -524,13 +524,12 @@ mod tests {
 
     #[test]
     fn test_conversion_string() {
-        let src = HSTRING::from("mystr");
+        let src = WString::from("mystr");
         let k = PartitionKeyType::String(src.clone());
         // check the raw ptr is ok
         let raw = k.get_raw_opt();
         let s =
-            HSTRING::from_wide(unsafe { PCWSTR::from_raw(raw.unwrap() as *const u16).as_wide() })
-                .unwrap();
+            WString::from_wide(unsafe { PCWSTR::from_raw(raw.unwrap() as *const u16).as_wide() });
         assert_eq!(s, src);
 
         let service_type = ServicePartitionKind::Named;

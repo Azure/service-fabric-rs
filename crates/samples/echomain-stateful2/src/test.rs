@@ -23,7 +23,7 @@ use mssf_core::{
         SingletonPartitionInfomation, StatefulServicePartitionQueryResult,
         StatefulServiceReplicaQueryResult,
     },
-    GUID, HSTRING,
+    WString, GUID,
 };
 
 static SVC_URI: &str = "fabric:/StatefulEchoApp/StatefulEchoAppService";
@@ -31,7 +31,7 @@ static SVC_URI: &str = "fabric:/StatefulEchoApp/StatefulEchoAppService";
 /// Test client for the stateful service
 pub struct TestClient {
     fc: FabricClient,
-    service_uri: HSTRING,
+    service_uri: WString,
     timeout: Duration,
 }
 
@@ -39,7 +39,7 @@ impl TestClient {
     fn new(fc: FabricClient) -> Self {
         Self {
             fc,
-            service_uri: HSTRING::from(SVC_URI),
+            service_uri: WString::from(SVC_URI),
             timeout: Duration::from_secs(1),
         }
     }
@@ -201,12 +201,12 @@ impl TestClient {
         // test get replica info
         let (p, _, _) = self.get_replicas(partition_id).await.unwrap();
         assert_eq!(p.replica_status, QueryServiceReplicaStatus::Ready);
-        assert_ne!(p.node_name, HSTRING::new());
+        assert_ne!(p.node_name, WString::new());
 
         // restart primary
         let desc = RestartReplicaDescription {
             node_name: p.node_name.clone(),
-            partition_id: partition_id,
+            partition_id,
             replica_or_instance_id: p.replica_id,
         };
         let mgmt = self.fc.get_service_manager();
@@ -267,13 +267,13 @@ async fn test_partition_info() {
     // test get replica info
     let (p, _, _) = tc.get_replicas(single.id).await.unwrap();
     assert_eq!(p.replica_status, QueryServiceReplicaStatus::Ready);
-    assert_ne!(p.node_name, HSTRING::new());
+    assert_ne!(p.node_name, WString::new());
 
     let mgmt = fc.get_service_manager();
     // register service notification filter
     let filter_handle = {
         let desc = ServiceNotificationFilterDescription {
-            name: HSTRING::from(SVC_URI),
+            name: WString::from(SVC_URI),
             flags: ServiceNotificationFilterFlags::NamePrefix,
         };
         // register takes more than 1 sec.

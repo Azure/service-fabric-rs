@@ -8,23 +8,31 @@ use std::future::Future;
 use tokio::{runtime::Handle, sync::mpsc::channel};
 use tracing::info;
 
+use crate::error::FabricErrorCode;
+
 // Executor is used by rs to post jobs to execute in the background
 // Sync is needed due to we use the executor across await boundary.
 pub trait Executor: Clone + Sync + Send + 'static {
     // Required functions
 
-    // spawns the task to run in background
-    fn spawn<F>(&self, future: F)
+    /// spawns the task to run in background, and returns a join handle
+    /// where the future's result can be awaited.
+    /// If the future panics, the join handle should return an error code.
+    /// This is primarily used by mssf Bridge to execute user app async callbacks/notifications.
+    /// User app impl future may panic, and mssf propagates panic as an error in JoinHandle
+    /// to SF.
+    fn spawn<F>(&self, future: F) -> impl JoinHandle<F::Output>
     where
-        F: Future + Send + 'static;
+        F: Future + Send + 'static,
+        F::Output: Send;
 
-    // run the future on the executor until completion.
+    /// run the future on the executor until completion.
     fn block_on<F: Future>(&self, future: F) -> F::Output;
 
     // provided functions
 
-    // Run the executor and block the current thread until ctrl-c event is
-    // Received.
+    /// Run the executor and block the current thread until ctrl-c event is
+    /// Received.
     fn run_until_ctrl_c(&self) {
         info!("DefaultExecutor: setting up ctrl-c event.");
         // set ctrc event
@@ -44,9 +52,22 @@ pub trait Executor: Clone + Sync + Send + 'static {
     }
 }
 
+/// Handle can be awaited to get the success status of the task.
+/// The handle is primarily needed to propagate background task error
+/// back to SF.
+#[trait_variant::make(JoinHandle: Send)]
+pub trait LocalJoinHandle<T> {
+    async fn join(self) -> crate::Result<T>;
+}
+
 #[derive(Clone)]
 pub struct DefaultExecutor {
     rt: Handle,
+}
+
+/// Default implementation of the JoinHandle using tokio
+pub struct DefaultJoinHandle<T> {
+    inner: tokio::task::JoinHandle<T>,
 }
 
 impl DefaultExecutor {
@@ -56,32 +77,37 @@ impl DefaultExecutor {
 }
 
 impl Executor for DefaultExecutor {
-    fn spawn<F>(&self, future: F)
+    fn spawn<F>(&self, future: F) -> impl JoinHandle<F::Output>
     where
         F: Future + Send + 'static,
+        F::Output: Send,
     {
-        let h = self.rt.spawn(async move {
-            future.await;
-        });
-
-        // Monitor user future.
-        // If user task has panic, exit the process.
-        // TODO: expose a config to control this behavior.
-        // It is observed that if user task panics, sf operation are stuck.
-        self.rt.spawn(async move {
-            let ok = h.await;
-            if ok.is_err() {
-                info!(
-                    "DefaultExecutor: User spawned future paniced {}",
-                    ok.unwrap_err()
-                );
-                std::process::exit(1);
-            }
-        });
+        let h = self.rt.spawn(future);
+        DefaultJoinHandle::<F::Output> { inner: h }
     }
 
     fn block_on<F: Future>(&self, future: F) -> F::Output {
         self.rt.block_on(future)
+    }
+}
+
+impl<T: Send> JoinHandle<T> for DefaultJoinHandle<T> {
+    async fn join(self) -> crate::Result<T> {
+        match self.inner.await {
+            Ok(x) => Ok(x),
+            Err(e) => {
+                let e = if e.is_cancelled() {
+                    // we never cancel in executor
+                    FabricErrorCode::E_ABORT
+                } else if e.is_panic() {
+                    FabricErrorCode::E_UNEXPECTED
+                } else {
+                    FabricErrorCode::E_FAIL
+                };
+                tracing::error!("DefaultJoinHandle: background task failed: {e}");
+                Err(e.into())
+            }
+        }
     }
 }
 

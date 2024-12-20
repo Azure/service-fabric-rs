@@ -9,17 +9,14 @@ use mssf_com::{
 use mssf_core::{
     runtime::{
         executor::{DefaultExecutor, Executor},
-        stateful::{
-            PrimaryReplicator, StatefulServiceFactory, StatefulServicePartition,
-            StatefulServiceReplica,
-        },
-        stateful_proxy::StatefulServiceReplicaProxy,
+        stateful::{PrimaryReplicator, StatefulServiceFactory, StatefulServiceReplica},
+        stateful_proxy::{StatefulServicePartition, StatefulServiceReplicaProxy},
         store::{create_com_key_value_store_replica, DummyStoreEventHandler},
         store_proxy::KVStoreProxy,
     },
     sync::CancellationToken,
     types::{LocalStoreKind, OpenMode, ReplicaRole, ReplicatorSettings},
-    Error, GUID, HSTRING,
+    Error, WString, GUID,
 };
 use tokio::{
     select,
@@ -42,7 +39,7 @@ impl Factory {
     }
 }
 
-fn get_addr(port: u32, hostname: HSTRING) -> String {
+fn get_addr(port: u32, hostname: WString) -> String {
     let mut addr = String::new();
     addr.push_str(&hostname.to_string());
     addr.push(':');
@@ -53,8 +50,8 @@ fn get_addr(port: u32, hostname: HSTRING) -> String {
 impl StatefulServiceFactory for Factory {
     fn create_replica(
         &self,
-        servicetypename: &HSTRING,
-        servicename: &HSTRING,
+        servicetypename: &WString,
+        servicename: &WString,
         initializationdata: &[u8],
         partitionid: &GUID,
         replicaid: i64,
@@ -67,7 +64,7 @@ impl StatefulServiceFactory for Factory {
         );
         let settings = ReplicatorSettings {
             flags: FABRIC_REPLICATOR_ADDRESS.0 as u32,
-            replicator_address: HSTRING::from(get_addr(self.replication_port, "localhost".into())),
+            replicator_address: WString::from(get_addr(self.replication_port, "localhost".into())),
             ..Default::default()
         };
 
@@ -78,7 +75,7 @@ impl StatefulServiceFactory for Factory {
 
         let handler: IFabricStoreEventHandler = DummyStoreEventHandler {}.into();
         let kv = create_com_key_value_store_replica(
-            &HSTRING::from("mystorename"),
+            &WString::from("mystorename"),
             *partitionid,
             replicaid,
             &settings,
@@ -164,7 +161,7 @@ impl Service {
         let seq;
         {
             let tx = kv.create_transaction()?;
-            let key = HSTRING::from("mykey");
+            let key = WString::from("mykey");
             let value = String::from("myvalue");
             kv.add(&tx, key.as_wide(), value.as_bytes())?;
             seq = tx.commit(1000, None).await?;
@@ -173,7 +170,7 @@ impl Service {
         // remove kv
         {
             let tx = kv.create_transaction()?;
-            let key = HSTRING::from("mykey");
+            let key = WString::from("mykey");
             kv.remove(&tx, key.as_wide(), seq)?;
             let _ = tx.commit(1000, None).await?;
         }
@@ -196,7 +193,7 @@ impl StatefulServiceReplica for Replica {
         &self,
         newrole: ReplicaRole,
         cancellation_token: CancellationToken,
-    ) -> mssf_core::Result<HSTRING> {
+    ) -> mssf_core::Result<WString> {
         info!("Replica::change_role {:?}", newrole);
         let addr = self
             .kv

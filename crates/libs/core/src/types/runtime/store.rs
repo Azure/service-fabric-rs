@@ -19,7 +19,7 @@ pub struct ReplicatorSettings {
     pub flags: u32,
     pub retry_interval_milliseconds: u32,
     pub batch_acknowledgement_interval_milliseconds: u32,
-    pub replicator_address: ::windows_core::HSTRING,
+    pub replicator_address: crate::WString,
     pub require_service_ack: bool,
     pub initial_replication_queue_size: u32,
     pub max_replication_queue_size: u32,
@@ -65,7 +65,7 @@ impl From<LocalStoreKind> for FABRIC_LOCAL_STORE_KIND {
 #[derive(Default)]
 pub struct EseLocalStoreSettings {
     // FABRIC_ESE_LOCAL_STORE_SETTINGS
-    pub db_folder_path: ::windows_core::HSTRING,
+    pub db_folder_path: ::windows_core::WString,
     pub log_file_size_in_kb: i32,
     pub log_buffer_size_in_kb: i32,
     pub max_cursors: i32,

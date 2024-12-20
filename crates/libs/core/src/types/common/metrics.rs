@@ -5,19 +5,22 @@
 
 //! Module for handling fabric metrics
 
-use crate::{HSTRING, PCWSTR};
-use mssf_com::FabricTypes::FABRIC_LOAD_METRIC;
+use crate::{WString, PCWSTR};
+use mssf_com::FabricTypes::{
+    FABRIC_LOAD_METRIC, FABRIC_MOVE_COST, FABRIC_MOVE_COST_HIGH, FABRIC_MOVE_COST_LOW,
+    FABRIC_MOVE_COST_MEDIUM, FABRIC_MOVE_COST_ZERO,
+};
 use std::marker::PhantomData;
 
 /// FABRIC_LOAD_METRIC
 pub struct LoadMetric {
     // TODO: support static string without heap allocation
-    pub name: HSTRING,
+    pub name: WString,
     pub value: u32,
 }
 
 impl LoadMetric {
-    pub fn new(name: HSTRING, value: u32) -> Self {
+    pub fn new(name: WString, value: u32) -> Self {
         Self { name, value }
     }
 }
@@ -51,5 +54,39 @@ impl<'a> LoadMetricListRef<'a> {
     // Get the raw slice for passing into SF com api.
     pub fn as_raw_slice(&self) -> &[FABRIC_LOAD_METRIC] {
         self.metrics.as_slice()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum MoveCost {
+    Zero,
+    Low,
+    Medium,
+    High,
+    // VeryHigh,
+}
+
+impl From<FABRIC_MOVE_COST> for MoveCost {
+    fn from(value: FABRIC_MOVE_COST) -> Self {
+        match value {
+            FABRIC_MOVE_COST_ZERO => Self::Zero,
+            FABRIC_MOVE_COST_LOW => Self::Low,
+            FABRIC_MOVE_COST_MEDIUM => Self::Medium,
+            FABRIC_MOVE_COST_HIGH => Self::High,
+            // Not supported in rust yet
+            // FABRIC_MOVE_COST_VERYHIGH =>Self::VeryHigh,
+            _ => Self::Zero,
+        }
+    }
+}
+
+impl From<MoveCost> for FABRIC_MOVE_COST {
+    fn from(value: MoveCost) -> Self {
+        match value {
+            MoveCost::Zero => FABRIC_MOVE_COST_ZERO,
+            MoveCost::Low => FABRIC_MOVE_COST_LOW,
+            MoveCost::Medium => FABRIC_MOVE_COST_MEDIUM,
+            MoveCost::High => FABRIC_MOVE_COST_HIGH,
+        }
     }
 }

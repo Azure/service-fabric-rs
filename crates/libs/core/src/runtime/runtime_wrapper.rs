@@ -1,4 +1,4 @@
-use crate::HSTRING;
+use crate::WString;
 /// safe wrapping for runtime
 use mssf_com::FabricRuntime::{
     IFabricRuntime, IFabricStatefulServiceFactory, IFabricStatelessServiceFactory,
@@ -28,7 +28,7 @@ where
 
     pub fn register_stateless_service_factory<F>(
         &self,
-        servicetypename: &HSTRING,
+        servicetypename: &WString,
         factory: F,
     ) -> crate::Result<()>
     where
@@ -39,13 +39,13 @@ where
             StatelessServiceFactoryBridge::create(factory, rt_cp).into();
         unsafe {
             self.com_impl
-                .RegisterStatelessServiceFactory(servicetypename, &bridge)
+                .RegisterStatelessServiceFactory(servicetypename.as_pcwstr(), &bridge)
         }
     }
 
     pub fn register_stateful_service_factory(
         &self,
-        servicetypename: &HSTRING,
+        servicetypename: &WString,
         factory: impl StatefulServiceFactory + 'static,
     ) -> crate::Result<()> {
         let rt_cp = self.rt.clone();
@@ -53,7 +53,7 @@ where
             StatefulServiceFactoryBridge::create(factory, rt_cp).into();
         unsafe {
             self.com_impl
-                .RegisterStatefulServiceFactory(servicetypename, &bridge)
+                .RegisterStatefulServiceFactory(servicetypename.as_pcwstr(), &bridge)
         }
     }
 }

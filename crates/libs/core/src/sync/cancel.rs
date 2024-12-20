@@ -16,7 +16,10 @@ use mssf_com::FabricCommon::{
 pub use tokio_util::sync::CancellationToken;
 use windows_core::{implement, AsImpl};
 
-use crate::{error::FabricErrorCode, runtime::executor::Executor};
+use crate::{
+    error::FabricErrorCode,
+    runtime::executor::{Executor, JoinHandle},
+};
 
 /// Async operation context for bridging rust code into SF COM api that supports cancellation.
 #[implement(IFabricAsyncOperationContext)]
@@ -24,8 +27,17 @@ pub struct BridgeContext3<T>
 where
     T: 'static,
 {
-    content: Cell<Option<T>>,
-    is_completed: Cell<bool>,
+    /// The task result. Initially it is None.
+    /// If the task panics, the error is propagated here.
+    content: Cell<Option<crate::Result<T>>>,
+    /// Indicates the async operation has completed or not.
+    /// This is a memory barrier for making the content available
+    /// from writer thread to the reader thread. It is needed because
+    /// in SF COM API, the caller can call Begin operation, poll on this
+    /// status until complete, and End operation without barriers.
+    is_completed: std::sync::atomic::AtomicBool,
+    /// mssf never completes async operations synchronously.
+    /// This is always false.
     is_completed_synchronously: bool,
     callback: IFabricAsyncOperationCallback,
     token: CancellationToken,
@@ -38,7 +50,7 @@ where
     fn new(callback: IFabricAsyncOperationCallback, token: CancellationToken) -> Self {
         Self {
             content: Cell::new(None),
-            is_completed: Cell::new(false),
+            is_completed: std::sync::atomic::AtomicBool::new(false),
             is_completed_synchronously: false,
             callback,
             token,
@@ -59,6 +71,8 @@ where
     /// This is intended to be used in SF Begin COM api, where
     /// rust code is spawned in background and the context is returned
     /// to caller.
+    /// If the future panics, an error is set in the resulting content,
+    /// caller will still get callback and receive an error in the End api.
     /// This api is in some sense unsafe, because the developer needs to ensure
     /// the following:
     /// * return type of the future needs to match SF COM api end return type.
@@ -72,12 +86,17 @@ where
     {
         let self_cp: IFabricAsyncOperationContext = self.into();
         let self_cp2 = self_cp.clone();
+        let rt_cp = rt.clone();
         rt.spawn(async move {
-            let ok = future.await;
+            // Run user code in a task and wait on its status.
+            // If user code panics we propagate the error back to SF.
+            let task_res = rt_cp.spawn(future).join().await;
+            // TODO: maybe it is good to report health to SF here the same way that sf dotnet app works.
+
+            // We trust the code in mssf here to not panic, or we have bigger problem (memory corruption etc.).
             let self_impl: &BridgeContext3<T> = unsafe { self_cp.as_impl() };
-            self_impl.set_content(ok);
-            self_impl.set_complete();
-            let cb = self_impl.Callback().unwrap();
+            self_impl.set_content(task_res);
+            let cb = unsafe { self_cp.Callback().unwrap() };
             unsafe { cb.Invoke(&self_cp) };
         });
         Ok(self_cp2)
@@ -95,40 +114,48 @@ where
         self_impl.consume_content()
     }
 
-    // TODO: send and comsume is expected to happend accross threads.
-    // Even though we use a oneshot channel to send the signal,
-    // it might be safer to add another memory barrier here.
-    fn set_content(&self, content: T) {
+    /// Set the content for the ctx.
+    /// Marks the ctx as completed.
+    fn set_content(&self, content: crate::Result<T>) {
         let prev = self.content.replace(Some(content));
-        assert!(prev.is_none())
+        assert!(prev.is_none());
+        self.set_complete();
     }
 
-    // can only be called once after set content.
+    /// Consumes the content set by set_content().
+    /// can only be called once after set content.
     fn consume_content(&self) -> crate::Result<T> {
-        let opt = self.content.take();
-        match opt {
-            Some(x) => Ok(x),
-            None => {
-                if !self.IsCompleted().as_bool() {
-                    return Err(FabricErrorCode::FABRIC_E_OPERATION_NOT_COMPLETE.into());
-                }
+        match self.check_complete() {
+            true => self.content.take().expect("content is consumed twice."),
+            false => {
                 if self.token.is_cancelled() {
                     Err(FabricErrorCode::E_ABORT.into())
                 } else {
-                    panic!("content is consumed twice.")
+                    Err(FabricErrorCode::FABRIC_E_OPERATION_NOT_COMPLETE.into())
                 }
             }
         }
     }
 
+    /// Set the ctx as completed. Requires the ctx content to be set. Makes
+    /// the content available for access from other threads using barrier.
     fn set_complete(&self) {
-        self.is_completed.set(true);
+        self.is_completed
+            .store(true, std::sync::atomic::Ordering::Release);
+    }
+
+    /// Checks ctx is completed.
+    /// Makes sure content sets by other threads is visible from this thread.
+    fn check_complete(&self) -> bool {
+        self.is_completed.load(std::sync::atomic::Ordering::Acquire)
     }
 }
 
-impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3<T> {
+impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3_Impl<T> {
     fn IsCompleted(&self) -> crate::BOOLEAN {
-        self.is_completed.get().into()
+        self.is_completed
+            .load(std::sync::atomic::Ordering::Relaxed)
+            .into()
     }
 
     // This always returns false because we defer all tasks in the background executuor.
@@ -381,7 +408,7 @@ where
 mod test {
     use std::{
         cell::Cell,
-        sync::{Arc, Mutex},
+        sync::{atomic::AtomicBool, Arc, Mutex},
         time::Duration,
     };
 
@@ -469,6 +496,7 @@ mod test {
     /// Test Obj for cancellation
     pub struct MyObj {
         data: Mutex<Cell<String>>,
+        panic: AtomicBool,
     }
 
     // Implement the test trait
@@ -479,7 +507,12 @@ mod test {
             ignore_cancel: bool,
             token: Option<CancellationToken>,
         ) -> crate::Result<String> {
+            if self.panic.load(std::sync::atomic::Ordering::Relaxed) {
+                panic!("test panic is set")
+            }
             if delay.is_zero() {
+                // This is needed to make future is breakable in bench test in select
+                tokio::task::yield_now().await;
                 return Ok(self.get_data());
             }
             match (token, ignore_cancel) {
@@ -508,8 +541,14 @@ mod test {
             delay: Duration,
             token: Option<CancellationToken>,
         ) -> crate::Result<()> {
+            if self.panic.load(std::sync::atomic::Ordering::Relaxed) {
+                panic!("test panic is set")
+            }
             if delay.is_zero() {
-                return Ok(self.set_data(input));
+                // This is needed to make future is breakable in bench test in select
+                tokio::task::yield_now().await;
+                self.set_data(input);
+                return Ok(());
             }
             match token {
                 Some(t) => {
@@ -519,13 +558,15 @@ mod test {
                             Err(FabricErrorCode::E_ABORT.into())
                         }
                         _ = tokio::time::sleep(delay) => {
-                            Ok(self.set_data(input))
+                            self.set_data(input);
+                            Ok(())
                         }
                     }
                 }
                 None => {
                     tokio::time::sleep(delay).await;
-                    Ok(self.set_data(input))
+                    self.set_data(input);
+                    Ok(())
                 }
             }
         }
@@ -535,6 +576,7 @@ mod test {
         pub fn new(data: String) -> Self {
             Self {
                 data: Mutex::new(Cell::new(data)),
+                panic: AtomicBool::new(false),
             }
         }
 
@@ -756,6 +798,98 @@ mod test {
                     .await
                     .expect("fail to set data");
             }
+        }
+    }
+
+    const TEST_DATA: &str = "data";
+    /// Very simple benchmark to check the bridge layer performance.
+    /// Adding a bridge layer should not introduce much perf degradation.
+    #[tokio::test]
+    async fn small_bench_test() {
+        // Run get data function for IMyObj with different layers of wrapping.
+        // All wrappings are run in parallel to reduce test run time.
+        // plain object
+        let j0 = tokio::spawn(async move {
+            let obj0 = MyObj::new(TEST_DATA.to_string());
+            small_bench(&obj0, TEST_DATA).await
+        });
+        // object with 1 layer of bridge proxy wrapping
+        let j1 = tokio::spawn(async {
+            let h = tokio::runtime::Handle::current();
+            let obj1 = MyObjProxy::new(h.clone(), MyObj::new(TEST_DATA.to_string()));
+            small_bench(&obj1, TEST_DATA).await
+        });
+        // object with 2 layers.
+        let j2 = tokio::spawn(async {
+            let h = tokio::runtime::Handle::current();
+            let obj2 = MyObjProxy::new(
+                h.clone(),
+                MyObjProxy::new(h.clone(), MyObj::new(TEST_DATA.to_string())),
+            );
+            small_bench(&obj2, TEST_DATA).await
+        });
+        let count0 = j0.await.unwrap();
+        let count1 = j1.await.unwrap();
+        let count2 = j2.await.unwrap();
+        println!("count0: {count0}, count1: {count1}, count2: {count2}");
+        // Conservative check for 2 layer wrapping does not degrade performance by half.
+        // Usually there is hardly any perf degradation by wrapping.
+        assert!(count0 / count2 <= 2)
+    }
+
+    /// Run bench for 3 seconds and return the number of execution reached.
+    /// It keeps running get_data api and returns how many times it got executed.
+    async fn small_bench(obj: &impl IMyObj, expected_data: &str) -> usize {
+        let (tx, mut rx) = tokio::sync::oneshot::channel::<()>();
+        let join = tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_secs(3)).await;
+            tx.send(()).unwrap();
+        });
+
+        let mut count = 0;
+        loop {
+            tokio::select! {
+                res = &mut rx =>{
+                    res.unwrap();
+                    break;
+                }
+                data = IMyObj::get_data_delay(obj,Duration::ZERO, false, None) =>{
+                    assert_eq!(data.unwrap(), expected_data);
+                    count += 1;
+                    if rx.try_recv().is_ok(){
+                        break;
+                    }
+                }
+            }
+        }
+        join.await.unwrap();
+        count
+    }
+
+    #[tokio::test]
+    async fn test_user_code_panic() {
+        let h = tokio::runtime::Handle::current();
+        let expected_data1 = "mydata1";
+        let inner = MyObj::new(expected_data1.to_string());
+        let proxy = MyObjProxy::new(h.clone(), inner);
+        {
+            let out = IMyObj::get_data_delay(&proxy, Duration::ZERO, false, None)
+                .await
+                .expect("fail to get data");
+            assert_eq!(out, expected_data1);
+        }
+        // enable panic for the user code
+        // check the panic is converted to correct error code.
+        proxy
+            .com
+            .inner
+            .panic
+            .store(true, std::sync::atomic::Ordering::Relaxed);
+        {
+            let out = IMyObj::get_data_delay(&proxy, Duration::ZERO, false, None)
+                .await
+                .expect_err("should error out");
+            assert_eq!(out, FabricErrorCode::E_UNEXPECTED.into());
         }
     }
 }

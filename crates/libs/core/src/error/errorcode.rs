@@ -9,30 +9,33 @@ use windows_core::HRESULT;
 use super::FabricError;
 
 // Common HRESULT codes that SF reuses from windows.
-const S_OK: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::S_OK.0);
-const E_ABORT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::E_ABORT.0);
+const S_OK: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows_core::Win32::Foundation::S_OK.0);
+const E_ABORT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_ABORT.0);
 const E_ACCESSDENIED: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(windows::Win32::Foundation::E_ACCESSDENIED.0);
-const E_FAIL: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::E_FAIL.0);
-const E_HANDLE: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::E_HANDLE.0);
+    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_ACCESSDENIED.0);
+const E_FAIL: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_FAIL.0);
+const E_HANDLE: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_HANDLE.0);
 const E_INVALIDARG: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(windows::Win32::Foundation::E_INVALIDARG.0);
+    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_INVALIDARG.0);
 const E_NOINTERFACE: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(windows::Win32::Foundation::E_NOINTERFACE.0);
-const E_NOTIMPL: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::E_NOTIMPL.0);
+    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_NOINTERFACE.0);
+const E_NOTIMPL: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_NOTIMPL.0);
 const E_OUTOFMEMORY: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(windows::Win32::Foundation::E_OUTOFMEMORY.0);
-const E_POINTER: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows::Win32::Foundation::E_POINTER.0);
+    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_OUTOFMEMORY.0);
+const E_POINTER: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_POINTER.0);
 const E_UNEXPECTED: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(windows::Win32::Foundation::E_UNEXPECTED.0);
+    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_UNEXPECTED.0);
 
 // HRESULT codes from win32 errors that SF resuses.
 const E_FILE_EXISTS: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(HRESULT::from_win32(windows::Win32::Foundation::ERROR_FILE_EXISTS.0).0);
-const E_DIR_NOT_EMPTY: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(HRESULT::from_win32(windows::Win32::Foundation::ERROR_DIR_NOT_EMPTY.0).0);
+    FABRIC_ERROR_CODE(HRESULT::from_win32(windows_core::Win32::Foundation::ERROR_FILE_EXISTS.0).0);
+const E_DIR_NOT_EMPTY: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(
+    HRESULT::from_win32(windows_core::Win32::Foundation::ERROR_DIR_NOT_EMPTY.0).0,
+);
 const E_NOT_FOUND: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(HRESULT::from_win32(windows::Win32::Foundation::ERROR_NOT_FOUND.0).0);
+    FABRIC_ERROR_CODE(HRESULT::from_win32(windows_core::Win32::Foundation::ERROR_NOT_FOUND.0).0);
 
 /// Hepler macro to define fabric error code.
 /// SF uses win32 hresult code together with the custom fabric error code.
@@ -44,7 +47,7 @@ const E_NOT_FOUND: FABRIC_ERROR_CODE =
 macro_rules! define_fabric_error_code{
     ($( $code1:ident ),* ,($lit:literal), $( $code:ident ),*) =>{
         #[allow(non_camel_case_types)]
-        #[derive(Debug, Clone)]
+        #[derive(Debug, Clone, PartialEq)]
         #[repr(i32)]
         pub enum FabricErrorCode {
             // Define windows error codes for SF

@@ -9,4 +9,4 @@ pub use common::*;
 mod client;
 pub use client::*;
 mod runtime;
-pub use runtime::{stateful::*, store::*, EndpointResourceDescription};
+pub use runtime::{health::*, stateful::*, store::*, EndpointResourceDescription};

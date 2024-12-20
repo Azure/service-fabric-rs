@@ -4,7 +4,7 @@
 // ------------------------------------------------------------
 
 use crate::BOOLEAN;
-use crate::{error::FabricErrorCode, HSTRING};
+use crate::{error::FabricErrorCode, WString};
 use mssf_com::{
     FabricRuntime::IFabricConfigurationPackage,
     FabricTypes::{
@@ -16,7 +16,7 @@ use mssf_com::{
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
-    strings::HSTRINGWrap,
+    strings::WStringWrap,
 };
 
 #[derive(Debug, Clone)]
@@ -25,10 +25,10 @@ pub struct ConfigurationPackage {
 }
 
 pub struct ConfigurationPackageDesc {
-    pub name: HSTRING,
-    pub service_manifest_name: HSTRING,
-    pub service_manifest_version: HSTRING,
-    pub version: HSTRING,
+    pub name: WString,
+    pub service_manifest_name: WString,
+    pub service_manifest_version: WString,
+    pub version: WString,
 }
 
 pub struct ConfigurationSettings {
@@ -72,10 +72,10 @@ impl ConfigurationPackage {
         let raw = unsafe { self.com.get_Description().as_ref().unwrap() };
 
         ConfigurationPackageDesc {
-            name: HSTRINGWrap::from(raw.Name).into(),
-            service_manifest_name: HSTRINGWrap::from(raw.ServiceManifestName).into(),
-            service_manifest_version: HSTRINGWrap::from(raw.ServiceManifestVersion).into(),
-            version: HSTRINGWrap::from(raw.Version).into(),
+            name: WStringWrap::from(raw.Name).into(),
+            service_manifest_name: WStringWrap::from(raw.ServiceManifestName).into(),
+            service_manifest_version: WStringWrap::from(raw.ServiceManifestVersion).into(),
+            version: WStringWrap::from(raw.Version).into(),
         }
     }
 
@@ -87,13 +87,13 @@ impl ConfigurationPackage {
         }
     }
 
-    pub fn get_path(&self) -> HSTRING {
+    pub fn get_path(&self) -> WString {
         let raw = unsafe { self.com.get_Path() };
-        HSTRINGWrap::from(raw).into()
+        WStringWrap::from(raw).into()
     }
 
-    pub fn get_section(&self, section_name: &HSTRING) -> crate::Result<ConfigurationSection> {
-        let raw = unsafe { self.com.GetSection(section_name) }?;
+    pub fn get_section(&self, section_name: &WString) -> crate::Result<ConfigurationSection> {
+        let raw = unsafe { self.com.GetSection(section_name.as_pcwstr()) }?;
         let raw_ref = unsafe { raw.as_ref() };
         match raw_ref {
             Some(c) => {
@@ -107,23 +107,23 @@ impl ConfigurationPackage {
 
     pub fn get_value(
         &self,
-        section_name: &HSTRING,
-        parameter_name: &HSTRING,
-    ) -> crate::Result<(HSTRING, bool)> {
+        section_name: &WString,
+        parameter_name: &WString,
+    ) -> crate::Result<(WString, bool)> {
         let mut is_encrypted: BOOLEAN = Default::default();
         let raw = unsafe {
             self.com.GetValue(
-                section_name,
-                parameter_name,
+                section_name.as_pcwstr(),
+                parameter_name.as_pcwstr(),
                 std::ptr::addr_of_mut!(is_encrypted.0),
             )
         }?;
-        Ok((HSTRINGWrap::from(raw).into(), is_encrypted.as_bool()))
+        Ok((WStringWrap::from(raw).into(), is_encrypted.as_bool()))
     }
 
-    pub fn decrypt_value(&self, encryptedvalue: &HSTRING) -> windows_core::Result<HSTRING> {
-        let s = unsafe { self.com.DecryptValue(encryptedvalue) }?;
-        Ok(HSTRINGWrap::from(&s).into())
+    pub fn decrypt_value(&self, encryptedvalue: &WString) -> windows_core::Result<WString> {
+        let s = unsafe { self.com.DecryptValue(encryptedvalue.as_pcwstr()) }?;
+        Ok(WStringWrap::from(&s).into())
     }
 }
 
@@ -134,7 +134,7 @@ impl ConfigurationPackage {
 // TODO: find a way to make lifetime work.
 pub struct ConfigurationSection {
     owner: Option<IFabricConfigurationPackage>,
-    pub name: HSTRING,
+    pub name: WString,
     pub parameters: ConfigurationParameterList, // Note: the list has no lifetime tracking
 }
 
@@ -142,7 +142,7 @@ impl From<&FABRIC_CONFIGURATION_SECTION> for ConfigurationSection {
     fn from(value: &FABRIC_CONFIGURATION_SECTION) -> Self {
         Self {
             owner: None,
-            name: HSTRINGWrap::from(value.Name).into(),
+            name: WStringWrap::from(value.Name).into(),
             parameters: ConfigurationParameterList {
                 list: value.Parameters, // TODO: ownership/lifetime escaped here.
             },
@@ -183,9 +183,9 @@ impl FabricListAccessor<FABRIC_CONFIGURATION_PARAMETER> for ConfigurationParamet
 pub struct ConfigurationParameter {
     pub is_encrypted: bool,
     pub must_overrride: bool,
-    pub name: HSTRING,
-    pub value: HSTRING,
-    pub r#type: HSTRING,
+    pub name: WString,
+    pub value: WString,
+    pub r#type: WString,
 }
 
 impl From<&FABRIC_CONFIGURATION_PARAMETER> for ConfigurationParameter {
@@ -196,11 +196,11 @@ impl From<&FABRIC_CONFIGURATION_PARAMETER> for ConfigurationParameter {
                 .unwrap()
         };
         Self {
-            name: HSTRINGWrap::from(value.Name).into(),
+            name: WStringWrap::from(value.Name).into(),
             is_encrypted: value.IsEncrypted.as_bool(),
             must_overrride: value.MustOverride.as_bool(),
-            value: HSTRINGWrap::from(value.Value).into(),
-            r#type: HSTRINGWrap::from(raw1.Type).into(),
+            value: WStringWrap::from(value.Value).into(),
+            r#type: WStringWrap::from(raw1.Type).into(),
         }
     }
 }

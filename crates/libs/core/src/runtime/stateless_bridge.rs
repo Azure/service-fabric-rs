@@ -8,9 +8,8 @@
 
 use std::sync::Arc;
 
-use crate::HSTRING;
 use crate::{
-    runtime::stateless::StatelessServicePartition, strings::HSTRINGWrap, sync::BridgeContext3,
+    runtime::stateless::StatelessServicePartition, strings::WStringWrap, sync::BridgeContext3,
 };
 use mssf_com::{
     FabricCommon::IFabricStringResult,
@@ -21,8 +20,8 @@ use mssf_com::{
     },
     FabricTypes::FABRIC_URI,
 };
-use tracing::info;
-use windows::core::implement;
+use tracing::debug;
+use windows_core::implement;
 
 use super::{
     executor::Executor,
@@ -49,7 +48,7 @@ where
     }
 }
 
-impl<E, F> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge<E, F>
+impl<E, F> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge_Impl<E, F>
 where
     E: Executor,
     F: StatelessServiceFactory,
@@ -64,10 +63,9 @@ where
         partitionid: &crate::GUID,
         instanceid: i64,
     ) -> crate::Result<IFabricStatelessServiceInstance> {
-        info!("StatelessServiceFactoryBridge::CreateInstance");
-        let p_servicename = crate::PCWSTR::from_raw(servicename.0);
-        let h_servicename = HSTRING::from_wide(unsafe { p_servicename.as_wide() }).unwrap();
-        let h_servicetypename = HSTRING::from_wide(unsafe { servicetypename.as_wide() }).unwrap();
+        debug!("StatelessServiceFactoryBridge::CreateInstance");
+        let h_servicename = WStringWrap::from(crate::PCWSTR(servicename.0)).into();
+        let h_servicetypename = WStringWrap::from(*servicetypename).into();
         let data = unsafe {
             if !initializationdata.is_null() {
                 std::slice::from_raw_parts(initializationdata, initializationdatalength as usize)
@@ -118,7 +116,7 @@ where
     }
 }
 
-impl<E, S> IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge<E, S>
+impl<E, S> IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge_Impl<E, S>
 where
     E: Executor,
     S: StatelessServiceInstance + 'static,
@@ -128,7 +126,7 @@ where
         partition: ::core::option::Option<&IFabricStatelessServicePartition>,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> crate::Result<super::IFabricAsyncOperationContext> {
-        info!("IFabricStatelessServiceInstanceBridge::BeginOpen");
+        debug!("IFabricStatelessServiceInstanceBridge::BeginOpen");
         let partition_cp = partition.unwrap().clone();
         let partition_bridge = StatelessServicePartition::new(partition_cp);
         let inner = self.inner.clone();
@@ -137,7 +135,7 @@ where
             inner
                 .open(&partition_bridge, token)
                 .await
-                .map(|s| IFabricStringResult::from(HSTRINGWrap::from(s)))
+                .map(|s| IFabricStringResult::from(WStringWrap::from(s)))
         })
     }
 
@@ -145,7 +143,7 @@ where
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> crate::Result<IFabricStringResult> {
-        info!("IFabricStatelessServiceInstanceBridge::EndOpen");
+        debug!("IFabricStatelessServiceInstanceBridge::EndOpen");
         BridgeContext3::result(context)?
     }
 
@@ -153,7 +151,7 @@ where
         &self,
         callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
     ) -> crate::Result<super::IFabricAsyncOperationContext> {
-        info!("IFabricStatelessServiceInstanceBridge::BeginClose");
+        debug!("IFabricStatelessServiceInstanceBridge::BeginClose");
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext3::make(callback);
         ctx.spawn(&self.rt, async move { inner.close(token).await })
@@ -163,12 +161,12 @@ where
         &self,
         context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
     ) -> crate::Result<()> {
-        info!("IFabricStatelessServiceInstanceBridge::EndClose");
+        debug!("IFabricStatelessServiceInstanceBridge::EndClose");
         BridgeContext3::result(context)?
     }
 
     fn Abort(&self) {
-        info!("IFabricStatelessServiceInstanceBridge::Abort");
+        debug!("IFabricStatelessServiceInstanceBridge::Abort");
         self.inner.abort()
     }
 }

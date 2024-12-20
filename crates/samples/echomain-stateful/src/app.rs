@@ -24,21 +24,20 @@ use mssf_com::FabricTypes::{
     FABRIC_REPLICA_OPEN_MODE_INVALID, FABRIC_REPLICA_ROLE, FABRIC_REPLICA_SET_CONFIGURATION,
     FABRIC_REPLICA_SET_QUORUM_MODE, FABRIC_URI,
 };
-use mssf_core::w;
-use mssf_core::HSTRING;
-use mssf_core::{strings::HSTRINGWrap, sync::wait::AsyncContext};
+use mssf_core::WString;
+use mssf_core::{strings::WStringWrap, sync::wait::AsyncContext};
 use tokio::sync::oneshot::{self, Sender};
 use tracing::info;
 use windows_core::implement;
 
 mod echo;
 
-pub fn run(runtime: &IFabricRuntime, port: u32, hostname: HSTRING) {
+pub fn run(runtime: &IFabricRuntime, port: u32, hostname: WString) {
     info!("port: {}, host: {:?}", port, hostname);
 
     let factory: IFabricStatefulServiceFactory = StatefulServiceFactory::new(port, hostname).into();
-    let service_type_name = w!("StatefulEchoAppService");
-    unsafe { runtime.RegisterStatefulServiceFactory(service_type_name, &factory) }
+    let service_type_name = mssf_core::WString::from("StatefulEchoAppService");
+    unsafe { runtime.RegisterStatefulServiceFactory(service_type_name.as_pcwstr(), &factory) }
         .expect("register failed");
 }
 
@@ -46,11 +45,11 @@ pub fn run(runtime: &IFabricRuntime, port: u32, hostname: HSTRING) {
 #[implement(IFabricStatefulServiceFactory)]
 pub struct StatefulServiceFactory {
     port_: u32,
-    hostname_: HSTRING,
+    hostname_: WString,
 }
 
 impl StatefulServiceFactory {
-    pub fn new(port: u32, hostname: HSTRING) -> StatefulServiceFactory {
+    pub fn new(port: u32, hostname: WString) -> StatefulServiceFactory {
         StatefulServiceFactory {
             port_: port,
             hostname_: hostname,
@@ -58,7 +57,7 @@ impl StatefulServiceFactory {
     }
 }
 
-impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory {
+impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory_Impl {
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     fn CreateReplica(
         &self,
@@ -81,7 +80,7 @@ impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory {
         }
         info!(
             "servicetypename: {}, servicename: {:?}, initdata: {}, partitionid: {:?}, instanceid {}",
-            unsafe { servicetypename.display() },
+            mssf_core::strings::WStringWrap::from(*servicetypename).into_wstring(),
             servicename,
             init_data,
             partitionid,
@@ -97,11 +96,11 @@ impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory {
 #[implement(IFabricReplicator, IFabricPrimaryReplicator)]
 pub struct AppFabricReplicator {
     port_: u32,
-    hostname_: HSTRING,
+    hostname_: WString,
 }
 
 impl AppFabricReplicator {
-    pub fn new(port: u32, hostname: HSTRING) -> AppFabricReplicator {
+    pub fn new(port: u32, hostname: WString) -> AppFabricReplicator {
         AppFabricReplicator {
             port_: port,
             hostname_: hostname,
@@ -110,7 +109,7 @@ impl AppFabricReplicator {
 }
 
 // This is basic implementation of Replicator
-impl IFabricReplicator_Impl for AppFabricReplicator {
+impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
     fn BeginOpen(
         &self,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
@@ -129,7 +128,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
         info!("AppFabricReplicator::EndOpen");
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
         info!("AppFabricReplicator::EndOpen {}", addr);
-        let str_res: IFabricStringResult = HSTRINGWrap::from(HSTRING::from(addr)).into();
+        let str_res: IFabricStringResult = WStringWrap::from(WString::from(addr)).into();
         Ok(str_res)
     }
 
@@ -205,7 +204,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator {
 }
 
 // This is basic implementation of PrimaryReplicator
-impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
+impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
     fn BeginOnDataLoss(
         &self,
         callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
@@ -288,7 +287,7 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator {
 #[implement(IFabricStatefulServiceReplica)]
 pub struct AppInstance {
     port_: u32,
-    hostname_: HSTRING,
+    hostname_: WString,
     tx_: Cell<Option<Sender<()>>>, // hack to use this mutably
     th_: Cell<Option<JoinHandle<Result<(), Error>>>>,
     // role_: Cell<mssf_com::FABRIC_REPLICA_ROLE>,
@@ -296,7 +295,7 @@ pub struct AppInstance {
 }
 
 impl AppInstance {
-    pub fn new(port: u32, hostname: HSTRING) -> AppInstance {
+    pub fn new(port: u32, hostname: WString) -> AppInstance {
         AppInstance {
             port_: port,
             hostname_: hostname,
@@ -308,7 +307,7 @@ impl AppInstance {
     }
 }
 
-impl IFabricStatefulServiceReplica_Impl for AppInstance {
+impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
     fn BeginOpen(
         &self,
         openmode: FABRIC_REPLICA_OPEN_MODE,
@@ -443,7 +442,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance {
         info!("AppInstance::EndChangeRole");
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
         info!("AppInstance::EndChangeRole {}", addr);
-        let str_res: IFabricStringResult = HSTRINGWrap::from(HSTRING::from(addr)).into();
+        let str_res: IFabricStringResult = WStringWrap::from(WString::from(addr)).into();
         Ok(str_res)
     }
 }

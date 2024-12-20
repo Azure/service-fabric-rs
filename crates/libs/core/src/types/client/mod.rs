@@ -17,7 +17,7 @@ pub use partition::*;
 mod node;
 pub use node::*;
 mod replica;
-use crate::HSTRING;
+use crate::WString;
 pub use replica::*;
 mod metrics;
 pub use metrics::*;
@@ -41,7 +41,7 @@ impl From<&ServiceNotificationFilterFlags> for FABRIC_SERVICE_NOTIFICATION_FILTE
 // FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION
 #[derive(Debug, Clone)]
 pub struct ServiceNotificationFilterDescription {
-    pub name: HSTRING,
+    pub name: WString,
     pub flags: ServiceNotificationFilterFlags,
 }
 

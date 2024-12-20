@@ -6,7 +6,7 @@
 #![deny(non_snake_case)] // this file is safe rust
 
 use crate::sync::CancellationToken;
-use crate::HSTRING;
+use crate::WString;
 use mssf_com::FabricRuntime::IFabricStatelessServicePartition;
 
 use crate::types::ServicePartitionInformation;
@@ -36,10 +36,10 @@ pub trait StatelessServiceFactory {
     /// Creates a stateless service instance for a particular service. This method is called by Service Fabric.
     fn create_instance(
         &self,
-        servicetypename: &HSTRING,
-        servicename: &HSTRING,
+        servicetypename: &WString,
+        servicename: &WString,
         initializationdata: &[u8],
-        partitionid: &::windows::core::GUID,
+        partitionid: &crate::GUID,
         instanceid: i64,
     ) -> crate::Result<impl StatelessServiceInstance>;
 }
@@ -57,7 +57,7 @@ pub trait LocalStatelessServiceInstance: Send + Sync + 'static {
         &self,
         partition: &StatelessServicePartition,
         cancellation_token: CancellationToken,
-    ) -> crate::Result<HSTRING>;
+    ) -> crate::Result<WString>;
 
     /// Closes this service instance gracefully when the service instance is being shut down.
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;

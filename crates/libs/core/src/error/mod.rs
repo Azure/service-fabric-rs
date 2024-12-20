@@ -19,6 +19,11 @@ impl FabricError {
     pub fn new(code: HRESULT) -> Self {
         Self(code)
     }
+
+    /// Convert to fabric error code if possible.
+    pub fn try_as_fabric_error_code(&self) -> Result<FabricErrorCode, &str> {
+        FabricErrorCode::try_from(FABRIC_ERROR_CODE(self.0 .0))
+    }
 }
 
 impl From<HRESULT> for FabricError {
@@ -86,7 +91,7 @@ mod test {
 
     use super::{FabricError, FabricErrorCode};
     use mssf_com::FabricTypes::FABRIC_E_CODE_PACKAGE_NOT_FOUND;
-    use windows::Win32::Foundation::{E_ACCESSDENIED, E_POINTER};
+    use windows_core::Win32::Foundation::{E_ACCESSDENIED, E_POINTER};
     use windows_core::{Error, HRESULT};
 
     #[test]
@@ -104,6 +109,10 @@ mod test {
         );
         let e = crate::Error::from(fe.clone());
         assert_eq!(e.code(), fe.into());
+        let ec = FabricError::from(e)
+            .try_as_fabric_error_code()
+            .expect("unknown code");
+        assert_eq!(ec, FabricErrorCode::FABRIC_E_CODE_PACKAGE_NOT_FOUND);
     }
 
     #[test]
@@ -115,8 +124,9 @@ mod test {
         let e: Error = FabricErrorCode::E_POINTER.into();
         assert_eq!(e, E_POINTER.into());
 
+        const SEC_E_INTERNAL_ERROR: crate::HRESULT = crate::HRESULT(0x80090304_u32 as _);
         // use an error that is not fabric error
-        let fe = FabricError::from(windows::Win32::Foundation::SEC_E_INTERNAL_ERROR);
+        let fe = FabricError::from(SEC_E_INTERNAL_ERROR);
         // check display string
         assert_eq!(format!("{}", fe), "-2146893052");
         assert_eq!(

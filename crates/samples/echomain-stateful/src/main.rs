@@ -5,13 +5,10 @@
 
 use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
 use mssf_com::FabricRuntime::{
-    FabricBeginGetNodeContext, FabricCreateRuntime, FabricEndGetNodeContext,
-    FabricGetActivationContext, IFabricCodePackageActivationContext, IFabricNodeContextResult,
-    IFabricRuntime,
+    IFabricCodePackageActivationContext, IFabricNodeContextResult, IFabricRuntime,
 };
 use mssf_core::sync::wait::WaitableCallback;
-use mssf_core::w;
-use mssf_core::{Interface, HSTRING};
+use mssf_core::{Interface, WString};
 use std::sync::mpsc::channel;
 use tracing::info;
 pub mod app;
@@ -28,17 +25,13 @@ fn main() -> mssf_core::Result<()> {
     // std::thread::sleep(std::time::Duration::from_secs(90));
     // info!("sleep ended");
 
-    let rawruntime =
-        unsafe { FabricCreateRuntime(&IFabricRuntime::IID).expect("cannot create runtime") };
-    let runtime = unsafe { IFabricRuntime::from_raw(rawruntime) };
+    let runtime = mssf_core::API_TABLE
+        .fabric_create_runtime()
+        .expect("cannot create fabric runtime");
 
-    let raw_activation_ctx = unsafe {
-        FabricGetActivationContext(&IFabricCodePackageActivationContext::IID)
-            .expect("Cannot get activation ctx")
-    };
-
-    let activation_ctx =
-        unsafe { IFabricCodePackageActivationContext::from_raw(raw_activation_ctx) };
+    let activation_ctx = mssf_core::API_TABLE
+        .fabric_get_activation_context()
+        .expect("cannot get activation context");
 
     run_app(&runtime, &activation_ctx);
 
@@ -56,34 +49,36 @@ fn run_app(runtime: &IFabricRuntime, activation_ctx: &IFabricCodePackageActivati
 
 fn get_port(activation_ctx: &IFabricCodePackageActivationContext) -> u32 {
     info!("trying to get port");
-    let endpoint_name = w!("ServiceEndpoint1");
+    let endpoint_name = mssf_core::WString::from("ServiceEndpoint1");
     let endpoint = unsafe {
         activation_ctx
-            .GetServiceEndpointResource(endpoint_name)
+            .GetServiceEndpointResource(endpoint_name.as_pcwstr())
             .expect("cannot get endpoint")
     };
     unsafe { (*endpoint).Port }
 }
 
-fn get_hostname() -> HSTRING {
+fn get_hostname() -> WString {
     let (token, callback) = WaitableCallback::channel();
 
     let callback_arg = callback
         .cast::<IFabricAsyncOperationCallback>()
         .expect("castfailed");
-    let ctx = unsafe { FabricBeginGetNodeContext(1000, &callback_arg).expect("getctx failed") };
+    let ctx = mssf_core::API_TABLE
+        .fabric_begin_get_node_context(1000, Some(&callback_arg))
+        .expect("getctx failed");
 
     token.wait();
 
-    let result_raw = unsafe { FabricEndGetNodeContext(&ctx).expect("end failed") };
-
-    let result = unsafe { IFabricNodeContextResult::from_raw(result_raw) };
+    let result = mssf_core::API_TABLE
+        .fabric_end_get_node_context::<IFabricNodeContextResult>(Some(ctx).as_ref())
+        .expect("cannot end get node context");
 
     let node_ctx = unsafe { result.get_NodeContext() };
 
     let hostname_raw = unsafe { (*node_ctx).IPAddressOrFQDN };
 
-    let ret = HSTRING::from_wide(unsafe { hostname_raw.as_wide() }).expect("hstring");
+    let ret = WString::from_wide(unsafe { hostname_raw.as_wide() });
     info!("got hostname: {:?}", ret);
     ret
 }

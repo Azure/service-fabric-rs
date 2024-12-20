@@ -8,7 +8,7 @@ use mssf_com::FabricClient::{
     IFabricGatewayInformationResult,
 };
 
-use crate::{strings::HSTRINGWrap, types::NodeId};
+use crate::{strings::WStringWrap, types::NodeId};
 
 /// Internal trait that rust code implements that can be bridged into IFabricClientConnectionEventHandler.
 /// Not exposed to user.
@@ -21,20 +21,20 @@ pub trait ClientConnectionEventHandler: 'static {
 /// Traslated from IFabricGatewayInformationResult
 #[derive(Debug, Clone)]
 pub struct GatewayInformationResult {
-    pub node_address: crate::HSTRING,
+    pub node_address: crate::WString,
     pub node_id: NodeId,
     pub node_instance_id: u64,
-    pub node_name: crate::HSTRING,
+    pub node_name: crate::WString,
 }
 
 impl GatewayInformationResult {
     fn from_com(com: &IFabricGatewayInformationResult) -> Self {
         let info = unsafe { com.get_GatewayInformation().as_ref().unwrap() };
         Self {
-            node_address: HSTRINGWrap::from(info.NodeAddress).into(),
+            node_address: WStringWrap::from(info.NodeAddress).into(),
             node_id: info.NodeId.into(),
             node_instance_id: info.NodeInstanceId,
-            node_name: HSTRINGWrap::from(info.NodeName).into(),
+            node_name: WStringWrap::from(info.NodeName).into(),
         }
     }
 }
@@ -61,7 +61,7 @@ where
     }
 }
 
-impl<T> IFabricClientConnectionEventHandler_Impl for ClientConnectionEventHandlerBridge<T>
+impl<T> IFabricClientConnectionEventHandler_Impl for ClientConnectionEventHandlerBridge_Impl<T>
 where
     T: ClientConnectionEventHandler,
 {

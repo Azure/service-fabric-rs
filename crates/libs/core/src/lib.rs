@@ -19,6 +19,9 @@
 
 // lib that contains all common extensions for the raw fabric apis.
 
+// SF lib entrypoint apis.
+pub mod api;
+pub use api::API_TABLE;
 #[cfg(feature = "tokio_async")]
 pub mod client;
 #[cfg(feature = "config_source")]
@@ -33,7 +36,7 @@ pub mod sync;
 pub mod types;
 
 // re-export some windows types
-pub use windows_core::{w, Error, Interface, Result, GUID, HRESULT, HSTRING, PCWSTR};
+pub use windows_core::{Error, Interface, Result, WString, GUID, HRESULT, PCWSTR};
 // Note cannot re-export windows_core::implement because the macro using it has hard coded mod name.
 
-pub use windows::Win32::Foundation::BOOLEAN;
+pub use windows_core::Win32::Foundation::BOOLEAN;

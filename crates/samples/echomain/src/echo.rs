@@ -7,13 +7,13 @@
 
 use std::io::Error;
 
-use mssf_core::HSTRING;
+use mssf_core::WString;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::oneshot::Receiver;
 use tracing::info;
 
-pub fn get_addr(port: u32, hostname: HSTRING) -> String {
+pub fn get_addr(port: u32, hostname: WString) -> String {
     let mut addr = String::new();
     addr.push_str(&hostname.to_string());
     addr.push(':');
@@ -57,7 +57,7 @@ async fn echo_loop(listener: TcpListener) -> Result<(), Error> {
     }
 }
 
-pub async fn start_echo(rx: Receiver<()>, port: u32, hostname: HSTRING) -> Result<(), Error> {
+pub async fn start_echo(rx: Receiver<()>, port: u32, hostname: WString) -> Result<(), Error> {
     let addr = get_addr(port, hostname);
 
     let listener = TcpListener::bind(&addr).await?;

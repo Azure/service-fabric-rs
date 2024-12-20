@@ -9,9 +9,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use mssf_com::FabricCommon::{
-    IFabricAsyncOperationCallback, IFabricAsyncOperationContext, 
-};
+use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
 pub use tokio_util::sync::CancellationToken;
 
 use crate::error::FabricErrorCode;

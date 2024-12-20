@@ -140,12 +140,12 @@ fn build_config(config: ConfigurationPackage) -> Config {
 
     // Use the config framework
     let source = FabricConfigSource::new(config);
-    let s = Config::builder()
+    
+    Config::builder()
         .add_source(source)
         .build()
         .inspect_err(|e| info!("config build failed: {}", e))
-        .unwrap();
-    s
+        .unwrap()
 }
 
 /// Send health ok to SF to validate health reporting code

@@ -22,14 +22,13 @@ use windows_core::implement;
 mod proxy;
 pub mod wait;
 
-mod bridge;
 // This is intentional private. User should directly use bridge mod.
 mod bridge_context;
+// TODO: make private?
+pub use bridge_context::BridgeContext3;
 
 pub mod cancel;
 pub use cancel::*;
-// TODO: make private?
-pub use bridge_context::BridgeContext3;
 
 // fabric code begins here
 

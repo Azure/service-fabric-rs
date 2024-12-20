@@ -5,7 +5,8 @@
 //! Handle callbacks for configuration package changes
 //! TODO: We probably should also provide a helpful callback to use in conjunction with the config-rs support (so that it processes configuration changes)
 use mssf_com::FabricRuntime::{
-    IFabricCodePackageActivationContext6, IFabricConfigurationPackageChangeHandler, IFabricConfigurationPackageChangeHandler_Impl
+    IFabricCodePackageActivationContext6, IFabricConfigurationPackageChangeHandler,
+    IFabricConfigurationPackageChangeHandler_Impl,
 };
 
 use crate::runtime::{config::ConfigurationPackage, CodePackageActivationContext};
@@ -44,11 +45,10 @@ where
 {
     fn OnPackageAdded(
         &self,
-        source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
+        _source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
         configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let new_package =ConfigurationPackage::from_com(
-            configpackage.unwrap().clone());
+        let new_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
         let event = ConfigurationPackageChangeEvent::Addition { new_package };
         // TODO: unwrap, or should we change the return type of the lambda to be the empty type?
         self.inner.on_change(&event).unwrap();
@@ -59,8 +59,7 @@ where
         _source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
         configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let previous_package =ConfigurationPackage::from_com(
-            configpackage.unwrap().clone());
+        let previous_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
         let event = ConfigurationPackageChangeEvent::Removal { previous_package };
         self.inner.on_change(&event).unwrap();
     }
@@ -71,11 +70,13 @@ where
         previousconfigpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
         configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let new_package= ConfigurationPackage::from_com(
-            configpackage.unwrap().clone());
-        let previous_package =ConfigurationPackage::from_com(
-            previousconfigpackage.unwrap().clone());
-        let event = ConfigurationPackageChangeEvent::Modification { previous_package, new_package };
+        let new_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
+        let previous_package =
+            ConfigurationPackage::from_com(previousconfigpackage.unwrap().clone());
+        let event = ConfigurationPackageChangeEvent::Modification {
+            previous_package,
+            new_package,
+        };
         self.inner.on_change(&event).unwrap();
     }
 }
@@ -112,27 +113,31 @@ where
 /// This struct ensures that the handle is retained and deregistered before the implementation is dropped
 struct ConfigurationPackageChangeHandle {
     activation_ctx: IFabricCodePackageActivationContext6,
-    handle: i64
+    handle: i64,
 }
 
-impl ConfigurationPackageChangeHandle
-{
-    pub fn new(activation_context: &CodePackageActivationContext, implementation: IFabricConfigurationPackageChangeHandler) -> crate::Result<Self>
-    {
+impl ConfigurationPackageChangeHandle {
+    pub fn new(
+        activation_context: &CodePackageActivationContext,
+        implementation: IFabricConfigurationPackageChangeHandler,
+    ) -> crate::Result<Self> {
         let activation_ctx = activation_context.get_com();
-        let handle = unsafe { activation_ctx.RegisterConfigurationPackageChangeHandler(&implementation) }?;
+        let handle =
+            unsafe { activation_ctx.RegisterConfigurationPackageChangeHandler(&implementation) }?;
 
-        Ok(Self
-        {
+        Ok(Self {
             activation_ctx,
-            handle
+            handle,
         })
     }
 }
 
-impl Drop for ConfigurationPackageChangeHandle
-{
+impl Drop for ConfigurationPackageChangeHandle {
     fn drop(&mut self) {
-        unsafe { self.activation_ctx.UnregisterConfigurationPackageChangeHandler(self.handle) }.unwrap();
+        unsafe {
+            self.activation_ctx
+                .UnregisterConfigurationPackageChangeHandler(self.handle)
+        }
+        .unwrap();
     }
 }

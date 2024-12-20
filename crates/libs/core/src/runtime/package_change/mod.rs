@@ -11,7 +11,7 @@ pub(super) mod config;
 pub enum PackageChangeEvent<T> {
     Addition { new_package: T },
     Removal { previous_package: T },
-    Modification{ previous_package: T, new_package: T},
+    Modification { previous_package: T, new_package: T },
 }
 
 pub type ConfigurationPackageChangeEvent = PackageChangeEvent<super::config::ConfigurationPackage>;

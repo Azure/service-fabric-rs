@@ -8,6 +8,7 @@ use mssf_com::FabricRuntime::{
     IFabricCodePackageActivationContext6, IFabricConfigurationPackageChangeHandler,
     IFabricConfigurationPackageChangeHandler_Impl,
 };
+use windows_core::implement;
 
 use crate::runtime::{config::ConfigurationPackage, CodePackageActivationContext};
 
@@ -20,7 +21,7 @@ pub trait ConfigurationPackageChangeEventHandler: 'static {
 }
 
 // Bridge implementation for the change handler to turn rust code into SF com object.
-#[windows_core::implement(IFabricConfigurationPackageChangeHandler)]
+#[implement(IFabricConfigurationPackageChangeHandler)]
 #[allow(non_camel_case_types)] // Suppress lint for _Impl struct
 pub struct ConfigurationPackageChangeEventHandlerBridge<T>
 where

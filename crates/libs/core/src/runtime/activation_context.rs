@@ -14,7 +14,16 @@ use crate::{
     Error, WString, PCWSTR,
 };
 
-use super::config::ConfigurationPackage;
+use super::{
+    config::ConfigurationPackage,
+    package_change::{
+        config::{
+            ConfigurationPackageChangeCallbackHandle, ConfigurationPackageChangeEventHandlerBridge,
+            LambdaConfigurationPackageEventHandler,
+        },
+        ConfigurationPackageChangeEvent,
+    },
+};
 
 #[derive(Debug, Clone)]
 pub struct CodePackageActivationContext {
@@ -131,6 +140,18 @@ impl CodePackageActivationContext {
 
     pub fn get_com(&self) -> IFabricCodePackageActivationContext6 {
         self.com_impl.clone()
+    }
+
+    pub fn register_config_package_change_handler<T>(
+        &self,
+        handler: T,
+    ) -> crate::Result<ConfigurationPackageChangeCallbackHandle>
+    where
+        T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
+    {
+        let lambda_handler = LambdaConfigurationPackageEventHandler::new(handler);
+        let bridge = ConfigurationPackageChangeEventHandlerBridge::new(lambda_handler);
+        ConfigurationPackageChangeCallbackHandle::register(self.get_com(), bridge.into())
     }
 }
 

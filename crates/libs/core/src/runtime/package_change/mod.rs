@@ -4,7 +4,7 @@
 // ------------------------------------------------------------
 //! This module supports implementing callbacks when Service Fabric Packages are changed
 //!
-pub(super) mod config;
+pub mod config;
 
 /// The ways a given Service Fabric Package (e.g. ConfigurationPackage or DataPackage) can change
 #[derive(Debug, PartialEq, Eq, Clone)]

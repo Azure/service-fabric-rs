@@ -10,27 +10,26 @@
 //!
 //! This sample demonstrates it is possible to use the library with default-features = false and ensures that that scenario remains compiling as PRs go into the repository.
 //!
-use std::borrow::Borrow;
 
-use mssf_core::{client::FabricClientBuilder, runtime::CodePackageActivationContext};
+use mssf_core::runtime::{package_change::PackageChangeEvent, CodePackageActivationContext};
 #[no_mangle]
 fn test_fn() {
-    // Make sure we link something
-    //
-    let my_ctx = CodePackageActivationContext::create();
-    my_ctx.unwrap();
+    let my_ctx = CodePackageActivationContext::create().unwrap();
 
     // One might wish to use such a callback to e.g. trigger custom handling of configuration changes
     // This doesn't require the config feature to be enabled
-    let _client = FabricClientBuilder::new()
-    .with_on_configuration_package_change(|c|
+    let _handler = my_ctx.register_config_package_change_handler( |c|
         {
-            let change_type = c.change_type;
-            let changed_package_name = c.config_package.as_ref().map(|x |x.get_description().name.to_string_lossy());
-            let changed_package_str = changed_package_name.borrow().as_deref().unwrap_or("Unknown package name");
+            let (some_package, change_type) = match c
+            {
+                PackageChangeEvent::Addition { new_package } => (new_package, "Addition"),
+                PackageChangeEvent::Removal { previous_package } => (previous_package, "Removal"),
+                PackageChangeEvent::Modification { previous_package: _, new_package } => (new_package, "Modification"),
+            };
+            let changed_package_name = some_package.get_description().name.to_string_lossy();
+            let changed_package_str = &changed_package_name;
             println!("Received config package change of type {change_type:?} to package {changed_package_str}");
             Ok(())
         }
-    )
-    .build();
+    ).unwrap();
 }

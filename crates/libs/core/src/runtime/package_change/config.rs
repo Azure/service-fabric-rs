@@ -9,7 +9,7 @@ use mssf_com::FabricRuntime::{
     IFabricConfigurationPackageChangeHandler_Impl,
 };
 
-use crate::runtime::{config::ConfigurationPackage, CodePackageActivationContext};
+use crate::runtime::config::ConfigurationPackage;
 
 use super::ConfigurationPackageChangeEvent;
 
@@ -85,7 +85,7 @@ where
 /// This is used in FabricClientBuilder to build function into handler.
 /// Not exposed to user.
 /// Strictly speaking we don't need this layer. But it would allow us to open the door to trait implementations someday
-struct LambdaConfigurationPackageEventHandler<T>
+pub(crate) struct LambdaConfigurationPackageEventHandler<T>
 where
     T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
 {
@@ -111,31 +111,31 @@ where
 }
 
 /// This struct ensures that the handle is retained and deregistered before the implementation is dropped
-struct ConfigurationPackageChangeHandle {
-    activation_ctx: IFabricCodePackageActivationContext6,
+pub struct ConfigurationPackageChangeCallbackHandle {
+    activation_context: IFabricCodePackageActivationContext6,
     handle: i64,
 }
 
-impl ConfigurationPackageChangeHandle {
-    pub fn new(
-        activation_context: &CodePackageActivationContext,
+impl ConfigurationPackageChangeCallbackHandle {
+    pub fn register(
+        activation_context: IFabricCodePackageActivationContext6,
         implementation: IFabricConfigurationPackageChangeHandler,
     ) -> crate::Result<Self> {
-        let activation_ctx = activation_context.get_com();
-        let handle =
-            unsafe { activation_ctx.RegisterConfigurationPackageChangeHandler(&implementation) }?;
+        let handle = unsafe {
+            activation_context.RegisterConfigurationPackageChangeHandler(&implementation)
+        }?;
 
         Ok(Self {
-            activation_ctx,
+            activation_context,
             handle,
         })
     }
 }
 
-impl Drop for ConfigurationPackageChangeHandle {
+impl Drop for ConfigurationPackageChangeCallbackHandle {
     fn drop(&mut self) {
         unsafe {
-            self.activation_ctx
+            self.activation_context
                 .UnregisterConfigurationPackageChangeHandler(self.handle)
         }
         .unwrap();

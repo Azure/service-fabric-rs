@@ -149,7 +149,7 @@ impl CodePackageActivationContext {
         handler: T,
     ) -> crate::Result<ConfigurationPackageChangeCallbackHandle>
     where
-        T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
+        T: Fn(&ConfigurationPackageChangeEvent) + 'static,
     {
         let lambda_handler = LambdaConfigurationPackageEventHandler::new(handler);
         let bridge = ConfigurationPackageChangeEventHandlerBridge::new(lambda_handler);

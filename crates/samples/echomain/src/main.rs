@@ -113,8 +113,6 @@ fn validate_configs(actctx: &CodePackageActivationContext) {
                 // or something more complicated, like a ArcSwap<Config> or similar
                 build_config(some_package.clone());
             }
-
-            Ok(())
     }).unwrap();
 }
 

@@ -15,7 +15,7 @@ use super::ConfigurationPackageChangeEvent;
 /// Rust trait to turn rust code into IFabricConfigurationPackageChangeHandler.
 /// Not exposed to user
 pub trait ConfigurationPackageChangeEventHandler: 'static {
-    fn on_change(&self, change: &ConfigurationPackageChangeEvent) -> crate::Result<()>;
+    fn on_change(&self, change: &ConfigurationPackageChangeEvent);
 }
 
 // Bridge implementation for the change handler to turn rust code into SF com object.
@@ -49,8 +49,7 @@ where
     ) {
         let new_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
         let event = ConfigurationPackageChangeEvent::Addition { new_package };
-        // TODO: unwrap, or should we change the return type of the lambda to be the empty type?
-        self.inner.on_change(&event).unwrap();
+        self.inner.on_change(&event)
     }
 
     fn OnPackageRemoved(
@@ -60,7 +59,7 @@ where
     ) {
         let previous_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
         let event = ConfigurationPackageChangeEvent::Removal { previous_package };
-        self.inner.on_change(&event).unwrap();
+        self.inner.on_change(&event)
     }
 
     fn OnPackageModified(
@@ -76,7 +75,7 @@ where
             previous_package,
             new_package,
         };
-        self.inner.on_change(&event).unwrap();
+        self.inner.on_change(&event)
     }
 }
 
@@ -86,14 +85,14 @@ where
 /// Strictly speaking we don't need this layer. But it would allow us to open the door to trait implementations someday
 pub(crate) struct LambdaConfigurationPackageEventHandler<T>
 where
-    T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
+    T: Fn(&ConfigurationPackageChangeEvent),
 {
     f: T,
 }
 
 impl<T> LambdaConfigurationPackageEventHandler<T>
 where
-    T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
+    T: Fn(&ConfigurationPackageChangeEvent) + 'static,
 {
     pub fn new(f: T) -> Self {
         Self { f }
@@ -102,9 +101,9 @@ where
 
 impl<T> ConfigurationPackageChangeEventHandler for LambdaConfigurationPackageEventHandler<T>
 where
-    T: Fn(&ConfigurationPackageChangeEvent) -> crate::Result<()> + 'static,
+    T: Fn(&ConfigurationPackageChangeEvent) + 'static,
 {
-    fn on_change(&self, change: &ConfigurationPackageChangeEvent) -> crate::Result<()> {
+    fn on_change(&self, change: &ConfigurationPackageChangeEvent) {
         (self.f)(change)
     }
 }

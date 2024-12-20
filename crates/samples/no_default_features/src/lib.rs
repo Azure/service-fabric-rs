@@ -29,7 +29,6 @@ fn test_fn() {
             let changed_package_name = some_package.get_description().name.to_string_lossy();
             let changed_package_str = &changed_package_name;
             println!("Received config package change of type {change_type:?} to package {changed_package_str}");
-            Ok(())
         }
     ).unwrap();
 }

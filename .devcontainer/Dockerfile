@@ -28,7 +28,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > ./rustup.sh
 RUN chmod u+x ./rustup.sh && ./rustup.sh -y
 
 # more tools for dev
-RUN apt-get install git clang lld -y
+RUN apt-get install git clang -y
 RUN pip install cmake --upgrade
 
 # expose sf shared libs

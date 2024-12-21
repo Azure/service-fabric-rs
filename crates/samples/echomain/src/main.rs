@@ -140,7 +140,7 @@ fn build_config(config: ConfigurationPackage) -> Config {
 
     // Use the config framework
     let source = FabricConfigSource::new(config);
-    
+
     Config::builder()
         .add_source(source)
         .build()

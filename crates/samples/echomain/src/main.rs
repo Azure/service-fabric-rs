@@ -9,8 +9,10 @@
 use mssf_core::conf::{Config, FabricConfigSource};
 use mssf_core::debug::wait_for_debugger;
 use mssf_core::error::FabricError;
+use mssf_core::runtime::config::ConfigurationPackage;
 use mssf_core::runtime::executor::{DefaultExecutor, Executor};
 use mssf_core::runtime::node_context::NodeContext;
+use mssf_core::runtime::package_change::PackageChangeEvent;
 use mssf_core::runtime::CodePackageActivationContext;
 use mssf_core::types::{HealthInformation, HealthReportSendOption};
 use mssf_core::WString;
@@ -84,6 +86,37 @@ fn validate_configs(actctx: &CodePackageActivationContext) {
     let config = actctx
         .get_configuration_package(&WString::from("Config"))
         .unwrap();
+    let s = build_config(config);
+    let val = s.get::<String>("my_config_section.my_string").unwrap();
+    info!("entry: {}", val);
+    // note that the config name lookup is case sensitive for struct fields.
+    let settings = s.try_deserialize::<MySettings>().unwrap();
+    info!("settings: {:?}", settings);
+    let sect = settings.my_config_section;
+    assert_eq!(sect.my_string, "Value1");
+    assert!(sect.my_bool);
+    assert_eq!(sect.my_int, 99);
+    actctx.register_configuration_package_change_handler(|change| {
+        let (some_package, change_type, validate_new) = match change
+            {
+                PackageChangeEvent::Addition { new_package } => (new_package, "Addition", true),
+                PackageChangeEvent::Removal { previous_package } => (previous_package, "Removal", false),
+                PackageChangeEvent::Modification { previous_package: _, new_package } => (new_package, "Modification", true),
+            };
+            let changed_package_name = some_package.get_description().name.to_string_lossy();
+            let changed_package_str = &changed_package_name;
+            info!("Received config package change of type {change_type:?} to package {changed_package_str}");
+            if validate_new
+            {
+                // This is a bit hacky, but if there was a removal, not much point in validating the old package
+                // In an application that actually uses its config settings, we'd probably put the result of this into a OnceLock<RwLock<Config>> 
+                // or something more complicated, like a ArcSwap<Config> or similar
+                build_config(some_package.clone());
+            }
+    }).unwrap();
+}
+
+fn build_config(config: ConfigurationPackage) -> Config {
     let settings = config.get_settings();
     settings.sections.iter().for_each(|section| {
         info!("Section: {}", section.name);
@@ -103,22 +136,16 @@ fn validate_configs(actctx: &CodePackageActivationContext) {
     assert_eq!(v.to_string_lossy(), "Value1");
     assert!(!encrypt);
 
+    // TODO: add a overrideable parameter in the manifest / settings and log it here
+
     // Use the config framework
     let source = FabricConfigSource::new(config);
-    let s = Config::builder()
+
+    Config::builder()
         .add_source(source)
         .build()
         .inspect_err(|e| info!("config build failed: {}", e))
-        .unwrap();
-    let val = s.get::<String>("my_config_section.my_string").unwrap();
-    info!("entry: {}", val);
-    // note that the config name lookup is case sensitive for struct fields.
-    let settings = s.try_deserialize::<MySettings>().unwrap();
-    info!("settings: {:?}", settings);
-    let sect = settings.my_config_section;
-    assert_eq!(sect.my_string, "Value1");
-    assert!(sect.my_bool);
-    assert_eq!(sect.my_int, 99);
+        .unwrap()
 }
 
 /// Send health ok to SF to validate health reporting code

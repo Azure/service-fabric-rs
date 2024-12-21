@@ -17,6 +17,9 @@ pub mod error;
 pub mod executor;
 #[cfg(feature = "tokio_async")]
 pub mod node_context;
+
+pub mod package_change;
+
 #[cfg(feature = "tokio_async")]
 pub mod runtime_wrapper;
 #[cfg(feature = "tokio_async")]

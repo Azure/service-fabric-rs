@@ -3,7 +3,14 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FabricTypes::{FABRIC_HEALTH_REPORT, FABRIC_HEALTH_REPORT_KIND_APPLICATION, FABRIC_HEALTH_REPORT_KIND_CLUSTER, FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION, FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE, FABRIC_HEALTH_REPORT_KIND_INVALID, FABRIC_HEALTH_REPORT_KIND_NODE, FABRIC_HEALTH_REPORT_KIND_PARTITION, FABRIC_HEALTH_REPORT_KIND_SERVICE, FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA, FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE};
+use mssf_com::FabricTypes::{
+    FABRIC_HEALTH_REPORT, FABRIC_HEALTH_REPORT_KIND_APPLICATION, FABRIC_HEALTH_REPORT_KIND_CLUSTER,
+    FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION,
+    FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE, FABRIC_HEALTH_REPORT_KIND_INVALID,
+    FABRIC_HEALTH_REPORT_KIND_NODE, FABRIC_HEALTH_REPORT_KIND_PARTITION,
+    FABRIC_HEALTH_REPORT_KIND_SERVICE, FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA,
+    FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE,
+};
 
 /// Wrapper of FABRIC_HEALTH_REPORT
 pub enum HealthReport {
@@ -23,14 +30,24 @@ pub enum HealthReport {
 impl From<&FABRIC_HEALTH_REPORT> for HealthReport {
     fn from(value: &FABRIC_HEALTH_REPORT) -> Self {
         match value.Kind {
-            FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA => HealthReport::StatefulServiceReplica(StatefulServiceReplicaHealthReport),
-            FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE => HealthReport::StatelessServiceInstance(StatelessServiceInstanceHealthReport),
+            FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA => {
+                HealthReport::StatefulServiceReplica(StatefulServiceReplicaHealthReport)
+            }
+            FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE => {
+                HealthReport::StatelessServiceInstance(StatelessServiceInstanceHealthReport)
+            }
             FABRIC_HEALTH_REPORT_KIND_PARTITION => HealthReport::Partition(PartitionHealthReport),
             FABRIC_HEALTH_REPORT_KIND_NODE => HealthReport::Node(NodeHealthReport),
             FABRIC_HEALTH_REPORT_KIND_SERVICE => HealthReport::Service(ServiceHealthReport),
-            FABRIC_HEALTH_REPORT_KIND_APPLICATION => HealthReport::Application(ApplicationHealthReport),
-            FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION => HealthReport::DeployedApplication(DeployedApplicationHealthReport),
-            FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE => HealthReport::DeployedServicePackage(DeployedServicePackageHealthReport),
+            FABRIC_HEALTH_REPORT_KIND_APPLICATION => {
+                HealthReport::Application(ApplicationHealthReport)
+            }
+            FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION => {
+                HealthReport::DeployedApplication(DeployedApplicationHealthReport)
+            }
+            FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE => {
+                HealthReport::DeployedServicePackage(DeployedServicePackageHealthReport)
+            }
             FABRIC_HEALTH_REPORT_KIND_CLUSTER => HealthReport::Cluster(ClusterHealthReport),
             _ => HealthReport::Invalid,
         }

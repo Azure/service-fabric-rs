@@ -6,7 +6,8 @@
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use health_client::HealthClient;
 use mssf_com::FabricClient::{
-    IFabricClientConnectionEventHandler, IFabricHealthClient4, IFabricPropertyManagementClient2, IFabricQueryClient10, IFabricServiceManagementClient6, IFabricServiceNotificationEventHandler
+    IFabricClientConnectionEventHandler, IFabricHealthClient4, IFabricPropertyManagementClient2,
+    IFabricQueryClient10, IFabricServiceManagementClient6, IFabricServiceNotificationEventHandler,
 };
 use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
@@ -21,10 +22,10 @@ use self::{query_client::QueryClient, svc_mgmt_client::ServiceManagementClient};
 mod connection;
 mod notification;
 
-// Export public client modules 
+// Export public client modules
+pub mod health_client;
 pub mod query_client;
 pub mod svc_mgmt_client;
-pub mod health_client;
 
 // reexport
 pub use connection::GatewayInformationResult;

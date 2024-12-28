@@ -32,8 +32,4 @@ cmake --build build --target generate_rust
 cargo run -p tools_api
 ```
 
-## Notes
-1. GCC ld linker has problems with SF .so file so we use lld from LLVM/Clang which is configured in `.cargo/config.toml`
-2. `fabric_pal.so` is needed to be able to provide Windows C functions needed by windows-rs. Code is checked-in in `/bintemp` folder.
-
 

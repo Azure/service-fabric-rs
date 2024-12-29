@@ -4,16 +4,18 @@
 // ------------------------------------------------------------
 
 use mssf_com::FabricTypes::{
-    FABRIC_CLUSTER_HEALTH_REPORT, FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT,
-    FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT, FABRIC_HEALTH_REPORT,
-    FABRIC_HEALTH_REPORT_KIND_APPLICATION, FABRIC_HEALTH_REPORT_KIND_CLUSTER,
+    FABRIC_APPLICATION_HEALTH_REPORT, FABRIC_CLUSTER_HEALTH_REPORT,
+    FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT, FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT,
+    FABRIC_HEALTH_REPORT, FABRIC_HEALTH_REPORT_KIND_APPLICATION, FABRIC_HEALTH_REPORT_KIND_CLUSTER,
     FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION,
     FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE, FABRIC_HEALTH_REPORT_KIND_INVALID,
     FABRIC_HEALTH_REPORT_KIND_NODE, FABRIC_HEALTH_REPORT_KIND_PARTITION,
     FABRIC_HEALTH_REPORT_KIND_SERVICE, FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA,
-    FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE,
+    FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE, FABRIC_NODE_HEALTH_REPORT,
+    FABRIC_PARTITION_HEALTH_REPORT, FABRIC_SERVICE_HEALTH_REPORT,
+    FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT, FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT,
 };
-use windows_core::{WString, PCWSTR};
+use windows_core::{WString, GUID, PCWSTR};
 
 use crate::types::HealthInformation;
 
@@ -31,21 +33,87 @@ pub enum HealthReport {
     Cluster(ClusterHealthReport),
 }
 
-// TODO: Implement the conversion functions for the HealthReport enum properly.
 impl From<&FABRIC_HEALTH_REPORT> for HealthReport {
     fn from(value: &FABRIC_HEALTH_REPORT) -> Self {
         match value.Kind {
             FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA => {
-                HealthReport::StatefulServiceReplica(StatefulServiceReplicaHealthReport)
+                HealthReport::StatefulServiceReplica(StatefulServiceReplicaHealthReport {
+                    partition_id: unsafe {
+                        (*(value.Value as *const FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT))
+                            .PartitionId
+                    },
+                    replica_id: unsafe {
+                        (*(value.Value as *const FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT))
+                            .ReplicaId
+                    },
+                    health_information: HealthInformation::from(unsafe {
+                        &*(*(value.Value as *const FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT))
+                            .HealthInformation
+                    }),
+                })
             }
             FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE => {
-                HealthReport::StatelessServiceInstance(StatelessServiceInstanceHealthReport)
+                HealthReport::StatelessServiceInstance(StatelessServiceInstanceHealthReport {
+                    partition_id: unsafe {
+                        (*(value.Value as *const FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT))
+                            .PartitionId
+                    },
+                    instance_id: unsafe {
+                        (*(value.Value as *const FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT))
+                            .InstanceId
+                    },
+                    health_information: HealthInformation::from(unsafe {
+                        &*(*(value.Value as *const FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT))
+                            .HealthInformation
+                    }),
+                })
             }
-            FABRIC_HEALTH_REPORT_KIND_PARTITION => HealthReport::Partition(PartitionHealthReport),
-            FABRIC_HEALTH_REPORT_KIND_NODE => HealthReport::Node(NodeHealthReport),
-            FABRIC_HEALTH_REPORT_KIND_SERVICE => HealthReport::Service(ServiceHealthReport),
+            FABRIC_HEALTH_REPORT_KIND_PARTITION => HealthReport::Partition(PartitionHealthReport {
+                partition_id: unsafe {
+                    (*(value.Value as *const FABRIC_PARTITION_HEALTH_REPORT)).PartitionId
+                },
+                health_information: HealthInformation::from(unsafe {
+                    &*(*(value.Value as *const FABRIC_PARTITION_HEALTH_REPORT)).HealthInformation
+                }),
+            }),
+            FABRIC_HEALTH_REPORT_KIND_NODE => HealthReport::Node(NodeHealthReport {
+                node_name: WString::from_wide(unsafe {
+                    (*(value.Value as *const FABRIC_NODE_HEALTH_REPORT))
+                        .NodeName
+                        .as_wide()
+                }),
+                health_information: HealthInformation::from(unsafe {
+                    &*(*(value.Value as *const FABRIC_NODE_HEALTH_REPORT)).HealthInformation
+                }),
+            }),
+            FABRIC_HEALTH_REPORT_KIND_SERVICE => HealthReport::Service(ServiceHealthReport {
+                service_name: WString::from_wide(unsafe {
+                    PCWSTR::from_raw(
+                        (*(value.Value as *const FABRIC_SERVICE_HEALTH_REPORT))
+                            .ServiceName
+                            .0,
+                    )
+                    .as_wide()
+                }),
+                health_information: HealthInformation::from(unsafe {
+                    &*(*(value.Value as *const FABRIC_SERVICE_HEALTH_REPORT)).HealthInformation
+                }),
+            }),
             FABRIC_HEALTH_REPORT_KIND_APPLICATION => {
-                HealthReport::Application(ApplicationHealthReport)
+                HealthReport::Application(ApplicationHealthReport {
+                    application_name: WString::from_wide(unsafe {
+                        PCWSTR::from_raw(
+                            (*(value.Value as *const FABRIC_APPLICATION_HEALTH_REPORT))
+                                .ApplicationName
+                                .0,
+                        )
+                        .as_wide()
+                    }),
+                    health_information: HealthInformation::from(unsafe {
+                        &*(*(value.Value as *const FABRIC_APPLICATION_HEALTH_REPORT))
+                            .HealthInformation
+                    }),
+                })
             }
             FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION => {
                 HealthReport::DeployedApplication(DeployedApplicationHealthReport {
@@ -157,30 +225,63 @@ impl From<&HealthReport> for FABRIC_HEALTH_REPORT {
 }
 
 /// Wrapper of FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT
-/// TODO: Implement this struct.
-pub struct StatefulServiceReplicaHealthReport;
+#[derive(Debug, Clone)]
+pub struct StatefulServiceReplicaHealthReport {
+    pub partition_id: GUID,
+    pub replica_id: i64,
+    pub health_information: HealthInformation,
+    // TODO: Implement reserved fields
+    // pub reserved: *mut std::ffi::c_void,
+}
 
 /// Wrapper of FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT
-/// TODO: Implement this struct.
-pub struct StatelessServiceInstanceHealthReport;
+#[derive(Debug, Clone)]
+pub struct StatelessServiceInstanceHealthReport {
+    pub partition_id: GUID,
+    pub instance_id: i64,
+    pub health_information: HealthInformation,
+    // TODO: Implement reserved fields
+    // pub reserved: *mut std::ffi::c_void,
+}
 
 /// Wrapper of FABRIC_PARTITION_HEALTH_REPORT
-/// TODO: Implement this struct.
-pub struct PartitionHealthReport;
+#[derive(Debug, Clone)]
+pub struct PartitionHealthReport {
+    pub partition_id: GUID,
+    pub health_information: HealthInformation,
+    // TODO: Implement reserved fields
+    // pub reserved: *mut std::ffi::c_void,
+}
 
 /// Wrapper of FABRIC_NODE_HEALTH_REPORT
-/// TODO: Implement this struct.
-pub struct NodeHealthReport;
+#[derive(Debug, Clone)]
+pub struct NodeHealthReport {
+    pub node_name: WString,
+    pub health_information: HealthInformation,
+    // TODO: Implement reserved fields
+    // pub reserved: *mut std::ffi::c_void,
+}
 
 /// Wrapper of FABRIC_SERVICE_HEALTH_REPORT
-/// TODO: Implement this struct.
-pub struct ServiceHealthReport;
+#[derive(Debug, Clone)]
+pub struct ServiceHealthReport {
+    pub service_name: WString,
+    pub health_information: HealthInformation,
+    // TODO: Implement reserved fields
+    // pub reserved: *mut std::ffi::c_void,
+}
 
 /// Wrapper of FABRIC_APPLICATION_HEALTH_REPORT
-/// TODO: Implement this struct.
-pub struct ApplicationHealthReport;
+#[derive(Debug, Clone)]
+pub struct ApplicationHealthReport {
+    pub application_name: WString,
+    pub health_information: HealthInformation,
+    // TODO: Implement reserved fields
+    // pub reserved: *mut std::ffi::c_void,
+}
 
 /// Wrapper of FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT
+#[derive(Debug, Clone)]
 pub struct DeployedApplicationHealthReport {
     pub application_name: WString,
     pub node_name: WString,
@@ -190,6 +291,7 @@ pub struct DeployedApplicationHealthReport {
 }
 
 /// Wrapper of FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT
+#[derive(Debug, Clone)]
 pub struct DeployedServicePackageHealthReport {
     pub application_name: WString,
     pub service_manifest_name: WString,
@@ -200,6 +302,7 @@ pub struct DeployedServicePackageHealthReport {
 }
 
 /// Wrapper of FABRIC_CLUSTER_HEALTH_REPORT
+#[derive(Debug, Clone)]
 pub struct ClusterHealthReport {
     pub health_information: HealthInformation,
     // TODO: Implement reserved fields

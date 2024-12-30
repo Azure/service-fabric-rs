@@ -88,3 +88,37 @@ impl From<&HealthReportSendOption> for FABRIC_HEALTH_REPORT_SEND_OPTIONS {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_health_information_conversion() {
+        let health_info = HealthInformation {
+            source_id: "source_id".into(),
+            property: "property".into(),
+            time_to_live_seconds: 10,
+            state: HealthState::Ok,
+            description: "description".into(),
+            sequence_number: 1,
+            remove_when_expired: true,
+        };
+        let com_health_info: FABRIC_HEALTH_INFORMATION = (&health_info).into();
+        let health_info2: HealthInformation = (&com_health_info).into();
+
+        assert_eq!(health_info.source_id, health_info2.source_id);
+        assert_eq!(health_info.property, health_info2.property);
+        assert_eq!(
+            health_info.time_to_live_seconds,
+            health_info2.time_to_live_seconds
+        );
+        assert_eq!(health_info.state, health_info2.state);
+        assert_eq!(health_info.description, health_info2.description);
+        assert_eq!(health_info.sequence_number, health_info2.sequence_number);
+        assert_eq!(
+            health_info.remove_when_expired,
+            health_info2.remove_when_expired
+        );
+    }
+}

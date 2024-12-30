@@ -4,9 +4,10 @@
 // ------------------------------------------------------------
 
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
+use health_client::HealthClient;
 use mssf_com::FabricClient::{
-    IFabricClientConnectionEventHandler, IFabricPropertyManagementClient2, IFabricQueryClient10,
-    IFabricServiceManagementClient6, IFabricServiceNotificationEventHandler,
+    IFabricClientConnectionEventHandler, IFabricHealthClient4, IFabricPropertyManagementClient2,
+    IFabricQueryClient10, IFabricServiceManagementClient6, IFabricServiceNotificationEventHandler,
 };
 use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
@@ -20,6 +21,9 @@ use self::{query_client::QueryClient, svc_mgmt_client::ServiceManagementClient};
 
 mod connection;
 mod notification;
+
+// Export public client modules
+pub mod health_client;
 pub mod query_client;
 pub mod svc_mgmt_client;
 
@@ -201,6 +205,7 @@ pub struct FabricClient {
     com_property_client: IFabricPropertyManagementClient2,
     com_service_client: IFabricServiceManagementClient6,
     com_query_client: IFabricQueryClient10,
+    com_health_client: IFabricHealthClient4,
 }
 
 impl FabricClient {
@@ -209,14 +214,14 @@ impl FabricClient {
         FabricClientBuilder::new()
     }
 
-    // Get a copy of COM object
+    /// Get a copy of COM object
     pub fn get_com(&self) -> IFabricPropertyManagementClient2 {
         self.com_property_client.clone()
     }
 
-    // Creates from com directly. This gives the user freedom to create com from
-    // custom code and pass it in.
-    // For the final state of FabricClient, this function should be private.
+    /// Creates from com directly. This gives the user freedom to create com from
+    /// custom code and pass it in.
+    /// For the final state of FabricClient, this function should be private.
     pub fn from_com(com: IFabricPropertyManagementClient2) -> Self {
         let com_property_client = com.clone();
         let com_service_client = com
@@ -224,28 +229,35 @@ impl FabricClient {
             .cast::<IFabricServiceManagementClient6>()
             .unwrap();
         let com_query_client = com.clone().cast::<IFabricQueryClient10>().unwrap();
+        let com_health_client = com.clone().cast::<IFabricHealthClient4>().unwrap();
         Self {
             com_property_client,
             com_service_client,
             com_query_client,
+            com_health_client,
         }
     }
 
-    // Get the client for managing Fabric Properties in Naming Service
+    /// Get the client for managing Fabric Properties in Naming Service
     pub fn get_property_manager(&self) -> PropertyManagementClient {
         PropertyManagementClient {
             _com: self.com_property_client.clone(),
         }
     }
 
-    // Get the client for quering SF info.
+    /// Get the client for quering Service Fabric information.
     pub fn get_query_manager(&self) -> QueryClient {
         QueryClient::from_com(self.com_query_client.clone())
     }
 
-    // Get the client for managing service info and lifecycles.
+    /// Get the client for managing service information and lifecycles.
     pub fn get_service_manager(&self) -> ServiceManagementClient {
         ServiceManagementClient::from_com(self.com_service_client.clone())
+    }
+
+    /// Get the client for get/set Service Fabric health properties.
+    pub fn get_health_manager(&self) -> HealthClient {
+        HealthClient::from_com(self.com_health_client.clone())
     }
 }
 

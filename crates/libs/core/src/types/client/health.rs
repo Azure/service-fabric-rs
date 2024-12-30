@@ -3,17 +3,20 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use std::ffi::c_void;
+
 use mssf_com::FabricTypes::{
     FABRIC_APPLICATION_HEALTH_REPORT, FABRIC_CLUSTER_HEALTH_REPORT,
     FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT, FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT,
-    FABRIC_HEALTH_REPORT, FABRIC_HEALTH_REPORT_KIND_APPLICATION, FABRIC_HEALTH_REPORT_KIND_CLUSTER,
-    FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION,
+    FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT, FABRIC_HEALTH_REPORT_KIND_APPLICATION,
+    FABRIC_HEALTH_REPORT_KIND_CLUSTER, FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION,
     FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE, FABRIC_HEALTH_REPORT_KIND_INVALID,
     FABRIC_HEALTH_REPORT_KIND_NODE, FABRIC_HEALTH_REPORT_KIND_PARTITION,
     FABRIC_HEALTH_REPORT_KIND_SERVICE, FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA,
     FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE, FABRIC_NODE_HEALTH_REPORT,
     FABRIC_PARTITION_HEALTH_REPORT, FABRIC_SERVICE_HEALTH_REPORT,
     FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT, FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT,
+    FABRIC_URI,
 };
 use windows_core::{WString, GUID, PCWSTR};
 
@@ -37,141 +40,54 @@ impl From<&FABRIC_HEALTH_REPORT> for HealthReport {
     fn from(value: &FABRIC_HEALTH_REPORT) -> Self {
         match value.Kind {
             FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA => {
-                HealthReport::StatefulServiceReplica(StatefulServiceReplicaHealthReport {
-                    partition_id: unsafe {
-                        (*(value.Value as *const FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT))
-                            .PartitionId
+                HealthReport::StatefulServiceReplica(StatefulServiceReplicaHealthReport::from(
+                    unsafe {
+                        &*(value.Value as *const FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT)
                     },
-                    replica_id: unsafe {
-                        (*(value.Value as *const FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT))
-                            .ReplicaId
-                    },
-                    health_information: HealthInformation::from(unsafe {
-                        &*(*(value.Value as *const FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT))
-                            .HealthInformation
-                    }),
-                })
+                ))
             }
             FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE => {
-                HealthReport::StatelessServiceInstance(StatelessServiceInstanceHealthReport {
-                    partition_id: unsafe {
-                        (*(value.Value as *const FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT))
-                            .PartitionId
+                HealthReport::StatelessServiceInstance(StatelessServiceInstanceHealthReport::from(
+                    unsafe {
+                        &*(value.Value as *const FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT)
                     },
-                    instance_id: unsafe {
-                        (*(value.Value as *const FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT))
-                            .InstanceId
-                    },
-                    health_information: HealthInformation::from(unsafe {
-                        &*(*(value.Value as *const FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT))
-                            .HealthInformation
-                    }),
-                })
+                ))
             }
-            FABRIC_HEALTH_REPORT_KIND_PARTITION => HealthReport::Partition(PartitionHealthReport {
-                partition_id: unsafe {
-                    (*(value.Value as *const FABRIC_PARTITION_HEALTH_REPORT)).PartitionId
-                },
-                health_information: HealthInformation::from(unsafe {
-                    &*(*(value.Value as *const FABRIC_PARTITION_HEALTH_REPORT)).HealthInformation
-                }),
-            }),
-            FABRIC_HEALTH_REPORT_KIND_NODE => HealthReport::Node(NodeHealthReport {
-                node_name: WString::from_wide(unsafe {
-                    (*(value.Value as *const FABRIC_NODE_HEALTH_REPORT))
-                        .NodeName
-                        .as_wide()
-                }),
-                health_information: HealthInformation::from(unsafe {
-                    &*(*(value.Value as *const FABRIC_NODE_HEALTH_REPORT)).HealthInformation
-                }),
-            }),
-            FABRIC_HEALTH_REPORT_KIND_SERVICE => HealthReport::Service(ServiceHealthReport {
-                service_name: WString::from_wide(unsafe {
-                    PCWSTR::from_raw(
-                        (*(value.Value as *const FABRIC_SERVICE_HEALTH_REPORT))
-                            .ServiceName
-                            .0,
-                    )
-                    .as_wide()
-                }),
-                health_information: HealthInformation::from(unsafe {
-                    &*(*(value.Value as *const FABRIC_SERVICE_HEALTH_REPORT)).HealthInformation
-                }),
-            }),
+            FABRIC_HEALTH_REPORT_KIND_PARTITION => {
+                HealthReport::Partition(PartitionHealthReport::from(unsafe {
+                    &*(value.Value as *const FABRIC_PARTITION_HEALTH_REPORT)
+                }))
+            }
+            FABRIC_HEALTH_REPORT_KIND_NODE => HealthReport::Node(NodeHealthReport::from(unsafe {
+                &*(value.Value as *const FABRIC_NODE_HEALTH_REPORT)
+            })),
+            FABRIC_HEALTH_REPORT_KIND_SERVICE => {
+                HealthReport::Service(ServiceHealthReport::from(unsafe {
+                    &*(value.Value as *const FABRIC_SERVICE_HEALTH_REPORT)
+                }))
+            }
             FABRIC_HEALTH_REPORT_KIND_APPLICATION => {
-                HealthReport::Application(ApplicationHealthReport {
-                    application_name: WString::from_wide(unsafe {
-                        PCWSTR::from_raw(
-                            (*(value.Value as *const FABRIC_APPLICATION_HEALTH_REPORT))
-                                .ApplicationName
-                                .0,
-                        )
-                        .as_wide()
-                    }),
-                    health_information: HealthInformation::from(unsafe {
-                        &*(*(value.Value as *const FABRIC_APPLICATION_HEALTH_REPORT))
-                            .HealthInformation
-                    }),
-                })
+                HealthReport::Application(ApplicationHealthReport::from(unsafe {
+                    &*(value.Value as *const FABRIC_APPLICATION_HEALTH_REPORT)
+                }))
             }
             FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION => {
-                HealthReport::DeployedApplication(DeployedApplicationHealthReport {
-                    application_name: WString::from_wide(unsafe {
-                        PCWSTR::from_raw(
-                            (*(value.Value as *const FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT))
-                                .ApplicationName
-                                .0,
-                        )
-                        .as_wide()
-                    }),
-                    node_name: WString::from_wide(unsafe {
-                        (*(value.Value as *const FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT))
-                            .NodeName
-                            .as_wide()
-                    }),
-                    health_information: HealthInformation::from(unsafe {
-                        &*(*(value.Value as *const FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT))
-                            .HealthInformation
-                    }),
-                })
+                HealthReport::DeployedApplication(DeployedApplicationHealthReport::from(unsafe {
+                    &*(value.Value as *const FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT)
+                }))
             }
             FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE => {
-                HealthReport::DeployedServicePackage(DeployedServicePackageHealthReport {
-                    application_name: WString::from_wide(unsafe {
-                        PCWSTR::from_raw(
-                            (*(value.Value
-                                as *const FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT))
-                                .ApplicationName
-                                .0,
-                        )
-                        .as_wide()
-                    }),
-                    service_manifest_name: WString::from_wide(unsafe {
-                        PCWSTR::from_raw(
-                            (*(value.Value
-                                as *const FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT))
-                                .ServiceManifestName
-                                .0,
-                        )
-                        .as_wide()
-                    }),
-                    node_name: WString::from_wide(unsafe {
-                        (*(value.Value as *const FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT))
-                            .NodeName
-                            .as_wide()
-                    }),
-                    health_information: HealthInformation::from(unsafe {
-                        &*(*(value.Value as *const FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT))
-                            .HealthInformation
-                    }),
-                })
+                HealthReport::DeployedServicePackage(DeployedServicePackageHealthReport::from(
+                    unsafe {
+                        &*(value.Value as *const FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT)
+                    },
+                ))
             }
-            FABRIC_HEALTH_REPORT_KIND_CLUSTER => HealthReport::Cluster(ClusterHealthReport {
-                health_information: HealthInformation::from(unsafe {
-                    &*(*(value.Value as *const FABRIC_CLUSTER_HEALTH_REPORT)).HealthInformation
-                }),
-            }),
+            FABRIC_HEALTH_REPORT_KIND_CLUSTER => {
+                HealthReport::Cluster(ClusterHealthReport::from(unsafe {
+                    &*(value.Value as *const FABRIC_CLUSTER_HEALTH_REPORT)
+                }))
+            }
             _ => HealthReport::Invalid,
         }
     }
@@ -180,51 +96,65 @@ impl From<&FABRIC_HEALTH_REPORT> for HealthReport {
 impl From<&HealthReport> for FABRIC_HEALTH_REPORT {
     fn from(value: &HealthReport) -> Self {
         match value {
-            HealthReport::StatefulServiceReplica(v) => Self {
-                Kind: FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA,
-                Value: v as *const StatefulServiceReplicaHealthReport as *mut std::ffi::c_void,
-            },
-            HealthReport::StatelessServiceInstance(v) => Self {
-                Kind: FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE,
-                Value: v as *const StatelessServiceInstanceHealthReport as *mut std::ffi::c_void,
-            },
-            HealthReport::Partition(v) => Self {
-                Kind: FABRIC_HEALTH_REPORT_KIND_PARTITION,
-                Value: v as *const PartitionHealthReport as *mut std::ffi::c_void,
-            },
-            HealthReport::Node(v) => Self {
-                Kind: FABRIC_HEALTH_REPORT_KIND_NODE,
-                Value: v as *const NodeHealthReport as *mut std::ffi::c_void,
-            },
-            HealthReport::Service(v) => Self {
-                Kind: FABRIC_HEALTH_REPORT_KIND_SERVICE,
-                Value: v as *const ServiceHealthReport as *mut std::ffi::c_void,
-            },
-            HealthReport::Application(v) => Self {
-                Kind: FABRIC_HEALTH_REPORT_KIND_APPLICATION,
-                Value: v as *const ApplicationHealthReport as *mut std::ffi::c_void,
-            },
-            HealthReport::DeployedApplication(v) => Self {
-                Kind: FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION,
-                Value: v as *const DeployedApplicationHealthReport as *mut std::ffi::c_void,
-            },
-            HealthReport::DeployedServicePackage(v) => Self {
-                Kind: FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE,
-                Value: v as *const DeployedServicePackageHealthReport as *mut std::ffi::c_void,
-            },
-            HealthReport::Cluster(v) => Self {
-                Kind: FABRIC_HEALTH_REPORT_KIND_CLUSTER,
-                Value: v as *const ClusterHealthReport as *mut std::ffi::c_void,
-            },
             HealthReport::Invalid => Self {
                 Kind: FABRIC_HEALTH_REPORT_KIND_INVALID,
                 Value: std::ptr::null_mut(),
+            },
+            HealthReport::StatefulServiceReplica(report) => Self {
+                Kind: FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA,
+                Value: &FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT::from(report)
+                    as *const FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT
+                    as *mut c_void,
+            },
+            HealthReport::StatelessServiceInstance(report) => Self {
+                Kind: FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE,
+                Value: &FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT::from(report)
+                    as *const FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT
+                    as *mut c_void,
+            },
+            HealthReport::Partition(report) => Self {
+                Kind: FABRIC_HEALTH_REPORT_KIND_PARTITION,
+                Value: &FABRIC_PARTITION_HEALTH_REPORT::from(report)
+                    as *const FABRIC_PARTITION_HEALTH_REPORT as *mut c_void,
+            },
+            HealthReport::Node(report) => Self {
+                Kind: FABRIC_HEALTH_REPORT_KIND_NODE,
+                Value: &FABRIC_NODE_HEALTH_REPORT::from(report) as *const FABRIC_NODE_HEALTH_REPORT
+                    as *mut c_void,
+            },
+            HealthReport::Service(report) => Self {
+                Kind: FABRIC_HEALTH_REPORT_KIND_SERVICE,
+                Value: &FABRIC_SERVICE_HEALTH_REPORT::from(report)
+                    as *const FABRIC_SERVICE_HEALTH_REPORT as *mut c_void,
+            },
+            HealthReport::Application(report) => Self {
+                Kind: FABRIC_HEALTH_REPORT_KIND_APPLICATION,
+                Value: &FABRIC_APPLICATION_HEALTH_REPORT::from(report)
+                    as *const FABRIC_APPLICATION_HEALTH_REPORT
+                    as *mut c_void,
+            },
+            HealthReport::DeployedApplication(report) => Self {
+                Kind: FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION,
+                Value: &FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT::from(report)
+                    as *const FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT
+                    as *mut c_void,
+            },
+            HealthReport::DeployedServicePackage(report) => Self {
+                Kind: FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE,
+                Value: &FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT::from(report)
+                    as *const FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT
+                    as *mut c_void,
+            },
+            HealthReport::Cluster(report) => Self {
+                Kind: FABRIC_HEALTH_REPORT_KIND_CLUSTER,
+                Value: &FABRIC_CLUSTER_HEALTH_REPORT::from(report)
+                    as *const FABRIC_CLUSTER_HEALTH_REPORT as *mut c_void,
             },
         }
     }
 }
 
-/// Wrapper of FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT
+/// FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT
 #[derive(Debug, Clone)]
 pub struct StatefulServiceReplicaHealthReport {
     pub partition_id: GUID,
@@ -234,7 +164,30 @@ pub struct StatefulServiceReplicaHealthReport {
     // pub reserved: *mut std::ffi::c_void,
 }
 
-/// Wrapper of FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT
+impl From<&StatefulServiceReplicaHealthReport> for FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT {
+    fn from(value: &StatefulServiceReplicaHealthReport) -> Self {
+        Self {
+            PartitionId: value.partition_id,
+            ReplicaId: value.replica_id,
+            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl From<&FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT> for StatefulServiceReplicaHealthReport {
+    fn from(value: &FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT) -> Self {
+        Self {
+            partition_id: value.PartitionId,
+            replica_id: value.ReplicaId,
+            health_information: HealthInformation::from(unsafe {
+                value.HealthInformation.as_ref().unwrap()
+            }),
+        }
+    }
+}
+
+/// FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT
 #[derive(Debug, Clone)]
 pub struct StatelessServiceInstanceHealthReport {
     pub partition_id: GUID,
@@ -244,7 +197,34 @@ pub struct StatelessServiceInstanceHealthReport {
     // pub reserved: *mut std::ffi::c_void,
 }
 
-/// Wrapper of FABRIC_PARTITION_HEALTH_REPORT
+impl From<&StatelessServiceInstanceHealthReport>
+    for FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT
+{
+    fn from(value: &StatelessServiceInstanceHealthReport) -> Self {
+        Self {
+            PartitionId: value.partition_id,
+            InstanceId: value.instance_id,
+            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl From<&FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT>
+    for StatelessServiceInstanceHealthReport
+{
+    fn from(value: &FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT) -> Self {
+        Self {
+            partition_id: value.PartitionId,
+            instance_id: value.InstanceId,
+            health_information: HealthInformation::from(unsafe {
+                value.HealthInformation.as_ref().unwrap()
+            }),
+        }
+    }
+}
+
+/// FABRIC_PARTITION_HEALTH_REPORT
 #[derive(Debug, Clone)]
 pub struct PartitionHealthReport {
     pub partition_id: GUID,
@@ -253,7 +233,28 @@ pub struct PartitionHealthReport {
     // pub reserved: *mut std::ffi::c_void,
 }
 
-/// Wrapper of FABRIC_NODE_HEALTH_REPORT
+impl From<&PartitionHealthReport> for FABRIC_PARTITION_HEALTH_REPORT {
+    fn from(value: &PartitionHealthReport) -> Self {
+        Self {
+            PartitionId: value.partition_id,
+            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl From<&FABRIC_PARTITION_HEALTH_REPORT> for PartitionHealthReport {
+    fn from(value: &FABRIC_PARTITION_HEALTH_REPORT) -> Self {
+        Self {
+            partition_id: value.PartitionId,
+            health_information: HealthInformation::from(unsafe {
+                value.HealthInformation.as_ref().unwrap()
+            }),
+        }
+    }
+}
+
+/// FABRIC_NODE_HEALTH_REPORT
 #[derive(Debug, Clone)]
 pub struct NodeHealthReport {
     pub node_name: WString,
@@ -262,7 +263,28 @@ pub struct NodeHealthReport {
     // pub reserved: *mut std::ffi::c_void,
 }
 
-/// Wrapper of FABRIC_SERVICE_HEALTH_REPORT
+impl From<&NodeHealthReport> for FABRIC_NODE_HEALTH_REPORT {
+    fn from(value: &NodeHealthReport) -> Self {
+        Self {
+            NodeName: value.node_name.as_pcwstr(),
+            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl From<&FABRIC_NODE_HEALTH_REPORT> for NodeHealthReport {
+    fn from(value: &FABRIC_NODE_HEALTH_REPORT) -> Self {
+        Self {
+            node_name: WString::from_wide(unsafe { PCWSTR::from_raw(value.NodeName.0).as_wide() }),
+            health_information: HealthInformation::from(unsafe {
+                value.HealthInformation.as_ref().unwrap()
+            }),
+        }
+    }
+}
+
+/// FABRIC_SERVICE_HEALTH_REPORT
 #[derive(Debug, Clone)]
 pub struct ServiceHealthReport {
     pub service_name: WString,
@@ -271,7 +293,30 @@ pub struct ServiceHealthReport {
     // pub reserved: *mut std::ffi::c_void,
 }
 
-/// Wrapper of FABRIC_APPLICATION_HEALTH_REPORT
+impl From<&ServiceHealthReport> for FABRIC_SERVICE_HEALTH_REPORT {
+    fn from(value: &ServiceHealthReport) -> Self {
+        Self {
+            ServiceName: FABRIC_URI(value.service_name.as_ptr() as *mut u16),
+            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl From<&FABRIC_SERVICE_HEALTH_REPORT> for ServiceHealthReport {
+    fn from(value: &FABRIC_SERVICE_HEALTH_REPORT) -> Self {
+        Self {
+            service_name: WString::from_wide(unsafe {
+                PCWSTR::from_raw(value.ServiceName.0).as_wide()
+            }),
+            health_information: HealthInformation::from(unsafe {
+                value.HealthInformation.as_ref().unwrap()
+            }),
+        }
+    }
+}
+
+/// FABRIC_APPLICATION_HEALTH_REPORT
 #[derive(Debug, Clone)]
 pub struct ApplicationHealthReport {
     pub application_name: WString,
@@ -280,7 +325,30 @@ pub struct ApplicationHealthReport {
     // pub reserved: *mut std::ffi::c_void,
 }
 
-/// Wrapper of FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT
+impl From<&ApplicationHealthReport> for FABRIC_APPLICATION_HEALTH_REPORT {
+    fn from(value: &ApplicationHealthReport) -> Self {
+        Self {
+            ApplicationName: FABRIC_URI(value.application_name.as_ptr() as *mut u16),
+            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl From<&FABRIC_APPLICATION_HEALTH_REPORT> for ApplicationHealthReport {
+    fn from(value: &FABRIC_APPLICATION_HEALTH_REPORT) -> Self {
+        Self {
+            application_name: WString::from_wide(unsafe {
+                PCWSTR::from_raw(value.ApplicationName.0).as_wide()
+            }),
+            health_information: HealthInformation::from(unsafe {
+                value.HealthInformation.as_ref().unwrap()
+            }),
+        }
+    }
+}
+
+/// FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT
 #[derive(Debug, Clone)]
 pub struct DeployedApplicationHealthReport {
     pub application_name: WString,
@@ -290,7 +358,32 @@ pub struct DeployedApplicationHealthReport {
     // pub reserved: *mut std::ffi::c_void,
 }
 
-/// Wrapper of FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT
+impl From<&DeployedApplicationHealthReport> for FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT {
+    fn from(value: &DeployedApplicationHealthReport) -> Self {
+        Self {
+            ApplicationName: FABRIC_URI(value.application_name.as_ptr() as *mut u16),
+            NodeName: value.node_name.as_pcwstr(),
+            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl From<&FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT> for DeployedApplicationHealthReport {
+    fn from(value: &FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT) -> Self {
+        Self {
+            application_name: WString::from_wide(unsafe {
+                PCWSTR::from_raw(value.ApplicationName.0).as_wide()
+            }),
+            node_name: WString::from_wide(unsafe { value.NodeName.as_wide() }),
+            health_information: HealthInformation::from(unsafe {
+                value.HealthInformation.as_ref().unwrap()
+            }),
+        }
+    }
+}
+
+/// FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT
 #[derive(Debug, Clone)]
 pub struct DeployedServicePackageHealthReport {
     pub application_name: WString,
@@ -301,10 +394,554 @@ pub struct DeployedServicePackageHealthReport {
     // pub reserved: *mut std::ffi::c_void,
 }
 
-/// Wrapper of FABRIC_CLUSTER_HEALTH_REPORT
+impl From<&DeployedServicePackageHealthReport> for FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT {
+    fn from(value: &DeployedServicePackageHealthReport) -> Self {
+        Self {
+            ApplicationName: FABRIC_URI(value.application_name.as_ptr() as *mut u16),
+            ServiceManifestName: value.service_manifest_name.as_pcwstr(),
+            NodeName: value.node_name.as_pcwstr(),
+            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl From<&FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT> for DeployedServicePackageHealthReport {
+    fn from(value: &FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT) -> Self {
+        Self {
+            application_name: WString::from_wide(unsafe {
+                PCWSTR::from_raw(value.ApplicationName.0).as_wide()
+            }),
+            service_manifest_name: WString::from_wide(unsafe {
+                value.ServiceManifestName.as_wide()
+            }),
+            node_name: WString::from_wide(unsafe { value.NodeName.as_wide() }),
+            health_information: HealthInformation::from(unsafe {
+                value.HealthInformation.as_ref().unwrap()
+            }),
+        }
+    }
+}
+
+/// FABRIC_CLUSTER_HEALTH_REPORT
 #[derive(Debug, Clone)]
 pub struct ClusterHealthReport {
     pub health_information: HealthInformation,
     // TODO: Implement reserved fields
     // pub reserved: *mut std::ffi::c_void,
+}
+
+impl From<&ClusterHealthReport> for FABRIC_CLUSTER_HEALTH_REPORT {
+    fn from(value: &ClusterHealthReport) -> Self {
+        Self {
+            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+impl From<&FABRIC_CLUSTER_HEALTH_REPORT> for ClusterHealthReport {
+    fn from(value: &FABRIC_CLUSTER_HEALTH_REPORT) -> Self {
+        Self {
+            health_information: HealthInformation::from(unsafe {
+                value.HealthInformation.as_ref().unwrap()
+            }),
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_cluster_health_report_conversion() {
+        let health_info = HealthInformation {
+            source_id: "source_id".into(),
+            property: "property".into(),
+            time_to_live_seconds: 10,
+            state: crate::types::HealthState::Ok,
+            description: "description".into(),
+            sequence_number: 1,
+            remove_when_expired: false,
+        };
+
+        let cluster_health_report = HealthReport::Cluster(ClusterHealthReport {
+            health_information: health_info.clone(),
+        });
+
+        let com_cluster_health_report: FABRIC_HEALTH_REPORT = (&cluster_health_report).into();
+        assert_eq!(
+            com_cluster_health_report.Kind,
+            FABRIC_HEALTH_REPORT_KIND_CLUSTER
+        );
+
+        let cluster_health_report2: HealthReport = (&com_cluster_health_report).into();
+        matches!(cluster_health_report2, HealthReport::Cluster(_));
+
+        // Check the inner values are matching
+        if let HealthReport::Cluster(report) = cluster_health_report2 {
+            assert_eq!(report.health_information.source_id, health_info.source_id);
+            assert_eq!(report.health_information.property, health_info.property);
+            assert_eq!(
+                report.health_information.time_to_live_seconds,
+                health_info.time_to_live_seconds
+            );
+            assert_eq!(report.health_information.state, health_info.state);
+            assert_eq!(
+                report.health_information.description,
+                health_info.description
+            );
+            assert_eq!(
+                report.health_information.sequence_number,
+                health_info.sequence_number
+            );
+            assert_eq!(
+                report.health_information.remove_when_expired,
+                health_info.remove_when_expired
+            );
+        }
+    }
+
+    #[test]
+    fn test_invalid_health_report_conversion() {
+        let invalid_health_report = HealthReport::Invalid;
+
+        let com_invalid_health_report: FABRIC_HEALTH_REPORT = (&invalid_health_report).into();
+        assert_eq!(
+            com_invalid_health_report.Kind,
+            FABRIC_HEALTH_REPORT_KIND_INVALID
+        );
+
+        let invalid_health_report2: HealthReport = (&com_invalid_health_report).into();
+        matches!(invalid_health_report2, HealthReport::Invalid);
+    }
+
+    #[test]
+    fn test_deployed_service_package_health_report_conversion() {
+        let health_info = HealthInformation {
+            source_id: "source_id".into(),
+            property: "property".into(),
+            time_to_live_seconds: 10,
+            state: crate::types::HealthState::Ok,
+            description: "description".into(),
+            sequence_number: 1,
+            remove_when_expired: false,
+        };
+
+        let deployed_service_package_health_report =
+            HealthReport::DeployedServicePackage(DeployedServicePackageHealthReport {
+                application_name: "fabric:/MyApp".into(),
+                service_manifest_name: "manifest_name".into(),
+                node_name: "node_name".into(),
+                health_information: health_info.clone(),
+            });
+        let com_deployed_service_package_health_report: FABRIC_HEALTH_REPORT =
+            (&deployed_service_package_health_report).into();
+
+        assert_eq!(
+            com_deployed_service_package_health_report.Kind,
+            FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE
+        );
+
+        let deployed_service_package_health_report2: HealthReport =
+            (&com_deployed_service_package_health_report).into();
+        matches!(
+            deployed_service_package_health_report2,
+            HealthReport::DeployedServicePackage(_)
+        );
+        if let HealthReport::DeployedServicePackage(report) =
+            deployed_service_package_health_report2
+        {
+            assert_eq!(report.application_name, "fabric:/MyApp".into());
+            assert_eq!(report.service_manifest_name, "manifest_name".into());
+            assert_eq!(report.node_name, "node_name".into());
+            assert_eq!(report.health_information.source_id, health_info.source_id);
+            assert_eq!(report.health_information.property, health_info.property);
+            assert_eq!(
+                report.health_information.time_to_live_seconds,
+                health_info.time_to_live_seconds
+            );
+            assert_eq!(report.health_information.state, health_info.state);
+            assert_eq!(
+                report.health_information.description,
+                health_info.description
+            );
+            assert_eq!(
+                report.health_information.sequence_number,
+                health_info.sequence_number
+            );
+            assert_eq!(
+                report.health_information.remove_when_expired,
+                health_info.remove_when_expired
+            );
+        }
+    }
+
+    #[test]
+    fn test_deployed_application_health_report_conversion() {
+        let health_info = HealthInformation {
+            source_id: "source_id".into(),
+            property: "property".into(),
+            time_to_live_seconds: 10,
+            state: crate::types::HealthState::Ok,
+            description: "description".into(),
+            sequence_number: 1,
+            remove_when_expired: false,
+        };
+
+        let deployed_application_health_report =
+            HealthReport::DeployedApplication(DeployedApplicationHealthReport {
+                application_name: "fabric:/MyApp".into(),
+                node_name: "node_name".into(),
+                health_information: health_info.clone(),
+            });
+        let com_deployed_application_health_report: FABRIC_HEALTH_REPORT =
+            (&deployed_application_health_report).into();
+
+        assert_eq!(
+            com_deployed_application_health_report.Kind,
+            FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION
+        );
+
+        let deployed_application_health_report2: HealthReport =
+            (&com_deployed_application_health_report).into();
+        matches!(
+            deployed_application_health_report2,
+            HealthReport::DeployedApplication(_)
+        );
+        if let HealthReport::DeployedApplication(report) = deployed_application_health_report2 {
+            assert_eq!(report.application_name, "fabric:/MyApp".into());
+            assert_eq!(report.node_name, "node_name".into());
+            assert_eq!(report.health_information.source_id, health_info.source_id);
+            assert_eq!(report.health_information.property, health_info.property);
+            assert_eq!(
+                report.health_information.time_to_live_seconds,
+                health_info.time_to_live_seconds
+            );
+            assert_eq!(report.health_information.state, health_info.state);
+            assert_eq!(
+                report.health_information.description,
+                health_info.description
+            );
+            assert_eq!(
+                report.health_information.sequence_number,
+                health_info.sequence_number
+            );
+            assert_eq!(
+                report.health_information.remove_when_expired,
+                health_info.remove_when_expired
+            );
+        }
+    }
+
+    #[test]
+    fn test_application_health_report_conversion() {
+        let health_info = HealthInformation {
+            source_id: "source_id".into(),
+            property: "property".into(),
+            time_to_live_seconds: 10,
+            state: crate::types::HealthState::Ok,
+            description: "description".into(),
+            sequence_number: 1,
+            remove_when_expired: false,
+        };
+
+        let application_health_report = HealthReport::Application(ApplicationHealthReport {
+            application_name: "fabric:/MyApp".into(),
+            health_information: health_info.clone(),
+        });
+        let com_application_health_report: FABRIC_HEALTH_REPORT =
+            (&application_health_report).into();
+
+        assert_eq!(
+            com_application_health_report.Kind,
+            FABRIC_HEALTH_REPORT_KIND_APPLICATION
+        );
+
+        let application_health_report2: HealthReport = (&com_application_health_report).into();
+        matches!(application_health_report2, HealthReport::Application(_));
+        if let HealthReport::Application(report) = application_health_report2 {
+            assert_eq!(report.application_name, "fabric:/MyApp".into());
+            assert_eq!(report.health_information.source_id, health_info.source_id);
+            assert_eq!(report.health_information.property, health_info.property);
+            assert_eq!(
+                report.health_information.time_to_live_seconds,
+                health_info.time_to_live_seconds
+            );
+            assert_eq!(report.health_information.state, health_info.state);
+            assert_eq!(
+                report.health_information.description,
+                health_info.description
+            );
+            assert_eq!(
+                report.health_information.sequence_number,
+                health_info.sequence_number
+            );
+            assert_eq!(
+                report.health_information.remove_when_expired,
+                health_info.remove_when_expired
+            );
+        }
+    }
+
+    #[test]
+    fn test_service_health_report_conversion() {
+        let health_info = HealthInformation {
+            source_id: "source_id".into(),
+            property: "property".into(),
+            time_to_live_seconds: 10,
+            state: crate::types::HealthState::Ok,
+            description: "description".into(),
+            sequence_number: 1,
+            remove_when_expired: false,
+        };
+
+        let service_health_report = HealthReport::Service(ServiceHealthReport {
+            service_name: "fabric:/MyService".into(),
+            health_information: health_info.clone(),
+        });
+        let com_service_health_report: FABRIC_HEALTH_REPORT = (&service_health_report).into();
+
+        assert_eq!(
+            com_service_health_report.Kind,
+            FABRIC_HEALTH_REPORT_KIND_SERVICE
+        );
+
+        let service_health_report2: HealthReport = (&com_service_health_report).into();
+        matches!(service_health_report2, HealthReport::Service(_));
+        if let HealthReport::Service(report) = service_health_report2 {
+            assert_eq!(report.service_name, "fabric:/MyService".into());
+            assert_eq!(report.health_information.source_id, health_info.source_id);
+            assert_eq!(report.health_information.property, health_info.property);
+            assert_eq!(
+                report.health_information.time_to_live_seconds,
+                health_info.time_to_live_seconds
+            );
+            assert_eq!(report.health_information.state, health_info.state);
+            assert_eq!(
+                report.health_information.description,
+                health_info.description
+            );
+            assert_eq!(
+                report.health_information.sequence_number,
+                health_info.sequence_number
+            );
+            assert_eq!(
+                report.health_information.remove_when_expired,
+                health_info.remove_when_expired
+            );
+        }
+    }
+
+    #[test]
+    fn test_node_health_report_conversion() {
+        let health_info = HealthInformation {
+            source_id: "source_id".into(),
+            property: "property".into(),
+            time_to_live_seconds: 10,
+            state: crate::types::HealthState::Ok,
+            description: "description".into(),
+            sequence_number: 1,
+            remove_when_expired: false,
+        };
+
+        let node_health_report = HealthReport::Node(NodeHealthReport {
+            node_name: "node_name".into(),
+            health_information: health_info.clone(),
+        });
+        let com_node_health_report: FABRIC_HEALTH_REPORT = (&node_health_report).into();
+
+        assert_eq!(com_node_health_report.Kind, FABRIC_HEALTH_REPORT_KIND_NODE);
+
+        let node_health_report2: HealthReport = (&com_node_health_report).into();
+        matches!(node_health_report2, HealthReport::Node(_));
+        if let HealthReport::Node(report) = node_health_report2 {
+            assert_eq!(report.node_name, "node_name".into());
+            assert_eq!(report.health_information.source_id, health_info.source_id);
+            assert_eq!(report.health_information.property, health_info.property);
+            assert_eq!(
+                report.health_information.time_to_live_seconds,
+                health_info.time_to_live_seconds
+            );
+            assert_eq!(report.health_information.state, health_info.state);
+            assert_eq!(
+                report.health_information.description,
+                health_info.description
+            );
+            assert_eq!(
+                report.health_information.sequence_number,
+                health_info.sequence_number
+            );
+            assert_eq!(
+                report.health_information.remove_when_expired,
+                health_info.remove_when_expired
+            );
+        }
+    }
+
+    #[test]
+    fn test_partition_health_report_conversion() {
+        let health_info = HealthInformation {
+            source_id: "source_id".into(),
+            property: "property".into(),
+            time_to_live_seconds: 10,
+            state: crate::types::HealthState::Ok,
+            description: "description".into(),
+            sequence_number: 1,
+            remove_when_expired: false,
+        };
+
+        let partition_health_report = HealthReport::Partition(PartitionHealthReport {
+            partition_id: GUID::zeroed(),
+            health_information: health_info.clone(),
+        });
+        let com_partition_health_report: FABRIC_HEALTH_REPORT = (&partition_health_report).into();
+
+        assert_eq!(
+            com_partition_health_report.Kind,
+            FABRIC_HEALTH_REPORT_KIND_PARTITION
+        );
+
+        let partition_health_report2: HealthReport = (&com_partition_health_report).into();
+        matches!(partition_health_report2, HealthReport::Partition(_));
+        if let HealthReport::Partition(report) = partition_health_report2 {
+            assert_eq!(report.partition_id, GUID::zeroed());
+            assert_eq!(report.health_information.source_id, health_info.source_id);
+            assert_eq!(report.health_information.property, health_info.property);
+            assert_eq!(
+                report.health_information.time_to_live_seconds,
+                health_info.time_to_live_seconds
+            );
+            assert_eq!(report.health_information.state, health_info.state);
+            assert_eq!(
+                report.health_information.description,
+                health_info.description
+            );
+            assert_eq!(
+                report.health_information.sequence_number,
+                health_info.sequence_number
+            );
+            assert_eq!(
+                report.health_information.remove_when_expired,
+                health_info.remove_when_expired
+            );
+        }
+    }
+
+    #[test]
+    fn test_stateless_service_instance_health_report_conversion() {
+        let health_info = HealthInformation {
+            source_id: "source_id".into(),
+            property: "property".into(),
+            time_to_live_seconds: 10,
+            state: crate::types::HealthState::Ok,
+            description: "description".into(),
+            sequence_number: 1,
+            remove_when_expired: false,
+        };
+
+        let stateless_service_instance_health_report =
+            HealthReport::StatelessServiceInstance(StatelessServiceInstanceHealthReport {
+                partition_id: GUID::zeroed(),
+                instance_id: 1,
+                health_information: health_info.clone(),
+            });
+        let com_stateless_service_instance_health_report: FABRIC_HEALTH_REPORT =
+            (&stateless_service_instance_health_report).into();
+        assert_eq!(
+            com_stateless_service_instance_health_report.Kind,
+            FABRIC_HEALTH_REPORT_KIND_STATELESS_SERVICE_INSTANCE
+        );
+
+        let stateless_service_instance_health_report2: HealthReport =
+            (&com_stateless_service_instance_health_report).into();
+        matches!(
+            stateless_service_instance_health_report2,
+            HealthReport::StatelessServiceInstance(_)
+        );
+        if let HealthReport::StatelessServiceInstance(report) =
+            stateless_service_instance_health_report2
+        {
+            assert_eq!(report.partition_id, GUID::zeroed());
+            assert_eq!(report.instance_id, 1);
+            assert_eq!(report.health_information.source_id, health_info.source_id);
+            assert_eq!(report.health_information.property, health_info.property);
+            assert_eq!(
+                report.health_information.time_to_live_seconds,
+                health_info.time_to_live_seconds
+            );
+            assert_eq!(report.health_information.state, health_info.state);
+            assert_eq!(
+                report.health_information.description,
+                health_info.description
+            );
+            assert_eq!(
+                report.health_information.sequence_number,
+                health_info.sequence_number
+            );
+            assert_eq!(
+                report.health_information.remove_when_expired,
+                health_info.remove_when_expired
+            );
+        }
+    }
+
+    #[test]
+    fn test_stateful_service_replica_health_report_conversion() {
+        let health_info = HealthInformation {
+            source_id: "source_id".into(),
+            property: "property".into(),
+            time_to_live_seconds: 10,
+            state: crate::types::HealthState::Ok,
+            description: "description".into(),
+            sequence_number: 1,
+            remove_when_expired: false,
+        };
+
+        let stateful_service_replica_health_report =
+            HealthReport::StatefulServiceReplica(StatefulServiceReplicaHealthReport {
+                partition_id: GUID::zeroed(),
+                replica_id: 1,
+                health_information: health_info.clone(),
+            });
+        let com_stateful_service_replica_health_report: FABRIC_HEALTH_REPORT =
+            (&stateful_service_replica_health_report).into();
+        assert_eq!(
+            com_stateful_service_replica_health_report.Kind,
+            FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA
+        );
+
+        let stateful_service_replica_health_report2: HealthReport =
+            (&com_stateful_service_replica_health_report).into();
+        matches!(
+            stateful_service_replica_health_report2,
+            HealthReport::StatefulServiceReplica(_)
+        );
+        if let HealthReport::StatefulServiceReplica(report) =
+            stateful_service_replica_health_report2
+        {
+            assert_eq!(report.partition_id, GUID::zeroed());
+            assert_eq!(report.replica_id, 1);
+            assert_eq!(report.health_information.source_id, health_info.source_id);
+            assert_eq!(report.health_information.property, health_info.property);
+            assert_eq!(
+                report.health_information.time_to_live_seconds,
+                health_info.time_to_live_seconds
+            );
+            assert_eq!(report.health_information.state, health_info.state);
+            assert_eq!(
+                report.health_information.description,
+                health_info.description
+            );
+            assert_eq!(
+                report.health_information.sequence_number,
+                health_info.sequence_number
+            );
+            assert_eq!(
+                report.health_information.remove_when_expired,
+                health_info.remove_when_expired
+            );
+        }
+    }
 }

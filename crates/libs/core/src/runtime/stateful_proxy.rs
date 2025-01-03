@@ -380,16 +380,16 @@ impl StatefulServicePartition {
     /// by batching reports per a configured duration (Default: 30 seconds). If the report has high priority,
     /// you can specify send options to send it immediately.
 
-       /// Reports current partition health.
-    pub fn report_partition_health(&self, partitionhealthinfo: &HealthInformation) -> crate::Result<()> {
-        let healthinfo = &partitionhealthinfo.into();
-        unsafe { self.com_impl.ReportPartitionHealth(healthinfo) }
+    /// Reports current partition health.
+    pub fn report_partition_health(&self, health_info: &HealthInformation) -> crate::Result<()> {
+        let healthinfo_ref = &health_info.into();
+        unsafe { self.com_impl.ReportPartitionHealth(healthinfo_ref) }
     }
 
     /// Reports health on the current stateful service replica of the partition.
-    pub fn report_replica_health(&self, replicahealthinfo: &HealthInformation) -> crate::Result<()> {
-        let healthinfo = &replicahealthinfo.into();
-        unsafe {self.com_impl.ReportReplicaHealth(healthinfo)}
+    pub fn report_replica_health(&self, health_info: &HealthInformation) -> crate::Result<()> {
+        let healthinfo_ref = &health_info.into();
+        unsafe {self.com_impl.ReportReplicaHealth(healthinfo_ref)}
     }
 }
 

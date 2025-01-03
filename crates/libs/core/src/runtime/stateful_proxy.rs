@@ -381,14 +381,14 @@ impl StatefulServicePartition {
     /// you can specify send options to send it immediately.
 
     /// Reports current partition health.
-    pub fn report_partition_health(&self, health_info: &HealthInformation) -> crate::Result<()> {
-        let healthinfo_ref = &health_info.into();
+    pub fn report_partition_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
+        let healthinfo_ref = &healthinfo.into();
         unsafe { self.com_impl.ReportPartitionHealth(healthinfo_ref) }
     }
 
     /// Reports health on the current stateful service replica of the partition.
-    pub fn report_replica_health(&self, health_info: &HealthInformation) -> crate::Result<()> {
-        let healthinfo_ref = &health_info.into();
+    pub fn report_replica_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
+        let healthinfo_ref = &healthinfo.into();
         unsafe {self.com_impl.ReportReplicaHealth(healthinfo_ref)}
     }
 }

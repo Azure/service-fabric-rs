@@ -497,29 +497,28 @@ mod test {
         let cluster_health_report2: HealthReport = (&com_cluster_health_report).into();
 
         // Check the inner values are matching
-        if let HealthReport::Cluster(report) = cluster_health_report2 {
-            assert_eq!(report.health_information.source_id, health_info.source_id);
-            assert_eq!(report.health_information.property, health_info.property);
-            assert_eq!(
-                report.health_information.time_to_live_seconds,
-                health_info.time_to_live_seconds
-            );
-            assert_eq!(report.health_information.state, health_info.state);
-            assert_eq!(
-                report.health_information.description,
-                health_info.description
-            );
-            assert_eq!(
-                report.health_information.sequence_number,
-                health_info.sequence_number
-            );
-            assert_eq!(
-                report.health_information.remove_when_expired,
-                health_info.remove_when_expired
-            );
-        } else {
-            panic!("Test Failed - Unexpected HealthReport type.");
-        }
+        let HealthReport::Cluster(report) = cluster_health_report2 else {
+            panic!("Test Failed - Unexpected HealthReport type.")
+        };
+        assert_eq!(report.health_information.source_id, health_info.source_id);
+        assert_eq!(report.health_information.property, health_info.property);
+        assert_eq!(
+            report.health_information.time_to_live_seconds,
+            health_info.time_to_live_seconds
+        );
+        assert_eq!(report.health_information.state, health_info.state);
+        assert_eq!(
+            report.health_information.description,
+            health_info.description
+        );
+        assert_eq!(
+            report.health_information.sequence_number,
+            health_info.sequence_number
+        );
+        assert_eq!(
+            report.health_information.remove_when_expired,
+            health_info.remove_when_expired
+        );
     }
 
     #[test]
@@ -566,34 +565,33 @@ mod test {
         let deployed_service_package_health_report2: HealthReport =
             (&com_deployed_service_package_health_report).into();
 
-        if let HealthReport::DeployedServicePackage(report) =
-            deployed_service_package_health_report2
-        {
-            assert_eq!(report.application_name, "fabric:/MyApp".into());
-            assert_eq!(report.service_manifest_name, "manifest_name".into());
-            assert_eq!(report.node_name, "node_name".into());
-            assert_eq!(report.health_information.source_id, health_info.source_id);
-            assert_eq!(report.health_information.property, health_info.property);
-            assert_eq!(
-                report.health_information.time_to_live_seconds,
-                health_info.time_to_live_seconds
-            );
-            assert_eq!(report.health_information.state, health_info.state);
-            assert_eq!(
-                report.health_information.description,
-                health_info.description
-            );
-            assert_eq!(
-                report.health_information.sequence_number,
-                health_info.sequence_number
-            );
-            assert_eq!(
-                report.health_information.remove_when_expired,
-                health_info.remove_when_expired
-            );
-        } else {
-            panic!("Test Failed - Unexpected HealthReport type.");
-        }
+        let HealthReport::DeployedServicePackage(report) = deployed_service_package_health_report2
+        else {
+            panic!("Test Failed - Unexpected HealthReport type.")
+        };
+
+        assert_eq!(report.application_name, "fabric:/MyApp".into());
+        assert_eq!(report.service_manifest_name, "manifest_name".into());
+        assert_eq!(report.node_name, "node_name".into());
+        assert_eq!(report.health_information.source_id, health_info.source_id);
+        assert_eq!(report.health_information.property, health_info.property);
+        assert_eq!(
+            report.health_information.time_to_live_seconds,
+            health_info.time_to_live_seconds
+        );
+        assert_eq!(report.health_information.state, health_info.state);
+        assert_eq!(
+            report.health_information.description,
+            health_info.description
+        );
+        assert_eq!(
+            report.health_information.sequence_number,
+            health_info.sequence_number
+        );
+        assert_eq!(
+            report.health_information.remove_when_expired,
+            health_info.remove_when_expired
+        );
     }
 
     #[test]
@@ -625,31 +623,31 @@ mod test {
         let deployed_application_health_report2: HealthReport =
             (&com_deployed_application_health_report).into();
 
-        if let HealthReport::DeployedApplication(report) = deployed_application_health_report2 {
-            assert_eq!(report.application_name, "fabric:/MyApp".into());
-            assert_eq!(report.node_name, "node_name".into());
-            assert_eq!(report.health_information.source_id, health_info.source_id);
-            assert_eq!(report.health_information.property, health_info.property);
-            assert_eq!(
-                report.health_information.time_to_live_seconds,
-                health_info.time_to_live_seconds
-            );
-            assert_eq!(report.health_information.state, health_info.state);
-            assert_eq!(
-                report.health_information.description,
-                health_info.description
-            );
-            assert_eq!(
-                report.health_information.sequence_number,
-                health_info.sequence_number
-            );
-            assert_eq!(
-                report.health_information.remove_when_expired,
-                health_info.remove_when_expired
-            );
-        } else {
-            panic!("Test Failed - Unexpected HealthReport type.");
-        }
+        let HealthReport::DeployedApplication(report) = deployed_application_health_report2 else {
+            panic!("Test Failed - Unexpected HealthReport type.")
+        };
+
+        assert_eq!(report.application_name, "fabric:/MyApp".into());
+        assert_eq!(report.node_name, "node_name".into());
+        assert_eq!(report.health_information.source_id, health_info.source_id);
+        assert_eq!(report.health_information.property, health_info.property);
+        assert_eq!(
+            report.health_information.time_to_live_seconds,
+            health_info.time_to_live_seconds
+        );
+        assert_eq!(report.health_information.state, health_info.state);
+        assert_eq!(
+            report.health_information.description,
+            health_info.description
+        );
+        assert_eq!(
+            report.health_information.sequence_number,
+            health_info.sequence_number
+        );
+        assert_eq!(
+            report.health_information.remove_when_expired,
+            health_info.remove_when_expired
+        );
     }
 
     #[test]
@@ -678,30 +676,29 @@ mod test {
 
         let application_health_report2: HealthReport = (&com_application_health_report).into();
 
-        if let HealthReport::Application(report) = application_health_report2 {
-            assert_eq!(report.application_name, "fabric:/MyApp".into());
-            assert_eq!(report.health_information.source_id, health_info.source_id);
-            assert_eq!(report.health_information.property, health_info.property);
-            assert_eq!(
-                report.health_information.time_to_live_seconds,
-                health_info.time_to_live_seconds
-            );
-            assert_eq!(report.health_information.state, health_info.state);
-            assert_eq!(
-                report.health_information.description,
-                health_info.description
-            );
-            assert_eq!(
-                report.health_information.sequence_number,
-                health_info.sequence_number
-            );
-            assert_eq!(
-                report.health_information.remove_when_expired,
-                health_info.remove_when_expired
-            );
-        } else {
-            panic!("Test Failed - Unexpected HealthReport type.");
-        }
+        let HealthReport::Application(report) = application_health_report2 else {
+            panic!("Test Failed - Unexpected HealthReport type.")
+        };
+        assert_eq!(report.application_name, "fabric:/MyApp".into());
+        assert_eq!(report.health_information.source_id, health_info.source_id);
+        assert_eq!(report.health_information.property, health_info.property);
+        assert_eq!(
+            report.health_information.time_to_live_seconds,
+            health_info.time_to_live_seconds
+        );
+        assert_eq!(report.health_information.state, health_info.state);
+        assert_eq!(
+            report.health_information.description,
+            health_info.description
+        );
+        assert_eq!(
+            report.health_information.sequence_number,
+            health_info.sequence_number
+        );
+        assert_eq!(
+            report.health_information.remove_when_expired,
+            health_info.remove_when_expired
+        );
     }
 
     #[test]
@@ -729,30 +726,29 @@ mod test {
 
         let service_health_report2: HealthReport = (&com_service_health_report).into();
 
-        if let HealthReport::Service(report) = service_health_report2 {
-            assert_eq!(report.service_name, "fabric:/MyService".into());
-            assert_eq!(report.health_information.source_id, health_info.source_id);
-            assert_eq!(report.health_information.property, health_info.property);
-            assert_eq!(
-                report.health_information.time_to_live_seconds,
-                health_info.time_to_live_seconds
-            );
-            assert_eq!(report.health_information.state, health_info.state);
-            assert_eq!(
-                report.health_information.description,
-                health_info.description
-            );
-            assert_eq!(
-                report.health_information.sequence_number,
-                health_info.sequence_number
-            );
-            assert_eq!(
-                report.health_information.remove_when_expired,
-                health_info.remove_when_expired
-            );
-        } else {
-            panic!("Test Failed - Unexpected HealthReport type.");
-        }
+        let HealthReport::Service(report) = service_health_report2 else {
+            panic!("Test Failed - Unexpected HealthReport type.")
+        };
+        assert_eq!(report.service_name, "fabric:/MyService".into());
+        assert_eq!(report.health_information.source_id, health_info.source_id);
+        assert_eq!(report.health_information.property, health_info.property);
+        assert_eq!(
+            report.health_information.time_to_live_seconds,
+            health_info.time_to_live_seconds
+        );
+        assert_eq!(report.health_information.state, health_info.state);
+        assert_eq!(
+            report.health_information.description,
+            health_info.description
+        );
+        assert_eq!(
+            report.health_information.sequence_number,
+            health_info.sequence_number
+        );
+        assert_eq!(
+            report.health_information.remove_when_expired,
+            health_info.remove_when_expired
+        );
     }
 
     #[test]
@@ -777,30 +773,29 @@ mod test {
 
         let node_health_report2: HealthReport = (&com_node_health_report).into();
 
-        if let HealthReport::Node(report) = node_health_report2 {
-            assert_eq!(report.node_name, "node_name".into());
-            assert_eq!(report.health_information.source_id, health_info.source_id);
-            assert_eq!(report.health_information.property, health_info.property);
-            assert_eq!(
-                report.health_information.time_to_live_seconds,
-                health_info.time_to_live_seconds
-            );
-            assert_eq!(report.health_information.state, health_info.state);
-            assert_eq!(
-                report.health_information.description,
-                health_info.description
-            );
-            assert_eq!(
-                report.health_information.sequence_number,
-                health_info.sequence_number
-            );
-            assert_eq!(
-                report.health_information.remove_when_expired,
-                health_info.remove_when_expired
-            );
-        } else {
-            panic!("Test Failed - Unexpected HealthReport type.");
-        }
+        let HealthReport::Node(report) = node_health_report2 else {
+            panic!("Test Failed - Unexpected HealthReport type.")
+        };
+        assert_eq!(report.node_name, "node_name".into());
+        assert_eq!(report.health_information.source_id, health_info.source_id);
+        assert_eq!(report.health_information.property, health_info.property);
+        assert_eq!(
+            report.health_information.time_to_live_seconds,
+            health_info.time_to_live_seconds
+        );
+        assert_eq!(report.health_information.state, health_info.state);
+        assert_eq!(
+            report.health_information.description,
+            health_info.description
+        );
+        assert_eq!(
+            report.health_information.sequence_number,
+            health_info.sequence_number
+        );
+        assert_eq!(
+            report.health_information.remove_when_expired,
+            health_info.remove_when_expired
+        );
     }
 
     #[test]
@@ -828,30 +823,29 @@ mod test {
 
         let partition_health_report2: HealthReport = (&com_partition_health_report).into();
 
-        if let HealthReport::Partition(report) = partition_health_report2 {
-            assert_eq!(report.partition_id, GUID::zeroed());
-            assert_eq!(report.health_information.source_id, health_info.source_id);
-            assert_eq!(report.health_information.property, health_info.property);
-            assert_eq!(
-                report.health_information.time_to_live_seconds,
-                health_info.time_to_live_seconds
-            );
-            assert_eq!(report.health_information.state, health_info.state);
-            assert_eq!(
-                report.health_information.description,
-                health_info.description
-            );
-            assert_eq!(
-                report.health_information.sequence_number,
-                health_info.sequence_number
-            );
-            assert_eq!(
-                report.health_information.remove_when_expired,
-                health_info.remove_when_expired
-            );
-        } else {
-            panic!("Test Failed - Unexpected HealthReport type.");
-        }
+        let HealthReport::Partition(report) = partition_health_report2 else {
+            panic!("Test Failed - Unexpected HealthReport type.")
+        };
+        assert_eq!(report.partition_id, GUID::zeroed());
+        assert_eq!(report.health_information.source_id, health_info.source_id);
+        assert_eq!(report.health_information.property, health_info.property);
+        assert_eq!(
+            report.health_information.time_to_live_seconds,
+            health_info.time_to_live_seconds
+        );
+        assert_eq!(report.health_information.state, health_info.state);
+        assert_eq!(
+            report.health_information.description,
+            health_info.description
+        );
+        assert_eq!(
+            report.health_information.sequence_number,
+            health_info.sequence_number
+        );
+        assert_eq!(
+            report.health_information.remove_when_expired,
+            health_info.remove_when_expired
+        );
     }
 
     #[test]
@@ -882,33 +876,33 @@ mod test {
         let stateless_service_instance_health_report2: HealthReport =
             (&com_stateless_service_instance_health_report).into();
 
-        if let HealthReport::StatelessServiceInstance(report) =
+        let HealthReport::StatelessServiceInstance(report) =
             stateless_service_instance_health_report2
-        {
-            assert_eq!(report.partition_id, GUID::zeroed());
-            assert_eq!(report.instance_id, 1);
-            assert_eq!(report.health_information.source_id, health_info.source_id);
-            assert_eq!(report.health_information.property, health_info.property);
-            assert_eq!(
-                report.health_information.time_to_live_seconds,
-                health_info.time_to_live_seconds
-            );
-            assert_eq!(report.health_information.state, health_info.state);
-            assert_eq!(
-                report.health_information.description,
-                health_info.description
-            );
-            assert_eq!(
-                report.health_information.sequence_number,
-                health_info.sequence_number
-            );
-            assert_eq!(
-                report.health_information.remove_when_expired,
-                health_info.remove_when_expired
-            );
-        } else {
-            panic!("Test Failed - Unexpected HealthReport type.");
-        }
+        else {
+            panic!("Test Failed - Unexpected HealthReport type.")
+        };
+
+        assert_eq!(report.partition_id, GUID::zeroed());
+        assert_eq!(report.instance_id, 1);
+        assert_eq!(report.health_information.source_id, health_info.source_id);
+        assert_eq!(report.health_information.property, health_info.property);
+        assert_eq!(
+            report.health_information.time_to_live_seconds,
+            health_info.time_to_live_seconds
+        );
+        assert_eq!(report.health_information.state, health_info.state);
+        assert_eq!(
+            report.health_information.description,
+            health_info.description
+        );
+        assert_eq!(
+            report.health_information.sequence_number,
+            health_info.sequence_number
+        );
+        assert_eq!(
+            report.health_information.remove_when_expired,
+            health_info.remove_when_expired
+        );
     }
 
     #[test]
@@ -939,32 +933,31 @@ mod test {
         let stateful_service_replica_health_report2: HealthReport =
             (&com_stateful_service_replica_health_report).into();
 
-        if let HealthReport::StatefulServiceReplica(report) =
-            stateful_service_replica_health_report2
-        {
-            assert_eq!(report.partition_id, GUID::zeroed());
-            assert_eq!(report.replica_id, 1);
-            assert_eq!(report.health_information.source_id, health_info.source_id);
-            assert_eq!(report.health_information.property, health_info.property);
-            assert_eq!(
-                report.health_information.time_to_live_seconds,
-                health_info.time_to_live_seconds
-            );
-            assert_eq!(report.health_information.state, health_info.state);
-            assert_eq!(
-                report.health_information.description,
-                health_info.description
-            );
-            assert_eq!(
-                report.health_information.sequence_number,
-                health_info.sequence_number
-            );
-            assert_eq!(
-                report.health_information.remove_when_expired,
-                health_info.remove_when_expired
-            );
-        } else {
-            panic!("Test Failed - Unexpected HealthReport type.");
-        }
+        let HealthReport::StatefulServiceReplica(report) = stateful_service_replica_health_report2
+        else {
+            panic!("Test Failed - Unexpected HealthReport type.")
+        };
+
+        assert_eq!(report.partition_id, GUID::zeroed());
+        assert_eq!(report.replica_id, 1);
+        assert_eq!(report.health_information.source_id, health_info.source_id);
+        assert_eq!(report.health_information.property, health_info.property);
+        assert_eq!(
+            report.health_information.time_to_live_seconds,
+            health_info.time_to_live_seconds
+        );
+        assert_eq!(report.health_information.state, health_info.state);
+        assert_eq!(
+            report.health_information.description,
+            health_info.description
+        );
+        assert_eq!(
+            report.health_information.sequence_number,
+            health_info.sequence_number
+        );
+        assert_eq!(
+            report.health_information.remove_when_expired,
+            health_info.remove_when_expired
+        );
     }
 }

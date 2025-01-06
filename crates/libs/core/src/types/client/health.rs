@@ -20,9 +20,10 @@ use mssf_com::FabricTypes::{
 };
 use windows_core::{WString, GUID, PCWSTR};
 
-use crate::types::HealthInformation;
+use crate::{strings::WStringWrap, types::HealthInformation};
 
-/// Wrapper of FABRIC_HEALTH_REPORT
+/// FABRIC_HEALTH_REPORT
+#[derive(Debug, Clone)]
 pub enum HealthReport {
     Invalid,
     StatefulServiceReplica(StatefulServiceReplicaHealthReport),
@@ -166,10 +167,12 @@ pub struct StatefulServiceReplicaHealthReport {
 
 impl From<&StatefulServiceReplicaHealthReport> for FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT {
     fn from(value: &StatefulServiceReplicaHealthReport) -> Self {
+        let boxed_health_info =
+            Box::new(FABRIC_HEALTH_INFORMATION::from(&value.health_information));
         Self {
             PartitionId: value.partition_id,
             ReplicaId: value.replica_id,
-            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            HealthInformation: Box::into_raw(boxed_health_info),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -177,12 +180,13 @@ impl From<&StatefulServiceReplicaHealthReport> for FABRIC_STATEFUL_SERVICE_REPLI
 
 impl From<&FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT> for StatefulServiceReplicaHealthReport {
     fn from(value: &FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT) -> Self {
+        let boxed_health_info = unsafe {
+            Box::<FABRIC_HEALTH_INFORMATION>::from_raw(value.HealthInformation as *mut _)
+        };
         Self {
             partition_id: value.PartitionId,
             replica_id: value.ReplicaId,
-            health_information: HealthInformation::from(unsafe {
-                value.HealthInformation.as_ref().unwrap()
-            }),
+            health_information: HealthInformation::from(boxed_health_info.as_ref()),
         }
     }
 }
@@ -201,10 +205,12 @@ impl From<&StatelessServiceInstanceHealthReport>
     for FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT
 {
     fn from(value: &StatelessServiceInstanceHealthReport) -> Self {
+        let boxed_health_info =
+            Box::new(FABRIC_HEALTH_INFORMATION::from(&value.health_information));
         Self {
             PartitionId: value.partition_id,
             InstanceId: value.instance_id,
-            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            HealthInformation: Box::into_raw(boxed_health_info),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -214,12 +220,13 @@ impl From<&FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT>
     for StatelessServiceInstanceHealthReport
 {
     fn from(value: &FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_REPORT) -> Self {
+        let boxed_health_info = unsafe {
+            Box::<FABRIC_HEALTH_INFORMATION>::from_raw(value.HealthInformation as *mut _)
+        };
         Self {
             partition_id: value.PartitionId,
             instance_id: value.InstanceId,
-            health_information: HealthInformation::from(unsafe {
-                value.HealthInformation.as_ref().unwrap()
-            }),
+            health_information: HealthInformation::from(boxed_health_info.as_ref()),
         }
     }
 }
@@ -235,9 +242,11 @@ pub struct PartitionHealthReport {
 
 impl From<&PartitionHealthReport> for FABRIC_PARTITION_HEALTH_REPORT {
     fn from(value: &PartitionHealthReport) -> Self {
+        let boxed_health_info =
+            Box::new(FABRIC_HEALTH_INFORMATION::from(&value.health_information));
         Self {
             PartitionId: value.partition_id,
-            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            HealthInformation: Box::into_raw(boxed_health_info),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -245,11 +254,12 @@ impl From<&PartitionHealthReport> for FABRIC_PARTITION_HEALTH_REPORT {
 
 impl From<&FABRIC_PARTITION_HEALTH_REPORT> for PartitionHealthReport {
     fn from(value: &FABRIC_PARTITION_HEALTH_REPORT) -> Self {
+        let boxed_health_info = unsafe {
+            Box::<FABRIC_HEALTH_INFORMATION>::from_raw(value.HealthInformation as *mut _)
+        };
         Self {
             partition_id: value.PartitionId,
-            health_information: HealthInformation::from(unsafe {
-                value.HealthInformation.as_ref().unwrap()
-            }),
+            health_information: HealthInformation::from(boxed_health_info.as_ref()),
         }
     }
 }
@@ -265,9 +275,11 @@ pub struct NodeHealthReport {
 
 impl From<&NodeHealthReport> for FABRIC_NODE_HEALTH_REPORT {
     fn from(value: &NodeHealthReport) -> Self {
+        let boxed_health_info =
+            Box::new(FABRIC_HEALTH_INFORMATION::from(&value.health_information));
         Self {
             NodeName: value.node_name.as_pcwstr(),
-            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            HealthInformation: Box::into_raw(boxed_health_info),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -275,11 +287,12 @@ impl From<&NodeHealthReport> for FABRIC_NODE_HEALTH_REPORT {
 
 impl From<&FABRIC_NODE_HEALTH_REPORT> for NodeHealthReport {
     fn from(value: &FABRIC_NODE_HEALTH_REPORT) -> Self {
+        let boxed_health_info = unsafe {
+            Box::<FABRIC_HEALTH_INFORMATION>::from_raw(value.HealthInformation as *mut _)
+        };
         Self {
-            node_name: WString::from_wide(unsafe { PCWSTR::from_raw(value.NodeName.0).as_wide() }),
-            health_information: HealthInformation::from(unsafe {
-                value.HealthInformation.as_ref().unwrap()
-            }),
+            node_name: WStringWrap::from(PCWSTR::from_raw(value.NodeName.0)).into(),
+            health_information: HealthInformation::from(boxed_health_info.as_ref()),
         }
     }
 }
@@ -295,9 +308,11 @@ pub struct ServiceHealthReport {
 
 impl From<&ServiceHealthReport> for FABRIC_SERVICE_HEALTH_REPORT {
     fn from(value: &ServiceHealthReport) -> Self {
+        let boxed_health_info =
+            Box::new(FABRIC_HEALTH_INFORMATION::from(&value.health_information));
         Self {
             ServiceName: FABRIC_URI(value.service_name.as_ptr() as *mut u16),
-            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            HealthInformation: Box::into_raw(boxed_health_info),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -305,13 +320,12 @@ impl From<&ServiceHealthReport> for FABRIC_SERVICE_HEALTH_REPORT {
 
 impl From<&FABRIC_SERVICE_HEALTH_REPORT> for ServiceHealthReport {
     fn from(value: &FABRIC_SERVICE_HEALTH_REPORT) -> Self {
+        let boxed_health_info = unsafe {
+            Box::<FABRIC_HEALTH_INFORMATION>::from_raw(value.HealthInformation as *mut _)
+        };
         Self {
-            service_name: WString::from_wide(unsafe {
-                PCWSTR::from_raw(value.ServiceName.0).as_wide()
-            }),
-            health_information: HealthInformation::from(unsafe {
-                value.HealthInformation.as_ref().unwrap()
-            }),
+            service_name: WStringWrap::from(PCWSTR::from_raw(value.ServiceName.0)).into(),
+            health_information: HealthInformation::from(boxed_health_info.as_ref()),
         }
     }
 }
@@ -327,9 +341,11 @@ pub struct ApplicationHealthReport {
 
 impl From<&ApplicationHealthReport> for FABRIC_APPLICATION_HEALTH_REPORT {
     fn from(value: &ApplicationHealthReport) -> Self {
+        let boxed_health_info =
+            Box::new(FABRIC_HEALTH_INFORMATION::from(&value.health_information));
         Self {
             ApplicationName: FABRIC_URI(value.application_name.as_ptr() as *mut u16),
-            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            HealthInformation: Box::into_raw(boxed_health_info),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -337,13 +353,12 @@ impl From<&ApplicationHealthReport> for FABRIC_APPLICATION_HEALTH_REPORT {
 
 impl From<&FABRIC_APPLICATION_HEALTH_REPORT> for ApplicationHealthReport {
     fn from(value: &FABRIC_APPLICATION_HEALTH_REPORT) -> Self {
+        let boxed_health_info = unsafe {
+            Box::<FABRIC_HEALTH_INFORMATION>::from_raw(value.HealthInformation as *mut _)
+        };
         Self {
-            application_name: WString::from_wide(unsafe {
-                PCWSTR::from_raw(value.ApplicationName.0).as_wide()
-            }),
-            health_information: HealthInformation::from(unsafe {
-                value.HealthInformation.as_ref().unwrap()
-            }),
+            application_name: WStringWrap::from(PCWSTR::from_raw(value.ApplicationName.0)).into(),
+            health_information: HealthInformation::from(boxed_health_info.as_ref()),
         }
     }
 }
@@ -360,10 +375,12 @@ pub struct DeployedApplicationHealthReport {
 
 impl From<&DeployedApplicationHealthReport> for FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT {
     fn from(value: &DeployedApplicationHealthReport) -> Self {
+        let boxed_health_info =
+            Box::new(FABRIC_HEALTH_INFORMATION::from(&value.health_information));
         Self {
             ApplicationName: FABRIC_URI(value.application_name.as_ptr() as *mut u16),
             NodeName: value.node_name.as_pcwstr(),
-            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            HealthInformation: Box::into_raw(boxed_health_info),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -371,14 +388,13 @@ impl From<&DeployedApplicationHealthReport> for FABRIC_DEPLOYED_APPLICATION_HEAL
 
 impl From<&FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT> for DeployedApplicationHealthReport {
     fn from(value: &FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT) -> Self {
+        let boxed_health_info = unsafe {
+            Box::<FABRIC_HEALTH_INFORMATION>::from_raw(value.HealthInformation as *mut _)
+        };
         Self {
-            application_name: WString::from_wide(unsafe {
-                PCWSTR::from_raw(value.ApplicationName.0).as_wide()
-            }),
-            node_name: WString::from_wide(unsafe { value.NodeName.as_wide() }),
-            health_information: HealthInformation::from(unsafe {
-                value.HealthInformation.as_ref().unwrap()
-            }),
+            application_name: WStringWrap::from(PCWSTR::from_raw(value.ApplicationName.0)).into(),
+            node_name: WStringWrap::from(value.NodeName).into(),
+            health_information: HealthInformation::from(boxed_health_info.as_ref()),
         }
     }
 }
@@ -396,11 +412,13 @@ pub struct DeployedServicePackageHealthReport {
 
 impl From<&DeployedServicePackageHealthReport> for FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT {
     fn from(value: &DeployedServicePackageHealthReport) -> Self {
+        let boxed_health_info =
+            Box::new(FABRIC_HEALTH_INFORMATION::from(&value.health_information));
         Self {
             ApplicationName: FABRIC_URI(value.application_name.as_ptr() as *mut u16),
             ServiceManifestName: value.service_manifest_name.as_pcwstr(),
             NodeName: value.node_name.as_pcwstr(),
-            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            HealthInformation: Box::into_raw(boxed_health_info),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -408,17 +426,14 @@ impl From<&DeployedServicePackageHealthReport> for FABRIC_DEPLOYED_SERVICE_PACKA
 
 impl From<&FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT> for DeployedServicePackageHealthReport {
     fn from(value: &FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT) -> Self {
+        let boxed_health_info = unsafe {
+            Box::<FABRIC_HEALTH_INFORMATION>::from_raw(value.HealthInformation as *mut _)
+        };
         Self {
-            application_name: WString::from_wide(unsafe {
-                PCWSTR::from_raw(value.ApplicationName.0).as_wide()
-            }),
-            service_manifest_name: WString::from_wide(unsafe {
-                value.ServiceManifestName.as_wide()
-            }),
-            node_name: WString::from_wide(unsafe { value.NodeName.as_wide() }),
-            health_information: HealthInformation::from(unsafe {
-                value.HealthInformation.as_ref().unwrap()
-            }),
+            application_name: WStringWrap::from(PCWSTR::from_raw(value.ApplicationName.0)).into(),
+            service_manifest_name: WStringWrap::from(value.ServiceManifestName).into(),
+            node_name: WStringWrap::from(value.NodeName).into(),
+            health_information: HealthInformation::from(boxed_health_info.as_ref()),
         }
     }
 }
@@ -433,8 +448,10 @@ pub struct ClusterHealthReport {
 
 impl From<&ClusterHealthReport> for FABRIC_CLUSTER_HEALTH_REPORT {
     fn from(value: &ClusterHealthReport) -> Self {
+        let boxed_health_info =
+            Box::new(FABRIC_HEALTH_INFORMATION::from(&value.health_information));
         Self {
-            HealthInformation: &FABRIC_HEALTH_INFORMATION::from(&value.health_information),
+            HealthInformation: Box::into_raw(boxed_health_info),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -442,10 +459,11 @@ impl From<&ClusterHealthReport> for FABRIC_CLUSTER_HEALTH_REPORT {
 
 impl From<&FABRIC_CLUSTER_HEALTH_REPORT> for ClusterHealthReport {
     fn from(value: &FABRIC_CLUSTER_HEALTH_REPORT) -> Self {
+        let boxed_health_info = unsafe {
+            Box::<FABRIC_HEALTH_INFORMATION>::from_raw(value.HealthInformation as *mut _)
+        };
         Self {
-            health_information: HealthInformation::from(unsafe {
-                value.HealthInformation.as_ref().unwrap()
-            }),
+            health_information: HealthInformation::from(boxed_health_info.as_ref()),
         }
     }
 }

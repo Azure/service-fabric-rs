@@ -20,7 +20,7 @@ use crate::{
     strings::WStringWrap,
     sync::{fabric_begin_end_proxy2, CancellationToken},
     types::{
-        FaultType, LoadMetric, LoadMetricListRef, MoveCost, ReplicaRole,
+        FaultType, HealthInformation, LoadMetric, LoadMetricListRef, MoveCost, ReplicaRole,
         ServicePartitionAccessStatus, ServicePartitionInformation,
     },
 };
@@ -380,16 +380,16 @@ impl StatefulServicePartition {
     /// by batching reports per a configured duration (Default: 30 seconds). If the report has high priority,
     /// you can specify send options to send it immediately.
 
-    /// TODO: not yet implemented
     /// Reports current partition health.
-    pub fn report_partition_health(&self) -> crate::Result<()> {
-        Err(FabricErrorCode::E_NOTIMPL.into())
+    pub fn report_partition_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
+        let healthinfo_ref = &healthinfo.into();
+        unsafe { self.com_impl.ReportPartitionHealth(healthinfo_ref) }
     }
 
-    /// TODO: not yet implemented
     /// Reports health on the current stateful service replica of the partition.
-    pub fn report_replica_health(&self) -> crate::Result<()> {
-        Err(FabricErrorCode::E_NOTIMPL.into())
+    pub fn report_replica_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
+        let healthinfo_ref = &healthinfo.into();
+        unsafe { self.com_impl.ReportReplicaHealth(healthinfo_ref) }
     }
 }
 

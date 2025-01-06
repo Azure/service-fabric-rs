@@ -20,8 +20,8 @@ use crate::{
     strings::WStringWrap,
     sync::{fabric_begin_end_proxy2, CancellationToken},
     types::{
-        HealthInformation, FaultType, LoadMetric, LoadMetricListRef, MoveCost, 
-        ReplicaRole, ServicePartitionAccessStatus, ServicePartitionInformation,
+        FaultType, HealthInformation, LoadMetric, LoadMetricListRef, MoveCost, ReplicaRole,
+        ServicePartitionAccessStatus, ServicePartitionInformation,
     },
 };
 
@@ -389,7 +389,7 @@ impl StatefulServicePartition {
     /// Reports health on the current stateful service replica of the partition.
     pub fn report_replica_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
         let healthinfo_ref = &healthinfo.into();
-        unsafe {self.com_impl.ReportReplicaHealth(healthinfo_ref)}
+        unsafe { self.com_impl.ReportReplicaHealth(healthinfo_ref) }
     }
 }
 

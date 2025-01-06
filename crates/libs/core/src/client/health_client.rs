@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FabricClient::IFabricHealthClient4;
+use mssf_com::{FabricClient::IFabricHealthClient4, FabricTypes::FABRIC_HEALTH_REPORT};
 
 use crate::types::HealthReport;
 
@@ -29,8 +29,9 @@ impl HealthClient {
     /// Read more about [connecting to a cluster using the FabricClient APIs](https://learn.microsoft.com/en-us/azure/service-fabric/service-fabric-connect-to-secure-cluster).
     /// For more information about health reporting, see [Service Fabric health monitoring](https://learn.microsoft.com/en-us/azure/service-fabric/service-fabric-health-introduction).
     pub fn report_health(&self, health_report: HealthReport) -> windows_core::Result<()> {
-        let com = &self.com;
-        let report = (&health_report).into();
-        unsafe { com.ReportHealth(&report) }
+        unsafe {
+            self.com
+                .ReportHealth(&FABRIC_HEALTH_REPORT::from(&health_report))
+        }
     }
 }

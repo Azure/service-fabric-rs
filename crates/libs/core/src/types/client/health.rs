@@ -477,7 +477,6 @@ mod test {
         );
 
         let cluster_health_report2: HealthReport = (&com_cluster_health_report).into();
-        matches!(cluster_health_report2, HealthReport::Cluster(_));
 
         // Check the inner values are matching
         if let HealthReport::Cluster(report) = cluster_health_report2 {
@@ -500,6 +499,8 @@ mod test {
                 report.health_information.remove_when_expired,
                 health_info.remove_when_expired
             );
+        } else {
+            panic!("Test Failed - Unexpected HealthReport type.");
         }
     }
 
@@ -546,10 +547,7 @@ mod test {
 
         let deployed_service_package_health_report2: HealthReport =
             (&com_deployed_service_package_health_report).into();
-        matches!(
-            deployed_service_package_health_report2,
-            HealthReport::DeployedServicePackage(_)
-        );
+
         if let HealthReport::DeployedServicePackage(report) =
             deployed_service_package_health_report2
         {
@@ -575,6 +573,8 @@ mod test {
                 report.health_information.remove_when_expired,
                 health_info.remove_when_expired
             );
+        } else {
+            panic!("Test Failed - Unexpected HealthReport type.");
         }
     }
 
@@ -606,10 +606,7 @@ mod test {
 
         let deployed_application_health_report2: HealthReport =
             (&com_deployed_application_health_report).into();
-        matches!(
-            deployed_application_health_report2,
-            HealthReport::DeployedApplication(_)
-        );
+
         if let HealthReport::DeployedApplication(report) = deployed_application_health_report2 {
             assert_eq!(report.application_name, "fabric:/MyApp".into());
             assert_eq!(report.node_name, "node_name".into());
@@ -632,6 +629,8 @@ mod test {
                 report.health_information.remove_when_expired,
                 health_info.remove_when_expired
             );
+        } else {
+            panic!("Test Failed - Unexpected HealthReport type.");
         }
     }
 
@@ -660,7 +659,7 @@ mod test {
         );
 
         let application_health_report2: HealthReport = (&com_application_health_report).into();
-        matches!(application_health_report2, HealthReport::Application(_));
+
         if let HealthReport::Application(report) = application_health_report2 {
             assert_eq!(report.application_name, "fabric:/MyApp".into());
             assert_eq!(report.health_information.source_id, health_info.source_id);
@@ -682,6 +681,8 @@ mod test {
                 report.health_information.remove_when_expired,
                 health_info.remove_when_expired
             );
+        } else {
+            panic!("Test Failed - Unexpected HealthReport type.");
         }
     }
 
@@ -709,7 +710,7 @@ mod test {
         );
 
         let service_health_report2: HealthReport = (&com_service_health_report).into();
-        matches!(service_health_report2, HealthReport::Service(_));
+
         if let HealthReport::Service(report) = service_health_report2 {
             assert_eq!(report.service_name, "fabric:/MyService".into());
             assert_eq!(report.health_information.source_id, health_info.source_id);
@@ -731,6 +732,8 @@ mod test {
                 report.health_information.remove_when_expired,
                 health_info.remove_when_expired
             );
+        } else {
+            panic!("Test Failed - Unexpected HealthReport type.");
         }
     }
 
@@ -755,7 +758,7 @@ mod test {
         assert_eq!(com_node_health_report.Kind, FABRIC_HEALTH_REPORT_KIND_NODE);
 
         let node_health_report2: HealthReport = (&com_node_health_report).into();
-        matches!(node_health_report2, HealthReport::Node(_));
+
         if let HealthReport::Node(report) = node_health_report2 {
             assert_eq!(report.node_name, "node_name".into());
             assert_eq!(report.health_information.source_id, health_info.source_id);
@@ -777,6 +780,8 @@ mod test {
                 report.health_information.remove_when_expired,
                 health_info.remove_when_expired
             );
+        } else {
+            panic!("Test Failed - Unexpected HealthReport type.");
         }
     }
 
@@ -804,7 +809,7 @@ mod test {
         );
 
         let partition_health_report2: HealthReport = (&com_partition_health_report).into();
-        matches!(partition_health_report2, HealthReport::Partition(_));
+
         if let HealthReport::Partition(report) = partition_health_report2 {
             assert_eq!(report.partition_id, GUID::zeroed());
             assert_eq!(report.health_information.source_id, health_info.source_id);
@@ -826,6 +831,8 @@ mod test {
                 report.health_information.remove_when_expired,
                 health_info.remove_when_expired
             );
+        } else {
+            panic!("Test Failed - Unexpected HealthReport type.");
         }
     }
 
@@ -856,10 +863,7 @@ mod test {
 
         let stateless_service_instance_health_report2: HealthReport =
             (&com_stateless_service_instance_health_report).into();
-        matches!(
-            stateless_service_instance_health_report2,
-            HealthReport::StatelessServiceInstance(_)
-        );
+
         if let HealthReport::StatelessServiceInstance(report) =
             stateless_service_instance_health_report2
         {
@@ -884,6 +888,8 @@ mod test {
                 report.health_information.remove_when_expired,
                 health_info.remove_when_expired
             );
+        } else {
+            panic!("Test Failed - Unexpected HealthReport type.");
         }
     }
 
@@ -914,10 +920,7 @@ mod test {
 
         let stateful_service_replica_health_report2: HealthReport =
             (&com_stateful_service_replica_health_report).into();
-        matches!(
-            stateful_service_replica_health_report2,
-            HealthReport::StatefulServiceReplica(_)
-        );
+
         if let HealthReport::StatefulServiceReplica(report) =
             stateful_service_replica_health_report2
         {
@@ -942,6 +945,8 @@ mod test {
                 report.health_information.remove_when_expired,
                 health_info.remove_when_expired
             );
+        } else {
+            panic!("Test Failed - Unexpected HealthReport type.");
         }
     }
 }

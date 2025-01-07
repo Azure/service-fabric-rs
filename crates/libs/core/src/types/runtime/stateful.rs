@@ -221,7 +221,7 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInformation {
         let mut must_catchup = false;
         if !ex1.is_null() {
             if let Some(ex1ref) = unsafe { ex1.as_ref() } {
-                must_catchup = ex1ref.MustCatchup.as_bool();
+                must_catchup = ex1ref.MustCatchup;
             }
         }
         ReplicaInformation {

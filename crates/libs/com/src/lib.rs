@@ -3,9 +3,8 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-#![doc(html_no_source)]
-// extern crate windows;
-#![allow(non_snake_case)]
+#![allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
+
 pub mod Microsoft;
 
 // expose mod directly

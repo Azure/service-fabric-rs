@@ -4,30 +4,6 @@
 // ------------------------------------------------------------
 
 pub mod Foundation {
-    #[repr(transparent)]
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
-    pub struct BOOLEAN(pub u8);
-
-    impl windows_core::TypeKind for BOOLEAN {
-        type TypeKind = windows_core::CopyType;
-    }
-
-    impl BOOLEAN {
-        #[inline]
-        pub fn as_bool(&self) -> bool {
-            self.0 != 0
-        }
-    }
-
-    impl From<bool> for BOOLEAN {
-        fn from(value: bool) -> Self {
-            match value {
-                true => Self(1),
-                false => Self(0),
-            }
-        }
-    }
-
     #[repr(C)]
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     pub struct FILETIME {
@@ -38,6 +14,7 @@ pub mod Foundation {
         type TypeKind = windows_core::CopyType;
     }
 
+    /// TODO: windows-bindgen needs to remap this to regular bool.
     #[must_use]
     #[repr(transparent)]
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]

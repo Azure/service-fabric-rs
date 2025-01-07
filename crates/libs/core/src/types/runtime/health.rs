@@ -46,7 +46,7 @@ impl From<&FABRIC_HEALTH_INFORMATION> for HealthInformation {
             state: HealthState::from(&value.State),
             description: WStringWrap::from(value.Description).into(),
             sequence_number: value.SequenceNumber,
-            remove_when_expired: value.RemoveWhenExpired.as_bool(),
+            remove_when_expired: value.RemoveWhenExpired,
         }
     }
 }
@@ -75,7 +75,7 @@ pub struct HealthReportSendOption {
 impl From<&FABRIC_HEALTH_REPORT_SEND_OPTIONS> for HealthReportSendOption {
     fn from(value: &FABRIC_HEALTH_REPORT_SEND_OPTIONS) -> Self {
         Self {
-            immediate: value.Immediate.as_bool(),
+            immediate: value.Immediate,
         }
     }
 }

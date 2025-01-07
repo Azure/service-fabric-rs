@@ -33,11 +33,8 @@ pub use cancel::*;
 
 // fabric code begins here
 
-pub trait Callback:
-    FnOnce(::core::option::Option<&IFabricAsyncOperationContext>) + 'static
-{
-}
-impl<T: FnOnce(::core::option::Option<&IFabricAsyncOperationContext>) + 'static> Callback for T {}
+pub trait Callback: FnOnce(windows_core::Ref<IFabricAsyncOperationContext>) + 'static {}
+impl<T: FnOnce(windows_core::Ref<IFabricAsyncOperationContext>) + 'static> Callback for T {}
 
 // TODO: rename.
 // Fabric Callback that wraps an arbitrary Fn closure.
@@ -52,7 +49,7 @@ where
 
 impl<F: Callback> IFabricAsyncOperationCallback_Impl for AwaitableCallback2_Impl<F> {
     // notify the function has been invoked.
-    fn Invoke(&self, context: ::core::option::Option<&IFabricAsyncOperationContext>) {
+    fn Invoke(&self, context: windows_core::Ref<IFabricAsyncOperationContext>) {
         let cb_opt = self.callback.take();
         match cb_opt {
             Some(cb) => {
@@ -125,7 +122,7 @@ mod async_tests {
 
     impl IFabricAsyncOperationCallback_Impl for AwaitableCallback_Impl {
         // notify the function has been invoked.
-        fn Invoke(&self, _context: ::core::option::Option<&IFabricAsyncOperationContext>) {
+        fn Invoke(&self, _context: windows_core::Ref<IFabricAsyncOperationContext>) {
             let tx = self.tx.take();
             let txx = tx.expect("tx is empty"); // This means invoke is called twice.
             txx.send(()).expect("fail to send");
@@ -301,7 +298,7 @@ mod async_tests {
 
             let com_cp = self.com.clone();
             let callback = AwaitableCallback2::i_new(move |ctx| {
-                let res = unsafe { com_cp.EndGetNodeList(ctx) };
+                let res = unsafe { com_cp.EndGetNodeList(ctx.as_ref()) };
                 tx.send(res);
             });
             let ctx = unsafe { self.com.BeginGetNodeList(querydescription, 1000, &callback) };

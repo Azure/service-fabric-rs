@@ -55,7 +55,9 @@ where
     /// Creates the context from callback, and returns a cancellation token that
     /// can be used in rust code, and the cancellation token is hooked into self,
     /// where Cancel() api cancels the operation.
-    pub fn make(callback: Option<&IFabricAsyncOperationCallback>) -> (Self, CancellationToken) {
+    pub fn make(
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
+    ) -> (Self, CancellationToken) {
         let token = CancellationToken::new();
         let ctx = Self::new(callback.unwrap().clone(), token.clone());
         (ctx, token)
@@ -104,7 +106,7 @@ where
     /// return type.
     /// Note that if T is of Result<ICOM> type, the current function return type is
     /// Result<Result<ICOM>>, so unwrap is needed.
-    pub fn result(context: Option<&IFabricAsyncOperationContext>) -> crate::Result<T> {
+    pub fn result(context: windows_core::Ref<IFabricAsyncOperationContext>) -> crate::Result<T> {
         let self_impl: &BridgeContext3<T> = unsafe { context.unwrap().as_impl() };
         self_impl.consume_content()
     }
@@ -147,14 +149,14 @@ where
 }
 
 impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3_Impl<T> {
-    fn IsCompleted(&self) -> crate::BOOLEAN {
+    fn IsCompleted(&self) -> bool {
         self.is_completed
             .load(std::sync::atomic::Ordering::Relaxed)
             .into()
     }
 
     // This always returns false because we defer all tasks in the background executuor.
-    fn CompletedSynchronously(&self) -> crate::BOOLEAN {
+    fn CompletedSynchronously(&self) -> bool {
         self.is_completed_synchronously.into()
     }
 

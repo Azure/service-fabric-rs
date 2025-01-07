@@ -57,7 +57,7 @@ macro_rules! define_fabric_error_code{
 
             // defines SF error codes.
             $(
-                $code = mssf_com::ServiceFabric::FabricTypes::$code .0,
+                $code = mssf_com::FabricTypes::$code .0,
             )*
         }
 
@@ -71,7 +71,7 @@ macro_rules! define_fabric_error_code{
                     )*
                     // SF code converts.
                     $(
-                        mssf_com::ServiceFabric::FabricTypes::$code => Ok(Self::$code),
+                        mssf_com::FabricTypes::$code => Ok(Self::$code),
                     )*
                     _ => Err("Unknown FABRIC_ERROR_CODE")
                 }

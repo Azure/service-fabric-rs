@@ -6,10 +6,10 @@
 #![doc(html_no_source)]
 // extern crate windows;
 #![allow(non_snake_case)]
-pub mod ServiceFabric;
+pub mod Microsoft;
 
 // expose mod directly
-pub use ServiceFabric::*;
+pub use Microsoft::ServiceFabric::*;
 
 // Special usage for mssf_pal.
 // See mssf_pal documentations for why this is used this way.

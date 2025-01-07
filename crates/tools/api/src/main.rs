@@ -12,10 +12,10 @@ use windows_bindgen::{bindgen, Result};
 fn main() -> Result<()> {
     let winmd = "./build/_deps/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd";
     // create output dir if not exist
-    fs::create_dir_all("crates/libs/com/src/ServiceFabric/").unwrap();
+    fs::create_dir_all("crates/libs/com/src/Microsoft/ServiceFabric/").unwrap();
     // Generate FabricTypes
     {
-        let out_file = "crates/libs/com/src/ServiceFabric/FabricTypes.rs";
+        let out_file = "crates/libs/com/src/Microsoft/ServiceFabric/FabricTypes/mod.rs";
         let log = bindgen([
             "--in",
             winmd,
@@ -35,7 +35,7 @@ fn main() -> Result<()> {
     }
     // Generate FabricCommon
     {
-        let out_file = "crates/libs/com/src/ServiceFabric/FabricCommon.rs";
+        let out_file = "crates/libs/com/src/Microsoft/ServiceFabric/FabricCommon/mod.rs";
         let log = bindgen([
             "--in",
             winmd,
@@ -62,7 +62,7 @@ fn main() -> Result<()> {
     }
     // Generate FabricRuntime
     {
-        let out_file = "crates/libs/com/src/ServiceFabric/FabricRuntime.rs";
+        let out_file = "crates/libs/com/src/Microsoft/ServiceFabric/FabricRuntime/mod.rs";
         let log = bindgen([
             "--in",
             winmd,
@@ -103,7 +103,7 @@ fn main() -> Result<()> {
 
     // Generate FabricClient
     {
-        let out_file = "crates/libs/com/src/ServiceFabric/FabricClient.rs";
+        let out_file = "crates/libs/com/src/Microsoft/ServiceFabric/FabricClient/mod.rs";
         let log = bindgen([
             "--in",
             winmd,

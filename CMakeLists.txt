@@ -45,7 +45,11 @@ add_custom_target(run_rust_sample_client
 
 # clean generated code
 add_custom_target(force_clean
-    COMMAND ${CMAKE_COMMAND} -E rm -rf crates/libs/com/src/Microsoft
+    # temporary code to remove only generated code. Will be cleaned up when new bindgen is used.
+    COMMAND ${CMAKE_COMMAND} -E rm -rf crates/libs/com/src/Microsoft/ServiceFabric/FabricClient
+    COMMAND ${CMAKE_COMMAND} -E rm -rf crates/libs/com/src/Microsoft/ServiceFabric/FabricCommon
+    COMMAND ${CMAKE_COMMAND} -E rm -rf crates/libs/com/src/Microsoft/ServiceFabric/FabricRuntime
+    COMMAND ${CMAKE_COMMAND} -E rm -rf crates/libs/com/src/Microsoft/ServiceFabric/FabricTypes
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

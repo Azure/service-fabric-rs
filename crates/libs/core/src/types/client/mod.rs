@@ -21,6 +21,8 @@ use crate::WString;
 pub use replica::*;
 mod metrics;
 pub use metrics::*;
+mod health;
+pub use health::*;
 
 // FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS
 bitflags::bitflags! {

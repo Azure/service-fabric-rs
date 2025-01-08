@@ -226,7 +226,7 @@ where
     let (tx, mut rx) = oneshot_channel(token);
 
     let callback = crate::sync::AwaitableCallback2::i_new(move |ctx| {
-        let res = end(ctx);
+        let res = end(ctx.as_ref());
         tx.send(res);
     });
     let ctx = begin(Some(&callback));
@@ -456,7 +456,7 @@ mod test {
             &self,
             delay: Duration,
             ignore_cancel: bool,
-            callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+            callback: windows_core::Ref<IFabricAsyncOperationCallback>,
         ) -> crate::Result<IFabricAsyncOperationContext> {
             let inner = self.inner.clone();
             let (ctx, token) = BridgeContext3::make(callback);
@@ -469,7 +469,7 @@ mod test {
 
         pub fn end_get_data_delay(
             &self,
-            context: ::core::option::Option<&IFabricAsyncOperationContext>,
+            context: windows_core::Ref<IFabricAsyncOperationContext>,
         ) -> crate::Result<String> {
             BridgeContext3::result(context)?
         }
@@ -478,7 +478,7 @@ mod test {
             &self,
             input: String,
             delay: Duration,
-            callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+            callback: windows_core::Ref<IFabricAsyncOperationCallback>,
         ) -> crate::Result<IFabricAsyncOperationContext> {
             let inner = self.inner.clone();
             let (ctx, token) = BridgeContext3::make(callback);
@@ -489,7 +489,7 @@ mod test {
 
         pub fn end_set_data_delay(
             &self,
-            context: ::core::option::Option<&IFabricAsyncOperationContext>,
+            context: windows_core::Ref<IFabricAsyncOperationContext>,
         ) -> crate::Result<()> {
             BridgeContext3::result(context)?
         }
@@ -508,6 +508,16 @@ mod test {
         }
     }
 
+    /// Converts option ref to windows ref for testing.
+    /// They have the same ABI.
+    /// Returned ref has the same lifetime as the opt.
+    fn option_to_ref<T>(opt: Option<&T>) -> windows_core::Ref<T>
+    where
+        T: windows_core::Interface,
+    {
+        unsafe { core::mem::transmute_copy(opt.unwrap()) }
+    }
+
     // The test trait implementation
     impl<T: IMyObj> IMyObj for MyObjProxy<T> {
         async fn get_data_delay(
@@ -519,8 +529,10 @@ mod test {
             let com1 = &self.com;
             let com2 = self.com.clone();
             fabric_begin_end_proxy2(
-                move |callback| com1.begin_get_data_delay(delay, ignore_cancel, callback),
-                move |context| com2.end_get_data_delay(context),
+                move |callback| {
+                    com1.begin_get_data_delay(delay, ignore_cancel, option_to_ref(callback))
+                },
+                move |context| com2.end_get_data_delay(option_to_ref(context)),
                 token,
             )
             .await?
@@ -535,8 +547,8 @@ mod test {
             let com1 = &self.com;
             let com2 = self.com.clone();
             fabric_begin_end_proxy2(
-                move |callback| com1.begin_set_data_delay(input, delay, callback),
-                move |context| com2.end_set_data_delay(context),
+                move |callback| com1.begin_set_data_delay(input, delay, option_to_ref(callback)),
+                move |context| com2.end_set_data_delay(option_to_ref(context)),
                 token,
             )
             .await?

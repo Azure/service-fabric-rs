@@ -46,7 +46,7 @@ impl From<&FABRIC_HEALTH_INFORMATION> for HealthInformation {
             state: HealthState::from(&value.State),
             description: WStringWrap::from(value.Description).into(),
             sequence_number: value.SequenceNumber,
-            remove_when_expired: value.RemoveWhenExpired.as_bool(),
+            remove_when_expired: value.RemoveWhenExpired,
         }
     }
 }
@@ -61,7 +61,7 @@ impl From<&HealthInformation> for FABRIC_HEALTH_INFORMATION {
             State: (&value.state).into(),
             Description: PCWSTR(value.description.as_ptr()),
             SequenceNumber: value.sequence_number,
-            RemoveWhenExpired: value.remove_when_expired.into(),
+            RemoveWhenExpired: value.remove_when_expired,
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -75,7 +75,7 @@ pub struct HealthReportSendOption {
 impl From<&FABRIC_HEALTH_REPORT_SEND_OPTIONS> for HealthReportSendOption {
     fn from(value: &FABRIC_HEALTH_REPORT_SEND_OPTIONS) -> Self {
         Self {
-            immediate: value.Immediate.as_bool(),
+            immediate: value.Immediate,
         }
     }
 }
@@ -83,7 +83,7 @@ impl From<&FABRIC_HEALTH_REPORT_SEND_OPTIONS> for HealthReportSendOption {
 impl From<&HealthReportSendOption> for FABRIC_HEALTH_REPORT_SEND_OPTIONS {
     fn from(value: &HealthReportSendOption) -> Self {
         Self {
-            Immediate: value.immediate.into(),
+            Immediate: value.immediate,
             Reserved: std::ptr::null_mut(),
         }
     }

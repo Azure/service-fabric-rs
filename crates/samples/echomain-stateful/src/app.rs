@@ -112,10 +112,10 @@ impl AppFabricReplicator {
 impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
     fn BeginOpen(
         &self,
-        callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
     ) -> mssf_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginOpen");
-        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
+        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
@@ -123,7 +123,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
 
     fn EndOpen(
         &self,
-        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: windows_core::Ref<IFabricAsyncOperationContext>,
     ) -> mssf_core::Result<IFabricStringResult> {
         info!("AppFabricReplicator::EndOpen");
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
@@ -136,10 +136,10 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
         &self,
         _epoch: *const FABRIC_EPOCH,
         _role: FABRIC_REPLICA_ROLE,
-        callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
     ) -> mssf_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginChangeRole");
-        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
+        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
@@ -147,7 +147,7 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
 
     fn EndChangeRole(
         &self,
-        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: windows_core::Ref<IFabricAsyncOperationContext>,
     ) -> mssf_core::Result<()> {
         info!("AppFabricReplicator::EndChangeRole");
         Ok(())
@@ -156,34 +156,34 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
     fn BeginUpdateEpoch(
         &self,
         _epoch: *const FABRIC_EPOCH,
-        callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
     ) -> mssf_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginUpdateEpoch");
-        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
+        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
     fn EndUpdateEpoch(
         &self,
-        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: windows_core::Ref<IFabricAsyncOperationContext>,
     ) -> ::mssf_core::Result<()> {
         info!("AppFabricReplicator::EndUpdateEpoch");
         Ok(())
     }
     fn BeginClose(
         &self,
-        callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
     ) -> ::mssf_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginClose");
-        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
+        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
     fn EndClose(
         &self,
-        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: windows_core::Ref<IFabricAsyncOperationContext>,
     ) -> ::mssf_core::Result<()> {
         info!("AppFabricReplicator::EndClose");
         Ok(())
@@ -207,17 +207,17 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
 impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
     fn BeginOnDataLoss(
         &self,
-        callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
     ) -> ::mssf_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginOnDataLoss");
-        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
+        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
     fn EndOnDataLoss(
         &self,
-        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: windows_core::Ref<IFabricAsyncOperationContext>,
     ) -> ::mssf_core::Result<u8> {
         info!("AppFabricReplicator::EndOnDataLoss");
         let v = 0;
@@ -234,17 +234,17 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
     fn BeginWaitForCatchUpQuorum(
         &self,
         _catchupmode: FABRIC_REPLICA_SET_QUORUM_MODE,
-        callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
     ) -> ::mssf_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginWaitForCatchUpQuorum");
-        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
+        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
     fn EndWaitForCatchUpQuorum(
         &self,
-        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: windows_core::Ref<IFabricAsyncOperationContext>,
     ) -> ::mssf_core::Result<()> {
         info!("AppFabricReplicator::EndWaitForCatchUpQuorum");
         Ok(())
@@ -259,17 +259,17 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
     fn BeginBuildReplica(
         &self,
         _replica: *const FABRIC_REPLICA_INFORMATION,
-        callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
     ) -> ::mssf_core::Result<IFabricAsyncOperationContext> {
         info!("AppFabricReplicator::BeginBuildReplica");
-        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
+        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
     }
     fn EndBuildReplica(
         &self,
-        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: windows_core::Ref<IFabricAsyncOperationContext>,
     ) -> ::mssf_core::Result<()> {
         info!("AppFabricReplicator::EndBuildReplica");
         Ok(())
@@ -311,8 +311,8 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
     fn BeginOpen(
         &self,
         openmode: FABRIC_REPLICA_OPEN_MODE,
-        partition: ::core::option::Option<&IFabricStatefulServicePartition>,
-        callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+        partition: windows_core::Ref<IFabricStatefulServicePartition>,
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
     ) -> ::mssf_core::Result<IFabricAsyncOperationContext> {
         info!("echo_replica::BeginOpen");
 
@@ -326,7 +326,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
         let info = unsafe { p.GetPartitionInfo() }.expect("getpartition info failed");
         info!("AppInstance::BeginOpen partition kind {:#?}", info);
 
-        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
+        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
 
@@ -346,16 +346,10 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
 
     fn EndOpen(
         &self,
-        context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        context: windows_core::Ref<IFabricAsyncOperationContext>,
     ) -> ::mssf_core::Result<IFabricReplicator> {
         info!("AppInstance::EndOpen");
-        let completed = unsafe {
-            context
-                .as_ref()
-                .expect("not ctx")
-                .CompletedSynchronously()
-                .as_bool()
-        };
+        let completed = unsafe { context.as_ref().expect("not ctx").CompletedSynchronously() };
         if !completed {
             info!("AppInstance::EndOpen callback not completed");
         }
@@ -365,7 +359,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
 
     fn BeginClose(
         &self,
-        callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
     ) -> ::mssf_core::Result<IFabricAsyncOperationContext> {
         info!("AppInstance::BeginClose");
 
@@ -395,7 +389,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
             info!("AppInstance:: sender is None");
         }
 
-        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
+        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
@@ -403,16 +397,10 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
 
     fn EndClose(
         &self,
-        context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        context: windows_core::Ref<IFabricAsyncOperationContext>,
     ) -> ::mssf_core::Result<()> {
         info!("AppInstance::EndClose");
-        let completed = unsafe {
-            context
-                .as_ref()
-                .expect("not ctx")
-                .CompletedSynchronously()
-                .as_bool()
-        };
+        let completed = unsafe { context.as_ref().expect("not ctx").CompletedSynchronously() };
         if !completed {
             info!("AppInstance::EndClose callback not completed");
         }
@@ -426,10 +414,10 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
     fn BeginChangeRole(
         &self,
         _newrole: FABRIC_REPLICA_ROLE,
-        callback: ::core::option::Option<&IFabricAsyncOperationCallback>,
+        callback: windows_core::Ref<IFabricAsyncOperationCallback>,
     ) -> ::mssf_core::Result<IFabricAsyncOperationContext> {
         info!("AppInstance::BeginChangeRole");
-        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback).into();
+        let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
         unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
         Ok(ctx)
@@ -437,7 +425,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
 
     fn EndChangeRole(
         &self,
-        _context: ::core::option::Option<&IFabricAsyncOperationContext>,
+        _context: windows_core::Ref<IFabricAsyncOperationContext>,
     ) -> ::mssf_core::Result<IFabricStringResult> {
         info!("AppInstance::EndChangeRole");
         let addr = echo::get_addr(self.port_, self.hostname_.clone());

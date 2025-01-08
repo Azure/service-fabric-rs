@@ -48,7 +48,7 @@ impl WaitableCallback {
 
 impl IFabricAsyncOperationCallback_Impl for WaitableCallback_Impl {
     // notify the function has been invoked.
-    fn Invoke(&self, _context: ::core::option::Option<&IFabricAsyncOperationContext>) {
+    fn Invoke(&self, _context: windows_core::Ref<IFabricAsyncOperationContext>) {
         //println!("WaitableCallback Invoke.");
         let (lock, cvar) = &*self.pair_;
         let mut started = lock.lock().unwrap();
@@ -92,12 +92,12 @@ impl AsyncContext {
 }
 
 impl IFabricAsyncOperationContext_Impl for AsyncContext_Impl {
-    fn IsCompleted(&self) -> crate::BOOLEAN {
-        crate::BOOLEAN::from(true)
+    fn IsCompleted(&self) -> bool {
+        true
     }
 
-    fn CompletedSynchronously(&self) -> crate::BOOLEAN {
-        crate::BOOLEAN::from(true)
+    fn CompletedSynchronously(&self) -> bool {
+        true
     }
 
     fn Callback(&self) -> crate::Result<IFabricAsyncOperationCallback> {

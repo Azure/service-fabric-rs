@@ -37,5 +37,3 @@ pub mod types;
 // re-export some windows types
 pub use windows_core::{Error, Interface, Result, WString, GUID, HRESULT, PCWSTR};
 // Note cannot re-export windows_core::implement because the macro using it has hard coded mod name.
-
-pub use windows_core::Win32::Foundation::BOOLEAN;

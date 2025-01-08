@@ -123,8 +123,8 @@ where
 {
     fn BeginOpen(
         &self,
-        partition: ::core::option::Option<&IFabricStatelessServicePartition>,
-        callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
+        partition: windows_core::Ref<IFabricStatelessServicePartition>,
+        callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
     ) -> crate::Result<super::IFabricAsyncOperationContext> {
         debug!("IFabricStatelessServiceInstanceBridge::BeginOpen");
         let partition_cp = partition.unwrap().clone();
@@ -141,7 +141,7 @@ where
 
     fn EndOpen(
         &self,
-        context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
+        context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::Result<IFabricStringResult> {
         debug!("IFabricStatelessServiceInstanceBridge::EndOpen");
         BridgeContext3::result(context)?
@@ -149,7 +149,7 @@ where
 
     fn BeginClose(
         &self,
-        callback: ::core::option::Option<&super::IFabricAsyncOperationCallback>,
+        callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
     ) -> crate::Result<super::IFabricAsyncOperationContext> {
         debug!("IFabricStatelessServiceInstanceBridge::BeginClose");
         let inner = self.inner.clone();
@@ -159,7 +159,7 @@ where
 
     fn EndClose(
         &self,
-        context: ::core::option::Option<&super::IFabricAsyncOperationContext>,
+        context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::Result<()> {
         debug!("IFabricStatelessServiceInstanceBridge::EndClose");
         BridgeContext3::result(context)?

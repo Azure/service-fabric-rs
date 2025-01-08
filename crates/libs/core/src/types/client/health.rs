@@ -245,7 +245,12 @@ impl From<&HealthReport> for FabricHealthReportWrapper {
 
 impl From<&FABRIC_HEALTH_REPORT> for HealthReport {
     fn from(value: &FABRIC_HEALTH_REPORT) -> Self {
-        match value.Kind {
+        // The following code:
+        //     let report = match {...};
+        //     report
+        // is a workaround prevent access violation on Windows.
+        // TODO: Investigate the root cause and remove the workaround.
+        let report = match value.Kind {
             FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA => {
                 let report = value.Value as *const FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_REPORT;
                 HealthReport::StatefulServiceReplica(StatefulServiceReplicaHealthReport::from(
@@ -299,7 +304,8 @@ impl From<&FABRIC_HEALTH_REPORT> for HealthReport {
                 }))
             }
             _ => HealthReport::Invalid,
-        }
+        };
+        report
     }
 }
 
@@ -1339,10 +1345,10 @@ mod test {
             );
         };
 
-        // assert_eq!(
-        //     stateful_service_replica_health_report.partition_id,
-        //     GUID::from_u128(12345),
-        // );
+        assert_eq!(
+            stateful_service_replica_health_report.partition_id,
+            GUID::from_u128(12345),
+        );
         assert_eq!(stateful_service_replica_health_report.replica_id, 1);
         assert_eq!(
             stateful_service_replica_health_report

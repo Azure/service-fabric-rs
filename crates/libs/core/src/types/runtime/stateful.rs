@@ -221,7 +221,7 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInformation {
         let mut must_catchup = false;
         if !ex1.is_null() {
             if let Some(ex1ref) = unsafe { ex1.as_ref() } {
-                must_catchup = ex1ref.MustCatchup.as_bool();
+                must_catchup = ex1ref.MustCatchup;
             }
         }
         ReplicaInformation {
@@ -251,7 +251,7 @@ impl ReplicaInformation {
             Reserved: std::ptr::null_mut(),
         };
         let ex1 = FABRIC_REPLICA_INFORMATION_EX1 {
-            MustCatchup: self.must_catch_up.into(),
+            MustCatchup: self.must_catch_up,
             Reserved: std::ptr::null_mut(),
         };
         (info, ex1)
@@ -302,7 +302,7 @@ mod test {
     // caller needs to stitch the reserved ptr.
     fn create_test_data(id: i64) -> (FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1) {
         let ex1 = FABRIC_REPLICA_INFORMATION_EX1 {
-            MustCatchup: true.into(),
+            MustCatchup: true,
             Reserved: std::ptr::null_mut(),
         };
         let info = FABRIC_REPLICA_INFORMATION {

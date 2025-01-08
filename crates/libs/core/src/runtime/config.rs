@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::BOOLEAN;
 use crate::{error::FabricErrorCode, WString};
 use mssf_com::{
     FabricRuntime::IFabricConfigurationPackage,
@@ -110,15 +109,15 @@ impl ConfigurationPackage {
         section_name: &WString,
         parameter_name: &WString,
     ) -> crate::Result<(WString, bool)> {
-        let mut is_encrypted: BOOLEAN = Default::default();
+        let mut is_encrypted: u8 = Default::default();
         let raw = unsafe {
             self.com.GetValue(
                 section_name.as_pcwstr(),
                 parameter_name.as_pcwstr(),
-                std::ptr::addr_of_mut!(is_encrypted.0),
+                std::ptr::addr_of_mut!(is_encrypted),
             )
         }?;
-        Ok((WStringWrap::from(raw).into(), is_encrypted.as_bool()))
+        Ok((WStringWrap::from(raw).into(), is_encrypted != 0))
     }
 
     pub fn decrypt_value(&self, encryptedvalue: &WString) -> windows_core::Result<WString> {
@@ -197,8 +196,8 @@ impl From<&FABRIC_CONFIGURATION_PARAMETER> for ConfigurationParameter {
         };
         Self {
             name: WStringWrap::from(value.Name).into(),
-            is_encrypted: value.IsEncrypted.as_bool(),
-            must_overrride: value.MustOverride.as_bool(),
+            is_encrypted: value.IsEncrypted,
+            must_overrride: value.MustOverride,
             value: WStringWrap::from(value.Value).into(),
             r#type: WStringWrap::from(raw1.Type).into(),
         }

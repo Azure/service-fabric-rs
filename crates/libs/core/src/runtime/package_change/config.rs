@@ -44,8 +44,8 @@ where
 {
     fn OnPackageAdded(
         &self,
-        _source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
-        configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
+        _source: windows_core::Ref<mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
+        configpackage: windows_core::Ref<mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
         let new_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
         let event = ConfigurationPackageChangeEvent::Addition { new_package };
@@ -54,8 +54,8 @@ where
 
     fn OnPackageRemoved(
         &self,
-        _source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
-        configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
+        _source: windows_core::Ref<mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
+        configpackage: windows_core::Ref<mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
         let previous_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
         let event = ConfigurationPackageChangeEvent::Removal { previous_package };
@@ -64,9 +64,11 @@ where
 
     fn OnPackageModified(
         &self,
-        _source: Option<&mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
-        previousconfigpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
-        configpackage: Option<&mssf_com::FabricRuntime::IFabricConfigurationPackage>,
+        _source: windows_core::Ref<mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
+        previousconfigpackage: windows_core::Ref<
+            mssf_com::FabricRuntime::IFabricConfigurationPackage,
+        >,
+        configpackage: windows_core::Ref<mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
         let new_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
         let previous_package =

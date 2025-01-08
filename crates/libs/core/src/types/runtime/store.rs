@@ -37,7 +37,7 @@ impl ReplicatorSettings {
             BatchAcknowledgementIntervalMilliseconds: self
                 .batch_acknowledgement_interval_milliseconds,
             ReplicatorAddress: PCWSTR::from_raw(self.replicator_address.as_ptr()),
-            RequireServiceAck: self.require_service_ack.into(),
+            RequireServiceAck: self.require_service_ack,
             InitialReplicationQueueSize: self.initial_replication_queue_size,
             MaxReplicationQueueSize: self.max_replication_queue_size,
             InitialCopyQueueSize: self.initial_copy_queue_size,

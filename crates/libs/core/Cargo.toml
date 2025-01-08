@@ -40,7 +40,7 @@ tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros",
 
 # windows dep is only enabled on windows os.
 [target.'cfg(windows)'.dependencies.windows]
-version = "0.58"
+version = "0.59"
 features = [
     "Win32_System_Kernel", # for debug api
     "Win32_System_Diagnostics_Debug_Extensions"
@@ -57,3 +57,4 @@ version = "0.0.18"
 path = "../com"
 version = "0.0.18"
 default-features = false
+features = ["ServiceFabric_FabricClient", "ServiceFabric_FabricCommon", "ServiceFabric_FabricTypes", "ServiceFabric_FabricRuntime"]

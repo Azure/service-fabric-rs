@@ -164,7 +164,7 @@ where
 {
     fn OnNotification(
         &self,
-        notification: Option<&IFabricServiceNotification>,
+        notification: windows_core::Ref<IFabricServiceNotification>,
     ) -> crate::Result<()> {
         let com = notification.unwrap();
         let msg = ServiceNotification::from_com(com.to_owned());

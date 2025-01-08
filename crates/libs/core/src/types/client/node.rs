@@ -138,7 +138,7 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for Node {
             code_version: WStringWrap::from(raw.CodeVersion).into(),
             config_version: WStringWrap::from(raw.ConfigVersion).into(),
             node_up_time_in_seconds: raw.NodeUpTimeInSeconds,
-            is_seed_node: raw.IsSeedNode.as_bool(),
+            is_seed_node: raw.IsSeedNode,
             upgrade_domain: WStringWrap::from(raw.UpgradeDomain).into(),
             fault_domain: WStringWrap::from(windows_core::PCWSTR(raw.FaultDomain.0)).into(),
             node_instance_id: raw2.NodeInstanceId,

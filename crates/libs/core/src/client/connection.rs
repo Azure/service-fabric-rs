@@ -67,7 +67,7 @@ where
 {
     fn OnConnected(
         &self,
-        gw_info: Option<&IFabricGatewayInformationResult>,
+        gw_info: windows_core::Ref<IFabricGatewayInformationResult>,
     ) -> windows_core::Result<()> {
         let info = GatewayInformationResult::from_com(gw_info.unwrap());
         self.inner.on_connected(&info)
@@ -75,7 +75,7 @@ where
 
     fn OnDisconnected(
         &self,
-        gw_info: Option<&IFabricGatewayInformationResult>,
+        gw_info: windows_core::Ref<IFabricGatewayInformationResult>,
     ) -> windows_core::Result<()> {
         let info = GatewayInformationResult::from_com(gw_info.unwrap());
         self.inner.on_disconnected(&info)

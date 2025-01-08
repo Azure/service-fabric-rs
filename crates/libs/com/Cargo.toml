@@ -26,3 +26,10 @@ version = "0.0.18"
 [features]
 default = ["bundled_libs"]
 bundled_libs = []
+Foundation = []
+# generated features
+ServiceFabric = ["Foundation"]
+ServiceFabric_FabricClient = ["ServiceFabric"]
+ServiceFabric_FabricCommon = ["ServiceFabric"]
+ServiceFabric_FabricRuntime = ["ServiceFabric"]
+ServiceFabric_FabricTypes = ["ServiceFabric"]

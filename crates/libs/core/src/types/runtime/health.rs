@@ -61,7 +61,7 @@ impl From<&HealthInformation> for FABRIC_HEALTH_INFORMATION {
             State: (&value.state).into(),
             Description: PCWSTR(value.description.as_ptr()),
             SequenceNumber: value.sequence_number,
-            RemoveWhenExpired: value.remove_when_expired.into(),
+            RemoveWhenExpired: value.remove_when_expired,
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -83,7 +83,7 @@ impl From<&FABRIC_HEALTH_REPORT_SEND_OPTIONS> for HealthReportSendOption {
 impl From<&HealthReportSendOption> for FABRIC_HEALTH_REPORT_SEND_OPTIONS {
     fn from(value: &HealthReportSendOption) -> Self {
         Self {
-            Immediate: value.immediate.into(),
+            Immediate: value.immediate,
             Reserved: std::ptr::null_mut(),
         }
     }

@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
     "crates/tools/*",
-    # "crates/samples/*",
+    "crates/samples/*",
     "crates/libs/com",
     "crates/libs/core",
     "crates/libs/pal",
@@ -14,8 +14,8 @@ tracing-subscriber = { version = "0.3",  default-features = false, features = ["
 tokio-util = "0.7"
 ctrlc = { version = "3.0", features = ["termination"] }
 tokio = { version = "1", features = ["full"] }
-windows = {version = "0.58", features = ["implement"]}
-windows-core = "0.58"
+windows = {version = "0.59", features = ["implement"]}
+windows-core = "0.59"
 windows-bindgen = "0.59"
 trait-variant = "0.1"
 serde = "*"

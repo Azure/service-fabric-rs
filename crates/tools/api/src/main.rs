@@ -80,10 +80,10 @@ fn main() {
 
         bindgen(
             args.into_iter()
-                .chain(filter_types.into_iter())
-                .chain(filter_common.into_iter())
-                .chain(filter_runtime.into_iter())
-                .chain(filter_client.into_iter()),
+                .chain(filter_types)
+                .chain(filter_common)
+                .chain(filter_runtime)
+                .chain(filter_client),
         );
     }
 }

@@ -150,14 +150,12 @@ where
 
 impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3_Impl<T> {
     fn IsCompleted(&self) -> bool {
-        self.is_completed
-            .load(std::sync::atomic::Ordering::Relaxed)
-            .into()
+        self.is_completed.load(std::sync::atomic::Ordering::Relaxed)
     }
 
     // This always returns false because we defer all tasks in the background executuor.
     fn CompletedSynchronously(&self) -> bool {
-        self.is_completed_synchronously.into()
+        self.is_completed_synchronously
     }
 
     fn Callback(&self) -> crate::Result<IFabricAsyncOperationCallback> {

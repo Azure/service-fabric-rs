@@ -3,7 +3,12 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-#![allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]
+#![allow(
+    non_snake_case,
+    non_camel_case_types,
+    non_upper_case_globals,
+    clippy::all
+)]
 
 pub mod Microsoft;
 

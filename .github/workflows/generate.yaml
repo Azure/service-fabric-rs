@@ -38,3 +38,6 @@ jobs:
 
     - name: build rust code
       run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
+
+    - name: check crate packaging
+      run: cargo package -p mssf-pal -p mssf-com -p mssf-core

@@ -24,14 +24,7 @@ path = "../pal"
 version = "0.0.18"
 
 [features]
-default = [
-    "bundled_libs", 
-    "ServiceFabric_FabricClient",
-    "ServiceFabric_FabricCommon",
-    "ServiceFabric_FabricRuntime",
-    "ServiceFabric_FabricTypes"
-]
-bundled_libs = []
+default = []
 Foundation = []
 # generated features
 ServiceFabric = ["Foundation"]

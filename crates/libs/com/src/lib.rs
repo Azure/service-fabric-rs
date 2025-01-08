@@ -13,6 +13,7 @@
 pub mod Microsoft;
 
 // expose mod directly
+#[cfg(feature = "ServiceFabric")]
 pub use Microsoft::ServiceFabric::*;
 
 // Special usage for mssf_pal.

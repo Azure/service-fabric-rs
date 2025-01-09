@@ -254,6 +254,7 @@ impl FabricClient {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct PropertyManagementClient {
     com: IFabricPropertyManagementClient2,
 }

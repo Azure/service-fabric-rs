@@ -202,21 +202,16 @@ impl FabricClientBuilder {
 // https://github.com/microsoft/service-fabric/blob/master/src/prod/src/managed/Api/src/System/Fabric/FabricClient.cs
 #[derive(Debug, Clone)]
 pub struct FabricClient {
-    com_property_client: IFabricPropertyManagementClient2,
-    com_service_client: IFabricServiceManagementClient6,
-    com_query_client: IFabricQueryClient10,
-    com_health_client: IFabricHealthClient4,
+    property_client: PropertyManagementClient,
+    service_client: ServiceManagementClient,
+    query_client: QueryClient,
+    health_client: HealthClient,
 }
 
 impl FabricClient {
     /// Get a builder
     pub fn builder() -> FabricClientBuilder {
         FabricClientBuilder::new()
-    }
-
-    /// Get a copy of COM object
-    pub fn get_com(&self) -> IFabricPropertyManagementClient2 {
-        self.com_property_client.clone()
     }
 
     /// Creates from com directly. This gives the user freedom to create com from
@@ -231,36 +226,45 @@ impl FabricClient {
         let com_query_client = com.clone().cast::<IFabricQueryClient10>().unwrap();
         let com_health_client = com.clone().cast::<IFabricHealthClient4>().unwrap();
         Self {
-            com_property_client,
-            com_service_client,
-            com_query_client,
-            com_health_client,
+            property_client: PropertyManagementClient::from_com(com_property_client),
+            service_client: ServiceManagementClient::from_com(com_service_client),
+            query_client: QueryClient::from_com(com_query_client),
+            health_client: HealthClient::from_com(com_health_client),
         }
     }
 
     /// Get the client for managing Fabric Properties in Naming Service
-    pub fn get_property_manager(&self) -> PropertyManagementClient {
-        PropertyManagementClient {
-            _com: self.com_property_client.clone(),
-        }
+    pub fn get_property_manager(&self) -> &PropertyManagementClient {
+        &self.property_client
     }
 
     /// Get the client for quering Service Fabric information.
-    pub fn get_query_manager(&self) -> QueryClient {
-        QueryClient::from_com(self.com_query_client.clone())
+    pub fn get_query_manager(&self) -> &QueryClient {
+        &self.query_client
     }
 
     /// Get the client for managing service information and lifecycles.
-    pub fn get_service_manager(&self) -> ServiceManagementClient {
-        ServiceManagementClient::from_com(self.com_service_client.clone())
+    pub fn get_service_manager(&self) -> &ServiceManagementClient {
+        &self.service_client
     }
 
     /// Get the client for get/set Service Fabric health properties.
-    pub fn get_health_manager(&self) -> HealthClient {
-        HealthClient::from_com(self.com_health_client.clone())
+    pub fn get_health_manager(&self) -> &HealthClient {
+        &self.health_client
     }
 }
 
 pub struct PropertyManagementClient {
-    _com: IFabricPropertyManagementClient2,
+    com: IFabricPropertyManagementClient2,
+}
+
+impl PropertyManagementClient {
+    /// Get a copy of COM object
+    pub fn get_com(&self) -> IFabricPropertyManagementClient2 {
+        self.com.clone()
+    }
+
+    fn from_com(com: IFabricPropertyManagementClient2) -> Self {
+        Self { com }
+    }
 }

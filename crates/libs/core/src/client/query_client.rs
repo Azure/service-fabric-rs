@@ -117,6 +117,10 @@ impl QueryClient {
 }
 
 impl QueryClient {
+    pub fn get_com(&self) -> IFabricQueryClient10 {
+        self.com.clone()
+    }
+    
     pub fn from_com(com: IFabricQueryClient10) -> Self {
         Self { com: com.clone() }
     }

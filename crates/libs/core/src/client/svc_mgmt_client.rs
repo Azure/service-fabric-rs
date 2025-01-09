@@ -44,6 +44,10 @@ pub struct ServiceManagementClient {
 
 // internal implementation block
 impl ServiceManagementClient {
+    pub fn get_com(&self) -> IFabricServiceManagementClient6 {
+        self.com.clone()
+    }
+
     #[cfg(feature = "tokio_async")]
     fn resolve_service_partition_internal(
         &self,

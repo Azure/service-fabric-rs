@@ -8,7 +8,7 @@ use mssf_com::FabricRuntime::{
     IFabricConfigurationPackageChangeHandler, IFabricConfigurationPackageChangeHandler_Impl,
 };
 
-use crate::runtime::config::ConfigurationPackage;
+use crate::runtime::{config::ConfigurationPackage, CodePackageActivationContext};
 
 use super::ConfigurationPackageChangeEvent;
 
@@ -110,6 +110,8 @@ where
     }
 }
 
+/// An opaque id representing a registered Configuration Package Change callback
+#[derive(Debug)]
 pub struct ConfigurationPackageChangeCallbackHandle(pub(crate) i64);
 
 impl ConfigurationPackageChangeCallbackHandle {
@@ -117,5 +119,40 @@ impl ConfigurationPackageChangeCallbackHandle {
     /// Caller ensures this is a registered callback id
     pub const unsafe fn from_com(com: i64) -> Self {
         Self(com)
+    }
+}
+
+/// This struct manages deregistering the Service Fabric Config Package Change callback
+/// when it leaves scope.
+#[derive(Debug)]
+pub struct AutoConfigurationPackageChangeCallbackHandle {
+    /// Service Fabric Activation Context
+    activation_ctx: CodePackageActivationContext,
+    /// Handle to deregister on drop
+    handle: Option<ConfigurationPackageChangeCallbackHandle>,
+}
+
+impl AutoConfigurationPackageChangeCallbackHandle {
+    /// Register a new handle for the provided lambda.
+    /// Clones (e.g. adjusts reference count) on activation_ctx
+    pub fn new<T>(activation_ctx: &CodePackageActivationContext, handler: T) -> crate::Result<Self>
+    where
+        T: Fn(&ConfigurationPackageChangeEvent) + 'static,
+    {
+        let handle = activation_ctx.register_configuration_package_change_handler(handler)?;
+        Ok(Self {
+            activation_ctx: activation_ctx.clone(),
+            handle: Some(handle),
+        })
+    }
+}
+
+impl Drop for AutoConfigurationPackageChangeCallbackHandle {
+    fn drop(&mut self) {
+        if let Some(my_handle) = self.handle.take() {
+            self.activation_ctx
+                .unregister_configuration_package_change_handler(my_handle)
+                .expect("Unregistering handle should succeed.");
+        }
     }
 }

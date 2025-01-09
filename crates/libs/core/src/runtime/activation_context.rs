@@ -144,6 +144,8 @@ impl CodePackageActivationContext {
         self.com_impl.clone()
     }
 
+    /// Register a configuration package change handler callback
+    /// Consider using [`AutoConfigurationPackageChangeCallbackHandle::new`] instead of this directly.
     pub fn register_configuration_package_change_handler<T>(
         &self,
         handler: T,

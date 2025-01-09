@@ -41,8 +41,8 @@ pub struct QueryClient {
 // Internal implementation block
 // Internal functions focuses on changing SF callback to async future,
 // while the public apis impl focuses on type conversion.
-#[cfg(feature = "tokio_async")]
 impl QueryClient {
+    #[cfg(feature = "tokio_async")]
     pub fn get_node_list_internal(
         &self,
         query_description: &FABRIC_NODE_QUERY_DESCRIPTION,
@@ -61,6 +61,7 @@ impl QueryClient {
         )
     }
 
+    #[cfg(feature = "tokio_async")]
     fn get_partition_list_internal(
         &self,
         desc: &FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
@@ -78,6 +79,7 @@ impl QueryClient {
         )
     }
 
+    #[cfg(feature = "tokio_async")]
     fn get_replica_list_internal(
         &self,
         desc: &FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
@@ -95,6 +97,7 @@ impl QueryClient {
         )
     }
 
+    #[cfg(feature = "tokio_async")]
     fn get_partition_load_information_internal(
         &self,
         desc: &FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,

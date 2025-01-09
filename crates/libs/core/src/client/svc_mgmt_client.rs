@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
-
+#![cfg_attr(not(feature = "tokio_async"), allow(unused_imports, reason = "code configured out"))]
 use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{
@@ -22,10 +22,12 @@ use mssf_com::{
 };
 use windows_core::{WString, PCWSTR};
 
+#[cfg(feature = "tokio_async")]
+use crate::sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2};
+
 use crate::{
     iter::{FabricIter, FabricListAccessor},
     strings::WStringWrap,
-    sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2},
     types::{
         RemoveReplicaDescription, RestartReplicaDescription, ServiceNotificationFilterDescription,
     },
@@ -39,6 +41,7 @@ pub struct ServiceManagementClient {
 
 // internal implementation block
 impl ServiceManagementClient {
+    #[cfg(feature = "tokio_async")]
     fn resolve_service_partition_internal(
         &self,
         name: FABRIC_URI,
@@ -66,6 +69,7 @@ impl ServiceManagementClient {
         )
     }
 
+    #[cfg(feature = "tokio_async")]
     fn restart_replica_internal(
         &self,
         desc: &FABRIC_RESTART_REPLICA_DESCRIPTION,
@@ -83,6 +87,7 @@ impl ServiceManagementClient {
         )
     }
 
+    #[cfg(feature = "tokio_async")]
     fn remove_replica_internal(
         &self,
         desc: &FABRIC_REMOVE_REPLICA_DESCRIPTION,
@@ -100,6 +105,7 @@ impl ServiceManagementClient {
         )
     }
 
+    #[cfg(feature = "tokio_async")]
     fn register_service_notification_filter_internal(
         &self,
         desc: &FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
@@ -117,6 +123,7 @@ impl ServiceManagementClient {
         )
     }
 
+    #[cfg(feature = "tokio_async")]
     fn unregister_service_notification_filter_internal(
         &self,
         filterid: i64,
@@ -146,6 +153,7 @@ impl ServiceManagementClient {
     }
 
     // Resolve service partition
+    #[cfg(feature = "tokio_async")]
     pub async fn resolve_service_partition(
         &self,
         name: &WString,
@@ -179,6 +187,7 @@ impl ServiceManagementClient {
     /// closing the replica, and then reopening it. Use this to test your service for problems
     /// along the replica reopen path. This helps simulate the report fault temporary path through client APIs.
     /// This is only valid for replicas that belong to stateful persisted services.
+    #[cfg(feature = "tokio_async")]
     pub async fn restart_replica(
         &self,
         desc: &RestartReplicaDescription,
@@ -197,6 +206,7 @@ impl ServiceManagementClient {
     /// Incorrect use of this API can lead to data loss for stateful services.
     /// Remarks:
     /// For stateless services, Instance Abort is called.
+    #[cfg(feature = "tokio_async")]
     pub async fn remove_replica(
         &self,
         desc: &RemoveReplicaDescription,
@@ -224,6 +234,7 @@ impl ServiceManagementClient {
     /// again to retrieve full info from the cache.
     ///
     /// This is observed to have 1~4 secs delay compared with brute force complaint based resolve.
+    #[cfg(feature = "tokio_async")]
     pub async fn register_service_notification_filter(
         &self,
         desc: &ServiceNotificationFilterDescription,
@@ -245,6 +256,7 @@ impl ServiceManagementClient {
     /// It's not necessary to unregister individual filters if the client itself
     /// will no longer be used since all ServiceNotificationFilterDescription
     /// objects registered by the FabricClient will be automatically unregistered when client is disposed.
+    #[cfg(feature = "tokio_async")]
     pub async fn unregister_service_notification_filter(
         &self,
         filter_id_handle: FilterIdHandle,

@@ -2,7 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
-#![cfg_attr(not(feature = "tokio_async"), allow(unused_imports, reason = "code configured out"))]
+#![cfg_attr(
+    not(feature = "tokio_async"),
+    allow(unused_imports, reason = "code configured out")
+)]
 use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{

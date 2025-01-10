@@ -41,8 +41,8 @@ pub struct QueryClient {
 // Internal implementation block
 // Internal functions focuses on changing SF callback to async future,
 // while the public apis impl focuses on type conversion.
+#[cfg(feature = "tokio_async")]
 impl QueryClient {
-    #[cfg(feature = "tokio_async")]
     pub fn get_node_list_internal(
         &self,
         query_description: &FABRIC_NODE_QUERY_DESCRIPTION,
@@ -61,7 +61,6 @@ impl QueryClient {
         )
     }
 
-    #[cfg(feature = "tokio_async")]
     fn get_partition_list_internal(
         &self,
         desc: &FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
@@ -79,7 +78,6 @@ impl QueryClient {
         )
     }
 
-    #[cfg(feature = "tokio_async")]
     fn get_replica_list_internal(
         &self,
         desc: &FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
@@ -97,7 +95,6 @@ impl QueryClient {
         )
     }
 
-    #[cfg(feature = "tokio_async")]
     fn get_partition_load_information_internal(
         &self,
         desc: &FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
@@ -124,8 +121,10 @@ impl QueryClient {
     pub fn from_com(com: IFabricQueryClient10) -> Self {
         Self { com: com.clone() }
     }
+}
 
-    #[cfg(feature = "tokio_async")]
+#[cfg(feature = "tokio_async")]
+impl QueryClient {
     // List nodes in the cluster
     pub async fn get_node_list(
         &self,
@@ -165,7 +164,6 @@ impl QueryClient {
         Ok(NodeList::from_com(com))
     }
 
-    #[cfg(feature = "tokio_async")]
     pub async fn get_partition_list(
         &self,
         desc: &ServicePartitionQueryDescription,
@@ -181,7 +179,6 @@ impl QueryClient {
         Ok(ServicePartitionList::new(com))
     }
 
-    #[cfg(feature = "tokio_async")]
     pub async fn get_replica_list(
         &self,
         desc: &ServiceReplicaQueryDescription,
@@ -197,7 +194,6 @@ impl QueryClient {
         Ok(ServiceReplicaList::new(com))
     }
 
-    #[cfg(feature = "tokio_async")]
     pub async fn get_partition_load_information(
         &self,
         desc: &PartitionLoadInformationQueryDescription,

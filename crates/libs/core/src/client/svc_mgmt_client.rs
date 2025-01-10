@@ -42,13 +42,14 @@ pub struct ServiceManagementClient {
     com: IFabricServiceManagementClient6,
 }
 
-// internal implementation block
 impl ServiceManagementClient {
     pub fn get_com(&self) -> IFabricServiceManagementClient6 {
         self.com.clone()
     }
-
-    #[cfg(feature = "tokio_async")]
+}
+// internal implementation block
+#[cfg(feature = "tokio_async")]
+impl ServiceManagementClient {
     fn resolve_service_partition_internal(
         &self,
         name: FABRIC_URI,
@@ -76,7 +77,6 @@ impl ServiceManagementClient {
         )
     }
 
-    #[cfg(feature = "tokio_async")]
     fn restart_replica_internal(
         &self,
         desc: &FABRIC_RESTART_REPLICA_DESCRIPTION,
@@ -94,7 +94,6 @@ impl ServiceManagementClient {
         )
     }
 
-    #[cfg(feature = "tokio_async")]
     fn remove_replica_internal(
         &self,
         desc: &FABRIC_REMOVE_REPLICA_DESCRIPTION,
@@ -112,7 +111,6 @@ impl ServiceManagementClient {
         )
     }
 
-    #[cfg(feature = "tokio_async")]
     fn register_service_notification_filter_internal(
         &self,
         desc: &FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
@@ -130,7 +128,6 @@ impl ServiceManagementClient {
         )
     }
 
-    #[cfg(feature = "tokio_async")]
     fn unregister_service_notification_filter_internal(
         &self,
         filterid: i64,
@@ -158,9 +155,12 @@ impl ServiceManagementClient {
     pub fn from_com(com: IFabricServiceManagementClient6) -> Self {
         Self { com: com.clone() }
     }
+}
 
+// public implementation block - tokio required
+#[cfg(feature = "tokio_async")]
+impl ServiceManagementClient {
     // Resolve service partition
-    #[cfg(feature = "tokio_async")]
     pub async fn resolve_service_partition(
         &self,
         name: &WString,
@@ -194,7 +194,6 @@ impl ServiceManagementClient {
     /// closing the replica, and then reopening it. Use this to test your service for problems
     /// along the replica reopen path. This helps simulate the report fault temporary path through client APIs.
     /// This is only valid for replicas that belong to stateful persisted services.
-    #[cfg(feature = "tokio_async")]
     pub async fn restart_replica(
         &self,
         desc: &RestartReplicaDescription,
@@ -213,7 +212,6 @@ impl ServiceManagementClient {
     /// Incorrect use of this API can lead to data loss for stateful services.
     /// Remarks:
     /// For stateless services, Instance Abort is called.
-    #[cfg(feature = "tokio_async")]
     pub async fn remove_replica(
         &self,
         desc: &RemoveReplicaDescription,
@@ -241,7 +239,6 @@ impl ServiceManagementClient {
     /// again to retrieve full info from the cache.
     ///
     /// This is observed to have 1~4 secs delay compared with brute force complaint based resolve.
-    #[cfg(feature = "tokio_async")]
     pub async fn register_service_notification_filter(
         &self,
         desc: &ServiceNotificationFilterDescription,
@@ -263,7 +260,6 @@ impl ServiceManagementClient {
     /// It's not necessary to unregister individual filters if the client itself
     /// will no longer be used since all ServiceNotificationFilterDescription
     /// objects registered by the FabricClient will be automatically unregistered when client is disposed.
-    #[cfg(feature = "tokio_async")]
     pub async fn unregister_service_notification_filter(
         &self,
         filter_id_handle: FilterIdHandle,

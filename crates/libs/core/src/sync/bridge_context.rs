@@ -103,7 +103,8 @@ where
     /// This api is in some sense unsafe, because the developer needs to ensure
     /// the following:
     /// * context impl type is `BridgeContext3`, and the T matches the SF end api
-    /// return type.
+    ///   return type.
+    ///
     /// Note that if T is of Result<ICOM> type, the current function return type is
     /// Result<Result<ICOM>>, so unwrap is needed.
     pub fn result(context: windows_core::Ref<IFabricAsyncOperationContext>) -> crate::Result<T> {

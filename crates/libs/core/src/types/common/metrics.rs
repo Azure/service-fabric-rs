@@ -42,7 +42,7 @@ pub struct LoadMetricListRef<'a> {
     owner: PhantomData<&'a [LoadMetric]>,
 }
 
-impl<'a> LoadMetricListRef<'a> {
+impl LoadMetricListRef<'_> {
     pub fn from_slice(v: &[LoadMetric]) -> Self {
         let metrics = v.iter().map(FABRIC_LOAD_METRIC::from).collect::<Vec<_>>();
         Self {

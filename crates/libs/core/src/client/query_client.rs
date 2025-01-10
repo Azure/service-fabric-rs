@@ -2,7 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
-
+#![cfg_attr(
+    not(feature = "tokio_async"),
+    allow(unused_imports) // reason = "code configured out"
+)]
 use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{
@@ -19,9 +22,10 @@ use mssf_com::{
     },
 };
 
+#[cfg(feature = "tokio_async")]
+use crate::sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2};
 use crate::{
     strings::get_pcwstr_from_opt,
-    sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2},
     types::{
         NodeList, NodeQueryDescription, PartitionLoadInformation,
         PartitionLoadInformationQueryDescription, ServicePartitionList,
@@ -37,6 +41,7 @@ pub struct QueryClient {
 // Internal implementation block
 // Internal functions focuses on changing SF callback to async future,
 // while the public apis impl focuses on type conversion.
+#[cfg(feature = "tokio_async")]
 impl QueryClient {
     pub fn get_node_list_internal(
         &self,
@@ -109,10 +114,17 @@ impl QueryClient {
 }
 
 impl QueryClient {
+    pub fn get_com(&self) -> IFabricQueryClient10 {
+        self.com.clone()
+    }
+
     pub fn from_com(com: IFabricQueryClient10) -> Self {
         Self { com: com.clone() }
     }
+}
 
+#[cfg(feature = "tokio_async")]
+impl QueryClient {
     // List nodes in the cluster
     pub async fn get_node_list(
         &self,

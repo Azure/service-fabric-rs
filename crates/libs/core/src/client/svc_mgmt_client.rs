@@ -2,7 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
-
+#![cfg_attr(
+    not(feature = "tokio_async"),
+    allow(unused_imports) // reason = "code configured out"
+)]
 use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{
@@ -22,10 +25,12 @@ use mssf_com::{
 };
 use windows_core::{WString, PCWSTR};
 
+#[cfg(feature = "tokio_async")]
+use crate::sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2};
+
 use crate::{
     iter::{FabricIter, FabricListAccessor},
     strings::WStringWrap,
-    sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2},
     types::{
         RemoveReplicaDescription, RestartReplicaDescription, ServiceNotificationFilterDescription,
     },
@@ -37,7 +42,13 @@ pub struct ServiceManagementClient {
     com: IFabricServiceManagementClient6,
 }
 
+impl ServiceManagementClient {
+    pub fn get_com(&self) -> IFabricServiceManagementClient6 {
+        self.com.clone()
+    }
+}
 // internal implementation block
+#[cfg(feature = "tokio_async")]
 impl ServiceManagementClient {
     fn resolve_service_partition_internal(
         &self,
@@ -144,7 +155,11 @@ impl ServiceManagementClient {
     pub fn from_com(com: IFabricServiceManagementClient6) -> Self {
         Self { com: com.clone() }
     }
+}
 
+// public implementation block - tokio required
+#[cfg(feature = "tokio_async")]
+impl ServiceManagementClient {
     // Resolve service partition
     pub async fn resolve_service_partition(
         &self,

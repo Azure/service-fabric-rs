@@ -33,6 +33,10 @@ pub struct HealthClient {
 
 // Public implementation block
 impl HealthClient {
+    pub fn get_com(&self) -> IFabricHealthClient4 {
+        self.com.clone()
+    }
+
     pub fn from_com(com: IFabricHealthClient4) -> Self {
         Self { com: com.clone() }
     }

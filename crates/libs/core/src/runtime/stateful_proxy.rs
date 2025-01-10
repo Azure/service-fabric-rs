@@ -373,12 +373,12 @@ impl StatefulServicePartition {
         unsafe { self.com_impl.ReportMoveCost(move_cost.into()) }
     }
 
-    /// Remarks:
-    /// The health information describes the report details, like the source ID, the property,
-    /// the health state and other relevant details. The partition uses an internal health client
-    /// to send the reports to the health store. The client optimizes messages to Health Manager
-    /// by batching reports per a configured duration (Default: 30 seconds). If the report has high priority,
-    /// you can specify send options to send it immediately.
+    // Remarks:
+    // The health information describes the report details, like the source ID, the property,
+    // the health state and other relevant details. The partition uses an internal health client
+    // to send the reports to the health store. The client optimizes messages to Health Manager
+    // by batching reports per a configured duration (Default: 30 seconds). If the report has high priority,
+    // you can specify send options to send it immediately.
 
     /// Reports current partition health.
     pub fn report_partition_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {

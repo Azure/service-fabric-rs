@@ -14,13 +14,12 @@ include = [
 ]
 
 [features]
-default = ["config_source", "tokio_async", "bundled_libs"]
+default = ["config_source", "tokio_async"]
 # Required for a lot of callback functionality.
 # Also requires ctrlc for signal handling
 tokio_async = ["dep:tokio", "dep:tokio-util", "dep:ctrlc"]
 # Config crate required to implement its interface. 
 config_source = ["dep:config"]
-bundled_libs = ["mssf-com/bundled_libs"]
 
 [dependencies]
 tracing.workspace = true
@@ -42,8 +41,7 @@ tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros",
 [target.'cfg(windows)'.dependencies.windows]
 version = "0.59"
 features = [
-    "Win32_System_Kernel", # for debug api
-    "Win32_System_Diagnostics_Debug_Extensions"
+    "Win32_System_Diagnostics_Debug_Extensions" # for debug api
 ]
 
 # treat pal as the windows core.

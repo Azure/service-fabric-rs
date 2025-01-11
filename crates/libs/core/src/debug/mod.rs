@@ -18,3 +18,7 @@ pub fn wait_for_debugger() {
 
 #[cfg(target_os = "linux")]
 pub fn wait_for_debugger() {}
+
+/// macOS is not supported. This is merely to make this library to compile on macOS.
+#[cfg(target_os = "macos")]
+pub fn wait_for_debugger() {}

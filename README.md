@@ -50,7 +50,12 @@ enabled = true
 ```
 
 ## Quick Build
-Build all Rust libraries and examples
+Build Rust libraries only:
+```sh 
+cargo build
+```
+
+Alternatively, build all Rust libraries and samples:
 ```sh
 cmake . -B build
 cmake --build build

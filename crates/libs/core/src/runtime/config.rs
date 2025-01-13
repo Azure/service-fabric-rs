@@ -62,11 +62,19 @@ impl FabricListAccessor<FABRIC_CONFIGURATION_SECTION> for ConfigurationSectionLi
     }
 }
 
-impl ConfigurationPackage {
-    pub fn from_com(com: IFabricConfigurationPackage) -> Self {
+impl From<IFabricConfigurationPackage> for ConfigurationPackage {
+    fn from(com: IFabricConfigurationPackage) -> Self {
         Self { com }
     }
+}
 
+impl From<ConfigurationPackage> for IFabricConfigurationPackage {
+    fn from(value: ConfigurationPackage) -> Self {
+        value.com
+    }
+}
+
+impl ConfigurationPackage {
     pub fn get_description(&self) -> ConfigurationPackageDesc {
         let raw = unsafe { self.com.get_Description().as_ref().unwrap() };
 

@@ -37,8 +37,8 @@ pub struct ServiceNotification {
     com: IFabricServiceNotification,
 }
 
-impl ServiceNotification {
-    fn from_com(com: IFabricServiceNotification) -> Self {
+impl From<IFabricServiceNotification> for ServiceNotification {
+    fn from(com: IFabricServiceNotification) -> Self {
         // SF guarantees this is not null.
         let raw = unsafe { com.get_Notification().as_ref().unwrap() };
         Self {
@@ -56,10 +56,12 @@ impl ServiceNotification {
             com,
         }
     }
+}
 
+impl ServiceNotification {
     pub fn get_version(&self) -> crate::Result<ServiceEndpointsVersion> {
         let version = unsafe { self.com.GetVersion() }?;
-        Ok(ServiceEndpointsVersion::from_com(version))
+        Ok(ServiceEndpointsVersion::from(version))
     }
 }
 
@@ -96,11 +98,19 @@ pub struct ServiceEndpointsVersion {
     com: IFabricServiceEndpointsVersion,
 }
 
-impl ServiceEndpointsVersion {
-    fn from_com(com: IFabricServiceEndpointsVersion) -> Self {
+impl From<IFabricServiceEndpointsVersion> for ServiceEndpointsVersion {
+    fn from(com: IFabricServiceEndpointsVersion) -> Self {
         Self { com }
     }
+}
 
+impl From<ServiceEndpointsVersion> for IFabricServiceEndpointsVersion {
+    fn from(value: ServiceEndpointsVersion) -> Self {
+        value.com
+    }
+}
+
+impl ServiceEndpointsVersion {
     /// CSharp doc: Zero if this and other are equivalent,
     /// a negative value if this is less than other, and a positive value if this is greater than other.
     ///
@@ -167,7 +177,7 @@ where
         notification: windows_core::Ref<IFabricServiceNotification>,
     ) -> crate::Result<()> {
         let com = notification.unwrap();
-        let msg = ServiceNotification::from_com(com.to_owned());
+        let msg = ServiceNotification::from(com.clone());
         self.inner.on_notification(&msg)
     }
 }

@@ -113,13 +113,15 @@ impl QueryClient {
     }
 }
 
-impl QueryClient {
-    pub fn get_com(&self) -> IFabricQueryClient10 {
-        self.com.clone()
+impl From<IFabricQueryClient10> for QueryClient {
+    fn from(com: IFabricQueryClient10) -> Self {
+        Self { com }
     }
+}
 
-    pub fn from_com(com: IFabricQueryClient10) -> Self {
-        Self { com: com.clone() }
+impl From<QueryClient> for IFabricQueryClient10 {
+    fn from(value: QueryClient) -> Self {
+        value.com
     }
 }
 
@@ -161,7 +163,7 @@ impl QueryClient {
             )
         }
         .await??;
-        Ok(NodeList::from_com(com))
+        Ok(NodeList::from(com))
     }
 
     pub async fn get_partition_list(

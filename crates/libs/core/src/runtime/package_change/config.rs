@@ -47,7 +47,7 @@ where
         _source: windows_core::Ref<mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
         configpackage: windows_core::Ref<mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let new_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
+        let new_package = ConfigurationPackage::from(configpackage.unwrap().clone());
         let event = ConfigurationPackageChangeEvent::Addition { new_package };
         self.inner.on_change(&event)
     }
@@ -57,7 +57,7 @@ where
         _source: windows_core::Ref<mssf_com::FabricRuntime::IFabricCodePackageActivationContext>,
         configpackage: windows_core::Ref<mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let previous_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
+        let previous_package = ConfigurationPackage::from(configpackage.unwrap().clone());
         let event = ConfigurationPackageChangeEvent::Removal { previous_package };
         self.inner.on_change(&event)
     }
@@ -70,9 +70,8 @@ where
         >,
         configpackage: windows_core::Ref<mssf_com::FabricRuntime::IFabricConfigurationPackage>,
     ) {
-        let new_package = ConfigurationPackage::from_com(configpackage.unwrap().clone());
-        let previous_package =
-            ConfigurationPackage::from_com(previousconfigpackage.unwrap().clone());
+        let new_package = ConfigurationPackage::from(configpackage.unwrap().clone());
+        let previous_package = ConfigurationPackage::from(previousconfigpackage.unwrap().clone());
         let event = ConfigurationPackageChangeEvent::Modification {
             previous_package,
             new_package,
@@ -117,7 +116,7 @@ pub struct ConfigurationPackageChangeCallbackHandle(pub(crate) i64);
 impl ConfigurationPackageChangeCallbackHandle {
     /// # Safety
     /// Caller ensures this is a registered callback id
-    pub const unsafe fn from_com(com: i64) -> Self {
+    pub const unsafe fn from(com: i64) -> Self {
         Self(com)
     }
 }

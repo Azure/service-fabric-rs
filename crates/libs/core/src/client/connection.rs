@@ -27,8 +27,8 @@ pub struct GatewayInformationResult {
     pub node_name: crate::WString,
 }
 
-impl GatewayInformationResult {
-    fn from_com(com: &IFabricGatewayInformationResult) -> Self {
+impl From<&IFabricGatewayInformationResult> for GatewayInformationResult {
+    fn from(com: &IFabricGatewayInformationResult) -> Self {
         let info = unsafe { com.get_GatewayInformation().as_ref().unwrap() };
         Self {
             node_address: WStringWrap::from(info.NodeAddress).into(),
@@ -69,7 +69,7 @@ where
         &self,
         gw_info: windows_core::Ref<IFabricGatewayInformationResult>,
     ) -> windows_core::Result<()> {
-        let info = GatewayInformationResult::from_com(gw_info.unwrap());
+        let info = GatewayInformationResult::from(gw_info.unwrap());
         self.inner.on_connected(&info)
     }
 
@@ -77,7 +77,7 @@ where
         &self,
         gw_info: windows_core::Ref<IFabricGatewayInformationResult>,
     ) -> windows_core::Result<()> {
-        let info = GatewayInformationResult::from_com(gw_info.unwrap());
+        let info = GatewayInformationResult::from(gw_info.unwrap());
         self.inner.on_disconnected(&info)
     }
 }

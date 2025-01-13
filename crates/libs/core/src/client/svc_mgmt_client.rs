@@ -150,10 +150,15 @@ impl ServiceManagementClient {
     }
 }
 
-// public implementation block
-impl ServiceManagementClient {
-    pub fn from_com(com: IFabricServiceManagementClient6) -> Self {
-        Self { com: com.clone() }
+impl From<IFabricServiceManagementClient6> for ServiceManagementClient {
+    fn from(com: IFabricServiceManagementClient6) -> Self {
+        Self { com }
+    }
+}
+
+impl From<ServiceManagementClient> for IFabricServiceManagementClient6 {
+    fn from(value: ServiceManagementClient) -> Self {
+        value.com
     }
 }
 
@@ -186,7 +191,7 @@ impl ServiceManagementClient {
             )
         }
         .await??;
-        let res = ResolvedServicePartition::from_com(com);
+        let res = ResolvedServicePartition::from(com);
         Ok(res)
     }
 
@@ -377,8 +382,8 @@ pub struct ResolvedServicePartition {
     com: IFabricResolvedServicePartitionResult,
 }
 
-impl ResolvedServicePartition {
-    fn from_com(com: IFabricResolvedServicePartitionResult) -> Self {
+impl From<IFabricResolvedServicePartitionResult> for ResolvedServicePartition {
+    fn from(com: IFabricResolvedServicePartitionResult) -> Self {
         Self { com }
     }
 }
@@ -408,7 +413,7 @@ impl ResolvedServicePartition {
 
     // Get the list of endpoints
     pub fn get_endpoint_list(&self) -> ResolvedServiceEndpointList {
-        ResolvedServiceEndpointList::from_com(self.com.clone())
+        ResolvedServiceEndpointList::from(self.com.clone())
     }
 
     // If compared with different partition error is returned.
@@ -472,10 +477,13 @@ pub struct ResolvedServiceEndpointList {
     com: IFabricResolvedServicePartitionResult,
 }
 
-impl ResolvedServiceEndpointList {
-    fn from_com(com: IFabricResolvedServicePartitionResult) -> Self {
+impl From<IFabricResolvedServicePartitionResult> for ResolvedServiceEndpointList {
+    fn from(com: IFabricResolvedServicePartitionResult) -> Self {
         Self { com }
     }
+}
+
+impl ResolvedServiceEndpointList {
     // Get iterator for the list
     pub fn iter(&self) -> ResolvedServiceEndpointListIter {
         ResolvedServiceEndpointListIter::new(self, self)

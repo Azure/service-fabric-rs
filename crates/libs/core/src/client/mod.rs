@@ -226,10 +226,10 @@ impl FabricClient {
         let com_query_client = com.clone().cast::<IFabricQueryClient10>().unwrap();
         let com_health_client = com.clone().cast::<IFabricHealthClient4>().unwrap();
         Self {
-            property_client: PropertyManagementClient::from_com(com_property_client),
-            service_client: ServiceManagementClient::from_com(com_service_client),
-            query_client: QueryClient::from_com(com_query_client),
-            health_client: HealthClient::from_com(com_health_client),
+            property_client: PropertyManagementClient::from(com_property_client),
+            service_client: ServiceManagementClient::from(com_service_client),
+            query_client: QueryClient::from(com_query_client),
+            health_client: HealthClient::from(com_health_client),
         }
     }
 
@@ -259,13 +259,14 @@ pub struct PropertyManagementClient {
     com: IFabricPropertyManagementClient2,
 }
 
-impl PropertyManagementClient {
-    /// Get a copy of COM object
-    pub fn get_com(&self) -> IFabricPropertyManagementClient2 {
-        self.com.clone()
-    }
-
-    fn from_com(com: IFabricPropertyManagementClient2) -> Self {
+impl From<IFabricPropertyManagementClient2> for PropertyManagementClient {
+    fn from(com: IFabricPropertyManagementClient2) -> Self {
         Self { com }
+    }
+}
+
+impl From<PropertyManagementClient> for IFabricPropertyManagementClient2 {
+    fn from(value: PropertyManagementClient) -> Self {
+        value.com
     }
 }

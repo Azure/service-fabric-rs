@@ -78,7 +78,7 @@ impl CodePackageActivationContext {
             self.com_impl
                 .GetConfigurationPackage(configpackagename.as_pcwstr())
         }?;
-        Ok(ConfigurationPackage::from_com(c))
+        Ok(ConfigurationPackage::from(c))
     }
 
     pub fn get_code_package_info(&self) -> CodePackageInfo {
@@ -162,7 +162,7 @@ impl CodePackageActivationContext {
                 .RegisterConfigurationPackageChangeHandler(&callback)
         }?;
         // SAFETY: raw_handle is a configuration package change handler id, not some other id.
-        Ok(unsafe { ConfigurationPackageChangeCallbackHandle::from_com(raw_handle) })
+        Ok(unsafe { ConfigurationPackageChangeCallbackHandle::from(raw_handle) })
     }
 
     pub fn unregister_configuration_package_change_handler(

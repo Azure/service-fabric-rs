@@ -31,16 +31,20 @@ pub struct HealthClient {
     com: IFabricHealthClient4,
 }
 
+impl From<IFabricHealthClient4> for HealthClient {
+    fn from(value: IFabricHealthClient4) -> Self {
+        Self { com: value }
+    }
+}
+
+impl From<HealthClient> for IFabricHealthClient4 {
+    fn from(value: HealthClient) -> Self {
+        value.com
+    }
+}
+
 // Public implementation block
 impl HealthClient {
-    pub fn get_com(&self) -> IFabricHealthClient4 {
-        self.com.clone()
-    }
-
-    pub fn from_com(com: IFabricHealthClient4) -> Self {
-        Self { com: com.clone() }
-    }
-
     /// Reports health on a Service Fabric entity. See C# API [here](https://docs.microsoft.com/en-us/dotnet/api/system.fabric.fabricclient.healthclient.reporthealth?view=azure-dotnet).
     ///
     /// Remarks:

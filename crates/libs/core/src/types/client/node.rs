@@ -85,13 +85,17 @@ impl FabricListAccessor<FABRIC_NODE_QUERY_RESULT_ITEM> for NodeList {
     }
 }
 
-impl NodeList {
-    pub fn from_com(com: IFabricGetNodeListResult2) -> Self {
+impl From<IFabricGetNodeListResult2> for NodeList {
+    fn from(com: IFabricGetNodeListResult2) -> Self {
         Self { com }
     }
+}
+
+impl NodeList {
     pub fn iter(&self) -> NodeListIter {
         NodeListIter::new(self, self)
     }
+
     pub fn get_paging_status(&self) -> Option<PagingStatus> {
         // If there is no more entries there is no paging status returned.
         let raw = unsafe { self.com.get_PagingStatus().as_ref() }?;

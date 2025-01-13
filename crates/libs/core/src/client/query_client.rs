@@ -4,7 +4,7 @@
 // ------------------------------------------------------------
 #![cfg_attr(
     not(feature = "tokio_async"),
-    allow(unused_imports) // reason = "code configured out"
+    allow(unused_imports, reason = "code configured out")
 )]
 use std::{ffi::c_void, time::Duration};
 

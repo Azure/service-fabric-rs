@@ -1,6 +1,6 @@
 [package]
 name = "mssf-com"
-version = "0.0.18"
+version = "0.0.19"
 edition = "2021"
 license = "MIT"
 description = "Rust for Azure Service Fabric. The COM base layer."
@@ -21,7 +21,7 @@ targets = []
 
 [dependencies.mssf-pal]
 path = "../pal"
-version = "0.0.18"
+version = "0.0.19"
 
 [features]
 default = []

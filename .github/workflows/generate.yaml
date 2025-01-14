@@ -19,9 +19,7 @@ jobs:
       uses: lukka/get-cmake@v3.21.2
 
     - name: Install rust stable
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
+      uses: dtolnay/rust-toolchain@stable
 
     - name: cmake configure
       run: > 
@@ -39,5 +37,9 @@ jobs:
     - name: build rust code
       run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
 
+    - name: Install rust nightly
+      uses: dtolnay/rust-toolchain@nightly
+
     - name: check crate packaging
-      run: cargo package -p mssf-pal -p mssf-com -p mssf-core --allow-dirty
+      # TODO: move back to stable once package-workspace is stabilized
+      run: cargo +nightly -Z package-workspace package -p mssf-pal -p mssf-com -p mssf-core --allow-dirty 

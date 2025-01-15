@@ -57,9 +57,7 @@ async fn echo_loop(listener: TcpListener) -> Result<(), Error> {
     }
 }
 
-pub async fn start_echo(rx: Receiver<()>, port: u32, hostname: WString) -> Result<(), Error> {
-    let addr = get_addr(port, hostname);
-
+pub async fn start_echo(rx: Receiver<()>, addr: String) -> Result<(), Error> {
     let listener = TcpListener::bind(&addr).await?;
     info!("start_echo: Listening on: {}", addr);
 

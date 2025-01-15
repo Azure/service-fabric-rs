@@ -6,6 +6,9 @@
 // This example app shows how to use SF safe API (mssf_core)
 // to create a SF stateless application.
 
+use std::sync::Arc;
+
+use app::AppContext;
 use mssf_core::conf::{Config, FabricConfigSource};
 use mssf_core::debug::wait_for_debugger;
 use mssf_core::error::FabricError;
@@ -19,9 +22,11 @@ use mssf_core::WString;
 use tracing::{error, info};
 
 use crate::config::MySettings;
-pub mod app;
+mod app;
 pub mod config;
 pub mod echo;
+mod service_factory;
+mod service_instance;
 // Disable test for Linux ci for now due to SF app problem
 #[cfg(target_os = "windows")]
 #[cfg(test)]
@@ -71,7 +76,8 @@ fn main() -> mssf_core::Result<()> {
     let e = DefaultExecutor::new(rt.handle().clone());
 
     let runtime = mssf_core::runtime::Runtime::create(e.clone()).unwrap();
-    let factory = app::Factory::new(port, hostname, rt.handle().clone());
+    let app_ctx = AppContext::new(port, hostname, rt.handle().clone());
+    let factory = service_factory::ServiceFactory::new(Arc::new(app_ctx));
     runtime
         .register_stateless_service_factory(&WString::from("EchoAppService"), factory)
         .unwrap();

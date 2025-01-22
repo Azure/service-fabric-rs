@@ -257,8 +257,8 @@ mod test {
     use tokio_util::sync::CancellationToken;
 
     use crate::{
-        error::ErrorCode, runtime::executor::DefaultExecutor,
-        sync::bridge_context::BridgeContext3, sync::cancel::oneshot_channel,
+        error::ErrorCode, runtime::executor::DefaultExecutor, sync::bridge_context::BridgeContext3,
+        sync::cancel::oneshot_channel,
     };
 
     use super::fabric_begin_end_proxy2;

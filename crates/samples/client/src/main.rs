@@ -4,10 +4,8 @@
 // ------------------------------------------------------------
 
 use mssf_com::FabricClient::IFabricQueryClient;
-use mssf_com::FabricCommon::IFabricAsyncOperationCallback;
 use mssf_com::FabricTypes::{FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_RESULT_ITEM};
 use mssf_core::sync::wait::WaitableCallback;
-use windows_core::Interface;
 
 fn main() -> mssf_core::Result<()> {
     println!("GetNodeCli");
@@ -18,12 +16,10 @@ fn main() -> mssf_core::Result<()> {
 
     let (token, callback) = WaitableCallback::channel();
 
-    let callback_arg: IFabricAsyncOperationCallback = callback.cast().expect("castfailed");
-
     let querydescription = FABRIC_NODE_QUERY_DESCRIPTION::default();
 
     let ctx = unsafe {
-        c.BeginGetNodeList(&querydescription, 1000, &callback_arg)
+        c.BeginGetNodeList(&querydescription, 1000, &callback)
             .expect("cannot get ctx")
     };
 

@@ -8,6 +8,7 @@
 )]
 use std::{ffi::c_void, time::Duration};
 
+use crate::{WString, PCWSTR};
 use mssf_com::{
     FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient6},
     FabricTypes::{
@@ -23,7 +24,6 @@ use mssf_com::{
         FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
     },
 };
-use windows_core::{WString, PCWSTR};
 
 #[cfg(feature = "tokio_async")]
 use crate::sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2};
@@ -58,7 +58,7 @@ impl ServiceManagementClient {
         previous_result: Option<&IFabricResolvedServicePartitionResult>, // This is different from generated code
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::Result<IFabricResolvedServicePartitionResult>> {
+    ) -> FabricReceiver2<crate::WinResult<IFabricResolvedServicePartitionResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy2(
@@ -82,7 +82,7 @@ impl ServiceManagementClient {
         desc: &FABRIC_RESTART_REPLICA_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::Result<()>> {
+    ) -> FabricReceiver2<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy2(
@@ -99,7 +99,7 @@ impl ServiceManagementClient {
         desc: &FABRIC_REMOVE_REPLICA_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::Result<()>> {
+    ) -> FabricReceiver2<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy2(
@@ -116,7 +116,7 @@ impl ServiceManagementClient {
         desc: &FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::Result<i64>> {
+    ) -> FabricReceiver2<crate::WinResult<i64>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy2(
@@ -133,7 +133,7 @@ impl ServiceManagementClient {
         filterid: i64,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::Result<()>> {
+    ) -> FabricReceiver2<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy2(
@@ -173,7 +173,7 @@ impl ServiceManagementClient {
         prev: Option<&ResolvedServicePartition>,
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
-    ) -> windows_core::Result<ResolvedServicePartition> {
+    ) -> crate::Result<ResolvedServicePartition> {
         let com = {
             let uri = FABRIC_URI(name.as_ptr() as *mut u16);
             // supply prev as null if not present
@@ -210,6 +210,7 @@ impl ServiceManagementClient {
             self.restart_replica_internal(&raw, timeout.as_millis() as u32, cancellation_token)
         }
         .await?
+        .map_err(crate::Error::from)
     }
 
     /// This API gives a running replica the chance to cleanup its state and be gracefully shutdown.
@@ -228,6 +229,7 @@ impl ServiceManagementClient {
             self.remove_replica_internal(&raw, timeout.as_millis() as u32, cancellation_token)
         }
         .await?
+        .map_err(crate::Error::from)
     }
 
     /// Remarks:
@@ -277,6 +279,7 @@ impl ServiceManagementClient {
             cancellation_token,
         )
         .await?
+        .map_err(crate::Error::from)
     }
 }
 
@@ -420,8 +423,8 @@ impl ResolvedServicePartition {
     // to enable the user to identify which RSP is more
     // up-to-date. A returned value of 0 indicates that the two RSPs have the same version. 1 indicates that the other RSP has an older version.
     // -1 indicates that the other RSP has a newer version.
-    pub fn compare_version(&self, other: &ResolvedServicePartition) -> windows_core::Result<i32> {
-        unsafe { self.com.CompareVersion(&other.com) }
+    pub fn compare_version(&self, other: &ResolvedServicePartition) -> crate::Result<i32> {
+        unsafe { self.com.CompareVersion(&other.com) }.map_err(crate::Error::from)
     }
 }
 
@@ -527,7 +530,7 @@ impl From<&FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpoint {
 
 #[cfg(test)]
 mod tests {
-    use windows_core::{WString, PCWSTR};
+    use crate::{WString, PCWSTR};
 
     use super::{PartitionKeyType, ServicePartitionKind};
 

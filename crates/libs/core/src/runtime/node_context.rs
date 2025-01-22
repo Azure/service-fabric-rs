@@ -12,7 +12,7 @@ use crate::{
 pub fn get_com_node_context(
     timeout_milliseconds: u32,
     cancellation_token: Option<CancellationToken>,
-) -> crate::sync::FabricReceiver2<::windows_core::Result<IFabricNodeContextResult>> {
+) -> crate::sync::FabricReceiver2<crate::WinResult<IFabricNodeContextResult>> {
     fabric_begin_end_proxy2(
         move |callback| {
             crate::API_TABLE.fabric_begin_get_node_context(timeout_milliseconds, callback)
@@ -50,7 +50,7 @@ impl NodeContext {
     }
 
     // Retrieves the directory path for the directory at node level.
-    pub fn get_directory(&self, logical_directory_name: &WString) -> windows_core::Result<WString> {
+    pub fn get_directory(&self, logical_directory_name: &WString) -> crate::Result<WString> {
         let com2 = self.com.cast::<IFabricNodeContextResult2>()?;
         let dir = unsafe { com2.GetDirectory(logical_directory_name.as_pcwstr()) }?;
         Ok(WStringWrap::from(&dir).into())

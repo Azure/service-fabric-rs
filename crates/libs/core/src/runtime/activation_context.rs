@@ -138,6 +138,7 @@ impl CodePackageActivationContext {
             None => std::ptr::null(),
         };
         unsafe { self.com_impl.ReportApplicationHealth2(&raw, raw_options) }
+            .map_err(crate::Error::from)
     }
 
     pub fn get_com(&self) -> IFabricCodePackageActivationContext6 {

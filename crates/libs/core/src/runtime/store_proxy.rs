@@ -66,6 +66,7 @@ impl KVStoreProxy {
             self.com_impl
                 .Add(&tx.com_impl, PCWSTR::from_raw(key.as_ptr()), value)
         }
+        .map_err(crate::Error::from)
     }
 
     pub fn get(&self, tx: &TransactionProxy, key: &[u16]) -> crate::Result<KVStoreItemProxy> {
@@ -92,6 +93,7 @@ impl KVStoreProxy {
                 checksequencenumber,
             )
         }
+        .map_err(crate::Error::from)
     }
 }
 
@@ -117,7 +119,7 @@ impl TransactionProxy {
             move |ctx| unsafe { com2.EndCommit(ctx) },
             cancellation_token,
         );
-        rx.await?
+        rx.await?.map_err(crate::Error::from)
     }
 
     pub fn rollback(&self) {

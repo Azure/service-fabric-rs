@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::Interface;
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use health_client::HealthClient;
 use mssf_com::FabricClient::{
@@ -13,7 +14,6 @@ use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
     ServiceNotificationEventHandlerBridge,
 };
-use windows_core::Interface;
 
 use crate::types::ClientRole;
 

@@ -8,15 +8,15 @@
 
 use std::ffi::c_void;
 
+use crate::{Interface, WString};
 use mssf_com::FabricRuntime::{
     IFabricPrimaryReplicator, IFabricReplicator, IFabricReplicatorCatchupSpecificQuorum,
     IFabricStatefulServicePartition3, IFabricStatefulServiceReplica,
 };
 use tracing::debug;
-use windows_core::{Interface, WString};
 
 use crate::{
-    error::FabricErrorCode,
+    error::ErrorCode,
     strings::WStringWrap,
     sync::{fabric_begin_end_proxy2, CancellationToken},
     types::{
@@ -99,7 +99,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
             move |ctx| unsafe { com2.EndClose(ctx) },
             Some(cancellation_token),
         );
-        rx.await?
+        rx.await?.map_err(crate::Error::from)
     }
     fn abort(&self) {
         debug!("StatefulServiceReplicaProxy::abort");
@@ -140,7 +140,7 @@ impl Replicator for ReplicatorProxy {
             move |ctx| unsafe { com2.EndClose(ctx) },
             Some(cancellation_token),
         );
-        rx.await?
+        rx.await?.map_err(crate::Error::from)
     }
     async fn change_role(
         &self,
@@ -156,7 +156,7 @@ impl Replicator for ReplicatorProxy {
             move |ctx| unsafe { com2.EndChangeRole(ctx) },
             Some(cancellation_token),
         );
-        rx.await?
+        rx.await?.map_err(crate::Error::from)
     }
     async fn update_epoch(
         &self,
@@ -171,15 +171,15 @@ impl Replicator for ReplicatorProxy {
             move |ctx| unsafe { com2.EndUpdateEpoch(ctx) },
             Some(cancellation_token),
         );
-        rx.await?
+        rx.await?.map_err(crate::Error::from)
     }
     fn get_current_progress(&self) -> crate::Result<i64> {
         debug!("ReplicatorProxy::get_current_progress");
-        unsafe { self.com_impl.GetCurrentProgress() }
+        unsafe { self.com_impl.GetCurrentProgress() }.map_err(crate::Error::from)
     }
     fn get_catch_up_capability(&self) -> crate::Result<i64> {
         debug!("ReplicatorProxy::get_catch_up_capability");
-        unsafe { self.com_impl.GetCatchUpCapability() }
+        unsafe { self.com_impl.GetCatchUpCapability() }.map_err(crate::Error::from)
     }
     fn abort(&self) {
         debug!("ReplicatorProxy::abort");
@@ -244,7 +244,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
             move |ctx| unsafe { com2.EndOnDataLoss(ctx) },
             Some(cancellation_token),
         );
-        rx.await?
+        rx.await?.map_err(crate::Error::from)
     }
     fn update_catch_up_replica_set_configuration(
         &self,
@@ -258,6 +258,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
             self.com_impl
                 .UpdateCatchUpReplicaSetConfiguration(cc_view.get_raw(), pc_view.get_raw())
         }
+        .map_err(crate::Error::from)
     }
     async fn wait_for_catch_up_quorum(
         &self,
@@ -272,7 +273,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
             move |ctx| unsafe { com2.EndWaitForCatchUpQuorum(ctx) },
             Some(cancellation_token),
         );
-        rx.await?
+        rx.await?.map_err(crate::Error::from)
     }
     fn update_current_replica_set_configuration(
         &self,
@@ -283,6 +284,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
             self.com_impl
                 .UpdateCurrentReplicaSetConfiguration(currentconfiguration.get_view().get_raw())
         }
+        .map_err(crate::Error::from)
     }
     async fn build_replica(
         &self,
@@ -301,11 +303,11 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
             move |ctx| unsafe { com2.EndBuildReplica(ctx) },
             Some(cancellation_token),
         );
-        rx.await?
+        rx.await?.map_err(crate::Error::from)
     }
     fn remove_replica(&self, replicaid: i64) -> crate::Result<()> {
         debug!("PrimaryReplicatorProxy::remove_replica");
-        unsafe { self.com_impl.RemoveReplica(replicaid) }
+        unsafe { self.com_impl.RemoveReplica(replicaid) }.map_err(crate::Error::from)
     }
 }
 
@@ -323,26 +325,30 @@ impl StatefulServicePartition {
     /// Provides access to the ServicePartitionInformation of the service, which contains the partition type and ID.
     pub fn get_partition_information(&self) -> crate::Result<ServicePartitionInformation> {
         unsafe { self.com_impl.GetPartitionInfo()?.as_ref() }
-            .ok_or(FabricErrorCode::E_POINTER.into())
+            .ok_or(ErrorCode::E_POINTER.into())
             .map(ServicePartitionInformation::from)
     }
 
     /// Used to check the readiness of the replica in regard to read operations.
     /// The ReadStatus should be checked before the replica is servicing a customer request that is a read operation.
     pub fn get_read_status(&self) -> crate::Result<ServicePartitionAccessStatus> {
-        unsafe { self.com_impl.GetReadStatus() }.map(ServicePartitionAccessStatus::from)
+        unsafe { self.com_impl.GetReadStatus() }
+            .map(ServicePartitionAccessStatus::from)
+            .map_err(crate::Error::from)
     }
 
     /// Used to check the readiness of the partition in regard to write operations.
     /// The WriteStatus should be checked before the replica services a customer request that is a write operation.
     pub fn get_write_status(&self) -> crate::Result<ServicePartitionAccessStatus> {
-        unsafe { self.com_impl.GetWriteStatus() }.map(ServicePartitionAccessStatus::from)
+        unsafe { self.com_impl.GetWriteStatus() }
+            .map(ServicePartitionAccessStatus::from)
+            .map_err(crate::Error::from)
     }
 
     /// TODO: not implemented
     /// Creates a FabricReplicator with the specified settings and returns it to the replica.
     pub fn create_replicator(&self) -> crate::Result<()> {
-        Err(FabricErrorCode::E_NOTIMPL.into())
+        Err(ErrorCode::E_NOTIMPL.into())
     }
 
     /// Reports load for the current replica in the partition.
@@ -354,13 +360,13 @@ impl StatefulServicePartition {
     pub fn report_load(&self, metrics: &[LoadMetric]) -> crate::Result<()> {
         let metrics_ref = LoadMetricListRef::from_slice(metrics);
         let raw = metrics_ref.as_raw_slice();
-        unsafe { self.com_impl.ReportLoad(raw) }
+        unsafe { self.com_impl.ReportLoad(raw) }.map_err(crate::Error::from)
     }
 
     /// Enables the replica to report a fault to the runtime and indicates that it has encountered
     /// an error from which it cannot recover and must either be restarted or removed.
     pub fn report_fault(&self, fault_type: FaultType) -> crate::Result<()> {
-        unsafe { self.com_impl.ReportFault(fault_type.into()) }
+        unsafe { self.com_impl.ReportFault(fault_type.into()) }.map_err(crate::Error::from)
     }
 
     /// Reports the move cost for a replica.
@@ -370,7 +376,7 @@ impl StatefulServicePartition {
     /// it examines both load information and move cost of each replica.
     /// Resource balances will prefer to move replicas with lower cost in order to achieve balance.
     pub fn report_move_cost(&self, move_cost: MoveCost) -> crate::Result<()> {
-        unsafe { self.com_impl.ReportMoveCost(move_cost.into()) }
+        unsafe { self.com_impl.ReportMoveCost(move_cost.into()) }.map_err(crate::Error::from)
     }
 
     // Remarks:
@@ -383,13 +389,13 @@ impl StatefulServicePartition {
     /// Reports current partition health.
     pub fn report_partition_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
         let healthinfo_ref = &healthinfo.into();
-        unsafe { self.com_impl.ReportPartitionHealth(healthinfo_ref) }
+        unsafe { self.com_impl.ReportPartitionHealth(healthinfo_ref) }.map_err(crate::Error::from)
     }
 
     /// Reports health on the current stateful service replica of the partition.
     pub fn report_replica_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
         let healthinfo_ref = &healthinfo.into();
-        unsafe { self.com_impl.ReportReplicaHealth(healthinfo_ref) }
+        unsafe { self.com_impl.ReportReplicaHealth(healthinfo_ref) }.map_err(crate::Error::from)
     }
 }
 

@@ -24,9 +24,9 @@ impl StringResult {
 }
 
 impl IFabricStringResult_Impl for StringResult_Impl {
-    fn get_String(&self) -> windows_core::PCWSTR {
+    fn get_String(&self) -> crate::PCWSTR {
         // This is some hack to get the raw pointer out.
-        windows_core::PCWSTR::from_raw(self.data.as_ptr())
+        crate::PCWSTR::from_raw(self.data.as_ptr())
     }
 }
 

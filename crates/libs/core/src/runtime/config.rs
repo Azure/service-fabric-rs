@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{error::FabricErrorCode, WString};
+use crate::{error::ErrorCode, WString};
 use mssf_com::{
     FabricRuntime::IFabricConfigurationPackage,
     FabricTypes::{
@@ -108,7 +108,7 @@ impl ConfigurationPackage {
                 res.owner = Some(self.com.clone());
                 Ok(res)
             }
-            None => Err(FabricErrorCode::E_POINTER.into()),
+            None => Err(ErrorCode::E_POINTER.into()),
         }
     }
 
@@ -128,7 +128,7 @@ impl ConfigurationPackage {
         Ok((WStringWrap::from(raw).into(), is_encrypted != 0))
     }
 
-    pub fn decrypt_value(&self, encryptedvalue: &WString) -> windows_core::Result<WString> {
+    pub fn decrypt_value(&self, encryptedvalue: &WString) -> crate::Result<WString> {
         let s = unsafe { self.com.DecryptValue(encryptedvalue.as_pcwstr()) }?;
         Ok(WStringWrap::from(&s).into())
     }

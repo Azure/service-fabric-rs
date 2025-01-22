@@ -68,17 +68,21 @@ where
     fn OnConnected(
         &self,
         gw_info: windows_core::Ref<IFabricGatewayInformationResult>,
-    ) -> windows_core::Result<()> {
+    ) -> crate::WinResult<()> {
         let info = GatewayInformationResult::from(gw_info.unwrap());
-        self.inner.on_connected(&info)
+        self.inner
+            .on_connected(&info)
+            .map_err(crate::WinError::from)
     }
 
     fn OnDisconnected(
         &self,
         gw_info: windows_core::Ref<IFabricGatewayInformationResult>,
-    ) -> windows_core::Result<()> {
+    ) -> crate::WinResult<()> {
         let info = GatewayInformationResult::from(gw_info.unwrap());
-        self.inner.on_disconnected(&info)
+        self.inner
+            .on_disconnected(&info)
+            .map_err(crate::WinError::from)
     }
 }
 

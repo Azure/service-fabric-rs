@@ -41,6 +41,7 @@ where
             self.com_impl
                 .RegisterStatelessServiceFactory(servicetypename.as_pcwstr(), &bridge)
         }
+        .map_err(crate::Error::from)
     }
 
     pub fn register_stateful_service_factory(
@@ -55,5 +56,6 @@ where
             self.com_impl
                 .RegisterStatefulServiceFactory(servicetypename.as_pcwstr(), &bridge)
         }
+        .map_err(crate::Error::from)
     }
 }

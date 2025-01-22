@@ -11,7 +11,6 @@ use std::sync::Arc;
 use app::AppContext;
 use mssf_core::conf::{Config, FabricConfigSource};
 use mssf_core::debug::wait_for_debugger;
-use mssf_core::error::FabricError;
 use mssf_core::runtime::config::ConfigurationPackage;
 use mssf_core::runtime::executor::{DefaultExecutor, Executor};
 use mssf_core::runtime::node_context::NodeContext;
@@ -169,9 +168,6 @@ fn send_health_report(actctx: &CodePackageActivationContext) {
         &healthinfo,
         Some(&HealthReportSendOption { immediate: true }),
     ) {
-        error!(
-            "report application health failed: {:?}",
-            FabricError::from(e)
-        );
+        error!("report application health failed: {:?}", e);
     }
 }

@@ -26,7 +26,8 @@ pub mod client;
 #[cfg(feature = "config_source")]
 pub mod conf;
 pub mod debug;
-pub mod error;
+mod error;
+pub use error::{Error, ErrorCode, Result};
 mod iter;
 pub mod runtime;
 pub mod strings;
@@ -34,5 +35,8 @@ pub mod sync;
 pub mod types;
 
 // re-export some windows types
-pub use windows_core::{Error, Interface, Result, WString, GUID, HRESULT, PCWSTR};
+pub use windows_core::{Interface, WString, GUID, HRESULT, PCWSTR};
 // Note cannot re-export windows_core::implement because the macro using it has hard coded mod name.
+/// Windows error type.
+pub use windows_core::Error as WinError;
+pub use windows_core::Result as WinResult;

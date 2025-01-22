@@ -174,7 +174,7 @@ impl ApiTable {
         }
     }
 
-    pub fn fabric_get_last_error_message(&self) -> crate::Result<IFabricStringResult> {
+    pub fn fabric_get_last_error_message(&self) -> crate::WinResult<IFabricStringResult> {
         let mut result = std::ptr::null_mut::<core::ffi::c_void>();
         unsafe { (self.fabric_get_last_error_message_fn)(std::ptr::addr_of_mut!(result)) }.ok()?;
         assert!(!result.is_null());
@@ -186,7 +186,7 @@ impl ApiTable {
         connectionstrings: &[windows_core::PCWSTR],
         service_notification_handler: Option<&IFabricServiceNotificationEventHandler>,
         client_connection_handler: Option<&IFabricClientConnectionEventHandler>,
-    ) -> crate::Result<T> {
+    ) -> crate::WinResult<T> {
         let mut result = std::ptr::null_mut::<core::ffi::c_void>();
         unsafe {
             (self.fabric_create_client3_fn)(
@@ -206,7 +206,7 @@ impl ApiTable {
         &self,
         service_notification_handler: Option<&IFabricServiceNotificationEventHandler>,
         client_connection_handler: Option<&IFabricClientConnectionEventHandler>,
-    ) -> crate::Result<T> {
+    ) -> crate::WinResult<T> {
         let mut result = std::ptr::null_mut::<core::ffi::c_void>();
         unsafe {
             (self.fabric_create_local_client3_fn)(
@@ -225,7 +225,7 @@ impl ApiTable {
         service_notification_handler: Option<&IFabricServiceNotificationEventHandler>,
         client_connection_handler: Option<&IFabricClientConnectionEventHandler>,
         clientrole: FABRIC_CLIENT_ROLE,
-    ) -> crate::Result<T> {
+    ) -> crate::WinResult<T> {
         let mut result = std::ptr::null_mut::<core::ffi::c_void>();
         unsafe {
             (self.fabric_create_local_client4_fn)(
@@ -240,13 +240,13 @@ impl ApiTable {
         Ok(unsafe { T::from_raw(result) })
     }
 
-    pub fn fabric_create_runtime<T: Interface>(&self) -> crate::Result<T> {
+    pub fn fabric_create_runtime<T: Interface>(&self) -> crate::WinResult<T> {
         let mut result = std::ptr::null_mut::<core::ffi::c_void>();
         unsafe { (self.fabric_create_runtime_fn)(&T::IID, std::ptr::addr_of_mut!(result)) }.ok()?;
         Ok(unsafe { T::from_raw(result) })
     }
 
-    pub fn fabric_get_activation_context<T: Interface>(&self) -> crate::Result<T> {
+    pub fn fabric_get_activation_context<T: Interface>(&self) -> crate::WinResult<T> {
         let mut result = std::ptr::null_mut::<core::ffi::c_void>();
         unsafe { (self.fabric_get_activation_context_fn)(&T::IID, std::ptr::addr_of_mut!(result)) }
             .ok()?;
@@ -257,7 +257,7 @@ impl ApiTable {
         &self,
         timeoutmilliseconds: u32,
         callback: Option<&IFabricAsyncOperationCallback>,
-    ) -> crate::Result<IFabricAsyncOperationContext> {
+    ) -> crate::WinResult<IFabricAsyncOperationContext> {
         let mut result = std::ptr::null_mut::<core::ffi::c_void>();
         unsafe {
             (self.fabric_begin_get_node_context_fn)(
@@ -273,7 +273,7 @@ impl ApiTable {
     pub fn fabric_end_get_node_context<T: Interface>(
         &self,
         context: Option<&IFabricAsyncOperationContext>,
-    ) -> crate::Result<T> {
+    ) -> crate::WinResult<T> {
         let mut result = std::ptr::null_mut::<core::ffi::c_void>();
         unsafe {
             (self.fabric_end_get_node_context_fn)(
@@ -285,7 +285,7 @@ impl ApiTable {
         Ok(unsafe { T::from_raw(result) })
     }
 
-    pub fn fabric_get_node_context<T: Interface>(&self) -> crate::Result<T> {
+    pub fn fabric_get_node_context<T: Interface>(&self) -> crate::WinResult<T> {
         let mut result = std::ptr::null_mut::<core::ffi::c_void>();
         unsafe { (self.fabric_get_node_context_fn)(std::ptr::addr_of_mut!(result)) }.ok()?;
         Ok(unsafe { T::from_raw(result) })
@@ -301,7 +301,7 @@ impl ApiTable {
         localstorekind: FABRIC_LOCAL_STORE_KIND,
         localstoresettings: *const core::ffi::c_void,
         storeeventhandler: Option<&IFabricStoreEventHandler>,
-    ) -> crate::Result<T> {
+    ) -> crate::WinResult<T> {
         let mut result = std::ptr::null_mut::<core::ffi::c_void>();
         unsafe {
             (self.fabric_create_key_value_store_replica_fn)(

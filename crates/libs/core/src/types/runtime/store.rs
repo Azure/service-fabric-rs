@@ -65,7 +65,7 @@ impl From<LocalStoreKind> for FABRIC_LOCAL_STORE_KIND {
 #[derive(Default)]
 pub struct EseLocalStoreSettings {
     // FABRIC_ESE_LOCAL_STORE_SETTINGS
-    pub db_folder_path: ::windows_core::WString,
+    pub db_folder_path: crate::WString,
     pub log_file_size_in_kb: i32,
     pub log_buffer_size_in_kb: i32,
     pub max_cursors: i32,
@@ -77,7 +77,7 @@ pub struct EseLocalStoreSettings {
 impl EseLocalStoreSettings {
     pub fn get_raw(&self) -> FABRIC_ESE_LOCAL_STORE_SETTINGS {
         FABRIC_ESE_LOCAL_STORE_SETTINGS {
-            DbFolderPath: windows_core::PCWSTR::from_raw(self.db_folder_path.as_ptr()),
+            DbFolderPath: crate::PCWSTR::from_raw(self.db_folder_path.as_ptr()),
             LogFileSizeInKB: self.log_file_size_in_kb,
             LogBufferSizeInKB: self.log_buffer_size_in_kb,
             MaxCursors: self.max_cursors,

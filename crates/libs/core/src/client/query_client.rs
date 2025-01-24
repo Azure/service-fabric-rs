@@ -48,7 +48,7 @@ impl QueryClient {
         query_description: &FABRIC_NODE_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<::windows_core::Result<IFabricGetNodeListResult2>> {
+    ) -> FabricReceiver2<crate::WinResult<IFabricGetNodeListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
 
@@ -66,7 +66,7 @@ impl QueryClient {
         desc: &FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::Result<IFabricGetPartitionListResult2>> {
+    ) -> FabricReceiver2<crate::WinResult<IFabricGetPartitionListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy2(
@@ -83,7 +83,7 @@ impl QueryClient {
         desc: &FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::Result<IFabricGetReplicaListResult2>> {
+    ) -> FabricReceiver2<crate::WinResult<IFabricGetReplicaListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy2(
@@ -100,7 +100,7 @@ impl QueryClient {
         desc: &FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::Result<IFabricGetPartitionLoadInformationResult>> {
+    ) -> FabricReceiver2<crate::WinResult<IFabricGetPartitionLoadInformationResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy2(
@@ -133,7 +133,7 @@ impl QueryClient {
         desc: &NodeQueryDescription,
         timeout: Duration,
         cancellation_token: Option<crate::sync::CancellationToken>,
-    ) -> windows_core::Result<NodeList> {
+    ) -> crate::Result<NodeList> {
         // Note that the SF raw structs are scoped to avoid having them across await points.
         // This makes api Send. All FabricClient api should follow this pattern.
         let com = {

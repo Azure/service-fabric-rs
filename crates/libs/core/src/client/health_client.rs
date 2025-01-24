@@ -51,7 +51,7 @@ impl HealthClient {
     /// When a cluster is secured, the health client needs administrator permission to be able to send the reports.
     /// Read more about [connecting to a cluster using the FabricClient APIs](https://learn.microsoft.com/en-us/azure/service-fabric/service-fabric-connect-to-secure-cluster).
     /// For more information about health reporting, see [Service Fabric health monitoring](https://learn.microsoft.com/en-us/azure/service-fabric/service-fabric-health-introduction).
-    pub fn report_health(&self, health_report: &HealthReport) -> windows_core::Result<()> {
+    pub fn report_health(&self, health_report: &HealthReport) -> crate::Result<()> {
         match health_report {
             HealthReport::Invalid => {
                 let fabric_health_report = FABRIC_HEALTH_REPORT {
@@ -190,6 +190,6 @@ impl HealthClient {
                 };
                 unsafe { self.com.ReportHealth(&fabric_health_report) }
             }
-        }
+        }.map_err(crate::Error::from)
     }
 }

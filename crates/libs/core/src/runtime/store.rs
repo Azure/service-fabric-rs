@@ -28,7 +28,7 @@ impl IFabricStoreEventHandler_Impl for DummyStoreEventHandler_Impl {
 
 pub fn create_com_key_value_store_replica(
     storename: &WString,
-    partitionid: ::windows_core::GUID,
+    partitionid: crate::GUID,
     replicaid: i64,
     replicatorsettings: &ReplicatorSettings,
     localstorekind: LocalStoreKind,
@@ -43,13 +43,15 @@ pub fn create_com_key_value_store_replica(
         Some(x) => &x,
         None => std::ptr::null(),
     };
-    crate::API_TABLE.fabric_create_key_value_store_replica::<IFabricKeyValueStoreReplica2>(
-        PCWSTR::from_raw(storename.as_ptr()),
-        partitionid,
-        replicaid,
-        &replicatorsettings.get_raw(),
-        kind,
-        local_settings_ptr as *const c_void,
-        Some(storeeventhandler),
-    )
+    crate::API_TABLE
+        .fabric_create_key_value_store_replica::<IFabricKeyValueStoreReplica2>(
+            PCWSTR::from_raw(storename.as_ptr()),
+            partitionid,
+            replicaid,
+            &replicatorsettings.get_raw(),
+            kind,
+            local_settings_ptr as *const c_void,
+            Some(storeeventhandler),
+        )
+        .map_err(crate::Error::from)
 }

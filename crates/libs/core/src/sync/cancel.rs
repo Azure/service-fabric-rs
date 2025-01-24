@@ -12,7 +12,7 @@ use std::{
 use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
 pub use tokio_util::sync::CancellationToken;
 
-use crate::error::FabricErrorCode;
+use crate::error::ErrorCode;
 
 // proxy impl
 
@@ -42,7 +42,7 @@ impl<T> FabricReceiver2<T> {
     // pub fn blocking_recv(self) -> crate::Result<T> {
     //     if let Some(t) = self.token {
     //         if t.is_cancelled() {
-    //             return Err(FabricErrorCode::OperationCanceled.into());
+    //             return Err(ErrorCode::OperationCanceled.into());
     //         }
     //     }
     //     // sender must send stuff so that there is not error.
@@ -56,7 +56,7 @@ impl<T> FabricReceiver2<T> {
     }
 
     // Cancels the inner SF operation if exists, and reset the ctx.
-    fn cancel_inner_ctx(&mut self) -> crate::Result<()> {
+    fn cancel_inner_ctx(&mut self) -> crate::WinResult<()> {
         if let Some(ctx) = &self.ctx {
             if let Err(e) = unsafe { ctx.Cancel() } {
                 // fail to cancel inner operation.
@@ -81,7 +81,7 @@ impl<T> Future for FabricReceiver2<T> {
     // The error code should be OperationCanceled, unless cancellation
     // of SF ctx returns other errors.
     // (TODO: observe other error code from SF, maybe some code should be ignored).
-    type Output = crate::Result<T>;
+    type Output = crate::WinResult<T>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         // Poll the receiver first, if ready then return the output,
         // else poll the cancellation token, if cancelled propergate the cancel to SF ctx,
@@ -105,7 +105,7 @@ impl<T> Future for FabricReceiver2<T> {
                     if let Err(e) = self.cancel_inner_ctx() {
                         Poll::Ready(Err(e))
                     } else {
-                        Poll::Ready(Err(FabricErrorCode::E_ABORT.into()))
+                        Poll::Ready(Err(ErrorCode::E_ABORT.into()))
                     }
                 } else {
                     panic!("sender dropped without sending")
@@ -215,12 +215,12 @@ pub fn fabric_begin_end_proxy2<BEGIN, END, T>(
     begin: BEGIN,
     end: END,
     token: Option<CancellationToken>,
-) -> FabricReceiver2<::windows_core::Result<T>>
+) -> FabricReceiver2<crate::WinResult<T>>
 where
     BEGIN: FnOnce(
         Option<&IFabricAsyncOperationCallback>,
-    ) -> crate::Result<IFabricAsyncOperationContext>,
-    END: FnOnce(Option<&IFabricAsyncOperationContext>) -> crate::Result<T> + 'static,
+    ) -> crate::WinResult<IFabricAsyncOperationContext>,
+    END: FnOnce(Option<&IFabricAsyncOperationContext>) -> crate::WinResult<T> + 'static,
     T: 'static,
 {
     let (tx, mut rx) = oneshot_channel(token);
@@ -257,8 +257,8 @@ mod test {
     use tokio_util::sync::CancellationToken;
 
     use crate::{
-        error::FabricErrorCode, runtime::executor::DefaultExecutor,
-        sync::bridge_context::BridgeContext3, sync::cancel::oneshot_channel,
+        error::ErrorCode, runtime::executor::DefaultExecutor, sync::bridge_context::BridgeContext3,
+        sync::cancel::oneshot_channel,
     };
 
     use super::fabric_begin_end_proxy2;
@@ -303,7 +303,7 @@ mod test {
             let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
             token.cancel();
             std::mem::drop(tx);
-            assert_eq!(rx.await.unwrap_err(), FabricErrorCode::E_ABORT.into());
+            assert_eq!(rx.await.unwrap_err(), ErrorCode::E_ABORT.into());
         }
     }
 
@@ -322,14 +322,14 @@ mod test {
             delay: Duration,
             ignore_cancel: bool, // ignores the token
             token: Option<CancellationToken>,
-        ) -> crate::Result<String>;
+        ) -> crate::WinResult<String>;
 
         async fn set_data_delay(
             &self,
             input: String,
             delay: Duration,
             token: Option<CancellationToken>,
-        ) -> crate::Result<()>;
+        ) -> crate::WinResult<()>;
     }
 
     /// Test Obj for cancellation
@@ -345,7 +345,7 @@ mod test {
             delay: Duration,
             ignore_cancel: bool,
             token: Option<CancellationToken>,
-        ) -> crate::Result<String> {
+        ) -> crate::WinResult<String> {
             if self.panic.load(std::sync::atomic::Ordering::Relaxed) {
                 panic!("test panic is set")
             }
@@ -359,7 +359,7 @@ mod test {
                     select! {
                         _ = t.cancelled() => {
                             // The token was cancelled
-                            Err(FabricErrorCode::E_ABORT.into())
+                            Err(ErrorCode::E_ABORT.into())
                         }
                         _ = tokio::time::sleep(delay) => {
                             Ok(self.get_data())
@@ -379,7 +379,7 @@ mod test {
             input: String,
             delay: Duration,
             token: Option<CancellationToken>,
-        ) -> crate::Result<()> {
+        ) -> crate::WinResult<()> {
             if self.panic.load(std::sync::atomic::Ordering::Relaxed) {
                 panic!("test panic is set")
             }
@@ -394,7 +394,7 @@ mod test {
                     select! {
                         _ = t.cancelled() => {
                             // The token was cancelled
-                            Err(FabricErrorCode::E_ABORT.into())
+                            Err(ErrorCode::E_ABORT.into())
                         }
                         _ = tokio::time::sleep(delay) => {
                             self.set_data(input);
@@ -457,7 +457,7 @@ mod test {
             delay: Duration,
             ignore_cancel: bool,
             callback: windows_core::Ref<IFabricAsyncOperationCallback>,
-        ) -> crate::Result<IFabricAsyncOperationContext> {
+        ) -> crate::WinResult<IFabricAsyncOperationContext> {
             let inner = self.inner.clone();
             let (ctx, token) = BridgeContext3::make(callback);
             ctx.spawn(&self.rt, async move {
@@ -470,7 +470,7 @@ mod test {
         pub fn end_get_data_delay(
             &self,
             context: windows_core::Ref<IFabricAsyncOperationContext>,
-        ) -> crate::Result<String> {
+        ) -> crate::WinResult<String> {
             BridgeContext3::result(context)?
         }
 
@@ -479,7 +479,7 @@ mod test {
             input: String,
             delay: Duration,
             callback: windows_core::Ref<IFabricAsyncOperationCallback>,
-        ) -> crate::Result<IFabricAsyncOperationContext> {
+        ) -> crate::WinResult<IFabricAsyncOperationContext> {
             let inner = self.inner.clone();
             let (ctx, token) = BridgeContext3::make(callback);
             ctx.spawn(&self.rt, async move {
@@ -490,7 +490,7 @@ mod test {
         pub fn end_set_data_delay(
             &self,
             context: windows_core::Ref<IFabricAsyncOperationContext>,
-        ) -> crate::Result<()> {
+        ) -> crate::WinResult<()> {
             BridgeContext3::result(context)?
         }
     }
@@ -513,7 +513,7 @@ mod test {
     /// Returned ref has the same lifetime as the opt.
     fn option_to_ref<T>(opt: Option<&T>) -> windows_core::Ref<T>
     where
-        T: windows_core::Interface,
+        T: crate::Interface,
     {
         unsafe { core::mem::transmute_copy(opt.unwrap()) }
     }
@@ -525,7 +525,7 @@ mod test {
             delay: Duration,
             ignore_cancel: bool,
             token: Option<CancellationToken>,
-        ) -> crate::Result<String> {
+        ) -> crate::WinResult<String> {
             let com1 = &self.com;
             let com2 = self.com.clone();
             fabric_begin_end_proxy2(
@@ -543,7 +543,7 @@ mod test {
             input: String,
             delay: Duration,
             token: Option<CancellationToken>,
-        ) -> crate::Result<()> {
+        ) -> crate::WinResult<()> {
             let com1 = &self.com;
             let com2 = self.com.clone();
             fabric_begin_end_proxy2(
@@ -591,7 +591,7 @@ mod test {
             let fu = obj.get_data_delay(Duration::from_secs(5), false, Some(token.clone()));
             token.cancel();
             let err = fu.await.unwrap_err();
-            assert_eq!(err, FabricErrorCode::E_ABORT.into());
+            assert_eq!(err, ErrorCode::E_ABORT.into());
         }
         // get with cancel but ignore cancel from inner impl.
         // Because the cancel is ignored by inner implementation, success will be returned.
@@ -614,7 +614,7 @@ mod test {
             );
             token.cancel();
             let err = fu.await.unwrap_err();
-            assert_eq!(err, FabricErrorCode::E_ABORT.into());
+            assert_eq!(err, ErrorCode::E_ABORT.into());
         }
         // because of cancel, data should not be changed.
         {
@@ -740,7 +740,7 @@ mod test {
             let out = IMyObj::get_data_delay(&proxy, Duration::ZERO, false, None)
                 .await
                 .expect_err("should error out");
-            assert_eq!(out, FabricErrorCode::E_UNEXPECTED.into());
+            assert_eq!(out, ErrorCode::E_UNEXPECTED.into());
         }
     }
 }

@@ -3,10 +3,8 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::HRESULT;
 use mssf_com::FabricTypes::FABRIC_ERROR_CODE;
-use windows_core::HRESULT;
-
-use super::FabricError;
 
 // Common HRESULT codes that SF reuses from windows.
 const S_OK: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(windows_core::Win32::Foundation::S_OK.0);
@@ -49,7 +47,7 @@ macro_rules! define_fabric_error_code{
         #[allow(non_camel_case_types)]
         #[derive(Debug, Clone, PartialEq)]
         #[repr(i32)]
-        pub enum FabricErrorCode {
+        pub enum ErrorCode {
             // Define windows error codes for SF
             $(
                 $code1 = $code1 .0,
@@ -61,7 +59,7 @@ macro_rules! define_fabric_error_code{
             )*
         }
 
-        impl TryFrom<FABRIC_ERROR_CODE> for FabricErrorCode {
+        impl TryFrom<FABRIC_ERROR_CODE> for ErrorCode {
             type Error = &'static str;
 
             fn try_from(value: FABRIC_ERROR_CODE) -> Result<Self, Self::Error> {
@@ -80,26 +78,26 @@ macro_rules! define_fabric_error_code{
     }
 }
 
-impl From<FabricErrorCode> for FabricError {
-    fn from(value: FabricErrorCode) -> Self {
-        FabricError(HRESULT(value as i32))
+impl From<ErrorCode> for crate::Error {
+    fn from(value: ErrorCode) -> Self {
+        crate::Error(HRESULT(value as i32))
     }
 }
 
-// other conversions goes through FabricError
-impl From<FabricErrorCode> for HRESULT {
-    fn from(value: FabricErrorCode) -> Self {
-        FabricError::from(value).into()
+// other conversions goes through crate::Error
+impl From<ErrorCode> for HRESULT {
+    fn from(value: ErrorCode) -> Self {
+        crate::Error::from(value).into()
     }
 }
 
-impl From<FabricErrorCode> for crate::Error {
-    fn from(value: FabricErrorCode) -> Self {
-        FabricError::from(value).into()
+impl From<ErrorCode> for crate::WinError {
+    fn from(value: ErrorCode) -> Self {
+        crate::Error::from(value).into()
     }
 }
 
-impl core::fmt::Display for FabricErrorCode {
+impl core::fmt::Display for ErrorCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         core::write!(f, "{:?}", self) // use the debug string
     }

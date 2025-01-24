@@ -100,14 +100,14 @@ impl IFabricAsyncOperationContext_Impl for AsyncContext_Impl {
         true
     }
 
-    fn Callback(&self) -> crate::Result<IFabricAsyncOperationCallback> {
+    fn Callback(&self) -> crate::WinResult<IFabricAsyncOperationCallback> {
         debug!("AsyncContext::Callback");
         // get a view of the callback
         let callback_copy: IFabricAsyncOperationCallback = self.callback_.clone();
         Ok(callback_copy)
     }
 
-    fn Cancel(&self) -> crate::Result<()> {
+    fn Cancel(&self) -> crate::WinResult<()> {
         debug!("AsyncContext::Cancel");
         Ok(())
     }

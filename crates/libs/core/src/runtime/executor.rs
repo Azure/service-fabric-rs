@@ -8,7 +8,7 @@ use std::future::Future;
 use tokio::{runtime::Handle, sync::mpsc::channel};
 use tracing::info;
 
-use crate::error::FabricErrorCode;
+use crate::error::ErrorCode;
 
 // Executor is used by rs to post jobs to execute in the background
 // Sync is needed due to we use the executor across await boundary.
@@ -98,11 +98,11 @@ impl<T: Send> JoinHandle<T> for DefaultJoinHandle<T> {
             Err(e) => {
                 let e = if e.is_cancelled() {
                     // we never cancel in executor
-                    FabricErrorCode::E_ABORT
+                    ErrorCode::E_ABORT
                 } else if e.is_panic() {
-                    FabricErrorCode::E_UNEXPECTED
+                    ErrorCode::E_UNEXPECTED
                 } else {
-                    FabricErrorCode::E_FAIL
+                    ErrorCode::E_FAIL
                 };
                 tracing::error!("DefaultJoinHandle: background task failed: {e}");
                 Err(e.into())

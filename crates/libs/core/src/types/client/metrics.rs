@@ -7,10 +7,10 @@
 
 use std::time::SystemTime;
 
+use crate::WString;
 use mssf_com::{
     FabricClient::IFabricGetPartitionLoadInformationResult, FabricTypes::FABRIC_LOAD_METRIC_REPORT,
 };
-use windows_core::WString;
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},

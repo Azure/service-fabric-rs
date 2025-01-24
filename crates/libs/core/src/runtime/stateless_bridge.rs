@@ -62,7 +62,7 @@ where
         initializationdata: *const u8,
         partitionid: &crate::GUID,
         instanceid: i64,
-    ) -> crate::Result<IFabricStatelessServiceInstance> {
+    ) -> crate::WinResult<IFabricStatelessServiceInstance> {
         debug!("StatelessServiceFactoryBridge::CreateInstance");
         let h_servicename = WStringWrap::from(crate::PCWSTR(servicename.0)).into();
         let h_servicetypename = WStringWrap::from(*servicetypename).into();
@@ -125,7 +125,7 @@ where
         &self,
         partition: windows_core::Ref<IFabricStatelessServicePartition>,
         callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
-    ) -> crate::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
         debug!("IFabricStatelessServiceInstanceBridge::BeginOpen");
         let partition_cp = partition.unwrap().clone();
         let partition_bridge = StatelessServicePartition::new(partition_cp);
@@ -136,13 +136,14 @@ where
                 .open(&partition_bridge, token)
                 .await
                 .map(|s| IFabricStringResult::from(WStringWrap::from(s)))
+                .map_err(crate::WinError::from)
         })
     }
 
     fn EndOpen(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
-    ) -> crate::Result<IFabricStringResult> {
+    ) -> crate::WinResult<IFabricStringResult> {
         debug!("IFabricStatelessServiceInstanceBridge::EndOpen");
         BridgeContext3::result(context)?
     }
@@ -150,17 +151,19 @@ where
     fn BeginClose(
         &self,
         callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
-    ) -> crate::Result<super::IFabricAsyncOperationContext> {
+    ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
         debug!("IFabricStatelessServiceInstanceBridge::BeginClose");
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext3::make(callback);
-        ctx.spawn(&self.rt, async move { inner.close(token).await })
+        ctx.spawn(&self.rt, async move {
+            inner.close(token).await.map_err(crate::WinError::from)
+        })
     }
 
     fn EndClose(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
-    ) -> crate::Result<()> {
+    ) -> crate::WinResult<()> {
         debug!("IFabricStatelessServiceInstanceBridge::EndClose");
         BridgeContext3::result(context)?
     }

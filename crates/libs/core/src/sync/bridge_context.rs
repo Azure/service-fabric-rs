@@ -6,7 +6,7 @@
 use std::{cell::Cell, future::Future};
 
 use crate::{
-    error::FabricErrorCode,
+    error::ErrorCode,
     runtime::executor::{Executor, JoinHandle},
 };
 use mssf_com::FabricCommon::{
@@ -77,7 +77,7 @@ where
         self,
         rt: &impl Executor,
         future: F,
-    ) -> crate::Result<IFabricAsyncOperationContext>
+    ) -> crate::WinResult<IFabricAsyncOperationContext>
     where
         F: Future<Output = T> + Send + 'static,
     {
@@ -127,9 +127,9 @@ where
             true => self.content.take().expect("content is consumed twice."),
             false => {
                 if self.token.is_cancelled() {
-                    Err(FabricErrorCode::E_ABORT.into())
+                    Err(ErrorCode::E_ABORT.into())
                 } else {
-                    Err(FabricErrorCode::FABRIC_E_OPERATION_NOT_COMPLETE.into())
+                    Err(ErrorCode::FABRIC_E_OPERATION_NOT_COMPLETE.into())
                 }
             }
         }
@@ -159,12 +159,12 @@ impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3_Impl<T> {
         self.is_completed_synchronously
     }
 
-    fn Callback(&self) -> crate::Result<IFabricAsyncOperationCallback> {
+    fn Callback(&self) -> crate::WinResult<IFabricAsyncOperationCallback> {
         let cp = self.callback.clone();
         Ok(cp)
     }
 
-    fn Cancel(&self) -> crate::Result<()> {
+    fn Cancel(&self) -> crate::WinResult<()> {
         self.token.cancel();
         Ok(())
     }

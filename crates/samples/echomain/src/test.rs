@@ -13,7 +13,6 @@ use mssf_core::{
         },
         FabricClient, GatewayInformationResult, ServiceNotification,
     },
-    error::FabricErrorCode,
     types::{
         QueryServiceReplicaStatus, RemoveReplicaDescription, ServiceNotificationFilterDescription,
         ServiceNotificationFilterFlags, ServicePartitionInformation,
@@ -21,7 +20,7 @@ use mssf_core::{
         ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
         StatelessServiceInstanceQueryResult, StatelessServicePartitionQueryResult,
     },
-    WString, GUID,
+    ErrorCode, WString, GUID,
 };
 
 static ECHO_SVC_URI: &str = "fabric:/EchoApp/EchoAppService";
@@ -90,7 +89,7 @@ impl EchoTestClient {
                 _ => panic!("not stateless"),
             }),
             // replica might be restarting
-            None => Err(FabricErrorCode::E_FAIL.into()),
+            None => Err(ErrorCode::E_FAIL.into()),
         }
     }
 

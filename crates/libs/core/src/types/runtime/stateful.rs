@@ -309,7 +309,7 @@ mod test {
             Id: id,
             Role: FABRIC_REPLICA_ROLE_PRIMARY,
             Status: FABRIC_REPLICA_STATUS_UP,
-            ReplicatorAddress: windows_core::PCWSTR::null(),
+            ReplicatorAddress: crate::PCWSTR::null(),
             CurrentProgress: 123,
             CatchUpCapability: 123,
             Reserved: std::ptr::null_mut(),

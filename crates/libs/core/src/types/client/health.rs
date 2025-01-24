@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use windows_core::{WString, GUID};
+use crate::{WString, GUID};
 
 use crate::types::HealthInformation;
 

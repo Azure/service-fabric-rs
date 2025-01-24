@@ -118,7 +118,7 @@ impl ServiceEndpointsVersion {
     /// Ideally one should use mssf_core::client::svc_mgmt_client::ResolvedServicePartition instead, by
     /// doing an additional FabricClient resolve call to retrieve from FabricClient cache.
     pub fn compare(&self, other: &ServiceEndpointsVersion) -> crate::Result<i32> {
-        unsafe { self.com.Compare(&other.com) }
+        unsafe { self.com.Compare(&other.com) }.map_err(crate::Error::from)
     }
 }
 
@@ -175,10 +175,12 @@ where
     fn OnNotification(
         &self,
         notification: windows_core::Ref<IFabricServiceNotification>,
-    ) -> crate::Result<()> {
+    ) -> crate::WinResult<()> {
         let com = notification.unwrap();
         let msg = ServiceNotification::from(com.clone());
-        self.inner.on_notification(&msg)
+        self.inner
+            .on_notification(&msg)
+            .map_err(crate::WinError::from)
     }
 }
 

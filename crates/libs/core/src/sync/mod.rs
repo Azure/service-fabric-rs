@@ -91,8 +91,9 @@ mod async_tests {
     };
 
     use crate::Interface;
+    use crate::PCWSTR;
     use tokio::sync::oneshot::Sender;
-    use windows_core::{implement, PCWSTR};
+    use windows_core::implement;
 
     use super::channel::{oneshot_channel, FabricReceiver, SBox};
 
@@ -172,7 +173,7 @@ mod async_tests {
             , [<$param_opt _name>]: SBox<$param_opt>
         )*
 
-        ) -> crate::Result<$res> {
+        ) -> crate::WinResult<$res> {
             let ctx: SBox<IFabricAsyncOperationContext>;
             let token: AwaitableToken;
 
@@ -270,7 +271,7 @@ mod async_tests {
         pub async fn get_node_list_example(
             &self,
             p: SBox<FABRIC_NODE_QUERY_DESCRIPTION>,
-        ) -> crate::Result<IFabricGetNodeListResult> {
+        ) -> crate::WinResult<IFabricGetNodeListResult> {
             let ctx: SBox<IFabricAsyncOperationContext>;
             let token: AwaitableToken;
 
@@ -293,7 +294,7 @@ mod async_tests {
         pub fn get_node_list_example2(
             &self,
             querydescription: &FABRIC_NODE_QUERY_DESCRIPTION,
-        ) -> FabricReceiver<crate::Result<IFabricGetNodeListResult>> {
+        ) -> FabricReceiver<crate::WinResult<IFabricGetNodeListResult>> {
             let (tx, rx) = oneshot_channel();
 
             let com_cp = self.com.clone();
@@ -314,7 +315,7 @@ mod async_tests {
         pub fn get_node_list_sync_example(
             &self,
             querydescription: &FABRIC_NODE_QUERY_DESCRIPTION,
-        ) -> crate::Result<IFabricGetNodeListResult> {
+        ) -> crate::WinResult<IFabricGetNodeListResult> {
             let rx = self.get_node_list_example2(querydescription);
             rx.blocking_recv()
         }

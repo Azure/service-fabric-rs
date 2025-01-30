@@ -93,6 +93,22 @@ impl core::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
+// conversion from common error types in std
+
+impl From<std::io::Error> for Error {
+    fn from(value: std::io::Error) -> Self {
+        // Use the windows implementation to convert
+        crate::WinError::from(value).into()
+    }
+}
+
+impl From<core::num::TryFromIntError> for Error {
+    fn from(value: core::num::TryFromIntError) -> Self {
+        // Use windows implementation
+        crate::WinError::from(value).into()
+    }
+}
+
 #[cfg(test)]
 mod test {
 

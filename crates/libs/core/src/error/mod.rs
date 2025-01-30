@@ -102,6 +102,13 @@ impl From<std::io::Error> for Error {
     }
 }
 
+impl From<Error> for std::io::Error {
+    fn from(value: Error) -> Self {
+        // Use windows implementation
+        Self::from(crate::WinError::from(value))
+    }
+}
+
 impl From<core::num::TryFromIntError> for Error {
     fn from(value: core::num::TryFromIntError) -> Self {
         // Use windows implementation

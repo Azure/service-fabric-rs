@@ -200,9 +200,11 @@ pub trait LocalPrimaryReplicator: Replicator {
     /// For swap primary case, double catchup feature is enabled by default.
     /// SF can first call this api before initiating write status revokation. SF then revoke write status,
     /// and call this again. This allows replicator to catch up with write status granted to make necessary writes for
-    /// catch up. There is a chance that replicator takes forever to complete this api with ReplicaSetQuarumMode::All
+    /// catch up. There is a chance that replicator takes forever to complete this api with mode ReplicaSetQuarumMode::All
     /// since client/user can keep writing and advancing the committed LSN, but for it most likely would not
-    /// stall ReplicaSetQuarumMode::Write.
+    /// stall in mode ReplicaSetQuarumMode::Write.
+    /// In other cases when client write is not impacted (like secondary restart),
+    /// SF may call this api only once with write status granted.
     ///
     /// Implementor should not assume when this is called in relation to other api calls,
     /// but instead follow the semantics of what catchup should do.

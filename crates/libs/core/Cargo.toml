@@ -1,6 +1,6 @@
 [package]
 name = "mssf-core"
-version = "0.0.20"
+version = "0.0.21"
 edition = "2021"
 license = "MIT"
 description = "Rust for Azure Service Fabric. Rust safe APIs."
@@ -49,10 +49,10 @@ features = [
 [dependencies.windows-core]
 package = "mssf-pal"
 path = "../pal"
-version = "0.0.20"
+version = "0.0.21"
 
 [dependencies.mssf-com]
 path = "../com"
-version = "0.0.20"
+version = "0.0.21"
 default-features = false
 features = ["ServiceFabric_FabricClient", "ServiceFabric_FabricCommon", "ServiceFabric_FabricTypes", "ServiceFabric_FabricRuntime"]

@@ -14,15 +14,6 @@ pub mod Foundation {
         type TypeKind = windows_core::CopyType;
     }
 
-    /// TODO: windows-bindgen needs to remap this to regular bool.
-    #[must_use]
-    #[repr(transparent)]
-    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-    pub struct BOOL(pub i32);
-    impl windows_core::TypeKind for BOOL {
-        type TypeKind = windows_core::CopyType;
-    }
-
     // Error codes used by SF from windows.
     pub const S_OK: windows_core::HRESULT = windows_core::HRESULT(0x0_u32 as _);
     pub const E_ABORT: windows_core::HRESULT = windows_core::HRESULT(0x80004004_u32 as _);

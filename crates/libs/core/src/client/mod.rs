@@ -90,8 +90,10 @@ fn create_local_client_internal<T: Interface>(
             .clone()
             .cast::<IFabricClientSettings2>()
             .expect("failed to cast fabric client to IFabricClientSettings2");
-        // SAFETY: setting_interface implements the required COM interface.
-        let existing_settings = FabricClientSettings::get_from_com(&setting_interface);
+        desired_settings
+            .set(&setting_interface)
+            .expect("failed to set client settings")
+        // TODO: error handling
     }
 
     client

@@ -16,30 +16,17 @@ use windows_core::WString;
 
 use crate::strings::WStringWrap;
 
-/// Represents the value of a client setting
-/// TODO: could just be option
-pub enum FabricClientSettingValue<T> {
-    /// Set the value to the provided value
-    Set(T),
-    /// Use whatever value GetSettings returns
-    Default,
-}
-
-impl<T> Default for FabricClientSettingValue<T> {
-    fn default() -> Self {
-        Self::Default
-    }
-}
-
 /// What level of Fabric Client setting support does the client library have?
 #[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
-enum FabricClientSettingSupportLevel {
+#[non_exhaustive]
+pub enum FabricClientSettingSupportLevel {
     Unknown = -1,
     Basic = 0,
     EX1 = 1,
     EX2 = 2,
     EX3 = 3,
     EX4 = 4,
+    #[allow(dead_code, reason = "TODO: idl update")]
     EX5 = 5,
 }
 
@@ -54,11 +41,11 @@ impl Default for FabricClientSettingSupportLevel {
 /// Note: you can default fields you're not interested in like so:
 /// ```
 /// let my_settings = FabricClientSettings {
-///  PartitionLocationCacheLimit: FabricClientSettingValue<NonZeroU32>(NonZeroU32::new(1).expect("Non-zero value")),
+///  PartitionLocationCacheLimit: Option<NonZeroU32>(NonZeroU32::new(1).expect("Non-zero value")),
 ///  ..Default::default()
 /// };
 /// ```
-#[derive(Default)]
+#[derive(Default, Clone)]
 #[allow(non_snake_case, reason = "For consistency with underlying COM api")]
 pub struct FabricClientSettings {
     /// What level of support does the client library have?
@@ -69,39 +56,39 @@ pub struct FabricClientSettings {
     // Where possible, disallow trying to set values that will be rejected there anyway
     // And get a niche optimization at the same time
     // FABRIC_CLIENT_SETTINGS
-    pub PartitionLocationCacheLimit: FabricClientSettingValue<NonZeroU32>,
-    pub ServiceChangePollIntervalInSeconds: FabricClientSettingValue<NonZeroU32>,
+    pub PartitionLocationCacheLimit: Option<NonZeroU32>,
+    pub ServiceChangePollIntervalInSeconds: Option<NonZeroU32>,
     /// Note: ConnectionInitializationTimeoutInSeconds must be greater than or equal to ServiceChangePollIntervalInSecond
     // TODO: consider enforcing this before even calling into ServiceFabric?
-    pub ConnectionInitializationTimeoutInSeconds: FabricClientSettingValue<NonZeroU32>,
+    pub ConnectionInitializationTimeoutInSeconds: Option<NonZeroU32>,
     // TODO: document what 0 means for this value, it appears to be allowed
-    pub KeepAliveIntervalInSeconds: FabricClientSettingValue<u32>,
-    pub HealthOperationTimeoutInSeconds: FabricClientSettingValue<NonZeroU32>,
+    pub KeepAliveIntervalInSeconds: Option<u32>,
+    pub HealthOperationTimeoutInSeconds: Option<NonZeroU32>,
     // TODO: document what 0 means for this value, it appears to be allowed
-    pub HealthReportSendIntervalInSeconds: FabricClientSettingValue<u32>,
+    pub HealthReportSendIntervalInSeconds: Option<u32>,
 
     // FABRIC_CLIENT_SETTINGS_EX1
     /// May not be longer than 256 characters
-    pub ClientFriendlyName: FabricClientSettingValue<WString>,
+    pub ClientFriendlyName: Option<WString>,
 
-    pub PartitionLocationCacheBucketCount: FabricClientSettingValue<u32>,
+    pub PartitionLocationCacheBucketCount: Option<u32>,
     /// Note: 0 is accepted in the C++ API, but is replaced with th e default vlaue under the hood
-    pub HealthReportRetrySendIntervalInSeconds: FabricClientSettingValue<NonZeroU32>,
+    pub HealthReportRetrySendIntervalInSeconds: Option<NonZeroU32>,
 
     // FABRIC_CLIENT_SETTINGS_EX2
-    pub NotificationGatewayConnectionTimeoutInSeconds: FabricClientSettingValue<NonZeroU32>,
-    pub NotificationCacheUpdateTimeoutInSeconds: FabricClientSettingValue<NonZeroU32>,
+    pub NotificationGatewayConnectionTimeoutInSeconds: Option<NonZeroU32>,
+    pub NotificationCacheUpdateTimeoutInSeconds: Option<NonZeroU32>,
     // FABRIC_CLIENT_SETTINGS_EX3
     // TODO: presumably Zero is not a valid value for this
-    pub AuthTokenBufferSize: FabricClientSettingValue<u32>,
+    pub AuthTokenBufferSize: Option<u32>,
 
     // FABRIC_CLIENT_SETTINGS_EX4
     // Note: ConnectionIdleTimeoutInSeconds is deprecated and must be 0, so we don't expose it.
 
     //  TODO: we're missing FABRIC_CLIENT_SETTINGS_EX5 struct definition
     // FABRIC_CLIENT_SETTINGS_EX5
-    pub AllowHealthReportCleanup: FabricClientSettingValue<bool>,
-    pub HealthReportDropTransientReportTtlThresholdInSeconds: FabricClientSettingValue<u32>,
+    pub AllowHealthReportCleanup: Option<bool>,
+    pub HealthReportDropTransientReportTtlThresholdInSeconds: Option<u32>,
 }
 
 impl FabricClientSettings {
@@ -156,9 +143,7 @@ impl FabricClientSettings {
         // Handle the possibility an _EX field might be unsupported
         macro_rules! Setting {
             ($setting_ty:tt, $parent:expr, $field:ident) => {
-                $parent.map_or(FabricClientSettingValue::Default, |v| {
-                    FabricClientSettingValue::Set(SettingParse!($setting_ty, v.$field, $field))
-                })
+                $parent.map_or(None, |v| Some(SettingParse!($setting_ty, v.$field, $field)))
             };
         }
 
@@ -220,9 +205,8 @@ impl FabricClientSettings {
 
         // FABRIC_CLIENT_SETTINGS_EX5
         // TODO: waiting on IDL update
-        let AllowHealthReportCleanup = FabricClientSettingValue::Default;
-        let HealthReportDropTransientReportTtlThresholdInSeconds =
-            FabricClientSettingValue::Default;
+        let AllowHealthReportCleanup = None;
+        let HealthReportDropTransientReportTtlThresholdInSeconds = None;
 
         FabricClientSettings {
             SupportLevel: support_level,
@@ -256,20 +240,12 @@ fn combine_settings_with_overrides(
     base_client_settings: FabricClientSettings,
     overlay_client_settings: FabricClientSettings,
 ) -> FabricClientSettings {
-    fn merge_pair<T>(
-        base: FabricClientSettingValue<T>,
-        overlay: FabricClientSettingValue<T>,
-    ) -> FabricClientSettingValue<T> {
+    fn merge_pair<T>(base: Option<T>, overlay: Option<T>) -> Option<T> {
         match &overlay {
             // If Set, overlay obviously wins
-            FabricClientSettingValue::Set(_) => overlay,
+            Some(_) => overlay,
             // If Default, overlay has no value, use the lower priority value
-            FabricClientSettingValue::Default => match &base {
-                FabricClientSettingValue::Default => {
-                    panic!("merge cannot result in any default values")
-                }
-                _ => base,
-            },
+            None => base,
         }
     }
     // This macro is maybe a bit unnecessary. But it means there's only 2 places that have to match up
@@ -378,16 +354,24 @@ unsafe fn option_box_from_raw<T>(maybe_ptr: *mut c_void) -> Option<Box<T>> {
 }
 
 /// Get a required setting
-fn get_required<T: Copy>(val: &FabricClientSettingValue<T>) -> T {
+fn get_required<T: Copy>(val: &Option<T>) -> T {
     match val {
-        FabricClientSettingValue::Set(v) => *v,
-        FabricClientSettingValue::Default => {
+        Some(v) => *v,
+        None => {
             panic!("Required setting")
         }
     }
 }
 
 impl FabricClientSettings {
+    /// Note: only overrides non-default settings; leaves any settings set previously that don't explicitly have new values alone
+    pub fn set(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
+        // SAFETY: setting_interface implements the required COM interface.
+        let existing_settings = FabricClientSettings::get_from_com(&settings_interface);
+        let new_settings = combine_settings_with_overrides(existing_settings, self.clone());
+        new_settings.set_inner(settings_interface)
+    }
+
     fn set_inner(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
         assert!(self.SupportLevel >= FabricClientSettingSupportLevel::Basic);
 
@@ -450,8 +434,8 @@ impl FabricClientSettings {
             // SF side copies the string and does not retain a reference, so safety conditions are met.
             // TODO: this as_pcwstr function should be unsafe
             let client_friendly_name = match &self.ClientFriendlyName {
-                FabricClientSettingValue::Set(v) => v.as_pcwstr(),
-                FabricClientSettingValue::Default => {
+                Some(v) => v.as_pcwstr(),
+                None => {
                     panic!("Required setting")
                 }
             };

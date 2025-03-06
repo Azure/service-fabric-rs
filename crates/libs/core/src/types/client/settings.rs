@@ -126,12 +126,14 @@ impl FabricClientSettings {
         // Always Some, but makes it cleaner if we reuse the optional handling
         let val = Some(valRead);
 
+        // Handle type conversion
         macro_rules! SettingParse {
             (NonZeroU32, $e:expr, $field:ident) => { NonZeroU32::new($e).expect(concat!(stringify!($field), " should be non-zero")) };
             (u32, $e:expr, $field:ident) => { $e };
             {WString, $e:expr, $field:ident} => { WStringWrap::from($e).into_wstring()};
         }
 
+        // Handle the possibility an _EX field might be unsupported
         macro_rules! Setting {
             ($setting_ty:tt, $parent:expr, $field:ident) => {
                 $parent.map_or(FabricClientSettingValue::Unsupported, |v| {

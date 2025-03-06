@@ -6,10 +6,13 @@
 // This mod contains common types shared between FabricRuntime and FabricClient.
 mod partition;
 pub use partition::*;
+mod security_credentials;
+pub use security_credentials::*;
 mod stateful;
 pub use stateful::*;
 mod metrics;
 pub use metrics::*;
+
 
 use mssf_com::FabricTypes::{
     FABRIC_FAULT_TYPE, FABRIC_FAULT_TYPE_INVALID, FABRIC_FAULT_TYPE_PERMANENT,

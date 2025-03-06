@@ -7,24 +7,25 @@ use std::{any::Any, ffi::c_void};
 
 use mssf_com::{FabricClient::IFabricClientSettings2, FabricTypes::{FABRIC_SECURITY_CREDENTIALS, FABRIC_SECURITY_CREDENTIAL_KIND, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS, FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS, FABRIC_SECURITY_CREDENTIAL_KIND_X509_2}};
 
-// TODO: would this better live in common?
 
 pub struct FabricWindowsCredentials{}
 
-pub struct FabricX509Credentials{}
+pub use claims_credentials::*;
+pub use windows_credentials::*;
+pub use x509_credentials::*;
 
-pub struct FabricClaimsCredentials
-{}
 
 #[non_exhaustive]
 pub enum FabricSecurityCredentials{
     FabricWindowsCredentials(FabricWindowsCredentials),
     FabricX509Credentials(FabricX509Credentials),
+    FabricX509Credentials2(FabricX509Credentials2),
     FabricClaimsCredentials(FabricClaimsCredentials)
 }
 
 impl FabricSecurityCredentials
 {
+    // TODO: may belong on the other side?
     pub fn set(&self, settings_interface: &IFabricClientSettings2)->  windows_core::Result<()>
     {
         let triplet: (FABRIC_SECURITY_CREDENTIAL_KIND, Box<dyn std::any::Any>, * mut c_void) = match &self

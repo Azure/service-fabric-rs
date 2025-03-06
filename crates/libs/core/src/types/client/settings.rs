@@ -236,6 +236,8 @@ impl FabricClientSettings {
     }
 }
 
+/// Combine explicitly provided settings with current effective settings
+/// TODO: tests
 fn combine_settings_with_overrides(
     base_client_settings: FabricClientSettings,
     overlay_client_settings: FabricClientSettings,

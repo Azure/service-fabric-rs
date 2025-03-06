@@ -23,6 +23,10 @@ mod metrics;
 pub use metrics::*;
 mod health;
 pub use health::*;
+mod security_credentials;
+pub use security_credentials::*;
+mod settings;
+pub use settings::*;
 
 // FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS
 bitflags::bitflags! {

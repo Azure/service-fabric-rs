@@ -220,38 +220,109 @@ impl FabricClientSettings {
     }
 }
 
-impl FabricClientSettings {
-    fn with_overrides(mut self, overlay: FabricClientSettings) -> Self {
-            
-        fn apply_override<T>(base: &mut FabricClientSettingValue<T>, overlay: FabricClientSettingValue<T>) {
-            match &overlay {
-                // If Set, overlay obviously wins
-                FabricClientSettingValue::Set(_) => { *base = overlay},
-                // If Default, overlay has no value, use the lower priority value
-                FabricClientSettingValue::Default => {},
-                // This one is a bit trickier. But if someone explicitly is saying this setting is not supported, let's go with that.
-                FabricClientSettingValue::Unsupported => { *base = overlay }
-            }
-        }
-        macro_rules! Override {
-            ($base:expr, $overlay:expr, $field:ident) => {
-                apply_override(&mut $base.$field, $overlay.$field);
-            };
-        }
 
-        Override!(self, overlay, PartitionLocationCacheLimit);
-        Override!(self, overlay,  ServiceChangePollIntervalInSeconds);
-        Override!(self, overlay,  ConnectionInitializationTimeoutInSeconds);
-        Override!(self, overlay,  KeepAliveIntervalInSeconds);
-        Override!(self, overlay,  HealthOperationTimeoutInSeconds);
-        Override!(self, overlay,  HealthReportSendIntervalInSeconds);
-        Override!(self, overlay,  ClientFriendlyName);
-        Override!(self, overlay,  PartitionLocationCacheBucketCount);
-        Override!(self, overlay,  HealthReportRetrySendIntervalInSeconds);
-        Override!(self, overlay,  NotificationGatewayConnectionTimeoutInSeconds);
-        Override!(self, overlay,  NotificationCacheUpdateTimeoutInSeconds);
-        Override!(self, overlay,  AuthTokenBufferSize);
-        Override!(self, overlay,  AllowHealthReportCleanup);
-        Override!(self, overlay,  HealthReportDropTransientReportTtlThresholdInSeconds);
+fn combine_settings_with_overrides(
+    base_client_settings: FabricClientSettings,
+    overlay_client_settings: FabricClientSettings,
+) -> FabricClientSettings {
+    fn merge_pair<T>(
+        base: FabricClientSettingValue<T>,
+        overlay: FabricClientSettingValue<T>,
+    ) -> FabricClientSettingValue<T> {
+        match &overlay {
+            // If Set, overlay obviously wins
+            FabricClientSettingValue::Set(_) => overlay,
+            // If Default, overlay has no value, use the lower priority value
+            FabricClientSettingValue::Default => match &base {
+                FabricClientSettingValue::Default => {
+                    panic!("merge cannot result in any default values")
+                }
+                _ => base,
+            },
+            // This one is a bit trickier. But if someone explicitly is saying this setting is not supported, let's go with that.
+            FabricClientSettingValue::Unsupported => overlay,
+        }
+    }
+    // This macro is maybe a bit unnecessary. But it means there's only 2 places that have to match up
+    // When combined with long enough variable names, it wraps nicely and is legible
+    // We could mutate the structure in place and reduce it to a single repetition of the field name,
+    // but then it's easy to accidentally forget to add a new setting.
+    macro_rules! Merge {
+        ($base:expr, $overlay:expr, $field:ident) => {
+            merge_pair($base.$field, $overlay.$field)
+        };
+    }
+
+    FabricClientSettings {
+        PartitionLocationCacheLimit: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            PartitionLocationCacheLimit
+        ),
+        ServiceChangePollIntervalInSeconds: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            ServiceChangePollIntervalInSeconds
+        ),
+        ConnectionInitializationTimeoutInSeconds: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            ConnectionInitializationTimeoutInSeconds
+        ),
+        KeepAliveIntervalInSeconds: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            KeepAliveIntervalInSeconds
+        ),
+        HealthOperationTimeoutInSeconds: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            HealthOperationTimeoutInSeconds
+        ),
+        HealthReportSendIntervalInSeconds: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            HealthReportSendIntervalInSeconds
+        ),
+        ClientFriendlyName: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            ClientFriendlyName
+        ),
+        PartitionLocationCacheBucketCount: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            PartitionLocationCacheBucketCount
+        ),
+        HealthReportRetrySendIntervalInSeconds: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            HealthReportRetrySendIntervalInSeconds
+        ),
+        NotificationGatewayConnectionTimeoutInSeconds: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            NotificationGatewayConnectionTimeoutInSeconds
+        ),
+        NotificationCacheUpdateTimeoutInSeconds: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            NotificationCacheUpdateTimeoutInSeconds
+        ),
+        AuthTokenBufferSize: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            AuthTokenBufferSize
+        ),
+        AllowHealthReportCleanup: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            AllowHealthReportCleanup
+        ),
+        HealthReportDropTransientReportTtlThresholdInSeconds: Merge!(
+            base_client_settings,
+            overlay_client_settings,
+            HealthReportDropTransientReportTtlThresholdInSeconds
+        ),
     }
 }

@@ -114,81 +114,71 @@ impl FabricClientSettings {
         assert!(ptr.is_aligned());
         // SAFETY: ptr is not null, deferenceable, and not mutated concurrently
         // Note: this read/copy doesn't free us from lifetime concerns, as there are heap-allocated string pointers e.g. in FABRIC_CLIENT_SETTINGS_EX1.
-        let val = unsafe { ptr::read(ptr) };
+        let valRead = unsafe { ptr::read(ptr) };
+        // Always Some, but makes it cleaner if we reuse the optional handling
+        let val = Some(valRead);
 
-        
+        macro_rules! SettingParse {
+            (NonZeroU32, $e:expr, $field:ident) => { NonZeroU32::new($e).expect(concat!(stringify!($field), " should be non-zero")) };
+            (u32, $e:expr, $field:ident) => { $e };
+            {WString, $e:expr, $field:ident} => { WStringWrap::from($e).into_wstring()};
+        }
+
+        macro_rules! Setting {
+            ($setting_ty:tt, $parent:expr, $field:ident) => {
+                $parent.map_or(FabricClientSettingValue::Unsupported, |v| {
+                    FabricClientSettingValue::Retrieved(SettingParse!(
+                        $setting_ty,
+                        v.$field,
+                        $field
+                    ))
+                })
+            };
+        }
 
         // FABRIC_CLIENT_SETTING
-        let PartitionLocationCacheLimit = FabricClientSettingValue::Retrieved(
-            NonZeroU32::new(val.PartitionLocationCacheLimit)
-                .expect("PartitionLocationCacheLimit should be non-zero"),
-        );
-        let ServiceChangePollIntervalInSeconds = FabricClientSettingValue::Retrieved(
-            NonZeroU32::new(val.ServiceChangePollIntervalInSeconds)
-                .expect("ServiceChangePollIntervalInSeconds should be non-zero"),
-        );
-        let ConnectionInitializationTimeoutInSeconds = FabricClientSettingValue::Retrieved(
-            NonZeroU32::new(val.ConnectionInitializationTimeoutInSeconds)
-                .expect("ConnectionInitializationTimeoutInSeconds should be non-zero"),
-        );
-        let KeepAliveIntervalInSeconds =
-            FabricClientSettingValue::Retrieved(val.KeepAliveIntervalInSeconds);
-        let HealthOperationTimeoutInSeconds = FabricClientSettingValue::Retrieved(
-            NonZeroU32::new(val.HealthOperationTimeoutInSeconds)
-                .expect("HealthOperationTimeoutInSeconds should be non-zero"),
-        );
+        let PartitionLocationCacheLimit = Setting!(NonZeroU32, val, PartitionLocationCacheLimit);
+        let ServiceChangePollIntervalInSeconds =
+            Setting!(NonZeroU32, val, ServiceChangePollIntervalInSeconds);
+        let ConnectionInitializationTimeoutInSeconds =
+            Setting!(NonZeroU32, val, ConnectionInitializationTimeoutInSeconds);
+        let KeepAliveIntervalInSeconds = Setting!(u32, val, KeepAliveIntervalInSeconds);
+
+        let HealthOperationTimeoutInSeconds =
+            Setting!(NonZeroU32, val, HealthOperationTimeoutInSeconds);
         let HealthReportSendIntervalInSeconds =
-            FabricClientSettingValue::Retrieved(val.HealthReportSendIntervalInSeconds);
+            Setting!(u32, val, HealthReportSendIntervalInSeconds);
 
-        // FABRIC_CLIENT_SETTINGS_EX1
+        // SAFETY: FABRIC_CLIENT_SETTINGS.Reserved, if non-null, is really a *mut FABRIC_CLIENT_SETTINGS_EX1
         let ex1: Option<FABRIC_CLIENT_SETTINGS_EX1> =
-            unsafe { Self::get_next(Some(val), |x: &FABRIC_CLIENT_SETTINGS| x.Reserved) };
+            unsafe { Self::get_next(val, |x: &FABRIC_CLIENT_SETTINGS| x.Reserved) };
         // Note: it's critical that ex1 cannout outlive Result, as that's the only thing keeping ClientFriendlyName alive
-        let ClientFriendlyName = ex1.map_or(FabricClientSettingValue::Unsupported, |v| {
-            FabricClientSettingValue::Retrieved(
-                WStringWrap::from(v.ClientFriendlyName).into_wstring(),
-            )
-        });
-        let PartitionLocationCacheBucketCount = ex1
-            .map_or(FabricClientSettingValue::Unsupported, |v| {
-                FabricClientSettingValue::Retrieved(v.PartitionLocationCacheBucketCount)
-            });
+        let ClientFriendlyName = Setting!(WString, ex1, ClientFriendlyName);
+        let PartitionLocationCacheBucketCount =
+            Setting!(u32, ex1, PartitionLocationCacheBucketCount);
         let HealthReportRetrySendIntervalInSeconds =
-            ex1.map_or(FabricClientSettingValue::Unsupported, |v| {
-                FabricClientSettingValue::Retrieved(
-                    NonZeroU32::new(v.HealthReportRetrySendIntervalInSeconds)
-                        .expect("HealthReportRetrySendIntervalInSeconds should be non-zero"),
-                )
-            });
+            Setting!(NonZeroU32, ex1, HealthReportRetrySendIntervalInSeconds);
 
-        // FABRIC_CLIENT_SETTINGS_EX2
+        // SAFETY: FABRIC_CLIENT_SETTINGS_EX1.Reserved, if non-null, is really a *mut FABRIC_CLIENT_SETTINGS_EX2
         let ex2: Option<FABRIC_CLIENT_SETTINGS_EX2> =
             unsafe { Self::get_next(ex1, |x: &FABRIC_CLIENT_SETTINGS_EX1| x.Reserved) };
-        let NotificationGatewayConnectionTimeoutInSeconds =
-            ex2.map_or(FabricClientSettingValue::Unsupported, |v| {
-                FabricClientSettingValue::Retrieved(
-                    NonZeroU32::new(v.NotificationGatewayConnectionTimeoutInSeconds)
-                        .expect("NotificationGatewayConnectionTimeoutInSeconds should be non-zero"),
-                )
-            });
+        let NotificationGatewayConnectionTimeoutInSeconds = Setting!(
+            NonZeroU32,
+            ex2,
+            NotificationGatewayConnectionTimeoutInSeconds
+        );
         let NotificationCacheUpdateTimeoutInSeconds =
-            ex2.map_or(FabricClientSettingValue::Unsupported, |v| {
-                FabricClientSettingValue::Retrieved(
-                    NonZeroU32::new(v.NotificationCacheUpdateTimeoutInSeconds)
-                        .expect("NotificationCacheUpdateTimeoutInSeconds should be non-zero"),
-                )
-            });
+            Setting!(NonZeroU32, ex2, NotificationCacheUpdateTimeoutInSeconds);
 
-        // FABRIC_CLIENT_SETTINGS_EX3
+        // SAFETY: FABRIC_CLIENT_SETTINGS_EX2.Reserved, if non-null, is really a *mut FABRIC_CLIENT_SETTINGS_EX3
         let ex3: Option<FABRIC_CLIENT_SETTINGS_EX3> =
             unsafe { Self::get_next(ex2, |x: &FABRIC_CLIENT_SETTINGS_EX2| x.Reserved) };
-        let AuthTokenBufferSize = ex3.map_or(FabricClientSettingValue::Unsupported, |v| {
-            FabricClientSettingValue::Retrieved(v.AuthTokenBufferSize)
-        });
+        let AuthTokenBufferSize = Setting!(u32, ex3, AuthTokenBufferSize);
 
-        // FABRIC_CLIENT_SETTINGS_EX4 contained a single now-deprecated setting
+        // SAFETY: FABRIC_CLIENT_SETTINGS_EX3.Reserved, if non-null, is really a *mut FABRIC_CLIENT_SETTINGS_EX4
         let _ex4: Option<FABRIC_CLIENT_SETTINGS_EX4> =
             unsafe { Self::get_next(ex3, |x: &FABRIC_CLIENT_SETTINGS_EX3| x.Reserved) };
+        // FABRIC_CLIENT_SETTINGS_EX4 contained a single now-deprecated setting. We only need it to get the pointer to FABRIC_CLIENT_SETTINGS_EX5
 
         // FABRIC_CLIENT_SETTINGS_EX5
         // TODO: waiting on IDL update

@@ -17,7 +17,6 @@ use windows_core::WString;
 use crate::strings::WStringWrap;
 
 /// Represents the value of a client setting
-///
 pub enum FabricClientSettingValue<T> {
     /// Set the value to the provided value
     Set(T),
@@ -36,6 +35,15 @@ impl<T> Default for FabricClientSettingValue<T> {
 }
 
 /// A idiomatic Rust version of FABRIC_CLIENT_SETTINGS
+///
+/// Note: you can default fields you're not interested in like so:
+/// ```
+/// let my_settings = FabricClientSettings {
+///  PartitionLocationCacheLimit: FabricClientSettingValue<NonZeroU32>(NonZeroU32::new(1).expect("Non-zero value")),
+///  ..Default::default()
+/// };
+/// ```
+#[derive(Default)]
 #[allow(non_snake_case, reason = "For consistency with underlying COM api")]
 pub struct FabricClientSettings {
     // FabricClientSettings::FromPublicApi validates ranges for many of these.

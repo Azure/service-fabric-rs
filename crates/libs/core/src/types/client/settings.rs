@@ -20,8 +20,6 @@ use crate::strings::WStringWrap;
 pub enum FabricClientSettingValue<T> {
     /// Set the value to the provided value
     Set(T),
-    /// Value was retrieved from Service Fabric
-    Retrieved(T),
     /// Use whatever value GetSettings returns
     Default,
     /// The version of Service Fabric Client found at runtime does not support this setting
@@ -219,5 +217,41 @@ impl FabricClientSettings {
         // SAFETY: IFabricClientSettings2 implements this COM interface
         let mut result = unsafe { com.GetSettings() }.expect("GetSettings failed");
         Self::get_from_com_inner(&mut result)
+    }
+}
+
+impl FabricClientSettings {
+    fn with_overrides(mut self, overlay: FabricClientSettings) -> Self {
+            
+        fn apply_override<T>(base: &mut FabricClientSettingValue<T>, overlay: FabricClientSettingValue<T>) {
+            match &overlay {
+                // If Set, overlay obviously wins
+                FabricClientSettingValue::Set(_) => { *base = overlay},
+                // If Default, overlay has no value, use the lower priority value
+                FabricClientSettingValue::Default => {},
+                // This one is a bit trickier. But if someone explicitly is saying this setting is not supported, let's go with that.
+                FabricClientSettingValue::Unsupported => { *base = overlay }
+            }
+        }
+        macro_rules! Override {
+            ($base:expr, $overlay:expr, $field:ident) => {
+                apply_override(&mut $base.$field, $overlay.$field);
+            };
+        }
+
+        Override!(self, overlay, PartitionLocationCacheLimit);
+        Override!(self, overlay,  ServiceChangePollIntervalInSeconds);
+        Override!(self, overlay,  ConnectionInitializationTimeoutInSeconds);
+        Override!(self, overlay,  KeepAliveIntervalInSeconds);
+        Override!(self, overlay,  HealthOperationTimeoutInSeconds);
+        Override!(self, overlay,  HealthReportSendIntervalInSeconds);
+        Override!(self, overlay,  ClientFriendlyName);
+        Override!(self, overlay,  PartitionLocationCacheBucketCount);
+        Override!(self, overlay,  HealthReportRetrySendIntervalInSeconds);
+        Override!(self, overlay,  NotificationGatewayConnectionTimeoutInSeconds);
+        Override!(self, overlay,  NotificationCacheUpdateTimeoutInSeconds);
+        Override!(self, overlay,  AuthTokenBufferSize);
+        Override!(self, overlay,  AllowHealthReportCleanup);
+        Override!(self, overlay,  HealthReportDropTransientReportTtlThresholdInSeconds);
     }
 }

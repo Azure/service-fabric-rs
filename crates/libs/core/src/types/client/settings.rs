@@ -97,20 +97,19 @@ impl FabricClientSettings {
         Next: Copy + Clone,
         F: FnOnce(&Current) -> *mut core::ffi::c_void,
     {
-        input
-            .and_then(|val| {
-                let reserved: *mut core::ffi::c_void = accessor(&val);
-                if !reserved.is_null() {
-                    // SAFETY: caller promises that the *mut c_void returned by accessor, if non-null, is actually a *mut Next
-                    let next_ptr: *mut Next = unsafe { std::mem::transmute(reserved) };
-                    assert!(next_ptr.is_aligned());
-                    // SAFETY: pointer is valid and deferencable (null checked and alignment checked above)
-                    let next = unsafe { ptr::read(next_ptr) };
-                    Some(next)
-                } else {
-                    None
-                }
-            })
+        input.and_then(|val| {
+            let reserved: *mut core::ffi::c_void = accessor(&val);
+            if !reserved.is_null() {
+                // SAFETY: caller promises that the *mut c_void returned by accessor, if non-null, is actually a *mut Next
+                let next_ptr: *mut Next = unsafe { std::mem::transmute(reserved) };
+                assert!(next_ptr.is_aligned());
+                // SAFETY: pointer is valid and deferencable (null checked and alignment checked above)
+                let next = unsafe { ptr::read(next_ptr) };
+                Some(next)
+            } else {
+                None
+            }
+        })
     }
 
     /// Inner scope; helps enforce IFabricClientSettingsResult outliving the derived pointers

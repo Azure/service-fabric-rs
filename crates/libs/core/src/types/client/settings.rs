@@ -428,7 +428,6 @@ impl FabricClientSettings {
             // Note: &self reference ensures client_friendly_name is not mutable,
             // and remains valid for duration of this function
             // SF side copies the string and does not retain a reference, so safety conditions are met.
-            // TODO: this as_pcwstr function should be unsafe
             let client_friendly_name = match &self.ClientFriendlyName {
                 Some(v) => v.as_pcwstr(),
                 None => {

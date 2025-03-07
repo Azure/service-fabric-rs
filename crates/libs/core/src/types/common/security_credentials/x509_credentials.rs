@@ -7,7 +7,7 @@
 use std::ffi::c_void;
 
 use mssf_com::FabricTypes::{
-    FABRIC_PROTECTION_LEVEL, FABRIC_SECURITY_CREDENTIAL_KIND, FABRIC_SECURITY_CREDENTIAL_KIND_X509,
+    FABRIC_PROTECTION_LEVEL, FABRIC_SECURITY_CREDENTIALS, FABRIC_SECURITY_CREDENTIAL_KIND_X509,
     FABRIC_X509_CREDENTIALS, FABRIC_X509_FIND_TYPE, FABRIC_X509_FIND_TYPE_FINDBYEXTENSION,
     FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME, FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT,
     FABRIC_X509_STORE_LOCATION, FABRIC_X509_STORE_LOCATION_CURRENTUSER,
@@ -15,9 +15,7 @@ use mssf_com::FabricTypes::{
 };
 use windows_core::{WString, PCWSTR};
 
-use super::{
-    FabricProtectionLevel, FabricSecurityCredentialKind, FabricSecurityCredentialKindWrapper,
-};
+use super::{FabricProtectionLevel, FabricSecurityCredentialKind};
 
 /// How to find the X509 certificate.
 #[non_exhaustive]
@@ -95,30 +93,17 @@ pub struct FabricX509Credentials {
     // TODO: extensions?
 }
 
-pub(super) struct FabricX509CredentialsTemporaryData {
-    /// a Vec<WString> can't be used as an array of PCWSTR
-    /// NOTE: drop order in Rust is top to bottom. This should be dropped before allowed_common_names, to avoid dangling
-    allowed_common_names_ffi: Box<[PCWSTR]>,
-    /// allowed_common_names_ffi borrows data from this
-    /// Technically, we could just borrow it from FabricX509Credentials
-    /// But the lifetimes already are hard to follow and this shouldn't be at all hot.
-    #[allow(dead_code, reason = "Must be kept alive")]
-    allowed_common_names: Box<[WString]>,
-}
-
 impl FabricSecurityCredentialKind for FabricX509Credentials {
-    type FfiType = FABRIC_X509_CREDENTIALS;
-    type TemporaryData = FabricX509CredentialsTemporaryData;
-    const KIND: FABRIC_SECURITY_CREDENTIAL_KIND = FABRIC_SECURITY_CREDENTIAL_KIND_X509;
-    unsafe fn make_raw(
+    fn set_inner(
         &self,
-    ) -> FabricSecurityCredentialKindWrapper<'_, Self, Self::FfiType, Self::TemporaryData> {
-        let allowed_common_names = self.AllowedCommonNames.clone().into_boxed_slice();
-        let allowed_common_names_ffi = allowed_common_names.iter().map(|x| x.as_pcwstr()).collect();
-        let temporary_data = FabricX509CredentialsTemporaryData {
-            allowed_common_names,
-            allowed_common_names_ffi,
-        };
+        settings_interface: &mssf_com::FabricClient::IFabricClientSettings2,
+    ) -> windows_core::Result<()> {
+        let allowed_common_names: Box<[PCWSTR]> = self
+            .AllowedCommonNames
+            .iter()
+            .map(|x| x.as_pcwstr())
+            .collect();
+        let allowed_common_names_ptr = allowed_common_names.as_ptr();
 
         let find_type = FABRIC_X509_FIND_TYPE::from(&self.FindType);
         let find_value = match &self.FindType {
@@ -130,21 +115,24 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
         let store_location = FABRIC_X509_STORE_LOCATION::from(self.StoreLocation);
         let store_name = self.StoreName.as_pcwstr();
         let protection_level = FABRIC_PROTECTION_LEVEL::from(self.ProtectionLevel);
-        let value = Box::new(FABRIC_X509_CREDENTIALS {
-            AllowedCommonNameCount: u32::try_from(temporary_data.allowed_common_names_ffi.len())
-                .unwrap(),
-            AllowedCommonNames: temporary_data.allowed_common_names_ffi.as_ptr(),
+
+        let mut value = FABRIC_X509_CREDENTIALS {
+            AllowedCommonNameCount: u32::try_from(allowed_common_names.len()).unwrap(),
+            AllowedCommonNames: allowed_common_names_ptr,
             FindType: find_type,
             FindValue: find_value,
             StoreLocation: store_location,
             StoreName: store_name,
             ProtectionLevel: protection_level,
+            // TODO: extensions
             Reserved: std::ptr::null_mut(),
-        });
-        FabricSecurityCredentialKindWrapper {
-            value,
-            temporary_data,
-            producing_credential: self,
-        }
+        };
+        let security_credentials = FABRIC_SECURITY_CREDENTIALS {
+            Kind: FABRIC_SECURITY_CREDENTIAL_KIND_X509,
+            Value: &mut value as *mut FABRIC_X509_CREDENTIALS as *mut c_void,
+        };
+
+        // SAFETY: COM interop. SetSecurityCredentials does not retain reference to the passed in data after function returns.
+        unsafe { settings_interface.SetSecurityCredentials(&security_credentials) }
     }
 }

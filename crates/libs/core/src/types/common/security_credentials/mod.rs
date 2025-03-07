@@ -20,9 +20,8 @@ pub use x509_credentials::*;
 
 #[non_exhaustive]
 pub enum FabricSecurityCredentials {
-    // TODO: implement them all
-    // TODO: None?
-    //FabricWindowsCredentials(FabricWindowsCredentials),
+    // TODO: consider None (to clear previously set settings), X509Credentials2?
+    FabricWindowsCredentials(FabricWindowsCredentials),
     FabricX509Credentials(FabricX509Credentials),
     //FabricX509Credentials2(FabricX509Credentials2),
     FabricClaimsCredentials(FabricClaimsCredentials),
@@ -75,6 +74,9 @@ impl FabricSecurityCredentials {
                 v as &dyn FabricSecurityCredentialKind
             }
             FabricSecurityCredentials::FabricClaimsCredentials(v) => {
+                v as &dyn FabricSecurityCredentialKind
+            }
+            FabricSecurityCredentials::FabricWindowsCredentials(v) => {
                 v as &dyn FabricSecurityCredentialKind
             }
         }

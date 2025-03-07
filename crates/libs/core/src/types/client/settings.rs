@@ -7,7 +7,7 @@
 use std::{ffi::c_void, num::NonZeroU32, ptr};
 
 use mssf_com::{
-    FabricClient::{IFabricClientSettings2, IFabricClientSettingsResult},
+    FabricClient::IFabricClientSettings2,
     FabricTypes::{
         FABRIC_CLIENT_SETTINGS, FABRIC_CLIENT_SETTINGS_EX1, FABRIC_CLIENT_SETTINGS_EX2,
         FABRIC_CLIENT_SETTINGS_EX3, FABRIC_CLIENT_SETTINGS_EX4,
@@ -71,35 +71,27 @@ pub struct FabricClientSettings {
 impl FabricClientSettings {
     /// FABRIC_CLIENT_SETTINGS and FABRIC_CLIENT_SETTINGS_EX*
     /// Uses a common Win32 API pattern to allow extensibility; each struct ends with an opaque pointer to the next extension, if supported
-    /// This reuslts in a lot of repetitive, tricky unsafe code in Rust, but it follows a simple pattern.
+    /// This resuslts in a lot of repetitive, tricky unsafe code in Rust, but it follows a simple pattern.
     /// So encapsulate that pattern into a generic function.
     /// SAFETY: caller promises that the *mut core::ffi::c_void is actually of type Next
-    unsafe fn get_next<Current, Next, F>(val: Current, accessor: F) -> Next
+    unsafe fn get_next<Current, Next, F>(val: &Current, accessor: F) -> &Next
     where
-        Next: Copy + Clone,
         F: FnOnce(&Current) -> *mut core::ffi::c_void,
     {
         let reserved: *mut core::ffi::c_void = accessor(&val);
         // SAFETY: caller promises that the *mut c_void returned by accessor, if non-null, is actually a *mut Next
         let next_ptr: *mut Next = unsafe { std::mem::transmute(reserved) };
-        // even FABRIC_CLIENT_SETTINGS_EX5 is from 2020 (so 5 years old). If it's null, fatal error
+        // Even FABRIC_CLIENT_SETTINGS_EX5 is from 2020 (so 5 years old). If it's null, fatal error
         assert!(!next_ptr.is_null() && next_ptr.is_aligned());
         // SAFETY: pointer is valid and deferencable (null checked and alignment checked above)
-        let next = unsafe { ptr::read(next_ptr) };
+        let next: &Next = unsafe { std::mem::transmute(next_ptr) };
         next
     }
+}
 
-    /// Inner scope; helps enforce IFabricClientSettingsResult outliving the derived pointers
-    fn get_from_com_inner(result: &mut IFabricClientSettingsResult) -> FabricClientSettings {
+impl From<&FABRIC_CLIENT_SETTINGS> for FabricClientSettings {
+    fn from(val: &FABRIC_CLIENT_SETTINGS) -> Self {
         #![allow(non_snake_case, reason = "consistency with field definitions")]
-        // SAFETY: FABRIC_CLIENT_SETTINGS_EX1.ClientFriendlyName is only accessed while IFabricClientSettingsResult is in scope
-        let ptr = unsafe { result.get_Settings() };
-        assert!(!ptr.is_null());
-        assert!(ptr.is_aligned());
-        // SAFETY: ptr is not null, deferenceable, and not mutated concurrently
-        // Note: this read/copy doesn't free us from lifetime concerns, as there are heap-allocated string pointers e.g. in FABRIC_CLIENT_SETTINGS_EX1.
-        let val = unsafe { ptr::read(ptr) };
-
         // This is just wordy enough to warrant a macro. Especially since if they are somehow zero, we'd like a nice message
         macro_rules! GetNonZeroU32 {
             ($parent:expr, $field:ident) => {
@@ -109,73 +101,83 @@ impl FabricClientSettings {
                 )
             };
         }
-        // FABRIC_CLIENT_SETTING
-        let PartitionLocationCacheLimit = GetNonZeroU32!(val, PartitionLocationCacheLimit);
-        let ServiceChangePollIntervalInSeconds =
-            GetNonZeroU32!(val, ServiceChangePollIntervalInSeconds);
-        let ConnectionInitializationTimeoutInSeconds =
-            GetNonZeroU32!(val, ConnectionInitializationTimeoutInSeconds);
-        let KeepAliveIntervalInSeconds = Some(val.KeepAliveIntervalInSeconds);
-
-        let HealthOperationTimeoutInSeconds = GetNonZeroU32!(val, HealthOperationTimeoutInSeconds);
-        let HealthReportSendIntervalInSeconds = Some(val.HealthReportSendIntervalInSeconds);
 
         // SAFETY: FABRIC_CLIENT_SETTINGS.Reserved, if non-null, is really a *mut FABRIC_CLIENT_SETTINGS_EX1
-        let ex1: FABRIC_CLIENT_SETTINGS_EX1 =
+        let ex1: &FABRIC_CLIENT_SETTINGS_EX1 =
             unsafe { Self::get_next(val, |x: &FABRIC_CLIENT_SETTINGS| x.Reserved) };
         // Note: it's critical that ex1 cannout outlive Result, as that's the only thing keeping ClientFriendlyName alive
-        let ClientFriendlyName = Some(WStringWrap::from(ex1.ClientFriendlyName).into_wstring());
-        let PartitionLocationCacheBucketCount = Some(ex1.PartitionLocationCacheBucketCount);
-        let HealthReportRetrySendIntervalInSeconds =
-            GetNonZeroU32!(ex1, HealthReportRetrySendIntervalInSeconds);
+        let client_friendly_name = WStringWrap::from(ex1.ClientFriendlyName).into_wstring();
 
         // SAFETY: FABRIC_CLIENT_SETTINGS_EX1.Reserved, if non-null, is really a *mut FABRIC_CLIENT_SETTINGS_EX2
-        let ex2: FABRIC_CLIENT_SETTINGS_EX2 =
+        let ex2: &FABRIC_CLIENT_SETTINGS_EX2 =
             unsafe { Self::get_next(ex1, |x: &FABRIC_CLIENT_SETTINGS_EX1| x.Reserved) };
-        let NotificationGatewayConnectionTimeoutInSeconds =
-            GetNonZeroU32!(ex2, NotificationGatewayConnectionTimeoutInSeconds);
-        let NotificationCacheUpdateTimeoutInSeconds =
-            GetNonZeroU32!(ex2, NotificationCacheUpdateTimeoutInSeconds);
-
         // SAFETY: FABRIC_CLIENT_SETTINGS_EX2.Reserved, if non-null, is really a *mut FABRIC_CLIENT_SETTINGS_EX3
-        let ex3: FABRIC_CLIENT_SETTINGS_EX3 =
+        let ex3: &FABRIC_CLIENT_SETTINGS_EX3 =
             unsafe { Self::get_next(ex2, |x: &FABRIC_CLIENT_SETTINGS_EX2| x.Reserved) };
-        let AuthTokenBufferSize = Some(ex3.AuthTokenBufferSize);
 
-        // SAFETY: FABRIC_CLIENT_SETTINGS_EX3.Reserved, if non-null, is really a *mut FABRIC_CLIENT_SETTINGS_EX4
-        let _ex4: FABRIC_CLIENT_SETTINGS_EX4 =
-            unsafe { Self::get_next(ex3, |x: &FABRIC_CLIENT_SETTINGS_EX3| x.Reserved) };
         // FABRIC_CLIENT_SETTINGS_EX4 contained a single now-deprecated setting. We only need it to get the pointer to FABRIC_CLIENT_SETTINGS_EX5
-
-        // FABRIC_CLIENT_SETTINGS_EX5
-        // TODO: waiting on IDL update
-        let AllowHealthReportCleanup = None;
-        let HealthReportDropTransientReportTtlThresholdInSeconds = None;
+        // SAFETY: FABRIC_CLIENT_SETTINGS_EX3.Reserved, if non-null, is really a *mut FABRIC_CLIENT_SETTINGS_EX4
+        let _ex4: &FABRIC_CLIENT_SETTINGS_EX4 =
+            unsafe { Self::get_next(ex3, |x: &FABRIC_CLIENT_SETTINGS_EX3| x.Reserved) };
 
         FabricClientSettings {
-            PartitionLocationCacheLimit,
-            ServiceChangePollIntervalInSeconds,
-            ConnectionInitializationTimeoutInSeconds,
-            KeepAliveIntervalInSeconds,
-            HealthOperationTimeoutInSeconds,
-            HealthReportSendIntervalInSeconds,
-            ClientFriendlyName,
-            PartitionLocationCacheBucketCount,
-            HealthReportRetrySendIntervalInSeconds,
-            NotificationGatewayConnectionTimeoutInSeconds,
-            NotificationCacheUpdateTimeoutInSeconds,
-            AuthTokenBufferSize,
-            AllowHealthReportCleanup,
-            HealthReportDropTransientReportTtlThresholdInSeconds,
+            // FABRIC_CLIENT_SETTING
+            PartitionLocationCacheLimit: GetNonZeroU32!(val, PartitionLocationCacheLimit),
+            ServiceChangePollIntervalInSeconds: GetNonZeroU32!(
+                val,
+                ServiceChangePollIntervalInSeconds
+            ),
+            ConnectionInitializationTimeoutInSeconds: GetNonZeroU32!(
+                val,
+                ConnectionInitializationTimeoutInSeconds
+            ),
+            KeepAliveIntervalInSeconds: Some(val.KeepAliveIntervalInSeconds),
+            HealthOperationTimeoutInSeconds: GetNonZeroU32!(val, HealthOperationTimeoutInSeconds),
+            HealthReportSendIntervalInSeconds: Some(val.HealthReportSendIntervalInSeconds),
+            // FABRIC_CLIENT_SETTINGS_EX1
+            ClientFriendlyName: Some(client_friendly_name),
+            PartitionLocationCacheBucketCount: Some(ex1.PartitionLocationCacheBucketCount),
+            HealthReportRetrySendIntervalInSeconds: GetNonZeroU32!(
+                ex1,
+                HealthReportRetrySendIntervalInSeconds
+            ),
+            // FABRIC_CLIENT_SETTINGS_EX2
+            NotificationGatewayConnectionTimeoutInSeconds: GetNonZeroU32!(
+                ex2,
+                NotificationGatewayConnectionTimeoutInSeconds
+            ),
+            NotificationCacheUpdateTimeoutInSeconds: GetNonZeroU32!(
+                ex2,
+                NotificationCacheUpdateTimeoutInSeconds
+            ),
+            // FABRIC_CLIENT_SETTINGS_EX3 only has a deprecated setting
+            AuthTokenBufferSize: Some(ex3.AuthTokenBufferSize),
+            // FABRIC_CLIENT_SETTINGS_EX4 only has a deprecated setting
+            // FABRIC_CLIENT_SETTINGS_EX5
+            // TODO: waiting on IDL update
+            AllowHealthReportCleanup: None,
+            HealthReportDropTransientReportTtlThresholdInSeconds: None,
         }
     }
+}
 
+impl FabricClientSettings {
     /// Get the current settings via the COM interface
     pub fn get_from_com(com: &IFabricClientSettings2) -> FabricClientSettings {
         // TODO: error handling?
         // SAFETY: IFabricClientSettings2 implements this COM interface
-        let mut result = unsafe { com.GetSettings() }.expect("GetSettings failed");
-        Self::get_from_com_inner(&mut result)
+        let result = unsafe { com.GetSettings() }.expect("GetSettings failed");
+        // Note: inner scope outlives result, which is critical as otherwise we'd have UB.
+        let converted = {
+            // SAFETY: FABRIC_CLIENT_SETTINGS_EX1.ClientFriendlyName is only accessed while IFabricClientSettingsResult is in scope
+            let ptr = unsafe { result.get_Settings() };
+            assert!(!ptr.is_null() && ptr.is_aligned());
+            // SAFETY: both preconditions are asserted above
+            let my_ref: &FABRIC_CLIENT_SETTINGS = unsafe { std::mem::transmute(ptr) };
+            FabricClientSettings::from(my_ref)
+        };
+        drop(result);
+        converted
     }
 }
 

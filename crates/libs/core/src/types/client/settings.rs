@@ -276,18 +276,6 @@ fn combine_settings_with_overrides(
     }
 }
 
-// Helpers for calling SetSettings
-
-/// Get a required setting
-fn get_required<T: Copy>(val: &Option<T>) -> T {
-    match val {
-        Some(v) => *v,
-        None => {
-            panic!("Required setting")
-        }
-    }
-}
-
 impl FabricClientSettings {
     /// Note: only overrides non-default settings; leaves any settings set previously that don't explicitly have new values alone
     pub fn set(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
@@ -299,26 +287,26 @@ impl FabricClientSettings {
 
     fn set_inner(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
         // TODO: ex5 missing from IDL?
-        let mut ex4 = FABRIC_CLIENT_SETTINGS_EX4 {
+        let ex4 = FABRIC_CLIENT_SETTINGS_EX4 {
             // Deprecated, should always be zero
             ConnectionIdleTimeoutInSeconds: 0,
             Reserved: ptr::null_mut(),
         };
 
         let ex3 = FABRIC_CLIENT_SETTINGS_EX3 {
-            AuthTokenBufferSize: get_required(&self.AuthTokenBufferSize),
-            Reserved: &raw mut ex4 as *mut c_void,
+            AuthTokenBufferSize: self.AuthTokenBufferSize.unwrap(),
+            Reserved: std::ptr::addr_of!(ex4) as *mut c_void,
         };
 
         let ex2 = FABRIC_CLIENT_SETTINGS_EX2 {
-            NotificationGatewayConnectionTimeoutInSeconds: get_required(
-                &self.NotificationGatewayConnectionTimeoutInSeconds,
-            )
-            .into(),
-            NotificationCacheUpdateTimeoutInSeconds: get_required(
-                &self.NotificationCacheUpdateTimeoutInSeconds,
-            )
-            .into(),
+            NotificationGatewayConnectionTimeoutInSeconds: self
+                .NotificationGatewayConnectionTimeoutInSeconds
+                .unwrap()
+                .into(),
+            NotificationCacheUpdateTimeoutInSeconds: self
+                .NotificationCacheUpdateTimeoutInSeconds
+                .unwrap()
+                .into(),
             Reserved: std::ptr::addr_of!(ex3) as *mut c_void,
         };
         // Note: &self reference ensures client_friendly_name is not mutable,
@@ -333,40 +321,33 @@ impl FabricClientSettings {
 
         let ex1 = FABRIC_CLIENT_SETTINGS_EX1 {
             ClientFriendlyName: client_friendly_name,
-            PartitionLocationCacheBucketCount: get_required(
-                &self.PartitionLocationCacheBucketCount,
-            ),
-            HealthReportRetrySendIntervalInSeconds: get_required(
-                &self.HealthReportRetrySendIntervalInSeconds,
-            )
-            .into(),
+            PartitionLocationCacheBucketCount: self.PartitionLocationCacheBucketCount.unwrap(),
+            HealthReportRetrySendIntervalInSeconds: self
+                .HealthReportRetrySendIntervalInSeconds
+                .unwrap()
+                .into(),
             Reserved: std::ptr::addr_of!(ex2) as *mut c_void,
         };
 
         let val = FABRIC_CLIENT_SETTINGS {
-            PartitionLocationCacheLimit: get_required(&self.PartitionLocationCacheLimit).into(),
-            ServiceChangePollIntervalInSeconds: get_required(
-                &self.ServiceChangePollIntervalInSeconds,
-            )
-            .into(),
-            ConnectionInitializationTimeoutInSeconds: get_required(
-                &self.ConnectionInitializationTimeoutInSeconds,
-            )
-            .into(),
-            KeepAliveIntervalInSeconds: get_required(&self.KeepAliveIntervalInSeconds),
-            HealthOperationTimeoutInSeconds: get_required(&self.HealthOperationTimeoutInSeconds)
+            PartitionLocationCacheLimit: self.PartitionLocationCacheLimit.unwrap().into(),
+            ServiceChangePollIntervalInSeconds: self
+                .ServiceChangePollIntervalInSeconds
+                .unwrap()
                 .into(),
-            HealthReportSendIntervalInSeconds: get_required(
-                &self.HealthReportSendIntervalInSeconds,
-            ),
+            ConnectionInitializationTimeoutInSeconds: self
+                .ConnectionInitializationTimeoutInSeconds
+                .unwrap()
+                .into(),
+            KeepAliveIntervalInSeconds: self.KeepAliveIntervalInSeconds.unwrap(),
+            HealthOperationTimeoutInSeconds: self.HealthOperationTimeoutInSeconds.unwrap().into(),
+            HealthReportSendIntervalInSeconds: self.HealthReportSendIntervalInSeconds.unwrap(),
             Reserved: std::ptr::addr_of!(ex1) as *mut c_void,
         };
 
         // CALL THE FUNCTION:
         let val_ptr = std::ptr::addr_of!(val);
         // SAFETY: val is valid for the duration of the call
-        let result = unsafe { settings_interface.SetSettings(val_ptr) };
-
-        result
+        unsafe { settings_interface.SetSettings(val_ptr) }
     }
 }

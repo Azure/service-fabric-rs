@@ -10,8 +10,11 @@ use mssf_com::FabricClient::IFabricClientSettings2;
 /// Note: we may choose to add additional optional fields in future without considering that a SemVer breaking change.
 /// You should default fields you're not interested in like so:
 /// ```
+/// # use std::num::NonZeroU32;
+/// # use mssf_core::types::FabricClientSettings;
 /// let my_settings = FabricClientSettings {
-///  PartitionLocationCacheLimit: Some(NonZeroU32::new(1).expect("Non-zero value")),
+///  // TODO: uncomment in next PR
+///  // PartitionLocationCacheLimit: Some(NonZeroU32::new(1).expect("Non-zero value")),
 ///  // Any other hypothetical settings you're interested in here,
 ///  ..Default::default()
 /// };

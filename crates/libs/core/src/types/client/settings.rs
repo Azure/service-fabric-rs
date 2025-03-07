@@ -13,7 +13,7 @@ use mssf_com::{
         FABRIC_CLIENT_SETTINGS_EX3, FABRIC_CLIENT_SETTINGS_EX4,
     },
 };
-use windows_core::WString;
+use windows_core::{WString, PCWSTR};
 
 use crate::strings::WStringWrap;
 
@@ -323,13 +323,13 @@ impl FabricClientSettings {
         };
         // Note: &self reference ensures client_friendly_name is not mutable,
         // and remains valid for duration of this function
+        // It should always be Some (since if SF gives back null, WStringWrap would have created an empty string)
+        // But the SF API also treats null as if it were empty string, so if self.ClientFriendlyName is somehow None, we'll just map that to null.
         // SF side copies the string and does not retain a reference, so safety conditions are met.
-        let client_friendly_name = match &self.ClientFriendlyName {
-            Some(v) => v.as_pcwstr(),
-            None => {
-                panic!("Required setting")
-            }
-        };
+        let client_friendly_name = self
+            .ClientFriendlyName
+            .as_ref()
+            .map_or(PCWSTR::null(), |x| x.as_pcwstr());
 
         let ex1 = FABRIC_CLIENT_SETTINGS_EX1 {
             ClientFriendlyName: client_friendly_name,

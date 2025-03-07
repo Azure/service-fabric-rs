@@ -322,7 +322,7 @@ impl FabricClientSettings {
         let client_friendly_name = self
             .ClientFriendlyName
             .as_ref()
-            .map_or(PCWSTR::null(), |x| x.as_pcwstr());
+            .map_or(PCWSTR::null(), WString::as_pcwstr);
 
         let ex1 = FABRIC_CLIENT_SETTINGS_EX1 {
             ClientFriendlyName: client_friendly_name,

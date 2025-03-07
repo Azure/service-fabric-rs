@@ -101,7 +101,7 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
         let allowed_common_names: Box<[PCWSTR]> = self
             .AllowedCommonNames
             .iter()
-            .map(|x| x.as_pcwstr())
+            .map(WString::as_pcwstr)
             .collect();
         let allowed_common_names_ptr = allowed_common_names.as_ptr();
 

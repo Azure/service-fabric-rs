@@ -33,23 +33,23 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
         let server_thumbprints: Box<[PCWSTR]> = self
             .ServerThumbprints
             .iter()
-            .map(|x| x.as_pcwstr())
+            .map(WString::as_pcwstr)
             .collect();
         let mut ex1 = FABRIC_CLAIMS_CREDENTIALS_EX1 {
             ServerThumbprintCount: u32::try_from(server_thumbprints.len()).unwrap(),
             ServerThumbprints: server_thumbprints.as_ptr(),
             Reserved: std::ptr::null_mut(),
         };
-        
+
         let server_common_names: Box<[PCWSTR]> = self
             .ServerCommonNames
             .iter()
-            .map(|x| x.as_pcwstr())
+            .map(WString::as_pcwstr)
             .collect();
         let issuer_thumbprints: Box<[PCWSTR]> = self
             .ServerCommonNames
             .iter()
-            .map(|x| x.as_pcwstr())
+            .map(WString::as_pcwstr)
             .collect();
         let mut value = FABRIC_CLAIMS_CREDENTIALS {
             ServerCommonNameCount: u32::try_from(server_common_names.len()).unwrap(),

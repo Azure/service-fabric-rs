@@ -4,6 +4,8 @@
 // ------------------------------------------------------------
 
 use mssf_com::FabricClient::IFabricClientSettings2;
+mod fabric_protection_level;
+pub use fabric_protection_level::*;
 
 /// Idiomatic FABRIC_SECURITY_CREDENTIALS wrapper
 /// Currently, just a placeholder

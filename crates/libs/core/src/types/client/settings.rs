@@ -163,9 +163,10 @@ impl From<&FABRIC_CLIENT_SETTINGS> for FabricClientSettings {
 
 impl FabricClientSettings {
     /// Get the current settings via the COM interface
-    pub fn get_from_com(com: &IFabricClientSettings2) -> FabricClientSettings {
+    pub fn get_defaults(com: &IFabricClientSettings2) -> FabricClientSettings {
         // TODO: error handling?
         // SAFETY: IFabricClientSettings2 implements this COM interface
+        // TODO: replace this with GetFabricClientDefaultSettings
         let result = unsafe { com.GetSettings() }.expect("GetSettings failed");
         // Note: inner scope outlives result, which is critical as otherwise we'd have UB.
         let converted = {
@@ -282,7 +283,7 @@ impl FabricClientSettings {
     /// Note: only overrides non-default settings; leaves any settings set previously that don't explicitly have new values alone
     pub fn set(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
         // SAFETY: setting_interface implements the required COM interface.
-        let existing_settings = FabricClientSettings::get_from_com(settings_interface);
+        let existing_settings = FabricClientSettings::get_defaults(settings_interface);
         let new_settings = combine_settings_with_overrides(existing_settings, self.clone());
         new_settings.set_inner(settings_interface)
     }

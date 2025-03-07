@@ -4,7 +4,7 @@
 // ------------------------------------------------------------
 #![deny(unsafe_op_in_unsafe_fn)]
 #![deny(clippy::undocumented_unsafe_blocks)]
-use std::ffi::c_void;
+use std::{ffi::c_void, ptr::addr_of_mut};
 
 use mssf_com::FabricTypes::{
     FABRIC_PROTECTION_LEVEL, FABRIC_SECURITY_CREDENTIALS, FABRIC_SECURITY_CREDENTIAL_KIND_X509,
@@ -129,7 +129,7 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
         };
         let security_credentials = FABRIC_SECURITY_CREDENTIALS {
             Kind: FABRIC_SECURITY_CREDENTIAL_KIND_X509,
-            Value: &mut value as *mut FABRIC_X509_CREDENTIALS as *mut c_void,
+            Value: addr_of_mut!(value) as *mut c_void,
         };
 
         // SAFETY: COM interop. SetSecurityCredentials does not retain reference to the passed in data after function returns.

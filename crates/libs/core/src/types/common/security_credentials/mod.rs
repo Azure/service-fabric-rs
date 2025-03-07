@@ -25,7 +25,7 @@ pub enum FabricSecurityCredentials {
     //FabricWindowsCredentials(FabricWindowsCredentials),
     FabricX509Credentials(FabricX509Credentials),
     //FabricX509Credentials2(FabricX509Credentials2),
-    //FabricClaimsCredentials(FabricClaimsCredentials),
+    FabricClaimsCredentials(FabricClaimsCredentials),
 }
 
 #[non_exhaustive]
@@ -71,7 +71,12 @@ impl FabricSecurityCredentials {
     // TODO: may belong on the other side?
     pub fn apply(&self, settings_interface: &IFabricClientSettings2) -> crate::Result<()> {
         match &self {
-            FabricSecurityCredentials::FabricX509Credentials(v) => v,
+            FabricSecurityCredentials::FabricX509Credentials(v) => {
+                v as &dyn FabricSecurityCredentialKind
+            }
+            FabricSecurityCredentials::FabricClaimsCredentials(v) => {
+                v as &dyn FabricSecurityCredentialKind
+            }
         }
         .apply_inner(settings_interface)
     }

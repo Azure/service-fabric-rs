@@ -3,5 +3,4 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-pub struct FabricClaimsCredentials
-{}
+// TODO: implement wrapper around FABRIC_CLAIMS_CREDENTIALS

@@ -13,7 +13,6 @@ pub use stateful::*;
 mod metrics;
 pub use metrics::*;
 
-
 use mssf_com::FabricTypes::{
     FABRIC_FAULT_TYPE, FABRIC_FAULT_TYPE_INVALID, FABRIC_FAULT_TYPE_PERMANENT,
     FABRIC_FAULT_TYPE_TRANSIENT, FABRIC_HEALTH_STATE, FABRIC_HEALTH_STATE_ERROR,

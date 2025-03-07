@@ -19,7 +19,7 @@ use crate::{
 
 #[tokio::test]
 async fn test_fabric_client() {
-    let c = FabricClient::builder().build();
+    let c = FabricClient::builder().build().unwrap();
     let qc = c.get_query_manager();
     let timeout = Duration::from_secs(1);
     let paging_status;

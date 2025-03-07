@@ -3,12 +3,16 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::Interface;
+use crate::{
+    types::{FabricClientSettings, FabricSecurityCredentials},
+    Interface,
+};
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use health_client::HealthClient;
 use mssf_com::FabricClient::{
-    IFabricClientConnectionEventHandler, IFabricHealthClient4, IFabricPropertyManagementClient2,
-    IFabricQueryClient10, IFabricServiceManagementClient6, IFabricServiceNotificationEventHandler,
+    IFabricClientConnectionEventHandler, IFabricClientSettings2, IFabricHealthClient4,
+    IFabricPropertyManagementClient2, IFabricQueryClient10, IFabricServiceManagementClient6,
+    IFabricServiceNotificationEventHandler,
 };
 use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
@@ -34,13 +38,22 @@ pub use notification::ServiceNotification;
 #[cfg(test)]
 mod tests;
 
+#[non_exhaustive]
+#[derive(Debug)]
+pub enum FabricClientCreationError {
+    InvalidFabricClientSettings(crate::Error),
+    InvalidFabricSecurityCredentials(crate::Error),
+}
+
 /// Creates FabricClient com object using SF com API.
 fn create_local_client_internal<T: Interface>(
     connection_strings: Option<&Vec<crate::WString>>,
     service_notification_handler: Option<&IFabricServiceNotificationEventHandler>,
     client_connection_handler: Option<&IFabricClientConnectionEventHandler>,
     client_role: Option<ClientRole>,
-) -> T {
+    client_settings: Option<FabricClientSettings>,
+    client_credentials: Option<FabricSecurityCredentials>,
+) -> Result<T, FabricClientCreationError> {
     let role = client_role.unwrap_or(ClientRole::Unknown);
 
     // create raw conn str ptrs.
@@ -51,7 +64,7 @@ fn create_local_client_internal<T: Interface>(
             .collect::<Vec<_>>()
     });
 
-    match connection_strings_ptrs {
+    let client = match connection_strings_ptrs {
         Some(addrs) => {
             assert!(
                 role == ClientRole::Unknown,
@@ -80,7 +93,24 @@ fn create_local_client_internal<T: Interface>(
         }
     }
     // if params are right, client should be created. There is no network call involved during obj creation.
-    .expect("failed to create fabric client")
+    .expect("failed to create fabric client");
+    if client_settings.is_some() || client_credentials.is_some() {
+        let setting_interface = client
+            .clone()
+            .cast::<IFabricClientSettings2>()
+            .expect("failed to cast fabric client to IFabricClientSettings2");
+        if let Some(desired_settings) = client_settings {
+            desired_settings
+                .apply(&setting_interface)
+                .map_err(FabricClientCreationError::InvalidFabricClientSettings)?;
+        }
+        if let Some(desired_credentials) = client_credentials {
+            desired_credentials
+                .apply(&setting_interface)
+                .map_err(FabricClientCreationError::InvalidFabricSecurityCredentials)?;
+        }
+    };
+    Ok(client)
 }
 
 // Builder for FabricClient
@@ -89,6 +119,8 @@ pub struct FabricClientBuilder {
     cc_handler: Option<LambdaClientConnectionNotificationHandler>,
     client_role: ClientRole,
     connection_strings: Option<Vec<crate::WString>>,
+    client_settings: Option<FabricClientSettings>,
+    client_credentials: Option<FabricSecurityCredentials>,
 }
 
 impl Default for FabricClientBuilder {
@@ -105,6 +137,8 @@ impl FabricClientBuilder {
             cc_handler: None,
             client_role: ClientRole::Unknown,
             connection_strings: None,
+            client_settings: None,
+            client_credentials: None,
         }
     }
 
@@ -174,17 +208,29 @@ impl FabricClientBuilder {
         self
     }
 
+    /// Sets the client settings
+    pub fn with_client_settings(mut self, client_settings: FabricClientSettings) -> Self {
+        self.client_settings = Some(client_settings);
+        self
+    }
+
+    // Sets the client credentials
+    pub fn with_credentials(mut self, client_credentials: FabricSecurityCredentials) -> Self {
+        self.client_credentials = Some(client_credentials);
+        self
+    }
+
     /// Build the fabricclient
     /// Remarks: FabricClient connect to SF cluster when
     /// the first API call is triggered. Build/create of the object does not
     /// establish connection.
-    pub fn build(self) -> FabricClient {
-        let c = Self::build_interface(self);
-        FabricClient::from_com(c)
+    pub fn build(self) -> Result<FabricClient, FabricClientCreationError> {
+        let c = Self::build_interface(self)?;
+        Ok(FabricClient::from_com(c))
     }
 
     /// Build the specific com interface of the fabric client.
-    pub fn build_interface<T: Interface>(self) -> T {
+    pub fn build_interface<T: Interface>(self) -> Result<T, FabricClientCreationError> {
         let cc_handler = self
             .cc_handler
             .map(ClientConnectionEventHandlerBridge::new_com);
@@ -193,6 +239,8 @@ impl FabricClientBuilder {
             self.sn_handler.as_ref(),
             cc_handler.as_ref(),
             Some(self.client_role),
+            self.client_settings,
+            self.client_credentials,
         )
     }
 }

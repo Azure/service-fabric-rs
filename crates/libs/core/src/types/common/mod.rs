@@ -6,6 +6,8 @@
 // This mod contains common types shared between FabricRuntime and FabricClient.
 mod partition;
 pub use partition::*;
+mod security_credentials;
+pub use security_credentials::*;
 mod stateful;
 pub use stateful::*;
 mod metrics;

@@ -154,7 +154,7 @@ mod async_tests {
                 pub fn new() -> $name {
                     return $name {
                         com: paste::item! {
-                            crate::client::FabricClientBuilder::new().build_interface::<mssf_com::FabricClient::[<I $name>]>()
+                            crate::client::FabricClientBuilder::new().build_interface::<mssf_com::FabricClient::[<I $name>]>().unwrap()
                         },
                     };
                 }
@@ -242,7 +242,9 @@ mod async_tests {
     impl FabricQueryClient {
         pub fn new() -> FabricQueryClient {
             FabricQueryClient {
-                com: crate::client::FabricClient::builder().build_interface::<IFabricQueryClient>(),
+                com: crate::client::FabricClient::builder()
+                    .build_interface::<IFabricQueryClient>()
+                    .expect("default settings and credentials must be valid"),
             }
         }
 

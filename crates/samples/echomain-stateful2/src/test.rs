@@ -250,7 +250,7 @@ impl TestClient {
 // Uses fabric client to perform various actions for this service.
 #[tokio::test]
 async fn test_partition_info() {
-    let fc = FabricClient::builder().build();
+    let fc = FabricClient::builder().build().unwrap();
     let tc = TestClient::new(fc.clone());
     let timeout = Duration::from_secs(1);
 

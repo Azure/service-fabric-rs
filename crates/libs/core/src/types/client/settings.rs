@@ -103,8 +103,10 @@ impl FabricClientSettings {
         // This is just wordy enough to warrant a macro. Especially since if they are somehow zero, we'd like a nice message
         macro_rules! GetNonZeroU32 {
             ($parent:expr, $field:ident) => {
-                Some(NonZeroU32::new($parent.$field)
-                    .expect(concat!(stringify!($field), " should be non-zero")))
+                Some(
+                    NonZeroU32::new($parent.$field)
+                        .expect(concat!(stringify!($field), " should be non-zero")),
+                )
             };
         }
         // FABRIC_CLIENT_SETTING
@@ -123,8 +125,7 @@ impl FabricClientSettings {
             unsafe { Self::get_next(val, |x: &FABRIC_CLIENT_SETTINGS| x.Reserved) };
         // Note: it's critical that ex1 cannout outlive Result, as that's the only thing keeping ClientFriendlyName alive
         let ClientFriendlyName = Some(WStringWrap::from(ex1.ClientFriendlyName).into_wstring());
-        let PartitionLocationCacheBucketCount =
-            Some(ex1.PartitionLocationCacheBucketCount);
+        let PartitionLocationCacheBucketCount = Some(ex1.PartitionLocationCacheBucketCount);
         let HealthReportRetrySendIntervalInSeconds =
             GetNonZeroU32!(ex1, HealthReportRetrySendIntervalInSeconds);
 
@@ -299,27 +300,27 @@ impl FabricClientSettings {
     fn set_inner(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
         // TODO: ex5 missing from IDL?
         let mut ex4 = FABRIC_CLIENT_SETTINGS_EX4 {
-                // Deprecated, should always be zero
-                ConnectionIdleTimeoutInSeconds: 0,
-                Reserved: ptr::null_mut(),
-            };
+            // Deprecated, should always be zero
+            ConnectionIdleTimeoutInSeconds: 0,
+            Reserved: ptr::null_mut(),
+        };
 
         let ex3 = FABRIC_CLIENT_SETTINGS_EX3 {
-                AuthTokenBufferSize: get_required(&self.AuthTokenBufferSize),
-                Reserved: &raw mut ex4 as *mut c_void
-            };
+            AuthTokenBufferSize: get_required(&self.AuthTokenBufferSize),
+            Reserved: &raw mut ex4 as *mut c_void,
+        };
 
         let ex2 = FABRIC_CLIENT_SETTINGS_EX2 {
-                NotificationGatewayConnectionTimeoutInSeconds: get_required(
-                    &self.NotificationGatewayConnectionTimeoutInSeconds,
-                )
-                .into(),
-                NotificationCacheUpdateTimeoutInSeconds: get_required(
-                    &self.NotificationCacheUpdateTimeoutInSeconds,
-                )
-                .into(),
-                Reserved: std::ptr::addr_of!(ex3) as *mut c_void
-            };
+            NotificationGatewayConnectionTimeoutInSeconds: get_required(
+                &self.NotificationGatewayConnectionTimeoutInSeconds,
+            )
+            .into(),
+            NotificationCacheUpdateTimeoutInSeconds: get_required(
+                &self.NotificationCacheUpdateTimeoutInSeconds,
+            )
+            .into(),
+            Reserved: std::ptr::addr_of!(ex3) as *mut c_void,
+        };
         // Note: &self reference ensures client_friendly_name is not mutable,
         // and remains valid for duration of this function
         // SF side copies the string and does not retain a reference, so safety conditions are met.
@@ -331,15 +332,15 @@ impl FabricClientSettings {
         };
 
         let ex1 = FABRIC_CLIENT_SETTINGS_EX1 {
-                ClientFriendlyName: client_friendly_name,
-                PartitionLocationCacheBucketCount: get_required(
-                    &self.PartitionLocationCacheBucketCount,
-                ),
-                HealthReportRetrySendIntervalInSeconds: get_required(
-                    &self.HealthReportRetrySendIntervalInSeconds,
-                )
-                .into(),
-                Reserved: std::ptr::addr_of!(ex2) as *mut c_void
+            ClientFriendlyName: client_friendly_name,
+            PartitionLocationCacheBucketCount: get_required(
+                &self.PartitionLocationCacheBucketCount,
+            ),
+            HealthReportRetrySendIntervalInSeconds: get_required(
+                &self.HealthReportRetrySendIntervalInSeconds,
+            )
+            .into(),
+            Reserved: std::ptr::addr_of!(ex2) as *mut c_void,
         };
 
         let val = FABRIC_CLIENT_SETTINGS {
@@ -358,14 +359,13 @@ impl FabricClientSettings {
             HealthReportSendIntervalInSeconds: get_required(
                 &self.HealthReportSendIntervalInSeconds,
             ),
-            Reserved: std::ptr::addr_of!(ex1) as *mut c_void
+            Reserved: std::ptr::addr_of!(ex1) as *mut c_void,
         };
 
         // CALL THE FUNCTION:
         let val_ptr = std::ptr::addr_of!(val);
         // SAFETY: val is valid for the duration of the call
-        let result =
-            unsafe { settings_interface.SetSettings(val_ptr) };
+        let result = unsafe { settings_interface.SetSettings(val_ptr) };
 
         result
     }

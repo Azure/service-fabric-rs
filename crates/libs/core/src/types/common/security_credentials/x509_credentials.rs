@@ -110,7 +110,7 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
     type FfiType = FABRIC_X509_CREDENTIALS;
     type TemporaryData = FabricX509CredentialsTemporaryData;
     const KIND: FABRIC_SECURITY_CREDENTIAL_KIND = FABRIC_SECURITY_CREDENTIAL_KIND_X509;
-    unsafe fn into_raw(
+    unsafe fn make_raw(
         &self,
     ) -> FabricSecurityCredentialKindWrapper<'_, Self, Self::FfiType, Self::TemporaryData> {
         let allowed_common_names = self.AllowedCommonNames.clone().into_boxed_slice();
@@ -144,7 +144,7 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
         FabricSecurityCredentialKindWrapper {
             value,
             temporary_data,
-            producing_credential: &self,
+            producing_credential: self,
         }
     }
 }

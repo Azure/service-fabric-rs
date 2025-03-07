@@ -17,9 +17,10 @@ use windows_core::WString;
 use crate::strings::WStringWrap;
 
 /// What level of Fabric Client setting support does the client library have?
-#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Default)]
 #[non_exhaustive]
 pub enum FabricClientSettingSupportLevel {
+    #[default]
     Unknown = -1,
     Basic = 0,
     EX1 = 1,
@@ -28,12 +29,6 @@ pub enum FabricClientSettingSupportLevel {
     EX4 = 4,
     #[allow(dead_code, reason = "TODO: idl update")]
     EX5 = 5,
-}
-
-impl Default for FabricClientSettingSupportLevel {
-    fn default() -> Self {
-        FabricClientSettingSupportLevel::Unknown
-    }
 }
 
 /// A idiomatic Rust version of FABRIC_CLIENT_SETTINGS
@@ -103,7 +98,7 @@ impl FabricClientSettings {
         F: FnOnce(&Current) -> *mut core::ffi::c_void,
     {
         input
-            .map(|val| {
+            .and_then(|val| {
                 let reserved: *mut core::ffi::c_void = accessor(&val);
                 if !reserved.is_null() {
                     // SAFETY: caller promises that the *mut c_void returned by accessor, if non-null, is actually a *mut Next
@@ -116,7 +111,6 @@ impl FabricClientSettings {
                     None
                 }
             })
-            .flatten()
     }
 
     /// Inner scope; helps enforce IFabricClientSettingsResult outliving the derived pointers

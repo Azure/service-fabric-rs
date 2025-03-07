@@ -86,9 +86,9 @@ trait FabricSecurityCredentialKind {
     type TemporaryData;
     const KIND: FABRIC_SECURITY_CREDENTIAL_KIND;
     /// SAFETY: caller takes responsibility for ensuring the corresponding cleanup_raw call happens
-    unsafe fn into_raw<'a>(
-        &'a self,
-    ) -> FabricSecurityCredentialKindWrapper<'a, Self, Self::FfiType, Self::TemporaryData>
+    unsafe fn make_raw(
+        &self,
+    ) -> FabricSecurityCredentialKindWrapper<'_, Self, Self::FfiType, Self::TemporaryData>
     where
         Self: Sized;
 }
@@ -108,7 +108,7 @@ impl FabricSecurityCredentials {
         settings_interface: &IFabricClientSettings2,
     ) -> windows_core::Result<()> {
         // SAFETY: we call val.cleanup_raw after calling into Service Fabric
-        let mut wrapper = unsafe { val.into_raw() };
+        let mut wrapper = unsafe { val.make_raw() };
         let value = wrapper.value.as_mut();
         let value_ptr = value as *mut <T as FabricSecurityCredentialKind>::FfiType;
         let value_ptr_erased = value_ptr as *mut std::ffi::c_void;

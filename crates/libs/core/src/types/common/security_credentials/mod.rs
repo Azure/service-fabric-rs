@@ -7,11 +7,9 @@
 use mssf_com::FabricClient::IFabricClientSettings2;
 
 mod claims_credentials;
-pub use claims_credentials::*;
 mod fabric_protection_level;
 pub use fabric_protection_level::*;
 mod windows_credentials;
-pub use windows_credentials::*;
 mod x509_credentials;
 pub use x509_credentials::*;
 

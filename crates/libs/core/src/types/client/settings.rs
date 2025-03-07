@@ -334,7 +334,7 @@ fn combine_settings_with_overrides(
     }
 }
 
-/// Helpers for calling SetSettings
+// Helpers for calling SetSettings
 
 /// Get a pointer to the contents of a Box if Some, else ptr::null_mut()
 /// Safe because the pointer lives as long as the mutable borrow, so there are no additional preconditions implied
@@ -369,7 +369,7 @@ impl FabricClientSettings {
     /// Note: only overrides non-default settings; leaves any settings set previously that don't explicitly have new values alone
     pub fn set(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
         // SAFETY: setting_interface implements the required COM interface.
-        let existing_settings = FabricClientSettings::get_from_com(&settings_interface);
+        let existing_settings = FabricClientSettings::get_from_com(settings_interface);
         let new_settings = combine_settings_with_overrides(existing_settings, self.clone());
         new_settings.set_inner(settings_interface)
     }
@@ -466,13 +466,12 @@ impl FabricClientSettings {
                 &self.ConnectionInitializationTimeoutInSeconds,
             )
             .into(),
-            KeepAliveIntervalInSeconds: get_required(&self.KeepAliveIntervalInSeconds).into(),
+            KeepAliveIntervalInSeconds: get_required(&self.KeepAliveIntervalInSeconds),
             HealthOperationTimeoutInSeconds: get_required(&self.HealthOperationTimeoutInSeconds)
                 .into(),
             HealthReportSendIntervalInSeconds: get_required(
                 &self.HealthReportSendIntervalInSeconds,
-            )
-            .into(),
+            ),
             Reserved: option_box_into_raw(ex1),
         });
         let raw_val = Box::into_raw(val);
@@ -498,13 +497,11 @@ impl FabricClientSettings {
         // Make absolutely sure FABRIC_CLIENT_SETTINGS.Reserved can't become a dangling pointer
         drop(reboxed);
 
-        let maybe_ex2: Option<Box<FABRIC_CLIENT_SETTINGS_EX2>> = maybe_ex1
-            .as_ref()
-            .map(|ex1| {
+        let maybe_ex2: Option<Box<FABRIC_CLIENT_SETTINGS_EX2>> =
+            maybe_ex1.as_ref().and_then(|ex1| {
                 // SAFETY: if FABRIC_CLIENT_SETTINGS_EX1.Reserved is non-null, it points to a FABRIC_CLIENT_SETTINGS_EX2 allocated above
                 unsafe { option_box_from_raw(ex1.Reserved) }
-            })
-            .flatten();
+            });
         assert_eq!(
             maybe_ex2.is_some(),
             self.SupportLevel >= FabricClientSettingSupportLevel::EX2
@@ -512,13 +509,11 @@ impl FabricClientSettings {
         // Make absolutely sure FABRIC_CLIENT_SETTINGS_EX1.Reserved can't become a dangling pointer
         drop(maybe_ex1);
 
-        let maybe_ex3: Option<Box<FABRIC_CLIENT_SETTINGS_EX3>> = maybe_ex2
-            .as_ref()
-            .map(|ex2| {
+        let maybe_ex3: Option<Box<FABRIC_CLIENT_SETTINGS_EX3>> =
+            maybe_ex2.as_ref().and_then(|ex2| {
                 // SAFETY: if FABRIC_CLIENT_SETTINGS_EX2.Reserved is non-null, it points to a FABRIC_CLIENT_SETTINGS_EX3 allocated above
                 unsafe { option_box_from_raw(ex2.Reserved) }
-            })
-            .flatten();
+            });
         assert_eq!(
             maybe_ex3.is_some(),
             self.SupportLevel >= FabricClientSettingSupportLevel::EX3
@@ -526,13 +521,11 @@ impl FabricClientSettings {
         // Make absolutely sure FABRIC_CLIENT_SETTINGS_EX2.Reserved can't become a dangling pointer
         drop(maybe_ex2);
 
-        let maybe_ex4: Option<Box<FABRIC_CLIENT_SETTINGS_EX3>> = maybe_ex3
-            .as_ref()
-            .map(|ex3| {
+        let maybe_ex4: Option<Box<FABRIC_CLIENT_SETTINGS_EX3>> =
+            maybe_ex3.as_ref().and_then(|ex3| {
                 // SAFETY: if FABRIC_CLIENT_SETTINGS_EX3.Reserved is non-null, it points to a FABRIC_CLIENT_SETTINGS_EX4 allocated above
                 unsafe { option_box_from_raw(ex3.Reserved) }
-            })
-            .flatten();
+            });
         assert_eq!(
             maybe_ex4.is_some(),
             self.SupportLevel >= FabricClientSettingSupportLevel::EX4

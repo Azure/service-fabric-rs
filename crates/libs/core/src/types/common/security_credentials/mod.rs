@@ -22,10 +22,7 @@ pub enum FabricSecurityCredentials {}
 
 impl FabricSecurityCredentials {
     /// Note: only overrides non-default settings; leaves any settings set previously that don't explicitly have new values alone
-    pub(crate) fn apply(
-        &self,
-        _settings_interface: &IFabricClientSettings2,
-    ) -> windows_core::Result<()> {
+    pub(crate) fn apply(&self, _settings_interface: &IFabricClientSettings2) -> crate::Result<()> {
         // Placeholder
         Ok(())
     }

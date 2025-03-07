@@ -41,8 +41,8 @@ mod tests;
 #[non_exhaustive]
 #[derive(Debug)]
 pub enum FabricClientCreationError {
-    InvalidFabricClientSettings(windows_core::Error),
-    InvalidFabricSecurityCredentials(windows_core::Error),
+    InvalidFabricClientSettings(crate::Error),
+    InvalidFabricSecurityCredentials(crate::Error),
 }
 
 /// Creates FabricClient com object using SF com API.

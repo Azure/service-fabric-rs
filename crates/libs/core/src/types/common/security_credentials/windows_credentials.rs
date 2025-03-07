@@ -5,9 +5,15 @@
 #![deny(unsafe_op_in_unsafe_fn)]
 #![deny(clippy::undocumented_unsafe_blocks)]
 
-use std::{ffi::c_void, ptr::{self, addr_of_mut}};
+use std::{
+    ffi::c_void,
+    ptr::{self, addr_of_mut},
+};
 
-use mssf_com::FabricTypes::{FABRIC_SECURITY_CREDENTIALS, FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS, FABRIC_WINDOWS_CREDENTIALS};
+use mssf_com::FabricTypes::{
+    FABRIC_SECURITY_CREDENTIALS, FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS,
+    FABRIC_WINDOWS_CREDENTIALS,
+};
 use windows_core::{WString, PCWSTR};
 
 use super::{FabricProtectionLevel, FabricSecurityCredentialKind};
@@ -20,12 +26,17 @@ pub struct FabricWindowsCredentials {
     ProtectionLevel: FabricProtectionLevel,
 }
 
-impl FabricSecurityCredentialKind for FabricWindowsCredentials
-{
-    fn apply_inner(&self, settings_interface: &mssf_com::FabricClient::IFabricClientSettings2) -> crate::Result<()> {
-        let remote_identities: Box<[PCWSTR]> = self.RemoteIdentities.iter().map(WString::as_pcwstr).collect();
-        let mut value = FABRIC_WINDOWS_CREDENTIALS
-        {
+impl FabricSecurityCredentialKind for FabricWindowsCredentials {
+    fn apply_inner(
+        &self,
+        settings_interface: &mssf_com::FabricClient::IFabricClientSettings2,
+    ) -> crate::Result<()> {
+        let remote_identities: Box<[PCWSTR]> = self
+            .RemoteIdentities
+            .iter()
+            .map(WString::as_pcwstr)
+            .collect();
+        let mut value = FABRIC_WINDOWS_CREDENTIALS {
             RemoteSpn: self.RemoteSpn.as_pcwstr(),
             RemoteIdentityCount: u32::try_from(remote_identities.len()).unwrap(),
             RemoteIdentities: remote_identities.as_ptr(),

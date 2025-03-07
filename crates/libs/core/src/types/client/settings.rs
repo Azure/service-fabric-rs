@@ -163,11 +163,13 @@ impl From<&FABRIC_CLIENT_SETTINGS> for FabricClientSettings {
 
 impl FabricClientSettings {
     /// Get the current settings via the COM interface
-    pub fn get_defaults(com: &IFabricClientSettings2) -> FabricClientSettings {
+    pub fn get_defaults() -> crate::Result<FabricClientSettings> {
         // TODO: error handling?
         // SAFETY: IFabricClientSettings2 implements this COM interface
         // TODO: replace this with GetFabricClientDefaultSettings
-        let result = unsafe { com.GetSettings() }.expect("GetSettings failed");
+        let result = crate::API_TABLE
+            .get_fabric_client_default_settings()
+            .map_err(crate::Error::from)?;
         // Note: inner scope outlives result, which is critical as otherwise we'd have UB.
         let converted = {
             // SAFETY: FABRIC_CLIENT_SETTINGS_EX1.ClientFriendlyName is only accessed while IFabricClientSettingsResult is in scope
@@ -178,7 +180,7 @@ impl FabricClientSettings {
             FabricClientSettings::from(my_ref)
         };
         drop(result);
-        converted
+        Ok(converted)
     }
 }
 
@@ -281,14 +283,14 @@ fn combine_settings_with_overrides(
 
 impl FabricClientSettings {
     /// Note: only overrides non-default settings; leaves any settings set previously that don't explicitly have new values alone
-    pub fn set(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
+    pub fn apply(&self, settings_interface: &IFabricClientSettings2) -> crate::Result<()> {
         // SAFETY: setting_interface implements the required COM interface.
-        let existing_settings = FabricClientSettings::get_defaults(settings_interface);
+        let existing_settings = FabricClientSettings::get_defaults()?;
         let new_settings = combine_settings_with_overrides(existing_settings, self.clone());
         new_settings.set_inner(settings_interface)
     }
 
-    fn set_inner(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
+    fn set_inner(&self, settings_interface: &IFabricClientSettings2) -> crate::Result<()> {
         // TODO: ex5 missing from IDL?
         let ex4 = FABRIC_CLIENT_SETTINGS_EX4 {
             // Deprecated, should always be zero
@@ -351,6 +353,6 @@ impl FabricClientSettings {
         // CALL THE FUNCTION:
         let val_ptr = std::ptr::addr_of!(val);
         // SAFETY: val is valid for the duration of the call
-        unsafe { settings_interface.SetSettings(val_ptr) }
+        unsafe { settings_interface.SetSettings(val_ptr) }.map_err(crate::Error::from)
     }
 }

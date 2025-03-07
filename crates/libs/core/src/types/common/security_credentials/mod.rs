@@ -64,15 +64,15 @@ impl From<FabricProtectionLevel> for FABRIC_PROTECTION_LEVEL {
 }
 
 trait FabricSecurityCredentialKind {
-    fn set_inner(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()>;
+    fn apply_inner(&self, settings_interface: &IFabricClientSettings2) -> crate::Result<()>;
 }
 
 impl FabricSecurityCredentials {
     // TODO: may belong on the other side?
-    pub fn set(&self, settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
+    pub fn apply(&self, settings_interface: &IFabricClientSettings2) -> crate::Result<()> {
         match &self {
             FabricSecurityCredentials::FabricX509Credentials(v) => v,
         }
-        .set_inner(settings_interface)
+        .apply_inner(settings_interface)
     }
 }

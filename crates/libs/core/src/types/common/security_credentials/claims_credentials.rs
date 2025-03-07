@@ -14,7 +14,7 @@ use super::FabricProtectionLevel;
 struct FabricClaimsCredentials {
     pub ServerCommonNames: Vec<WString>,
     pub IssuerThumbprints: Vec<WString>,
-    pub LocalClaims: windows_core::PCWSTR,
+    pub LocalClaims: WString,
     pub ProtectionLevel: FabricProtectionLevel,
     /// FABRIC_CLAIMS_CREDENTIALS_EX1
     pub ServerThumbprints: Option<Vec<WString>>,

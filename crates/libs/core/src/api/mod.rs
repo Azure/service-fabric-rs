@@ -252,9 +252,12 @@ impl ApiTable {
         Ok(unsafe { T::from_raw(result) })
     }
 
-    pub fn get_fabric_client_default_settings_fn(&self) -> crate::WinResult<IFabricClientSettingsResult> {
+    pub fn get_fabric_client_default_settings(
+        &self,
+    ) -> crate::WinResult<IFabricClientSettingsResult> {
         let mut result = std::ptr::null_mut::<IFabricClientSettingsResult>();
-        unsafe { (self.get_fabric_client_default_settings_fn)(std::ptr::addr_of_mut!(result)) }.ok()?;
+        unsafe { (self.get_fabric_client_default_settings_fn)(std::ptr::addr_of_mut!(result)) }
+            .ok()?;
         Ok(unsafe { IFabricClientSettingsResult::from_raw(result as *mut core::ffi::c_void) })
     }
 

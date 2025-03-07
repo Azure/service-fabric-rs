@@ -96,12 +96,12 @@ fn create_local_client_internal<T: Interface>(
             .expect("failed to cast fabric client to IFabricClientSettings2");
         if let Some(desired_settings) = client_settings {
             desired_settings
-                .set(&setting_interface)
+                .apply(&setting_interface)
                 .expect("failed to set client settings")
         }
         if let Some(desired_credentials) = client_credentials {
             desired_credentials
-                .set(&setting_interface)
+                .apply(&setting_interface)
                 .expect("failed to set client settings")
         }
         // TODO: error handling

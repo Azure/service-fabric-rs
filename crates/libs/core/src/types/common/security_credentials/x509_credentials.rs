@@ -94,10 +94,10 @@ pub struct FabricX509Credentials {
 }
 
 impl FabricSecurityCredentialKind for FabricX509Credentials {
-    fn set_inner(
+    fn apply_inner(
         &self,
         settings_interface: &mssf_com::FabricClient::IFabricClientSettings2,
-    ) -> windows_core::Result<()> {
+    ) -> crate::Result<()> {
         let allowed_common_names: Box<[PCWSTR]> = self
             .AllowedCommonNames
             .iter()
@@ -134,5 +134,6 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
 
         // SAFETY: COM interop. SetSecurityCredentials does not retain reference to the passed in data after function returns.
         unsafe { settings_interface.SetSecurityCredentials(&security_credentials) }
+            .map_err(crate::Error::from)
     }
 }

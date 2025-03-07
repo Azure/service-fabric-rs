@@ -102,12 +102,12 @@ fn create_local_client_internal<T: Interface>(
         if let Some(desired_settings) = client_settings {
             desired_settings
                 .apply(&setting_interface)
-                .map_err(|e| FabricClientCreationError::InvalidFabricClientSettings(e))?;
+                .map_err(FabricClientCreationError::InvalidFabricClientSettings)?;
         }
         if let Some(desired_credentials) = client_credentials {
             desired_credentials
                 .apply(&setting_interface)
-                .map_err(|e| FabricClientCreationError::InvalidFabricSecurityCredentials(e))?;
+                .map_err(FabricClientCreationError::InvalidFabricSecurityCredentials)?;
         }
     };
     Ok(client)

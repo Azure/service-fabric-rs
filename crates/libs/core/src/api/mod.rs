@@ -4,7 +4,10 @@
 //!
 
 use mssf_com::{
-    FabricClient::{IFabricClientConnectionEventHandler, IFabricServiceNotificationEventHandler},
+    FabricClient::{
+        IFabricClientConnectionEventHandler, IFabricClientSettingsResult,
+        IFabricServiceNotificationEventHandler,
+    },
     FabricCommon::{
         IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricStringResult,
     },
@@ -85,6 +88,11 @@ pub struct ApiTable {
         ) -> crate::HRESULT,
     >,
 
+    get_fabric_client_default_settings_fn: libloading::Symbol<
+        'static,
+        unsafe extern "system" fn(result: *mut *mut IFabricClientSettingsResult) -> crate::HRESULT,
+    >,
+
     fabric_create_runtime_fn: libloading::Symbol<
         'static,
         unsafe extern "system" fn(
@@ -152,6 +160,10 @@ impl ApiTable {
             fabric_create_local_client4_fn: load_fn(
                 &lib_table.fabric_client,
                 "FabricCreateLocalClient4",
+            ),
+            get_fabric_client_default_settings_fn: load_fn(
+                &lib_table.fabric_client,
+                "GetFabricClientDefaultSettings",
             ),
             fabric_create_runtime_fn: load_fn(&lib_table.fabric_runtime, "FabricCreateRuntime"),
             fabric_get_activation_context_fn: load_fn(
@@ -238,6 +250,15 @@ impl ApiTable {
         }
         .ok()?;
         Ok(unsafe { T::from_raw(result) })
+    }
+
+    pub fn get_fabric_client_default_settings(
+        &self,
+    ) -> crate::WinResult<IFabricClientSettingsResult> {
+        let mut result = std::ptr::null_mut::<IFabricClientSettingsResult>();
+        unsafe { (self.get_fabric_client_default_settings_fn)(std::ptr::addr_of_mut!(result)) }
+            .ok()?;
+        Ok(unsafe { IFabricClientSettingsResult::from_raw(result as *mut core::ffi::c_void) })
     }
 
     pub fn fabric_create_runtime<T: Interface>(&self) -> crate::WinResult<T> {

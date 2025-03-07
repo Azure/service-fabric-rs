@@ -5,13 +5,26 @@
 
 use mssf_com::FabricClient::IFabricClientSettings2;
 
-/// Placeholder
+/// A idiomatic Rust version of FABRIC_CLIENT_SETTINGS
+///
+/// Note: we may choose to add additional optional fields in future without considering that a SemVer breaking change.
+/// You should default fields you're not interested in like so:
+/// ```
+/// let my_settings = FabricClientSettings {
+///  PartitionLocationCacheLimit: Some(NonZeroU32::new(1).expect("Non-zero value")),
+///  // Any other hypothetical settings you're interested in here,
+///  ..Default::default()
+/// };
+/// ```
 #[derive(Default)]
 pub struct FabricClientSettings {}
 
 impl FabricClientSettings {
     /// Note: only overrides non-default settings; leaves any settings set previously that don't explicitly have new values alone
-    pub fn apply(&self, _settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
+    pub(crate) fn apply(
+        &self,
+        _settings_interface: &IFabricClientSettings2,
+    ) -> windows_core::Result<()> {
         // Placeholder
         Ok(())
     }

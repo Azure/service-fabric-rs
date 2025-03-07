@@ -5,13 +5,17 @@
 
 use mssf_com::FabricClient::IFabricClientSettings2;
 
-/// Placeholder
+/// Idiomatic FABRIC_SECURITY_CREDENTIALS wrapper
+/// Currently, just a placeholder
 #[non_exhaustive]
 pub enum FabricSecurityCredentials {}
 
 impl FabricSecurityCredentials {
     /// Note: only overrides non-default settings; leaves any settings set previously that don't explicitly have new values alone
-    pub fn apply(&self, _settings_interface: &IFabricClientSettings2) -> windows_core::Result<()> {
+    pub(crate) fn apply(
+        &self,
+        _settings_interface: &IFabricClientSettings2,
+    ) -> windows_core::Result<()> {
         // Placeholder
         Ok(())
     }

@@ -53,3 +53,9 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
             .map_err(crate::Error::from)
     }
 }
+
+#[cfg(test)]
+mod tests
+{
+    
+}

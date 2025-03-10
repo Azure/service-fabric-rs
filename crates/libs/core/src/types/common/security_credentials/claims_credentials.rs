@@ -71,4 +71,58 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
             .map_err(crate::Error::from)
     }
 }
-// TODO: finish this
+
+
+#[cfg(test)]
+mod test
+{
+    use mssf_com::FabricTypes::FABRIC_E_INVALID_CREDENTIALS;
+
+    use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
+
+    use super::*;
+    fn make_credentials() -> FabricClaimsCredentials
+    {
+        FabricClaimsCredentials
+        {
+            ServerCommonNames: vec![WString::from("test.contoso.com")],
+            IssuerThumbprints: vec![WString::from("ABCDEF0123456789"), WString::from("ABCDEF0123456789")],
+            LocalClaims: WString::from("mock_claims_here"),
+            ProtectionLevel: FabricProtectionLevel::EncryptAndSign,
+            ServerThumbprints: vec![WString::from("FFABCDEF0123456789"), WString::from("FFABCDEF0123456789")],
+        }
+
+    }
+    
+    fn make_credentials_with_empty_vecs() -> FabricClaimsCredentials
+    {
+        FabricClaimsCredentials
+        {
+            ServerCommonNames: vec![],
+            IssuerThumbprints: vec![],
+            LocalClaims: WString::new(),
+            ProtectionLevel: FabricProtectionLevel::EncryptAndSign,
+            ServerThumbprints: vec![],
+        }
+
+    }
+
+    #[test]
+    fn claims_credentials_nonempty_failure()
+    {
+        let com = MockIFabricClientSettings::new_all_methods_fail();
+        let creds = make_credentials();
+        let result  = creds.apply_inner(&com.into());
+        assert_eq!(result, Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS)))
+    }
+
+    #[test]
+    fn claims_credentials_empty_failure()
+    {
+        let com = MockIFabricClientSettings::new_all_methods_fail();
+        let creds = make_credentials_with_empty_vecs();
+        let result  = creds.apply_inner(&com.into());
+        assert_eq!(result, Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS)))
+    }
+    
+}

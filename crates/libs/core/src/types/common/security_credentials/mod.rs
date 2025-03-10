@@ -29,7 +29,6 @@ trait FabricSecurityCredentialKind {
 }
 
 impl FabricSecurityCredentials {
-    // TODO: may belong on the other side?
     pub fn apply(&self, settings_interface: &IFabricClientSettings2) -> crate::Result<()> {
         match &self {
             FabricSecurityCredentials::FabricX509Credentials(v) => {
@@ -44,4 +43,11 @@ impl FabricSecurityCredentials {
         }
         .apply_inner(settings_interface)
     }
+}
+
+
+#[cfg(test)]
+pub(crate) mod test
+{
+    
 }

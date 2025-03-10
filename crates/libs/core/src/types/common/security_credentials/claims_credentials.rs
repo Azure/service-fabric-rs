@@ -36,7 +36,7 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
             .map(WString::as_pcwstr)
             .collect();
         // Maybe a bit paranoid, but let's make sure we use a null ptr if it's an empty boxed slice
-        fn box_to_pointer(val: &Box<[PCWSTR]>) -> *const PCWSTR
+        fn slice_to_ptr(val: &[PCWSTR]) -> *const PCWSTR
         {
             if val.len() > 0
             {
@@ -49,7 +49,7 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
         }
         let mut ex1 = FABRIC_CLAIMS_CREDENTIALS_EX1 {
             ServerThumbprintCount: u32::try_from(server_thumbprints.len()).unwrap(),
-            ServerThumbprints: box_to_pointer(&server_thumbprints),
+            ServerThumbprints: slice_to_ptr(&server_thumbprints),
             Reserved: std::ptr::null_mut(),
         };
 
@@ -65,9 +65,9 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
             .collect();
         let mut value = FABRIC_CLAIMS_CREDENTIALS {
             ServerCommonNameCount: u32::try_from(server_common_names.len()).unwrap(),
-            ServerCommonNames: box_to_pointer(&server_common_names),
+            ServerCommonNames: slice_to_ptr(&server_common_names),
             IssuerThumbprintCount: u32::try_from(issuer_thumbprints.len()).unwrap(),
-            IssuerThumbprints: box_to_pointer(&issuer_thumbprints),
+            IssuerThumbprints: slice_to_ptr(&issuer_thumbprints),
             LocalClaims: self.LocalClaims.as_pcwstr(),
             ProtectionLevel: self.ProtectionLevel.into(),
             Reserved: addr_of_mut!(ex1) as *mut c_void,

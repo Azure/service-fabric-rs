@@ -35,9 +35,21 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
             .iter()
             .map(WString::as_pcwstr)
             .collect();
+        // Maybe a bit paranoid, but let's make sure we use a null ptr if it's an empty boxed slice
+        fn box_to_pointer(val: &Box<[PCWSTR]>) -> *const PCWSTR
+        {
+            if val.len() > 0
+            {
+                val.as_ptr()
+            }
+            else
+            {
+                std::ptr::null()
+            }
+        }
         let mut ex1 = FABRIC_CLAIMS_CREDENTIALS_EX1 {
             ServerThumbprintCount: u32::try_from(server_thumbprints.len()).unwrap(),
-            ServerThumbprints: server_thumbprints.as_ptr(),
+            ServerThumbprints: box_to_pointer(&server_thumbprints),
             Reserved: std::ptr::null_mut(),
         };
 
@@ -47,15 +59,15 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
             .map(WString::as_pcwstr)
             .collect();
         let issuer_thumbprints: Box<[PCWSTR]> = self
-            .ServerCommonNames
+            .IssuerThumbprints
             .iter()
             .map(WString::as_pcwstr)
             .collect();
         let mut value = FABRIC_CLAIMS_CREDENTIALS {
             ServerCommonNameCount: u32::try_from(server_common_names.len()).unwrap(),
-            ServerCommonNames: server_common_names.as_ptr(),
+            ServerCommonNames: box_to_pointer(&server_common_names),
             IssuerThumbprintCount: u32::try_from(issuer_thumbprints.len()).unwrap(),
-            IssuerThumbprints: issuer_thumbprints.as_ptr(),
+            IssuerThumbprints: box_to_pointer(&issuer_thumbprints),
             LocalClaims: self.LocalClaims.as_pcwstr(),
             ProtectionLevel: self.ProtectionLevel.into(),
             Reserved: addr_of_mut!(ex1) as *mut c_void,
@@ -227,7 +239,7 @@ mod test {
                     .to_string_lossy();
                 assert_eq!(&local_claim, TEST_CLAIMS);
 
-                assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_SIGN);
+                assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN);
                 // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(

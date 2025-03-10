@@ -141,7 +141,8 @@ async fn test_fabric_client() {
         })
         .with_client_role(mssf_core::types::ClientRole::Unknown)
         .with_connection_strings(vec![WString::from("localhost:19000")])
-        .build();
+        .build()
+        .unwrap();
 
     let ec = EchoTestClient::new(fc.clone());
 

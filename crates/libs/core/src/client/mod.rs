@@ -45,6 +45,19 @@ pub enum FabricClientCreationError {
     InvalidFabricSecurityCredentials(crate::Error),
 }
 
+impl core::fmt::Display for FabricClientCreationError
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self
+        {
+            FabricClientCreationError::InvalidFabricClientSettings(error) => write!(f, "InvalidFabricClientSettings({})", error),
+            FabricClientCreationError::InvalidFabricSecurityCredentials(error) => write!(f, "InvalidFabricSecurityCredentialss({})", error),
+        }
+    }
+}
+
+impl core::error::Error for FabricClientCreationError {}
+
 /// Creates FabricClient com object using SF com API.
 fn create_local_client_internal<T: Interface>(
     connection_strings: Option<&Vec<crate::WString>>,

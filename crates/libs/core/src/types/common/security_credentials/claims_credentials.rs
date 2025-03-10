@@ -36,15 +36,11 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
             .map(WString::as_pcwstr)
             .collect();
         // Maybe a bit paranoid, but let's make sure we use a null ptr if it's an empty boxed slice
-        fn slice_to_ptr(val: &[PCWSTR]) -> *const PCWSTR
-        {
-            if val.len() > 0
-            {
-                val.as_ptr()
-            }
-            else
-            {
+        fn slice_to_ptr(val: &[PCWSTR]) -> *const PCWSTR {
+            if val.is_empty() {
                 std::ptr::null()
+            } else {
+                val.as_ptr()
             }
         }
         let mut ex1 = FABRIC_CLAIMS_CREDENTIALS_EX1 {
@@ -239,7 +235,10 @@ mod test {
                     .to_string_lossy();
                 assert_eq!(&local_claim, TEST_CLAIMS);
 
-                assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN);
+                assert_eq!(
+                    value_copy.ProtectionLevel,
+                    FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
+                );
                 // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(

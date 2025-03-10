@@ -55,7 +55,4 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
 }
 
 #[cfg(test)]
-mod tests
-{
-    
-}
+mod tests {}

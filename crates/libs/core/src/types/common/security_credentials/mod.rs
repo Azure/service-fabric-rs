@@ -45,9 +45,5 @@ impl FabricSecurityCredentials {
     }
 }
 
-
 #[cfg(test)]
-pub(crate) mod test
-{
-    
-}
+pub(crate) mod test {}

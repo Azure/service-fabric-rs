@@ -72,158 +72,192 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
     }
 }
 
-
 #[cfg(test)]
-mod test
-{
-    use std::sync::{Arc, Mutex};
+mod test {
+    use mssf_com::FabricTypes::{
+        FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN,
+        FABRIC_PROTECTION_LEVEL_SIGN,
+    };
     use std::ptr;
-    use mssf_com::FabricTypes::{FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN, FABRIC_PROTECTION_LEVEL_SIGN};
+    use std::sync::{Arc, Mutex};
 
     use crate::strings::WStringWrap;
+    use crate::types::mockifabricclientsettings::test_constants::*;
     use crate::types::mockifabricclientsettings::test_utilities::check_array_parameter;
     use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
-    use crate::types::mockifabricclientsettings::test_constants::*;
 
     use super::*;
-    fn make_credentials() -> FabricClaimsCredentials
-    {
-        FabricClaimsCredentials
-        {
+    fn make_credentials() -> FabricClaimsCredentials {
+        FabricClaimsCredentials {
             ServerCommonNames: vec![WString::from(TEST_SERVER_NAME_1)],
-            IssuerThumbprints: vec![WString::from(TEST_THUMBPRINT_1), WString::from(TEST_THUMBPRINT_2)],
+            IssuerThumbprints: vec![
+                WString::from(TEST_THUMBPRINT_1),
+                WString::from(TEST_THUMBPRINT_2),
+            ],
             LocalClaims: WString::from(TEST_CLAIMS),
             ProtectionLevel: FabricProtectionLevel::EncryptAndSign,
-            ServerThumbprints: vec![WString::from(TEST_THUMBPRINT_3), WString::from(TEST_THUMBPRINT_4)],
+            ServerThumbprints: vec![
+                WString::from(TEST_THUMBPRINT_3),
+                WString::from(TEST_THUMBPRINT_4),
+            ],
         }
-
     }
-    
-    fn make_credentials_with_empty_vecs() -> FabricClaimsCredentials
-    {
-        FabricClaimsCredentials
-        {
+
+    fn make_credentials_with_empty_vecs() -> FabricClaimsCredentials {
+        FabricClaimsCredentials {
             ServerCommonNames: vec![],
             IssuerThumbprints: vec![],
             LocalClaims: WString::new(),
             ProtectionLevel: FabricProtectionLevel::Sign,
             ServerThumbprints: vec![],
         }
-
     }
 
     #[test]
-    fn claims_credentials_nonempty_failure()
-    {
+    fn claims_credentials_nonempty_failure() {
         let com = MockIFabricClientSettings::new_all_methods_fail();
         let creds = make_credentials();
-        let result  = creds.apply_inner(&com.into());
-        assert_eq!(result, Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS)))
+        let result = creds.apply_inner(&com.into());
+        assert_eq!(
+            result,
+            Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
+        )
     }
 
     #[test]
-    fn claims_credentials_empty_failure()
-    {
+    fn claims_credentials_empty_failure() {
         let com = MockIFabricClientSettings::new_all_methods_fail();
         let creds = make_credentials_with_empty_vecs();
-        let result  = creds.apply_inner(&com.into());
-        assert_eq!(result, Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS)))
+        let result = creds.apply_inner(&com.into());
+        assert_eq!(
+            result,
+            Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
+        )
     }
 
     #[test]
-    fn claims_credentials_empty_success()
-    {
+    fn claims_credentials_empty_success() {
         let call_counter = Arc::new(Mutex::new(0));
         let call_counter_copy = Arc::clone(&call_counter);
-        let com = MockIFabricClientSettings::new_with_security_credentials_mock(
-            Box::new(move |creds: *const FABRIC_SECURITY_CREDENTIALS|
-                {
-                    *call_counter_copy.lock().expect("Not poisoned") += 1;
-                    assert!(!creds.is_null() && creds.is_aligned());
-                    // SAFETY: test code. non-null and alignment is checked above
-                    let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
-                    assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS);
+        let com = MockIFabricClientSettings::new_with_security_credentials_mock(Box::new(
+            move |creds: *const FABRIC_SECURITY_CREDENTIALS| {
+                *call_counter_copy.lock().expect("Not poisoned") += 1;
+                assert!(!creds.is_null() && creds.is_aligned());
+                // SAFETY: test code. non-null and alignment is checked above
+                let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
+                assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS);
 
-                    let value = creds_copy.Value as *const FABRIC_CLAIMS_CREDENTIALS;
-                    assert!(!value.is_null() && value.is_aligned());
-                    // SAFETY: test code. non-null and alignment is checked above
-                    let value_copy = unsafe { ptr::read(value) };
-                    // SAFETY: IssuerThumbprintCount and IssuerThumbprints go together. Should be valid for dereference.
-                    unsafe { check_array_parameter([],value_copy.IssuerThumbprintCount, value_copy.IssuerThumbprints) };
-                    // SAFETY: test code. Should point to a null byte even when None.
-                    assert!(unsafe { value_copy.LocalClaims.is_empty()});
-                    assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_SIGN);
-                    // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
-                    unsafe { check_array_parameter([],value_copy.ServerCommonNameCount, value_copy.ServerCommonNames) };
+                let value = creds_copy.Value as *const FABRIC_CLAIMS_CREDENTIALS;
+                assert!(!value.is_null() && value.is_aligned());
+                // SAFETY: test code. non-null and alignment is checked above
+                let value_copy = unsafe { ptr::read(value) };
+                // SAFETY: IssuerThumbprintCount and IssuerThumbprints go together. Should be valid for dereference.
+                unsafe {
+                    check_array_parameter(
+                        [],
+                        value_copy.IssuerThumbprintCount,
+                        value_copy.IssuerThumbprints,
+                    )
+                };
+                // SAFETY: test code. Should point to a null byte even when None.
+                assert!(unsafe { value_copy.LocalClaims.is_empty() });
+                assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_SIGN);
+                // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
+                unsafe {
+                    check_array_parameter(
+                        [],
+                        value_copy.ServerCommonNameCount,
+                        value_copy.ServerCommonNames,
+                    )
+                };
 
+                let ex1 = value_copy.Reserved as *const FABRIC_CLAIMS_CREDENTIALS_EX1;
+                assert!(!ex1.is_null() && ex1.is_aligned());
+                // SAFETY: test code. non-null and alignment is checked above
+                let ex1_copy = unsafe { ptr::read(ex1) };
+                // SAFETY: ServerThumbprintCount and ServerThumbprints go together. Should be valid for dereference.
+                unsafe {
+                    check_array_parameter(
+                        [],
+                        ex1_copy.ServerThumbprintCount,
+                        ex1_copy.ServerThumbprints,
+                    )
+                };
 
-                    let ex1 = value_copy.Reserved as *const FABRIC_CLAIMS_CREDENTIALS_EX1;
-                    assert!(!ex1.is_null() && ex1.is_aligned());
-                    // SAFETY: test code. non-null and alignment is checked above
-                    let ex1_copy = unsafe { ptr::read(ex1) };
-                    // SAFETY: ServerThumbprintCount and ServerThumbprints go together. Should be valid for dereference.
-                    unsafe { check_array_parameter([],ex1_copy.ServerThumbprintCount,  ex1_copy.ServerThumbprints) };
+                assert!(ex1_copy.Reserved.is_null());
 
-                    assert!(ex1_copy.Reserved.is_null());                    
-
-                    Ok(())
-                }
-            )
-        );
+                Ok(())
+            },
+        ));
         // SF might reject this in reality - that's ok, we're making sure our code doesn't have UB
         let creds = make_credentials_with_empty_vecs();
-        let result  = creds.apply_inner(&com.into());
+        let result = creds.apply_inner(&com.into());
         assert_eq!(result, Ok(()));
         let actual_call_count = *call_counter.lock().expect("Not poisioned");
         assert_eq!(actual_call_count, 1)
     }
 
     #[test]
-    fn claims_credentials_filled_success()
-    {
+    fn claims_credentials_filled_success() {
         let call_counter = Arc::new(Mutex::new(0));
         let call_counter_copy = Arc::clone(&call_counter);
-        let com = MockIFabricClientSettings::new_with_security_credentials_mock(
-            Box::new(move |creds: *const FABRIC_SECURITY_CREDENTIALS|
-                {
-                    *call_counter_copy.lock().expect("Not poisoned") += 1;
-                    assert!(!creds.is_null() && creds.is_aligned());
-                    // SAFETY: test code. non-null and alignment is checked above
-                    let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
-                    assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS);
+        let com = MockIFabricClientSettings::new_with_security_credentials_mock(Box::new(
+            move |creds: *const FABRIC_SECURITY_CREDENTIALS| {
+                *call_counter_copy.lock().expect("Not poisoned") += 1;
+                assert!(!creds.is_null() && creds.is_aligned());
+                // SAFETY: test code. non-null and alignment is checked above
+                let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
+                assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS);
 
-                    let value = creds_copy.Value as *const FABRIC_CLAIMS_CREDENTIALS;
-                    assert!(!value.is_null() && value.is_aligned());
-                    // SAFETY: test code. non-null and alignment is checked above
-                    let value_copy = unsafe { ptr::read(value) };
-                    // SAFETY: IssuerThumbprintCount and IssuerThumbprints go together. Should be valid for dereference.
-                    unsafe { check_array_parameter([TEST_THUMBPRINT_1, TEST_THUMBPRINT_2],value_copy.IssuerThumbprintCount, value_copy.IssuerThumbprints) };
-                    
-                    let local_claim = 
-                    WStringWrap::from(value_copy.LocalClaims).into_wstring().to_string_lossy();
-                    assert_eq!(&local_claim, TEST_CLAIMS);
+                let value = creds_copy.Value as *const FABRIC_CLAIMS_CREDENTIALS;
+                assert!(!value.is_null() && value.is_aligned());
+                // SAFETY: test code. non-null and alignment is checked above
+                let value_copy = unsafe { ptr::read(value) };
+                // SAFETY: IssuerThumbprintCount and IssuerThumbprints go together. Should be valid for dereference.
+                unsafe {
+                    check_array_parameter(
+                        [TEST_THUMBPRINT_1, TEST_THUMBPRINT_2],
+                        value_copy.IssuerThumbprintCount,
+                        value_copy.IssuerThumbprints,
+                    )
+                };
 
-                    assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_SIGN);
-                    // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
-                    unsafe { check_array_parameter([TEST_SERVER_NAME_1],value_copy.ServerCommonNameCount, value_copy.ServerCommonNames) };
+                let local_claim = WStringWrap::from(value_copy.LocalClaims)
+                    .into_wstring()
+                    .to_string_lossy();
+                assert_eq!(&local_claim, TEST_CLAIMS);
 
+                assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_SIGN);
+                // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
+                unsafe {
+                    check_array_parameter(
+                        [TEST_SERVER_NAME_1],
+                        value_copy.ServerCommonNameCount,
+                        value_copy.ServerCommonNames,
+                    )
+                };
 
-                    let ex1 = value_copy.Reserved as *const FABRIC_CLAIMS_CREDENTIALS_EX1;
-                    assert!(!ex1.is_null() && ex1.is_aligned());
-                    // SAFETY: test code. non-null and alignment is checked above
-                    let ex1_copy = unsafe { ptr::read(ex1) };
-                    // SAFETY: ServerThumbprintCount and ServerThumbprints go together. Should be valid for dereference.
-                    unsafe { check_array_parameter([TEST_THUMBPRINT_3, TEST_THUMBPRINT_4],ex1_copy.ServerThumbprintCount,  ex1_copy.ServerThumbprints) };
+                let ex1 = value_copy.Reserved as *const FABRIC_CLAIMS_CREDENTIALS_EX1;
+                assert!(!ex1.is_null() && ex1.is_aligned());
+                // SAFETY: test code. non-null and alignment is checked above
+                let ex1_copy = unsafe { ptr::read(ex1) };
+                // SAFETY: ServerThumbprintCount and ServerThumbprints go together. Should be valid for dereference.
+                unsafe {
+                    check_array_parameter(
+                        [TEST_THUMBPRINT_3, TEST_THUMBPRINT_4],
+                        ex1_copy.ServerThumbprintCount,
+                        ex1_copy.ServerThumbprints,
+                    )
+                };
 
-                    assert!(ex1_copy.Reserved.is_null());                          
+                assert!(ex1_copy.Reserved.is_null());
 
-                    Ok(())
-                }
-            )
-        );
+                Ok(())
+            },
+        ));
         // SF might reject this in reality - that's ok, we're making sure our code doesn't have UB
         let creds = make_credentials();
-        let result  = creds.apply_inner(&com.into());
+        let result = creds.apply_inner(&com.into());
         assert_eq!(result, Ok(()));
         let actual_call_count = *call_counter.lock().expect("Not poisioned");
         assert_eq!(actual_call_count, 1)

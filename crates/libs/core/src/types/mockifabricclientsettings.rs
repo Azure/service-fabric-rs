@@ -48,7 +48,7 @@ pub(crate) mod test_utilities {
             return;
         }
         if expected_len == actual_len {
-            for i in 0..N {
+            for (i, expected_value) in expected_values.iter().enumerate() {
                 // SAFETY: caller promises that actual_values_start is valid for deference for N elements
                 let actual_value_ptr = unsafe { actual_values_start.add(i) };
                 assert!(
@@ -67,11 +67,11 @@ pub(crate) mod test_utilities {
                     .into_wstring()
                     .to_string_lossy();
                 assert_eq!(
-                    expected_values[i],
+                    *expected_value,
                     actual_val_str.as_str(),
                     "String at index {} should have had value {}, but had value {}",
                     i,
-                    expected_values[i],
+                    *expected_value,
                     actual_val_str.as_str()
                 )
             }

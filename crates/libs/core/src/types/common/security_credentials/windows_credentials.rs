@@ -36,10 +36,18 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
             .iter()
             .map(WString::as_pcwstr)
             .collect();
+        let remote_identities_ptr = if remote_identities.is_empty()
+        {
+            std::ptr::null()
+        }
+        else
+        {
+            remote_identities.as_ptr()
+        };
         let mut value = FABRIC_WINDOWS_CREDENTIALS {
             RemoteSpn: self.RemoteSpn.as_pcwstr(),
             RemoteIdentityCount: u32::try_from(remote_identities.len()).unwrap(),
-            RemoteIdentities: remote_identities.as_ptr(),
+            RemoteIdentities: remote_identities_ptr,
             ProtectionLevel: self.ProtectionLevel.into(),
             Reserved: ptr::null_mut(),
         };
@@ -131,7 +139,7 @@ mod test {
                 // SAFETY: RemoteIdentityCount and RemoteIdentities go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
-                        [TEST_REMOTE_IDENTITY_1, TEST_REMOTE_IDENTITY_2],
+                        [],
                         value_copy.RemoteIdentityCount,
                         value_copy.RemoteIdentities,
                     )

@@ -1,12 +1,14 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+#[cfg(feature = "tokio_async")]
 use std::time::Duration;
 
 use crate::{Interface, WString};
 use mssf_com::FabricRuntime::{IFabricNodeContextResult, IFabricNodeContextResult2};
 
-use crate::{
-    strings::WStringWrap,
-    types::NodeId,
-};
+use crate::{strings::WStringWrap, types::NodeId};
 
 #[cfg(feature = "tokio_async")]
 use crate::sync::{fabric_begin_end_proxy2, CancellationToken};

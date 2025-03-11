@@ -29,7 +29,7 @@ pub struct FabricWindowsCredentials {
 impl FabricSecurityCredentialKind for FabricWindowsCredentials {
     fn apply_inner(
         &self,
-        settings_interface: &mssf_com::FabricClient::IFabricClientSettings2,
+        settings_interface: mssf_com::FabricClient::IFabricClientSettings2,
     ) -> crate::Result<()> {
         let remote_identities: Box<[PCWSTR]> = self
             .RemoteIdentities

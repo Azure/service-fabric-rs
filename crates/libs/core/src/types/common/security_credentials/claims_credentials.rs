@@ -28,7 +28,7 @@ pub struct FabricClaimsCredentials {
 impl FabricSecurityCredentialKind for FabricClaimsCredentials {
     fn apply_inner(
         &self,
-        settings_interface: &mssf_com::FabricClient::IFabricClientSettings2,
+        settings_interface: mssf_com::FabricClient::IFabricClientSettings2,
     ) -> crate::Result<()> {
         let server_thumbprints: Box<[PCWSTR]> = self
             .ServerThumbprints
@@ -75,13 +75,17 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
         };
 
         // SAFETY: COM interop. SetSecurityCredentials does not retain reference to the passed in data after function returns.
-        unsafe { settings_interface.SetSecurityCredentials(&security_credentials) }
-            .map_err(crate::Error::from)
+        let result = unsafe { settings_interface.SetSecurityCredentials(&security_credentials) }
+            .map_err(crate::Error::from);
+        #[cfg(miri)] // TODO: investigate what's wrong with windows_core::implement drop implement.
+        Box::leak(Box::new(settings_interface));
+        result
     }
 }
 
 #[cfg(test)]
 mod test {
+    use mssf_com::FabricClient::IFabricClientSettings2;
     use mssf_com::FabricTypes::{
         FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN,
         FABRIC_PROTECTION_LEVEL_SIGN,
@@ -123,9 +127,9 @@ mod test {
 
     #[test]
     fn claims_credentials_nonempty_failure() {
-        let com = MockIFabricClientSettings::new_all_methods_fail();
+        let mock = MockIFabricClientSettings::new_all_methods_fail();
         let creds = make_credentials();
-        let result = creds.apply_inner(&com.into());
+        let result = creds.apply_inner(mock.into());
         assert_eq!(
             result,
             Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
@@ -134,9 +138,9 @@ mod test {
 
     #[test]
     fn claims_credentials_empty_failure() {
-        let com = MockIFabricClientSettings::new_all_methods_fail();
+        let mock = IFabricClientSettings2::from(MockIFabricClientSettings::new_all_methods_fail());
         let creds = make_credentials_with_empty_vecs();
-        let result = creds.apply_inner(&com.into());
+        let result = creds.apply_inner(mock);
         assert_eq!(
             result,
             Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
@@ -199,7 +203,7 @@ mod test {
         ));
         // SF might reject this in reality - that's ok, we're making sure our code doesn't have UB
         let creds = make_credentials_with_empty_vecs();
-        let result = creds.apply_inner(&com.into());
+        let result = creds.apply_inner(com.into());
         assert_eq!(result, Ok(()));
         let actual_call_count = *call_counter.lock().expect("Not poisioned");
         assert_eq!(actual_call_count, 1)
@@ -268,7 +272,7 @@ mod test {
         ));
         // SF might reject this in reality - that's ok, we're making sure our code doesn't have UB
         let creds = make_credentials();
-        let result = creds.apply_inner(&com.into());
+        let result = creds.apply_inner(com.into());
         assert_eq!(result, Ok(()));
         let actual_call_count = *call_counter.lock().expect("Not poisioned");
         assert_eq!(actual_call_count, 1)

@@ -25,11 +25,11 @@ pub enum FabricSecurityCredentials {
 }
 
 trait FabricSecurityCredentialKind {
-    fn apply_inner(&self, settings_interface: &IFabricClientSettings2) -> crate::Result<()>;
+    fn apply_inner(&self, settings_interface: IFabricClientSettings2) -> crate::Result<()>;
 }
 
 impl FabricSecurityCredentials {
-    pub fn apply(&self, settings_interface: &IFabricClientSettings2) -> crate::Result<()> {
+    pub fn apply(&self, settings_interface: IFabricClientSettings2) -> crate::Result<()> {
         match &self {
             FabricSecurityCredentials::FabricX509Credentials(v) => {
                 v as &dyn FabricSecurityCredentialKind

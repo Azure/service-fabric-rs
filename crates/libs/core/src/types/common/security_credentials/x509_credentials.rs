@@ -101,7 +101,7 @@ pub struct FabricX509Credentials {
 impl FabricSecurityCredentialKind for FabricX509Credentials {
     fn apply_inner(
         &self,
-        settings_interface: &mssf_com::FabricClient::IFabricClientSettings2,
+        settings_interface: mssf_com::FabricClient::IFabricClientSettings2,
     ) -> crate::Result<()> {
         let allowed_common_names: Box<[PCWSTR]> = self
             .AllowedCommonNames

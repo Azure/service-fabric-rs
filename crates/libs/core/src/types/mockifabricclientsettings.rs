@@ -15,7 +15,6 @@ use mssf_com::{
         FABRIC_SECURITY_CREDENTIALS,
     },
 };
-use windows::Win32::Foundation::E_NOTIMPL;
 pub(crate) mod test_constants {
     pub const TEST_SERVER_NAME_1: &str = "test.contoso.com";
     pub const TEST_SERVER_NAME_2: &str = "test2.contoso.com";
@@ -28,6 +27,8 @@ pub(crate) mod test_constants {
 
 pub(crate) mod test_utilities {
     use windows_core::PCWSTR;
+
+    use crate::strings::WStringWrap;
 
     /// # SAFETY
     /// * This is test code, intended to be used with Miri
@@ -62,6 +63,17 @@ pub(crate) mod test_utilities {
                 );
                 // SAFETY: caller promises it's within lifetime. non-null and alignment is checked above
                 let actual_value = unsafe { std::ptr::read(actual_value_ptr) };
+                let actual_val_str = WStringWrap::from(actual_value)
+                    .into_wstring()
+                    .to_string_lossy();
+                assert_eq!(
+                    expected_values[i],
+                    actual_val_str.as_str(),
+                    "String at index {} should have had value {}, but had value {}",
+                    i,
+                    expected_values[i],
+                    actual_val_str.as_str()
+                )
             }
         }
     }
@@ -85,7 +97,9 @@ impl MockIFabricClientSettings {
             set_keepalive_mock: Box::new(|_| {
                 Err(crate::Error::from(FABRIC_E_INVALID_CONFIGURATION).into())
             }),
-            get_settings_mock: Box::new(|| Err(crate::Error::from(E_NOTIMPL).into())),
+            get_settings_mock: Box::new(|| {
+                Err(crate::Error::from(FABRIC_E_INVALID_CONFIGURATION).into())
+            }),
             set_settings_mock: Box::new(|_| {
                 Err(crate::Error::from(FABRIC_E_INVALID_CONFIGURATION).into())
             }),

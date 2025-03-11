@@ -5,10 +5,13 @@ use mssf_com::FabricRuntime::{IFabricNodeContextResult, IFabricNodeContextResult
 
 use crate::{
     strings::WStringWrap,
-    sync::{fabric_begin_end_proxy2, CancellationToken},
     types::NodeId,
 };
 
+#[cfg(feature = "tokio_async")]
+use crate::sync::{fabric_begin_end_proxy2, CancellationToken};
+
+#[cfg(feature = "tokio_async")]
 pub fn get_com_node_context(
     timeout_milliseconds: u32,
     cancellation_token: Option<CancellationToken>,
@@ -32,6 +35,7 @@ pub struct NodeContext {
     pub node_id: NodeId,
 }
 
+#[cfg(feature = "tokio_async")]
 impl NodeContext {
     // Get the node context from SF runtime
     pub async fn get(
@@ -42,7 +46,9 @@ impl NodeContext {
             .await??;
         Ok(Self::from(&com))
     }
+}
 
+impl NodeContext {
     // Get the node context synchronously
     pub fn get_sync() -> crate::Result<Self> {
         let com = crate::API_TABLE.fabric_get_node_context()?;

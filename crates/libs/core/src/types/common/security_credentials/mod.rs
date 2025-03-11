@@ -18,10 +18,10 @@ pub use x509_credentials::*;
 #[non_exhaustive]
 pub enum FabricSecurityCredentials {
     // TODO: consider None (to clear previously set settings), X509Credentials2?
-    FabricWindowsCredentials(FabricWindowsCredentials),
-    FabricX509Credentials(FabricX509Credentials),
+    Windows(FabricWindowsCredentials),
+    X509(FabricX509Credentials),
     //FabricX509Credentials2(FabricX509Credentials2),
-    FabricClaimsCredentials(FabricClaimsCredentials),
+    Claims(FabricClaimsCredentials),
 }
 
 trait FabricSecurityCredentialKind {
@@ -31,15 +31,9 @@ trait FabricSecurityCredentialKind {
 impl FabricSecurityCredentials {
     pub fn apply(&self, settings_interface: IFabricClientSettings2) -> crate::Result<()> {
         match &self {
-            FabricSecurityCredentials::FabricX509Credentials(v) => {
-                v as &dyn FabricSecurityCredentialKind
-            }
-            FabricSecurityCredentials::FabricClaimsCredentials(v) => {
-                v as &dyn FabricSecurityCredentialKind
-            }
-            FabricSecurityCredentials::FabricWindowsCredentials(v) => {
-                v as &dyn FabricSecurityCredentialKind
-            }
+            FabricSecurityCredentials::X509(v) => v as &dyn FabricSecurityCredentialKind,
+            FabricSecurityCredentials::Claims(v) => v as &dyn FabricSecurityCredentialKind,
+            FabricSecurityCredentials::Windows(v) => v as &dyn FabricSecurityCredentialKind,
         }
         .apply_inner(settings_interface)
     }

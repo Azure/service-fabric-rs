@@ -21,9 +21,9 @@ use super::{FabricProtectionLevel, FabricSecurityCredentialKind};
 /// A wrapper around FABRIC_WINDOWS_CREDENTIALS
 #[allow(non_snake_case, reason = "Consistency with underlying API")]
 pub struct FabricWindowsCredentials {
-    RemoteSpn: WString,
-    RemoteIdentities: Vec<WString>,
-    ProtectionLevel: FabricProtectionLevel,
+    pub RemoteSpn: WString,
+    pub RemoteIdentities: Vec<WString>,
+    pub ProtectionLevel: FabricProtectionLevel,
 }
 
 impl FabricSecurityCredentialKind for FabricWindowsCredentials {

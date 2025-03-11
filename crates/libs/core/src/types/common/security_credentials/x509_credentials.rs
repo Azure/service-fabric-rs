@@ -87,14 +87,14 @@ impl From<FabricX509StoreLocation> for FABRIC_X509_STORE_LOCATION {
 
 #[allow(non_snake_case, reason = "Consistency with underlying API")]
 pub struct FabricX509Credentials {
-    AllowedCommonNames: Vec<WString>,
-    FindType: FabricX509FindType,
+    pub AllowedCommonNames: Vec<WString>,
+    pub FindType: FabricX509FindType,
     // NB: FindValue in practice appears to always be a PCWSTR.
     // What that PCWSTR is depends on the FindType.
     // So it's been modeled as a Rust enum
-    StoreLocation: FabricX509StoreLocation,
-    StoreName: WString,
-    ProtectionLevel: FabricProtectionLevel,
+    pub StoreLocation: FabricX509StoreLocation,
+    pub StoreName: WString,
+    pub ProtectionLevel: FabricProtectionLevel,
     // TODO: extensions?
 }
 

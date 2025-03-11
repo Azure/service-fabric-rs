@@ -108,8 +108,13 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
             .iter()
             .map(WString::as_pcwstr)
             .collect();
-        let allowed_common_names_ptr = allowed_common_names.as_ptr();
-
+        // technically speaking, doesn't need to be null in this case. but being paranoid
+        let allowed_common_names_ptr = if allowed_common_names.is_empty() {
+            std::ptr::null()
+        }
+        else 
+        { allowed_common_names.as_ptr()
+        };
         let find_type = FABRIC_X509_FIND_TYPE::from(&self.FindType);
         let find_value = match &self.FindType {
             FabricX509FindType::FindByExtension { extension } => extension.as_pcwstr(),
@@ -143,5 +148,165 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
         #[cfg(miri)] // TODO: investigate what's wrong with windows_core::implement drop implement.
         Box::leak(Box::new(settings_interface));
         result
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use mssf_com::FabricClient::IFabricClientSettings2;
+    use mssf_com::FabricTypes::{
+        FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN, FABRIC_PROTECTION_LEVEL_NONE
+    };
+    use std::ptr;
+    use std::sync::{Arc, Mutex};
+
+    use crate::strings::WStringWrap;
+    use crate::types::mockifabricclientsettings::test_constants::*;
+    use crate::types::mockifabricclientsettings::test_utilities::check_array_parameter;
+    use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
+
+    use super::*;
+    const TEST_STORE_1: &str = "TEST_STORE_1";
+    const TEST_STORE_2: &str = "TEST_STORE_2";
+    fn make_credentials() -> FabricX509Credentials {
+        FabricX509Credentials {
+            AllowedCommonNames: vec![WString::from(TEST_SERVER_NAME_2), WString::from(TEST_SERVER_NAME_1)],
+            FindType: FabricX509FindType::FindByThumbprint { thumbprint:  WString::from(TEST_THUMBPRINT_1) },
+            StoreLocation: FabricX509StoreLocation::LocalMachine,
+            StoreName: WString::from(TEST_STORE_1),
+            ProtectionLevel: FabricProtectionLevel::EncryptAndSign
+        }
+    }
+
+    fn make_credentials_with_empty_vecs() -> FabricX509Credentials {
+        FabricX509Credentials {
+            AllowedCommonNames: vec![],
+            FindType: FabricX509FindType::FindBySubjectName { subject_name: WString::from(TEST_SERVER_NAME_1) },
+            StoreLocation: FabricX509StoreLocation::CurrentUser,
+            StoreName: WString::from(TEST_STORE_2),
+            ProtectionLevel: FabricProtectionLevel::None
+        }
+    }
+
+    #[test]
+    fn x509_credentials_nonempty_failure() {
+        let mock = MockIFabricClientSettings::new_all_methods_fail();
+        let creds = make_credentials();
+        let result = creds.apply_inner(mock.into());
+        assert_eq!(
+            result,
+            Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
+        )
+    }
+
+    #[test]
+    fn x509_credentials_empty_failure() {
+        let mock = IFabricClientSettings2::from(MockIFabricClientSettings::new_all_methods_fail());
+        let creds = make_credentials_with_empty_vecs();
+        let result = creds.apply_inner(mock);
+        assert_eq!(
+            result,
+            Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
+        )
+    }
+
+    #[test]
+    fn x509_credentials_empty_success() {
+        let call_counter = Arc::new(Mutex::new(0));
+        let call_counter_copy = Arc::clone(&call_counter);
+        let com = MockIFabricClientSettings::new_with_security_credentials_mock(Box::new(
+            move |creds: *const FABRIC_SECURITY_CREDENTIALS| {
+                *call_counter_copy.lock().expect("Not poisoned") += 1;
+                assert!(!creds.is_null() && creds.is_aligned());
+                // SAFETY: test code. non-null and alignment is checked above
+                let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
+                assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_X509);
+
+                let value = creds_copy.Value as *const FABRIC_X509_CREDENTIALS;
+                assert!(!value.is_null() && value.is_aligned());
+                // SAFETY: test code. non-null and alignment is checked above
+                let value_copy = unsafe { ptr::read(value) };
+                // SAFETY: AllowedCommonNameCount and AllowedCommonNames go together. Should be valid for dereference.
+                unsafe {
+                    check_array_parameter(
+                        [],
+                        value_copy.AllowedCommonNameCount,
+                        value_copy.AllowedCommonNames,
+                    )
+                };
+
+                assert_eq!(value_copy.FindType, FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME);
+                let find_val_ptr = value_copy.FindValue as *const u16;
+                assert!(!find_val_ptr.is_null() && find_val_ptr.is_aligned());
+                let val_str = WStringWrap::from(PCWSTR::from_raw(find_val_ptr)).into_wstring().to_string_lossy();
+                assert_eq!(val_str.as_str(), TEST_SERVER_NAME_1);
+                assert_eq!(value_copy.StoreLocation, FABRIC_X509_STORE_LOCATION_CURRENTUSER);
+                assert_eq!(WStringWrap::from(value_copy.StoreName).into_wstring().to_string_lossy().as_str(), TEST_STORE_2);
+
+                assert_eq!(
+                    value_copy.ProtectionLevel,
+                    FABRIC_PROTECTION_LEVEL_NONE
+                );
+                assert!(value_copy.Reserved.is_null());
+
+                Ok(())
+            },
+        ));
+        // SF might reject this in reality - that's ok, we're making sure our code doesn't have UB
+        let creds = make_credentials_with_empty_vecs();
+        let result = creds.apply_inner(com.into());
+        assert_eq!(result, Ok(()));
+        let actual_call_count = *call_counter.lock().expect("Not poisioned");
+        assert_eq!(actual_call_count, 1)
+    }
+
+    #[test]
+    fn x509_credentials_filled_success() {
+        let call_counter = Arc::new(Mutex::new(0));
+        let call_counter_copy = Arc::clone(&call_counter);
+        let com = MockIFabricClientSettings::new_with_security_credentials_mock(Box::new(
+            move |creds: *const FABRIC_SECURITY_CREDENTIALS| {
+                *call_counter_copy.lock().expect("Not poisoned") += 1;
+                assert!(!creds.is_null() && creds.is_aligned());
+                // SAFETY: test code. non-null and alignment is checked above
+                let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
+                assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_X509);
+
+                let value = creds_copy.Value as *const FABRIC_X509_CREDENTIALS;
+                assert!(!value.is_null() && value.is_aligned());
+                // SAFETY: test code. non-null and alignment is checked above
+                let value_copy = unsafe { ptr::read(value) };
+                // SAFETY: AllowedCommonNameCount and AllowedCommonNames go together. Should be valid for dereference.
+                unsafe {
+                    check_array_parameter(
+                        [TEST_SERVER_NAME_2, TEST_SERVER_NAME_1],
+                        value_copy.AllowedCommonNameCount,
+                        value_copy.AllowedCommonNames,
+                    )
+                };
+
+                assert_eq!(value_copy.FindType, FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT);
+                let find_val_ptr = value_copy.FindValue as *const u16;
+                assert!(!find_val_ptr.is_null() && find_val_ptr.is_aligned());
+                let val_str = WStringWrap::from(PCWSTR::from_raw(find_val_ptr)).into_wstring().to_string_lossy();
+                assert_eq!(val_str.as_str(), TEST_THUMBPRINT_1);
+                assert_eq!(value_copy.StoreLocation, FABRIC_X509_STORE_LOCATION_LOCALMACHINE);
+                assert_eq!(WStringWrap::from(value_copy.StoreName).into_wstring().to_string_lossy().as_str(), TEST_STORE_1);
+
+                assert_eq!(
+                    value_copy.ProtectionLevel,
+                    FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
+                );
+                assert!(value_copy.Reserved.is_null());
+
+                Ok(())
+            },
+        ));
+        // SF might reject this in reality - that's ok, we're making sure our code doesn't have UB
+        let creds = make_credentials();
+        let result = creds.apply_inner(com.into());
+        assert_eq!(result, Ok(()));
+        let actual_call_count = *call_counter.lock().expect("Not poisioned");
+        assert_eq!(actual_call_count, 1)
     }
 }

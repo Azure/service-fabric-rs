@@ -157,7 +157,6 @@ mod test {
         FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN,
         FABRIC_PROTECTION_LEVEL_NONE,
     };
-    use std::ptr;
     use std::sync::{Arc, Mutex};
 
     use crate::strings::WStringWrap;
@@ -226,43 +225,43 @@ mod test {
                 *call_counter_copy.lock().expect("Not poisoned") += 1;
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
-                assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_X509);
+                let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
+                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_X509);
 
-                let value = creds_copy.Value as *const FABRIC_X509_CREDENTIALS;
+                let value = creds_ref.Value as *const FABRIC_X509_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let value_copy = unsafe { ptr::read(value) };
+                let value_ref = unsafe { value.as_ref() }.unwrap();
                 // SAFETY: AllowedCommonNameCount and AllowedCommonNames go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
                         [],
-                        value_copy.AllowedCommonNameCount,
-                        value_copy.AllowedCommonNames,
+                        value_ref.AllowedCommonNameCount,
+                        value_ref.AllowedCommonNames,
                     )
                 };
 
-                assert_eq!(value_copy.FindType, FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME);
-                let find_val_ptr = value_copy.FindValue as *const u16;
+                assert_eq!(value_ref.FindType, FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME);
+                let find_val_ptr = value_ref.FindValue as *const u16;
                 assert!(!find_val_ptr.is_null() && find_val_ptr.is_aligned());
                 let val_str = WStringWrap::from(PCWSTR::from_raw(find_val_ptr))
                     .into_wstring()
                     .to_string_lossy();
                 assert_eq!(val_str.as_str(), TEST_SERVER_NAME_1);
                 assert_eq!(
-                    value_copy.StoreLocation,
+                    value_ref.StoreLocation,
                     FABRIC_X509_STORE_LOCATION_CURRENTUSER
                 );
                 assert_eq!(
-                    WStringWrap::from(value_copy.StoreName)
+                    WStringWrap::from(value_ref.StoreName)
                         .into_wstring()
                         .to_string_lossy()
                         .as_str(),
                     TEST_STORE_2
                 );
 
-                assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_NONE);
-                assert!(value_copy.Reserved.is_null());
+                assert_eq!(value_ref.ProtectionLevel, FABRIC_PROTECTION_LEVEL_NONE);
+                assert!(value_ref.Reserved.is_null());
 
                 Ok(())
             },
@@ -284,35 +283,35 @@ mod test {
                 *call_counter_copy.lock().expect("Not poisoned") += 1;
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
-                assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_X509);
+                let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
+                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_X509);
 
-                let value = creds_copy.Value as *const FABRIC_X509_CREDENTIALS;
+                let value = creds_ref.Value as *const FABRIC_X509_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let value_copy = unsafe { ptr::read(value) };
+                let value_ref = unsafe { value.as_ref() }.unwrap();
                 // SAFETY: AllowedCommonNameCount and AllowedCommonNames go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
                         [TEST_SERVER_NAME_2, TEST_SERVER_NAME_1],
-                        value_copy.AllowedCommonNameCount,
-                        value_copy.AllowedCommonNames,
+                        value_ref.AllowedCommonNameCount,
+                        value_ref.AllowedCommonNames,
                     )
                 };
 
-                assert_eq!(value_copy.FindType, FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT);
-                let find_val_ptr = value_copy.FindValue as *const u16;
+                assert_eq!(value_ref.FindType, FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT);
+                let find_val_ptr = value_ref.FindValue as *const u16;
                 assert!(!find_val_ptr.is_null() && find_val_ptr.is_aligned());
                 let val_str = WStringWrap::from(PCWSTR::from_raw(find_val_ptr))
                     .into_wstring()
                     .to_string_lossy();
                 assert_eq!(val_str.as_str(), TEST_THUMBPRINT_1);
                 assert_eq!(
-                    value_copy.StoreLocation,
+                    value_ref.StoreLocation,
                     FABRIC_X509_STORE_LOCATION_LOCALMACHINE
                 );
                 assert_eq!(
-                    WStringWrap::from(value_copy.StoreName)
+                    WStringWrap::from(value_ref.StoreName)
                         .into_wstring()
                         .to_string_lossy()
                         .as_str(),
@@ -320,10 +319,10 @@ mod test {
                 );
 
                 assert_eq!(
-                    value_copy.ProtectionLevel,
+                    value_ref.ProtectionLevel,
                     FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
                 );
-                assert!(value_copy.Reserved.is_null());
+                assert!(value_ref.Reserved.is_null());
 
                 Ok(())
             },

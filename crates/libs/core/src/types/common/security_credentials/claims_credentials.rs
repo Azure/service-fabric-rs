@@ -90,7 +90,6 @@ mod test {
         FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN,
         FABRIC_PROTECTION_LEVEL_SIGN,
     };
-    use std::ptr;
     use std::sync::{Arc, Mutex};
 
     use crate::strings::WStringWrap;
@@ -156,47 +155,47 @@ mod test {
                 *call_counter_copy.lock().expect("Not poisoned") += 1;
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
-                assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS);
+                let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
+                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS);
 
-                let value = creds_copy.Value as *const FABRIC_CLAIMS_CREDENTIALS;
+                let value = creds_ref.Value as *const FABRIC_CLAIMS_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let value_copy = unsafe { ptr::read(value) };
+                let value_ref = unsafe { value.as_ref() }.unwrap();
                 // SAFETY: IssuerThumbprintCount and IssuerThumbprints go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
                         [],
-                        value_copy.IssuerThumbprintCount,
-                        value_copy.IssuerThumbprints,
+                        value_ref.IssuerThumbprintCount,
+                        value_ref.IssuerThumbprints,
                     )
                 };
                 // SAFETY: test code. Should point to a null byte even when None.
-                assert!(unsafe { value_copy.LocalClaims.is_empty() });
-                assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_SIGN);
+                assert!(unsafe { value_ref.LocalClaims.is_empty() });
+                assert_eq!(value_ref.ProtectionLevel, FABRIC_PROTECTION_LEVEL_SIGN);
                 // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
                         [],
-                        value_copy.ServerCommonNameCount,
-                        value_copy.ServerCommonNames,
+                        value_ref.ServerCommonNameCount,
+                        value_ref.ServerCommonNames,
                     )
                 };
 
-                let ex1 = value_copy.Reserved as *const FABRIC_CLAIMS_CREDENTIALS_EX1;
+                let ex1 = value_ref.Reserved as *const FABRIC_CLAIMS_CREDENTIALS_EX1;
                 assert!(!ex1.is_null() && ex1.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let ex1_copy = unsafe { ptr::read(ex1) };
+                let ex1_ref = unsafe { ex1.as_ref() }.unwrap();
                 // SAFETY: ServerThumbprintCount and ServerThumbprints go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
                         [],
-                        ex1_copy.ServerThumbprintCount,
-                        ex1_copy.ServerThumbprints,
+                        ex1_ref.ServerThumbprintCount,
+                        ex1_ref.ServerThumbprints,
                     )
                 };
 
-                assert!(ex1_copy.Reserved.is_null());
+                assert!(ex1_ref.Reserved.is_null());
 
                 Ok(())
             },
@@ -218,54 +217,54 @@ mod test {
                 *call_counter_copy.lock().expect("Not poisoned") += 1;
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
-                assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS);
+                let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
+                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS);
 
-                let value = creds_copy.Value as *const FABRIC_CLAIMS_CREDENTIALS;
+                let value = creds_ref.Value as *const FABRIC_CLAIMS_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let value_copy = unsafe { ptr::read(value) };
+                let value_ref = unsafe { value.as_ref() }.unwrap();
                 // SAFETY: IssuerThumbprintCount and IssuerThumbprints go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
                         [TEST_THUMBPRINT_1, TEST_THUMBPRINT_2],
-                        value_copy.IssuerThumbprintCount,
-                        value_copy.IssuerThumbprints,
+                        value_ref.IssuerThumbprintCount,
+                        value_ref.IssuerThumbprints,
                     )
                 };
 
-                let local_claim = WStringWrap::from(value_copy.LocalClaims)
+                let local_claim = WStringWrap::from(value_ref.LocalClaims)
                     .into_wstring()
                     .to_string_lossy();
                 assert_eq!(&local_claim, TEST_CLAIMS);
 
                 assert_eq!(
-                    value_copy.ProtectionLevel,
+                    value_ref.ProtectionLevel,
                     FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
                 );
                 // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
                         [TEST_SERVER_NAME_1],
-                        value_copy.ServerCommonNameCount,
-                        value_copy.ServerCommonNames,
+                        value_ref.ServerCommonNameCount,
+                        value_ref.ServerCommonNames,
                     )
                 };
 
-                let ex1 = value_copy.Reserved as *const FABRIC_CLAIMS_CREDENTIALS_EX1;
+                let ex1 = value_ref.Reserved as *const FABRIC_CLAIMS_CREDENTIALS_EX1;
                 assert!(!ex1.is_null() && ex1.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let ex1_copy = unsafe { ptr::read(ex1) };
+                let ex1_ref = unsafe { ex1.as_ref() }.unwrap();
                 // SAFETY: ServerThumbprintCount and ServerThumbprints go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
                         [TEST_THUMBPRINT_3, TEST_THUMBPRINT_4],
-                        ex1_copy.ServerThumbprintCount,
-                        ex1_copy.ServerThumbprints,
+                        ex1_ref.ServerThumbprintCount,
+                        ex1_ref.ServerThumbprints,
                     )
                 };
 
-                assert!(ex1_copy.Reserved.is_null());
+                assert!(ex1_ref.Reserved.is_null());
 
                 Ok(())
             },

@@ -69,7 +69,6 @@ mod test {
         FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN,
         FABRIC_PROTECTION_LEVEL_NONE,
     };
-    use std::ptr;
     use std::sync::{Arc, Mutex};
 
     use crate::strings::WStringWrap;
@@ -130,27 +129,27 @@ mod test {
                 *call_counter_copy.lock().expect("Not poisoned") += 1;
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
-                assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS);
+                let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
+                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS);
 
-                let value = creds_copy.Value as *const FABRIC_WINDOWS_CREDENTIALS;
+                let value = creds_ref.Value as *const FABRIC_WINDOWS_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let value_copy = unsafe { ptr::read(value) };
+                let value_ref = unsafe { value.as_ref() }.unwrap();
                 // SAFETY: RemoteIdentityCount and RemoteIdentities go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
                         [],
-                        value_copy.RemoteIdentityCount,
-                        value_copy.RemoteIdentities,
+                        value_ref.RemoteIdentityCount,
+                        value_ref.RemoteIdentities,
                     )
                 };
 
                 // SAFETY: test code, must be empty
-                assert!(unsafe { value_copy.RemoteSpn.is_empty() });
+                assert!(unsafe { value_ref.RemoteSpn.is_empty() });
 
-                assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_NONE);
-                assert!(value_copy.Reserved.is_null());
+                assert_eq!(value_ref.ProtectionLevel, FABRIC_PROTECTION_LEVEL_NONE);
+                assert!(value_ref.Reserved.is_null());
 
                 Ok(())
             },
@@ -172,32 +171,32 @@ mod test {
                 *call_counter_copy.lock().expect("Not poisoned") += 1;
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let creds_copy: FABRIC_SECURITY_CREDENTIALS = unsafe { ptr::read(creds) };
-                assert_eq!(creds_copy.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS);
+                let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
+                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS);
 
-                let value = creds_copy.Value as *const FABRIC_WINDOWS_CREDENTIALS;
+                let value = creds_ref.Value as *const FABRIC_WINDOWS_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
-                let value_copy = unsafe { ptr::read(value) };
+                let value_ref = unsafe { value.as_ref() }.unwrap();
                 // SAFETY: IssuerThumbprintCount and IssuerThumbprints go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
                         [TEST_REMOTE_IDENTITY_1, TEST_REMOTE_IDENTITY_2],
-                        value_copy.RemoteIdentityCount,
-                        value_copy.RemoteIdentities,
+                        value_ref.RemoteIdentityCount,
+                        value_ref.RemoteIdentities,
                     )
                 };
 
-                let remote_spn = WStringWrap::from(value_copy.RemoteSpn)
+                let remote_spn = WStringWrap::from(value_ref.RemoteSpn)
                     .into_wstring()
                     .to_string_lossy();
                 assert_eq!(&remote_spn, TEST_REMOTE_SPN_1);
 
                 assert_eq!(
-                    value_copy.ProtectionLevel,
+                    value_ref.ProtectionLevel,
                     FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
                 );
-                assert!(value_copy.Reserved.is_null());
+                assert!(value_ref.Reserved.is_null());
 
                 Ok(())
             },

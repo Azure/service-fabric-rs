@@ -62,8 +62,8 @@ pub(crate) mod test_utilities {
                     i
                 );
                 // SAFETY: caller promises it's within lifetime. non-null and alignment is checked above
-                let actual_value = unsafe { std::ptr::read(actual_value_ptr) };
-                let actual_val_str = WStringWrap::from(actual_value)
+                let actual_value = unsafe { actual_value_ptr.as_ref() }.unwrap();
+                let actual_val_str = WStringWrap::from(*actual_value)
                     .into_wstring()
                     .to_string_lossy();
                 assert_eq!(

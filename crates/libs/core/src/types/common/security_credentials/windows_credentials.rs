@@ -36,12 +36,9 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
             .iter()
             .map(WString::as_pcwstr)
             .collect();
-        let remote_identities_ptr = if remote_identities.is_empty()
-        {
+        let remote_identities_ptr = if remote_identities.is_empty() {
             std::ptr::null()
-        }
-        else
-        {
+        } else {
             remote_identities.as_ptr()
         };
         let mut value = FABRIC_WINDOWS_CREDENTIALS {
@@ -58,7 +55,7 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
 
         // SAFETY: COM interop. SetSecurityCredentials does not retain reference to the passed in data after function returns.
         let result = unsafe { settings_interface.SetSecurityCredentials(&security_credentials) }
-            .map_err(crate::Error::from);            
+            .map_err(crate::Error::from);
         #[cfg(miri)] // TODO: investigate what's wrong with windows_core::implement drop implement.
         Box::leak(Box::new(settings_interface));
         result
@@ -69,7 +66,8 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
 mod test {
     use mssf_com::FabricClient::IFabricClientSettings2;
     use mssf_com::FabricTypes::{
-        FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN, FABRIC_PROTECTION_LEVEL_NONE
+        FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN,
+        FABRIC_PROTECTION_LEVEL_NONE,
     };
     use std::ptr;
     use std::sync::{Arc, Mutex};
@@ -85,8 +83,11 @@ mod test {
     fn make_credentials() -> FabricWindowsCredentials {
         FabricWindowsCredentials {
             RemoteSpn: WString::from(TEST_REMOTE_SPN_1),
-            RemoteIdentities: vec![WString::from(TEST_REMOTE_IDENTITY_1), WString::from(TEST_REMOTE_IDENTITY_2)],
-            ProtectionLevel: FabricProtectionLevel::EncryptAndSign
+            RemoteIdentities: vec![
+                WString::from(TEST_REMOTE_IDENTITY_1),
+                WString::from(TEST_REMOTE_IDENTITY_2),
+            ],
+            ProtectionLevel: FabricProtectionLevel::EncryptAndSign,
         }
     }
 
@@ -94,7 +95,7 @@ mod test {
         FabricWindowsCredentials {
             RemoteSpn: WString::new(),
             RemoteIdentities: vec![],
-            ProtectionLevel: FabricProtectionLevel::None
+            ProtectionLevel: FabricProtectionLevel::None,
         }
     }
 
@@ -146,12 +147,9 @@ mod test {
                 };
 
                 // SAFETY: test code, must be empty
-                assert!(unsafe {value_copy.RemoteSpn.is_empty()});
+                assert!(unsafe { value_copy.RemoteSpn.is_empty() });
 
-                assert_eq!(
-                    value_copy.ProtectionLevel,
-                    FABRIC_PROTECTION_LEVEL_NONE
-                );
+                assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_NONE);
                 assert!(value_copy.Reserved.is_null());
 
                 Ok(())

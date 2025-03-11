@@ -111,9 +111,8 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
         // technically speaking, doesn't need to be null in this case. but being paranoid
         let allowed_common_names_ptr = if allowed_common_names.is_empty() {
             std::ptr::null()
-        }
-        else 
-        { allowed_common_names.as_ptr()
+        } else {
+            allowed_common_names.as_ptr()
         };
         let find_type = FABRIC_X509_FIND_TYPE::from(&self.FindType);
         let find_value = match &self.FindType {
@@ -155,7 +154,8 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
 mod test {
     use mssf_com::FabricClient::IFabricClientSettings2;
     use mssf_com::FabricTypes::{
-        FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN, FABRIC_PROTECTION_LEVEL_NONE
+        FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN,
+        FABRIC_PROTECTION_LEVEL_NONE,
     };
     use std::ptr;
     use std::sync::{Arc, Mutex};
@@ -170,21 +170,28 @@ mod test {
     const TEST_STORE_2: &str = "TEST_STORE_2";
     fn make_credentials() -> FabricX509Credentials {
         FabricX509Credentials {
-            AllowedCommonNames: vec![WString::from(TEST_SERVER_NAME_2), WString::from(TEST_SERVER_NAME_1)],
-            FindType: FabricX509FindType::FindByThumbprint { thumbprint:  WString::from(TEST_THUMBPRINT_1) },
+            AllowedCommonNames: vec![
+                WString::from(TEST_SERVER_NAME_2),
+                WString::from(TEST_SERVER_NAME_1),
+            ],
+            FindType: FabricX509FindType::FindByThumbprint {
+                thumbprint: WString::from(TEST_THUMBPRINT_1),
+            },
             StoreLocation: FabricX509StoreLocation::LocalMachine,
             StoreName: WString::from(TEST_STORE_1),
-            ProtectionLevel: FabricProtectionLevel::EncryptAndSign
+            ProtectionLevel: FabricProtectionLevel::EncryptAndSign,
         }
     }
 
     fn make_credentials_with_empty_vecs() -> FabricX509Credentials {
         FabricX509Credentials {
             AllowedCommonNames: vec![],
-            FindType: FabricX509FindType::FindBySubjectName { subject_name: WString::from(TEST_SERVER_NAME_1) },
+            FindType: FabricX509FindType::FindBySubjectName {
+                subject_name: WString::from(TEST_SERVER_NAME_1),
+            },
             StoreLocation: FabricX509StoreLocation::CurrentUser,
             StoreName: WString::from(TEST_STORE_2),
-            ProtectionLevel: FabricProtectionLevel::None
+            ProtectionLevel: FabricProtectionLevel::None,
         }
     }
 
@@ -238,15 +245,23 @@ mod test {
                 assert_eq!(value_copy.FindType, FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME);
                 let find_val_ptr = value_copy.FindValue as *const u16;
                 assert!(!find_val_ptr.is_null() && find_val_ptr.is_aligned());
-                let val_str = WStringWrap::from(PCWSTR::from_raw(find_val_ptr)).into_wstring().to_string_lossy();
+                let val_str = WStringWrap::from(PCWSTR::from_raw(find_val_ptr))
+                    .into_wstring()
+                    .to_string_lossy();
                 assert_eq!(val_str.as_str(), TEST_SERVER_NAME_1);
-                assert_eq!(value_copy.StoreLocation, FABRIC_X509_STORE_LOCATION_CURRENTUSER);
-                assert_eq!(WStringWrap::from(value_copy.StoreName).into_wstring().to_string_lossy().as_str(), TEST_STORE_2);
-
                 assert_eq!(
-                    value_copy.ProtectionLevel,
-                    FABRIC_PROTECTION_LEVEL_NONE
+                    value_copy.StoreLocation,
+                    FABRIC_X509_STORE_LOCATION_CURRENTUSER
                 );
+                assert_eq!(
+                    WStringWrap::from(value_copy.StoreName)
+                        .into_wstring()
+                        .to_string_lossy()
+                        .as_str(),
+                    TEST_STORE_2
+                );
+
+                assert_eq!(value_copy.ProtectionLevel, FABRIC_PROTECTION_LEVEL_NONE);
                 assert!(value_copy.Reserved.is_null());
 
                 Ok(())
@@ -288,10 +303,21 @@ mod test {
                 assert_eq!(value_copy.FindType, FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT);
                 let find_val_ptr = value_copy.FindValue as *const u16;
                 assert!(!find_val_ptr.is_null() && find_val_ptr.is_aligned());
-                let val_str = WStringWrap::from(PCWSTR::from_raw(find_val_ptr)).into_wstring().to_string_lossy();
+                let val_str = WStringWrap::from(PCWSTR::from_raw(find_val_ptr))
+                    .into_wstring()
+                    .to_string_lossy();
                 assert_eq!(val_str.as_str(), TEST_THUMBPRINT_1);
-                assert_eq!(value_copy.StoreLocation, FABRIC_X509_STORE_LOCATION_LOCALMACHINE);
-                assert_eq!(WStringWrap::from(value_copy.StoreName).into_wstring().to_string_lossy().as_str(), TEST_STORE_1);
+                assert_eq!(
+                    value_copy.StoreLocation,
+                    FABRIC_X509_STORE_LOCATION_LOCALMACHINE
+                );
+                assert_eq!(
+                    WStringWrap::from(value_copy.StoreName)
+                        .into_wstring()
+                        .to_string_lossy()
+                        .as_str(),
+                    TEST_STORE_1
+                );
 
                 assert_eq!(
                     value_copy.ProtectionLevel,

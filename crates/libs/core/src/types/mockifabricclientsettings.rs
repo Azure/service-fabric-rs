@@ -31,9 +31,7 @@ pub(crate) mod test_utilities {
     use crate::strings::WStringWrap;
 
     /// # SAFETY
-    /// * This is test code, intended to be used with Miri
-    /// to validate that all reads SF might do of a
-    /// pointer / length pair are defined behavior
+    /// * This is test code, intended to be used with Miri to validate that all reads SF might do of a pointer / length pair are defined behavior
     /// * Caller is responsible for ensuring that the actual_len and actual_values_start parameters go together
     /// * Caller is responsible for ensuring that actual_values_start is valid for dereference for N elements at the time of the call, if non-null
     pub unsafe fn check_array_parameter<const N: usize>(

@@ -49,8 +49,11 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
         };
 
         // SAFETY: COM interop. SetSecurityCredentials does not retain reference to the passed in data after function returns.
-        unsafe { settings_interface.SetSecurityCredentials(&security_credentials) }
-            .map_err(crate::Error::from)
+        let result = unsafe { settings_interface.SetSecurityCredentials(&security_credentials) }
+            .map_err(crate::Error::from);            
+        #[cfg(miri)] // TODO: investigate what's wrong with windows_core::implement drop implement.
+        Box::leak(Box::new(settings_interface));
+        result
     }
 }
 

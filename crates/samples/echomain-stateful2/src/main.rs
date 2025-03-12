@@ -36,7 +36,9 @@ fn main() -> mssf_core::Result<()> {
         .register_stateful_service_factory(&WString::from("StatefulEchoAppService"), factory)
         .unwrap();
 
-    e.run_until_ctrl_c();
+    e.block_on(async {
+        tokio::signal::ctrl_c().await.expect("fail to get ctrl-c");
+    });
     Ok(())
 }
 

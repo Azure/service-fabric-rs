@@ -234,7 +234,6 @@ version = "0.0.22"
 dependencies = [
  "bitflags",
  "config",
- "ctrlc",
  "lazy_static",
  "libloading",
  "mssf-com",

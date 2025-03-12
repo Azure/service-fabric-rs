@@ -3,7 +3,11 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use std::{future::Future, pin::Pin, task::{Context, Poll}};
+use std::{
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 use mssf_com::FabricCommon::IFabricAsyncOperationContext;
 
@@ -180,12 +184,12 @@ pub fn oneshot_channel<T>(
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use tokio_util::sync::CancellationToken;
 
     use crate::{sync::oneshot_channel, ErrorCode};
 
-     /// Test various cancellation cases for the channel used
+    /// Test various cancellation cases for the channel used
     /// to send data in proxy layer.
     #[tokio::test]
     async fn test_channel() {

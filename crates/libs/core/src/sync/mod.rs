@@ -75,12 +75,13 @@ impl<F: Callback> AwaitableCallback<F> {
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use mssf_com::FabricClient::IFabricClusterManagementClient3;
 
     #[test]
     fn local_client_create() {
         let _mgmt = crate::client::FabricClient::builder()
-            .build_interface::<IFabricClusterManagementClient3>().unwrap();
+            .build_interface::<IFabricClusterManagementClient3>()
+            .unwrap();
     }
 }

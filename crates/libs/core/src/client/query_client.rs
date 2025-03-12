@@ -23,7 +23,7 @@ use mssf_com::{
 };
 
 #[cfg(feature = "tokio_async")]
-use crate::sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2};
+use crate::sync::{fabric_begin_end_proxy, CancellationToken, FabricReceiver};
 use crate::{
     strings::get_pcwstr_from_opt,
     types::{
@@ -48,11 +48,11 @@ impl QueryClient {
         query_description: &FABRIC_NODE_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::WinResult<IFabricGetNodeListResult2>> {
+    ) -> FabricReceiver<crate::WinResult<IFabricGetNodeListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
 
-        fabric_begin_end_proxy2(
+        fabric_begin_end_proxy(
             move |callback| unsafe {
                 com1.BeginGetNodeList(query_description, timeout_milliseconds, callback)
             },
@@ -66,10 +66,10 @@ impl QueryClient {
         desc: &FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::WinResult<IFabricGetPartitionListResult2>> {
+    ) -> FabricReceiver<crate::WinResult<IFabricGetPartitionListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy2(
+        fabric_begin_end_proxy(
             move |callback| unsafe {
                 com1.BeginGetPartitionList(desc, timeout_milliseconds, callback)
             },
@@ -83,10 +83,10 @@ impl QueryClient {
         desc: &FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::WinResult<IFabricGetReplicaListResult2>> {
+    ) -> FabricReceiver<crate::WinResult<IFabricGetReplicaListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy2(
+        fabric_begin_end_proxy(
             move |callback| unsafe {
                 com1.BeginGetReplicaList(desc, timeout_milliseconds, callback)
             },
@@ -100,10 +100,10 @@ impl QueryClient {
         desc: &FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::WinResult<IFabricGetPartitionLoadInformationResult>> {
+    ) -> FabricReceiver<crate::WinResult<IFabricGetPartitionLoadInformationResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy2(
+        fabric_begin_end_proxy(
             move |callback| unsafe {
                 com1.BeginGetPartitionLoadInformation(desc, timeout_milliseconds, callback)
             },

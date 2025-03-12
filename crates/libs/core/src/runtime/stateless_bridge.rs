@@ -9,7 +9,7 @@
 use std::sync::Arc;
 
 use crate::{
-    runtime::stateless::StatelessServicePartition, strings::WStringWrap, sync::BridgeContext3,
+    runtime::stateless::StatelessServicePartition, strings::WStringWrap, sync::BridgeContext,
 };
 use mssf_com::{
     FabricCommon::IFabricStringResult,
@@ -130,7 +130,7 @@ where
         let partition_cp = partition.unwrap().clone();
         let partition_bridge = StatelessServicePartition::new(partition_cp);
         let inner = self.inner.clone();
-        let (ctx, token) = BridgeContext3::make(callback);
+        let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner
                 .open(&partition_bridge, token)
@@ -145,7 +145,7 @@ where
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<IFabricStringResult> {
         debug!("IFabricStatelessServiceInstanceBridge::EndOpen");
-        BridgeContext3::result(context)?
+        BridgeContext::result(context)?
     }
 
     fn BeginClose(
@@ -154,7 +154,7 @@ where
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
         debug!("IFabricStatelessServiceInstanceBridge::BeginClose");
         let inner = self.inner.clone();
-        let (ctx, token) = BridgeContext3::make(callback);
+        let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner.close(token).await.map_err(crate::WinError::from)
         })
@@ -165,7 +165,7 @@ where
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
         debug!("IFabricStatelessServiceInstanceBridge::EndClose");
-        BridgeContext3::result(context)?
+        BridgeContext::result(context)?
     }
 
     fn Abort(&self) {

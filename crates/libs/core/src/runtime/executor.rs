@@ -5,8 +5,7 @@
 
 use std::future::Future;
 
-use tokio::{runtime::Handle, sync::mpsc::channel};
-use tracing::info;
+use tokio::runtime::Handle;
 
 use crate::error::ErrorCode;
 
@@ -28,28 +27,6 @@ pub trait Executor: Clone + Sync + Send + 'static {
 
     /// run the future on the executor until completion.
     fn block_on<F: Future>(&self, future: F) -> F::Output;
-
-    // provided functions
-
-    /// Run the executor and block the current thread until ctrl-c event is
-    /// Received.
-    fn run_until_ctrl_c(&self) {
-        info!("DefaultExecutor: setting up ctrl-c event.");
-        // set ctrc event
-        let (tx, mut rx) = channel(1);
-        let handler = move || {
-            tx.blocking_send(())
-                .expect("Could not send signal on channel.")
-        };
-        ctrlc::set_handler(handler).expect("Error setting Ctrl-C handler");
-
-        // wait for ctrl-c signal.
-        self.block_on(async move {
-            info!("DefaultExecutor: Waiting for Ctrl-C...");
-            rx.recv().await.expect("Could not receive from channel.");
-            info!("DefaultExecutor: Got Ctrl-C! Exiting...");
-        });
-    }
 }
 
 /// Handle can be awaited to get the success status of the task.

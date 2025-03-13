@@ -17,7 +17,7 @@ include = [
 default = ["config_source", "tokio_async"]
 # Required for a lot of callback functionality.
 # Also requires ctrlc for signal handling
-tokio_async = ["dep:tokio", "dep:tokio-util", "dep:ctrlc"]
+tokio_async = ["dep:tokio", "dep:tokio-util"]
 # Config crate required to implement its interface. 
 config_source = ["dep:config"]
 
@@ -25,7 +25,6 @@ config_source = ["dep:config"]
 tracing.workspace = true
 tokio = { version = "1", features = ["sync", "rt"], optional = true }
 tokio-util = { version = "0.7", optional = true }
-ctrlc = { version = "3", features = ["termination"], optional = true }
 trait-variant = "0.1"
 bitflags = "2"
 config = { version = "0.14",  default-features = false, optional = true }

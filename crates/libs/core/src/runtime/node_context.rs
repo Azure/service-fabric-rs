@@ -11,14 +11,14 @@ use mssf_com::FabricRuntime::{IFabricNodeContextResult, IFabricNodeContextResult
 use crate::{strings::WStringWrap, types::NodeId};
 
 #[cfg(feature = "tokio_async")]
-use crate::sync::{fabric_begin_end_proxy2, CancellationToken};
+use crate::sync::{fabric_begin_end_proxy, CancellationToken};
 
 #[cfg(feature = "tokio_async")]
 pub fn get_com_node_context(
     timeout_milliseconds: u32,
     cancellation_token: Option<CancellationToken>,
-) -> crate::sync::FabricReceiver2<crate::WinResult<IFabricNodeContextResult>> {
-    fabric_begin_end_proxy2(
+) -> crate::sync::FabricReceiver<crate::WinResult<IFabricNodeContextResult>> {
+    fabric_begin_end_proxy(
         move |callback| {
             crate::API_TABLE.fabric_begin_get_node_context(timeout_milliseconds, callback)
         },

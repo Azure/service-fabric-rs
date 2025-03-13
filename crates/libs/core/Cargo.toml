@@ -33,7 +33,6 @@ libloading = "0.8"
 lazy_static = "1"
 
 [dev-dependencies]
-paste = "1"
 # need time for testing
 tokio = { version = "1", features = ["sync" , "rt-multi-thread", "rt", "macros", "time"] }
 

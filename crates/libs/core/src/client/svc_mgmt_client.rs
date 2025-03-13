@@ -26,7 +26,7 @@ use mssf_com::{
 };
 
 #[cfg(feature = "tokio_async")]
-use crate::sync::{fabric_begin_end_proxy2, CancellationToken, FabricReceiver2};
+use crate::sync::{fabric_begin_end_proxy, CancellationToken, FabricReceiver};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
@@ -58,10 +58,10 @@ impl ServiceManagementClient {
         previous_result: Option<&IFabricResolvedServicePartitionResult>, // This is different from generated code
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::WinResult<IFabricResolvedServicePartitionResult>> {
+    ) -> FabricReceiver<crate::WinResult<IFabricResolvedServicePartitionResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy2(
+        fabric_begin_end_proxy(
             move |callback| unsafe {
                 com1.BeginResolveServicePartition(
                     name,
@@ -82,10 +82,10 @@ impl ServiceManagementClient {
         desc: &FABRIC_RESTART_REPLICA_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy2(
+        fabric_begin_end_proxy(
             move |callback| unsafe {
                 com1.BeginRestartReplica(desc, timeout_milliseconds, callback)
             },
@@ -99,10 +99,10 @@ impl ServiceManagementClient {
         desc: &FABRIC_REMOVE_REPLICA_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy2(
+        fabric_begin_end_proxy(
             move |callback| unsafe {
                 com1.BeginRemoveReplica(desc, timeout_milliseconds, callback)
             },
@@ -116,10 +116,10 @@ impl ServiceManagementClient {
         desc: &FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::WinResult<i64>> {
+    ) -> FabricReceiver<crate::WinResult<i64>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy2(
+        fabric_begin_end_proxy(
             move |callback| unsafe {
                 com1.BeginRegisterServiceNotificationFilter(desc, timeout_milliseconds, callback)
             },
@@ -133,10 +133,10 @@ impl ServiceManagementClient {
         filterid: i64,
         timeout_milliseconds: u32,
         cancellation_token: Option<CancellationToken>,
-    ) -> FabricReceiver2<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
-        fabric_begin_end_proxy2(
+        fabric_begin_end_proxy(
             move |callback| unsafe {
                 com1.BeginUnregisterServiceNotificationFilter(
                     filterid,

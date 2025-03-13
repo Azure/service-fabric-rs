@@ -14,11 +14,11 @@ use mssf_com::FabricCommon::{
 };
 use windows_core::{implement, AsImpl};
 
-use super::CancellationToken;
+use crate::sync::CancellationToken;
 
 /// Async operation context for bridging rust code into SF COM api that supports cancellation.
 #[implement(IFabricAsyncOperationContext)]
-pub struct BridgeContext3<T>
+pub struct BridgeContext<T>
 where
     T: 'static,
 {
@@ -38,7 +38,7 @@ where
     token: CancellationToken,
 }
 
-impl<T> BridgeContext3<T>
+impl<T> BridgeContext<T>
 where
     T: Send,
 {
@@ -91,7 +91,7 @@ where
             // TODO: maybe it is good to report health to SF here the same way that sf dotnet app works.
 
             // We trust the code in mssf here to not panic, or we have bigger problem (memory corruption etc.).
-            let self_impl: &BridgeContext3<T> = unsafe { self_cp.as_impl() };
+            let self_impl: &BridgeContext<T> = unsafe { self_cp.as_impl() };
             self_impl.set_content(task_res);
             let cb = unsafe { self_cp.Callback().unwrap() };
             unsafe { cb.Invoke(&self_cp) };
@@ -108,7 +108,7 @@ where
     /// Note that if T is of Result<ICOM> type, the current function return type is
     /// Result<Result<ICOM>>, so unwrap is needed.
     pub fn result(context: windows_core::Ref<IFabricAsyncOperationContext>) -> crate::Result<T> {
-        let self_impl: &BridgeContext3<T> = unsafe { context.unwrap().as_impl() };
+        let self_impl: &BridgeContext<T> = unsafe { context.unwrap().as_impl() };
         self_impl.consume_content()
     }
 
@@ -149,7 +149,7 @@ where
     }
 }
 
-impl<T> IFabricAsyncOperationContext_Impl for BridgeContext3_Impl<T> {
+impl<T> IFabricAsyncOperationContext_Impl for BridgeContext_Impl<T> {
     fn IsCompleted(&self) -> bool {
         self.is_completed.load(std::sync::atomic::Ordering::Relaxed)
     }

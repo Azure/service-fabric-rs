@@ -18,7 +18,7 @@ use tracing::debug;
 use crate::{
     error::ErrorCode,
     strings::WStringWrap,
-    sync::{fabric_begin_end_proxy2, CancellationToken},
+    sync::{fabric_begin_end_proxy, CancellationToken},
     types::{
         FaultType, HealthInformation, LoadMetric, LoadMetricListRef, MoveCost, ReplicaRole,
         ServicePartitionAccessStatus, ServicePartitionInformation,
@@ -48,7 +48,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         debug!("StatefulServiceReplicaProxy::open with mode {:?}", openmode);
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| unsafe {
                 com1.BeginOpen(openmode.into(), partition.get_com(), callback)
             },
@@ -82,7 +82,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         debug!("StatefulServiceReplicaProxy::change_role {:?}", newrole);
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginChangeRole((&newrole).into(), callback) },
             move |ctx| unsafe { com2.EndChangeRole(ctx) },
             Some(cancellation_token),
@@ -94,7 +94,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         debug!("StatefulServiceReplicaProxy::close");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginClose(callback) },
             move |ctx| unsafe { com2.EndClose(ctx) },
             Some(cancellation_token),
@@ -123,7 +123,7 @@ impl Replicator for ReplicatorProxy {
         // replicator address
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginOpen(callback) },
             move |ctx| unsafe { com2.EndOpen(ctx) },
             Some(cancellation_token),
@@ -135,7 +135,7 @@ impl Replicator for ReplicatorProxy {
         debug!("ReplicatorProxy::close");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginClose(callback) },
             move |ctx| unsafe { com2.EndClose(ctx) },
             Some(cancellation_token),
@@ -151,7 +151,7 @@ impl Replicator for ReplicatorProxy {
         debug!("ReplicatorProxy::change_role");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginChangeRole(&epoch.into(), role.into(), callback) },
             move |ctx| unsafe { com2.EndChangeRole(ctx) },
             Some(cancellation_token),
@@ -166,7 +166,7 @@ impl Replicator for ReplicatorProxy {
         debug!("ReplicatorProxy::update_epoch");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginUpdateEpoch(&epoch.into(), callback) },
             move |ctx| unsafe { com2.EndUpdateEpoch(ctx) },
             Some(cancellation_token),
@@ -239,7 +239,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         debug!("PrimaryReplicatorProxy::on_data_loss");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginOnDataLoss(callback) },
             move |ctx| unsafe { com2.EndOnDataLoss(ctx) },
             Some(cancellation_token),
@@ -268,7 +268,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         debug!("PrimaryReplicatorProxy::wait_for_catch_up_quorum: catchupmode {catchupmode:?}");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginWaitForCatchUpQuorum(catchupmode.into(), callback) },
             move |ctx| unsafe { com2.EndWaitForCatchUpQuorum(ctx) },
             Some(cancellation_token),
@@ -294,7 +294,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         debug!("PrimaryReplicatorProxy::build_replica");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| {
                 let (mut info, ex1) = replica.get_raw_parts();
                 info.Reserved = std::ptr::addr_of!(ex1) as *mut c_void;

@@ -12,7 +12,7 @@ use mssf_com::{
 };
 use tracing::debug;
 
-use crate::sync::{fabric_begin_end_proxy2, CancellationToken};
+use crate::sync::{fabric_begin_end_proxy, CancellationToken};
 
 use crate::types::TransactionIsolationLevel;
 
@@ -114,7 +114,7 @@ impl TransactionProxy {
         debug!("TransactionProxy::commit");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
-        let rx = fabric_begin_end_proxy2(
+        let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginCommit(timeoutmilliseconds, callback) },
             move |ctx| unsafe { com2.EndCommit(ctx) },
             cancellation_token,

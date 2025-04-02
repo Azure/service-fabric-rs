@@ -45,8 +45,13 @@ impl Source for FabricConfigSource {
             section.parameters.iter().for_each(|p| {
                 let param_name = p.name.to_string();
                 let param_val = p.value.to_string();
-                #[cfg(feature="tracing")]
-                tracing::debug!("Section: {} Param: {} Val: {}", section_name, param_name, param_val);
+                #[cfg(feature = "tracing")]
+                tracing::debug!(
+                    "Section: {} Param: {} Val: {}",
+                    section_name,
+                    param_name,
+                    param_val
+                );
                 let val =
                     config::Value::new(Some(&uri_origion), config::ValueKind::String(param_val));
                 // section and param is separated by a dot.

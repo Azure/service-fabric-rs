@@ -24,8 +24,7 @@ impl IFabricStoreEventHandler_Impl for DummyStoreEventHandler_Impl {
         feature = "tracing",
         tracing::instrument(skip_all, level = "debug", ret)
     )]
-    fn OnDataLoss(&self) {
-    }
+    fn OnDataLoss(&self) {}
 }
 
 pub fn create_com_key_value_store_replica(

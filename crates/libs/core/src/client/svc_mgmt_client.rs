@@ -329,7 +329,7 @@ impl From<&PartitionKeyType> for FABRIC_PARTITION_KEY_TYPE {
     }
 }
 
-#[cfg(feature="tokio_async")]
+#[cfg(feature = "tokio_async")]
 impl PartitionKeyType {
     // get raw ptr to pass in com api
     fn get_raw_opt(&self) -> Option<*const c_void> {

@@ -20,7 +20,6 @@ use mssf_com::{
     },
     FabricTypes::FABRIC_URI,
 };
-use tracing::debug;
 use windows_core::implement;
 
 use super::{
@@ -54,6 +53,10 @@ where
     F: StatelessServiceFactory,
 {
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn CreateInstance(
         &self,
         servicetypename: &crate::PCWSTR,
@@ -63,7 +66,6 @@ where
         partitionid: &crate::GUID,
         instanceid: i64,
     ) -> crate::WinResult<IFabricStatelessServiceInstance> {
-        debug!("StatelessServiceFactoryBridge::CreateInstance");
         let h_servicename = WStringWrap::from(crate::PCWSTR(servicename.0)).into();
         let h_servicetypename = WStringWrap::from(*servicetypename).into();
         let data = unsafe {
@@ -121,12 +123,15 @@ where
     E: Executor,
     S: StatelessServiceInstance + 'static,
 {
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginOpen(
         &self,
         partition: windows_core::Ref<IFabricStatelessServicePartition>,
         callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
-        debug!("IFabricStatelessServiceInstanceBridge::BeginOpen");
         let partition_cp = partition.unwrap().clone();
         let partition_bridge = StatelessServicePartition::new(partition_cp);
         let inner = self.inner.clone();
@@ -140,19 +145,25 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndOpen(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<IFabricStringResult> {
-        debug!("IFabricStatelessServiceInstanceBridge::EndOpen");
         BridgeContext::result(context)?
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginClose(
         &self,
         callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
-        debug!("IFabricStatelessServiceInstanceBridge::BeginClose");
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
@@ -160,16 +171,22 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndClose(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
-        debug!("IFabricStatelessServiceInstanceBridge::EndClose");
         BridgeContext::result(context)?
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret)
+    )]
     fn Abort(&self) {
-        debug!("IFabricStatelessServiceInstanceBridge::Abort");
         self.inner.abort()
     }
 }

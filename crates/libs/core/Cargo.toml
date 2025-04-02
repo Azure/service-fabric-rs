@@ -14,15 +14,16 @@ include = [
 ]
 
 [features]
-default = ["config_source", "tokio_async"]
+default = ["config_source", "tokio_async", "tracing"]
 # Required for a lot of callback functionality.
 # Also requires ctrlc for signal handling
 tokio_async = ["dep:tokio", "dep:tokio-util"]
 # Config crate required to implement its interface. 
 config_source = ["dep:config"]
+tracing = ["dep:tracing"]
 
 [dependencies]
-tracing.workspace = true
+tracing= { workspace = true, optional = true }
 tokio = { version = "1", features = ["sync", "rt"], optional = true }
 tokio-util = { version = "0.7", optional = true }
 trait-variant = "0.1"

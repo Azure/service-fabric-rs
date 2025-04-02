@@ -7,9 +7,11 @@
 pub fn wait_for_debugger() {
     loop {
         if unsafe { windows::Win32::System::Diagnostics::Debug::IsDebuggerPresent().as_bool() } {
+            #[cfg(feature="tracing")]
             tracing::info!("Debugger found.");
             break;
         } else {
+            #[cfg(feature="tracing")]
             tracing::info!("Waiting for debugger.");
             std::thread::sleep(std::time::Duration::from_secs(5));
         }

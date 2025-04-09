@@ -76,7 +76,7 @@ impl PCWSTR {
     }
 }
 
-impl Default for PCWSTR{
+impl Default for PCWSTR {
     fn default() -> Self {
         Self::null()
     }

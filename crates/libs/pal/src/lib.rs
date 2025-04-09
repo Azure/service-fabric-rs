@@ -18,7 +18,7 @@ pub use windows_core::{
     implement, AsImpl, ComObject, ComObjectInner, ComObjectInterface, CopyType, Error,
     IInspectable, IInspectable_Vtbl, IUnknown, IUnknownImpl, IUnknown_Vtbl, Interface,
     InterfaceRef, OutParam, OutRef, Param, ParamValue, Ref, Result, RuntimeName, RuntimeType,
-    StaticComObject, Type, TypeKind, BOOL, DYNAMIC_CAST_IID, GUID, HRESULT,
+    StaticComObject, Type, TypeKind, BOOL, DYNAMIC_CAST_IID, GUID, HRESULT
 };
 
 // provide other implemenations missing for linux

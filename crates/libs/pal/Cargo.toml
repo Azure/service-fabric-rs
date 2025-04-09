@@ -15,4 +15,4 @@ path = "src/lib.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-windows-core = "0.60"
+windows-core.workspace = true

@@ -76,6 +76,12 @@ impl PCWSTR {
     }
 }
 
+impl Default for PCWSTR{
+    fn default() -> Self {
+        Self::null()
+    }
+}
+
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct PCSTR(pub *const u8);

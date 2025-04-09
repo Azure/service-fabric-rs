@@ -70,7 +70,7 @@ where
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn CreateReplica(
         &self,
@@ -148,7 +148,7 @@ where
 {
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginOpen(
         &self,
@@ -167,7 +167,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndOpen(
         &self,
@@ -179,7 +179,7 @@ where
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginChangeRole(
         &self,
@@ -201,7 +201,7 @@ where
     }
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndChangeRole(
         &self,
@@ -213,7 +213,7 @@ where
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginUpdateEpoch(
         &self,
@@ -233,7 +233,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndUpdateEpoch(
         &self,
@@ -244,7 +244,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginClose(
         &self,
@@ -259,7 +259,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndClose(
         &self,
@@ -270,7 +270,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret)
+        tracing::instrument(skip_all, ret(level = "debug"))
     )]
     fn Abort(&self) {
         self.inner.abort();
@@ -278,7 +278,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn GetCurrentProgress(&self) -> crate::WinResult<i64> {
         let lsn = self.inner.get_current_progress();
@@ -287,7 +287,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn GetCatchUpCapability(&self) -> crate::WinResult<i64> {
         let lsn = self.inner.get_catch_up_capability();
@@ -431,7 +431,7 @@ where
 {
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginOnDataLoss(
         &self,
@@ -450,7 +450,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndOnDataLoss(
         &self,
@@ -462,7 +462,7 @@ where
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn UpdateCatchUpReplicaSetConfiguration(
         &self,
@@ -478,7 +478,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginWaitForCatchUpQuorum(
         &self,
@@ -498,7 +498,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndWaitForCatchUpQuorum(
         &self,
@@ -510,7 +510,7 @@ where
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn UpdateCurrentReplicaSetConfiguration(
         &self,
@@ -525,7 +525,7 @@ where
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginBuildReplica(
         &self,
@@ -550,7 +550,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndBuildReplica(
         &self,
@@ -561,7 +561,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn RemoveReplica(&self, replicaid: i64) -> crate::WinResult<()> {
         self.inner
@@ -613,7 +613,7 @@ where
 {
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginOpen(
         &self,
@@ -645,7 +645,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndOpen(
         &self,
@@ -656,7 +656,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginChangeRole(
         &self,
@@ -677,7 +677,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndChangeRole(
         &self,
@@ -688,7 +688,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginClose(
         &self,
@@ -703,7 +703,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndClose(
         &self,
@@ -714,7 +714,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret)
+        tracing::instrument(skip_all, ret(level = "debug"))
     )]
     fn Abort(&self) {
         self.inner.as_ref().abort();

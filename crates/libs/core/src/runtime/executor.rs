@@ -82,7 +82,7 @@ impl<T: Send> JoinHandle<T> for DefaultJoinHandle<T> {
                     ErrorCode::E_FAIL
                 };
                 #[cfg(feature = "tracing")]
-                tracing::error!("DefaultJoinHandle: background task failed: {ec}, msg:{e}");
+                tracing::error!("DefaultJoinHandle: background task failed: {ec}, msg: {e}");
                 Err(ec.into())
             }
         }

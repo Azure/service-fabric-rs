@@ -13,7 +13,6 @@ use mssf_com::FabricRuntime::{
     IFabricPrimaryReplicator, IFabricReplicator, IFabricReplicatorCatchupSpecificQuorum,
     IFabricStatefulServicePartition3, IFabricStatefulServiceReplica,
 };
-use tracing::debug;
 
 use crate::{
     error::ErrorCode,
@@ -39,13 +38,16 @@ impl StatefulServiceReplicaProxy {
 }
 
 impl StatefulServiceReplica for StatefulServiceReplicaProxy {
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", err) // TODO: trace ret
+    )]
     async fn open(
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
         cancellation_token: CancellationToken,
     ) -> crate::Result<impl PrimaryReplicator> {
-        debug!("StatefulServiceReplicaProxy::open with mode {:?}", openmode);
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -73,13 +75,17 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         let res = PrimaryReplicatorProxy::new(p_rplctr);
         Ok(res)
     }
+
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     async fn change_role(
         &self,
         newrole: ReplicaRole,
         cancellation_token: CancellationToken,
     ) -> crate::Result<WString> {
         // replica address
-        debug!("StatefulServiceReplicaProxy::change_role {:?}", newrole);
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -90,8 +96,12 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         let addr = rx.await??;
         Ok(WStringWrap::from(&addr).into())
     }
+
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()> {
-        debug!("StatefulServiceReplicaProxy::close");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -101,8 +111,11 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         );
         rx.await?.map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret)
+    )]
     fn abort(&self) {
-        debug!("StatefulServiceReplicaProxy::abort");
         unsafe { self.com_impl.Abort() }
     }
 }
@@ -118,8 +131,11 @@ impl ReplicatorProxy {
 }
 
 impl Replicator for ReplicatorProxy {
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<WString> {
-        debug!("ReplicatorProxy::open");
         // replicator address
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -131,8 +147,11 @@ impl Replicator for ReplicatorProxy {
         let addr = rx.await??;
         Ok(WStringWrap::from(&addr).into())
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()> {
-        debug!("ReplicatorProxy::close");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -142,13 +161,16 @@ impl Replicator for ReplicatorProxy {
         );
         rx.await?.map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     async fn change_role(
         &self,
         epoch: &Epoch,
         role: &ReplicaRole,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
-        debug!("ReplicatorProxy::change_role");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -158,12 +180,15 @@ impl Replicator for ReplicatorProxy {
         );
         rx.await?.map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     async fn update_epoch(
         &self,
         epoch: &Epoch,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
-        debug!("ReplicatorProxy::update_epoch");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -173,16 +198,29 @@ impl Replicator for ReplicatorProxy {
         );
         rx.await?.map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn get_current_progress(&self) -> crate::Result<i64> {
-        debug!("ReplicatorProxy::get_current_progress");
         unsafe { self.com_impl.GetCurrentProgress() }.map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn get_catch_up_capability(&self) -> crate::Result<i64> {
-        debug!("ReplicatorProxy::get_catch_up_capability");
         unsafe { self.com_impl.GetCatchUpCapability() }.map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret)
+    )]
     fn abort(&self) {
-        debug!("ReplicatorProxy::abort");
         unsafe { self.com_impl.Abort() }
     }
 }
@@ -235,8 +273,11 @@ impl Replicator for PrimaryReplicatorProxy {
 }
 
 impl PrimaryReplicator for PrimaryReplicatorProxy {
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     async fn on_data_loss(&self, cancellation_token: CancellationToken) -> crate::Result<u8> {
-        debug!("PrimaryReplicatorProxy::on_data_loss");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -246,12 +287,15 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         );
         rx.await?.map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn update_catch_up_replica_set_configuration(
         &self,
         currentconfiguration: &ReplicaSetConfig,
         previousconfiguration: &ReplicaSetConfig,
     ) -> crate::Result<()> {
-        debug!("PrimaryReplicatorProxy::update_catch_up_replica_set_configuration");
         let cc_view = currentconfiguration.get_view();
         let pc_view = previousconfiguration.get_view();
         unsafe {
@@ -260,12 +304,15 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         }
         .map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     async fn wait_for_catch_up_quorum(
         &self,
         catchupmode: ReplicaSetQuorumMode,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
-        debug!("PrimaryReplicatorProxy::wait_for_catch_up_quorum: catchupmode {catchupmode:?}");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -275,23 +322,29 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         );
         rx.await?.map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn update_current_replica_set_configuration(
         &self,
         currentconfiguration: &ReplicaSetConfig,
     ) -> crate::Result<()> {
-        debug!("PrimaryReplicatorProxy::update_current_replica_set_configuration");
         unsafe {
             self.com_impl
                 .UpdateCurrentReplicaSetConfiguration(currentconfiguration.get_view().get_raw())
         }
         .map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     async fn build_replica(
         &self,
         replica: &ReplicaInformation,
         cancellation_token: CancellationToken,
     ) -> crate::Result<()> {
-        debug!("PrimaryReplicatorProxy::build_replica");
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -305,8 +358,11 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         );
         rx.await?.map_err(crate::Error::from)
     }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn remove_replica(&self, replicaid: i64) -> crate::Result<()> {
-        debug!("PrimaryReplicatorProxy::remove_replica");
         unsafe { self.com_impl.RemoveReplica(replicaid) }.map_err(crate::Error::from)
     }
 }

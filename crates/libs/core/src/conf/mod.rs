@@ -9,7 +9,6 @@
 // features of config-rs.
 
 use config::{ConfigError, Source};
-use tracing::debug;
 
 use crate::runtime::config::ConfigurationPackage;
 pub use config::Config;
@@ -43,11 +42,16 @@ impl Source for FabricConfigSource {
         let settings = self.inner.get_settings();
         settings.sections.iter().for_each(|section| {
             let section_name = section.name.to_string();
-            debug!("Section: {}", section_name);
             section.parameters.iter().for_each(|p| {
                 let param_name = p.name.to_string();
                 let param_val = p.value.to_string();
-                debug!("Param: {} Val: {}", param_name, param_val);
+                #[cfg(feature = "tracing")]
+                tracing::debug!(
+                    "Section: {} Param: {} Val: {}",
+                    section_name,
+                    param_name,
+                    param_val
+                );
                 let val =
                     config::Value::new(Some(&uri_origion), config::ValueKind::String(param_val));
                 // section and param is separated by a dot.

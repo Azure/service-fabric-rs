@@ -8,10 +8,7 @@ documentation = "https://learn.microsoft.com/en-us/azure/service-fabric/"
 repository = "https://github.com/Azure/service-fabric-rs"
 readme = "README.md"
 authors = ["youyuanwu@outlook.com"]
-include = [
-    "**/*.rs",
-    "Cargo.toml",
-]
+include = ["**/*.rs", "Cargo.toml"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

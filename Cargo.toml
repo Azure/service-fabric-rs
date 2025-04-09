@@ -10,11 +10,13 @@ members = [
 
 [workspace.dependencies]
 tracing = { version = "0.1", features = ["log"] }
-tracing-subscriber = { version = "0.3",  default-features = false, features = ["fmt"]}
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+    "fmt",
+] }
 tokio-util = "0.7"
 ctrlc = { version = "3.0", features = ["termination"] }
 tokio = { version = "1", features = ["full"] }
-windows = {version = "0.60", features = ["implement"]}
+windows = { version = "0.60", features = ["implement"] }
 windows-core = "0.60"
 windows-bindgen = "0.60"
 trait-variant = "0.1"
@@ -22,4 +24,4 @@ serde = "*"
 serde_derive = "*"
 # crates in this repo
 mssf-com = { path = "./crates/libs/com" }
-mssf-core = { path = "./crates/libs/core", default-features = true}
+mssf-core = { path = "./crates/libs/core", default-features = true }

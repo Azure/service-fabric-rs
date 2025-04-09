@@ -11,7 +11,6 @@
 use std::sync::Arc;
 
 use crate::{runtime::stateful_proxy::StatefulServicePartition, Interface};
-use tracing::debug;
 use windows_core::implement;
 
 use mssf_com::{
@@ -69,6 +68,10 @@ where
     F: StatefulServiceFactory,
 {
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn CreateReplica(
         &self,
         servicetypename: &crate::PCWSTR,
@@ -78,7 +81,6 @@ where
         partitionid: &crate::GUID,
         replicaid: i64,
     ) -> crate::WinResult<IFabricStatefulServiceReplica> {
-        debug!("StatefulServiceFactoryBridge::CreateReplica");
         let p_servicename = crate::PCWSTR::from_raw(servicename.0);
         let h_servicename = WStringWrap::from(p_servicename).into();
         let h_servicetypename = WStringWrap::from(*servicetypename).into();
@@ -144,11 +146,14 @@ where
     E: Executor,
     R: Replicator,
 {
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginOpen(
         &self,
         callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
-        debug!("IFabricReplicatorBridge::BeginOpen");
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
@@ -160,15 +165,22 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndOpen(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<IFabricStringResult> {
-        debug!("IFabricReplicatorBridge::EndOpen");
         BridgeContext::result(context)?
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginChangeRole(
         &self,
         epoch: *const FABRIC_EPOCH,
@@ -178,10 +190,6 @@ where
         let inner = self.inner.clone();
         let epoch2: Epoch = unsafe { epoch.as_ref().unwrap().into() };
         let role2: ReplicaRole = (&role).into();
-        debug!(
-            "IFabricReplicatorBridge::BeginChangeRole epoch {:?}, role {:?}",
-            epoch2, role2
-        );
 
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
@@ -191,16 +199,22 @@ where
                 .map_err(crate::WinError::from)
         })
     }
-
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndChangeRole(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
-        debug!("IFabricReplicatorBridge::EndChangeRole");
         BridgeContext::result(context)?
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginUpdateEpoch(
         &self,
         epoch: *const FABRIC_EPOCH,
@@ -208,10 +222,6 @@ where
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
         let inner = self.inner.clone();
         let epoch2: Epoch = unsafe { epoch.as_ref().unwrap().into() };
-        debug!(
-            "IFabricReplicatorBridge::BeginUpdateEpoch epoch {:?}",
-            epoch2
-        );
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner
@@ -221,19 +231,25 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndUpdateEpoch(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
-        debug!("IFabricReplicatorBridge::BeginUpdateEpoch");
         BridgeContext::result(context)?
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginClose(
         &self,
         callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
-        debug!("IFabricReplicatorBridge::BeginClose");
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
@@ -241,28 +257,40 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndClose(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
-        debug!("IFabricReplicatorBridge::EndClose");
         BridgeContext::result(context)?
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret)
+    )]
     fn Abort(&self) {
-        debug!("IFabricReplicatorBridge::Abort");
         self.inner.abort();
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn GetCurrentProgress(&self) -> crate::WinResult<i64> {
         let lsn = self.inner.get_current_progress();
-        debug!("IFabricReplicatorBridge::GetCurrentProgress: {:?}", lsn);
         lsn.map_err(crate::WinError::from)
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn GetCatchUpCapability(&self) -> crate::WinResult<i64> {
         let lsn = self.inner.get_catch_up_capability();
-        debug!("IFabricReplicatorBridge::GetCatchUpCapability: {:?}", lsn);
         lsn.map_err(crate::WinError::from)
     }
 }
@@ -401,11 +429,14 @@ where
     E: Executor,
     P: PrimaryReplicator,
 {
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginOnDataLoss(
         &self,
         callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
-        debug!("IFabricPrimaryReplicatorBridge::BeginOnDataLoss");
         let inner = self.inner.clone();
 
         let (ctx, token) = BridgeContext::make(callback);
@@ -417,15 +448,22 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndOnDataLoss(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<u8> {
-        debug!("IFabricPrimaryReplicatorBridge::EndOnDataLoss");
         BridgeContext::result(context)?
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn UpdateCatchUpReplicaSetConfiguration(
         &self,
         currentconfiguration: *const FABRIC_REPLICA_SET_CONFIGURATION,
@@ -433,22 +471,21 @@ where
     ) -> crate::WinResult<()> {
         let cc = ReplicaSetConfig::from(unsafe { currentconfiguration.as_ref().unwrap() });
         let pc = ReplicaSetConfig::from(unsafe { previousconfiguration.as_ref().unwrap() });
-        debug!("IFabricPrimaryReplicatorBridge::UpdateCatchUpReplicaSetConfiguration: curr {:?}, prev {:?}", cc, pc);
         self.inner
             .update_catch_up_replica_set_configuration(&cc, &pc)
             .map_err(crate::WinError::from)
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginWaitForCatchUpQuorum(
         &self,
         catchupmode: FABRIC_REPLICA_SET_QUORUM_MODE,
         callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
         let catchupmode = catchupmode.into();
-        debug!(
-            "IFabricPrimaryReplicatorBridge::BeginWaitForCatchUpQuorum: mode {:?}",
-            catchupmode
-        );
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
@@ -459,30 +496,37 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndWaitForCatchUpQuorum(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
-        debug!("IFabricPrimaryReplicatorBridge::BeginWaitForCatchUpQuorum");
         BridgeContext::result(context)?
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn UpdateCurrentReplicaSetConfiguration(
         &self,
         currentconfiguration: *const FABRIC_REPLICA_SET_CONFIGURATION,
     ) -> crate::WinResult<()> {
         let c = ReplicaSetConfig::from(unsafe { currentconfiguration.as_ref() }.unwrap());
-        debug!(
-            "IFabricPrimaryReplicatorBridge::UpdateCurrentReplicaSetConfiguration {:?}",
-            c
-        );
         self.inner
             .update_current_replica_set_configuration(&c)
             .map_err(crate::WinError::from)
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginBuildReplica(
         &self,
         replica: *const FABRIC_REPLICA_INFORMATION,
@@ -490,7 +534,6 @@ where
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
         let inner = self.inner.clone();
         let r = ReplicaInformation::from(unsafe { replica.as_ref().unwrap() });
-        debug!("IFabricPrimaryReplicatorBridge::BeginBuildReplica: {:?}", r);
         // check the parameter requirements from SF
         debug_assert_eq!(r.role, ReplicaRole::IdleSecondary);
         debug_assert_eq!(r.catch_up_capability, -1);
@@ -505,16 +548,22 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndBuildReplica(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
-        debug!("IFabricPrimaryReplicatorBridge::EndBuildReplica");
         BridgeContext::result(context)?
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn RemoveReplica(&self, replicaid: i64) -> crate::WinResult<()> {
-        debug!("IFabricPrimaryReplicatorBridge::RemoveReplica: replicaid {replicaid}");
         self.inner
             .remove_replica(replicaid)
             .map_err(crate::WinError::from)
@@ -562,6 +611,10 @@ where
     E: Executor,
     R: StatefulServiceReplica,
 {
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginOpen(
         &self,
         openmode: FABRIC_REPLICA_OPEN_MODE,
@@ -576,10 +629,6 @@ where
             .cast::<IFabricStatefulServicePartition3>()
             .expect("cannot query interface");
         let partition = StatefulServicePartition::from(&com_partition);
-        debug!(
-            "IFabricStatefulReplicaBridge::BeginOpen: mode {:?}",
-            openmode2
-        );
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner
@@ -594,14 +643,21 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndOpen(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<IFabricReplicator> {
-        debug!("IFabricStatefulReplicaBridge::EndOpen");
         BridgeContext::result(context)?
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginChangeRole(
         &self,
         newrole: FABRIC_REPLICA_ROLE,
@@ -609,10 +665,6 @@ where
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
         let inner = self.inner.clone();
         let newrole2: ReplicaRole = (&newrole).into();
-        debug!(
-            "IFabricStatefulReplicaBridge::BeginChangeRole: {:?}",
-            newrole2
-        );
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner
@@ -623,19 +675,25 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndChangeRole(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<IFabricStringResult> {
-        debug!("IFabricStatefulReplicaBridge::EndChangeRole");
         BridgeContext::result(context)?
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn BeginClose(
         &self,
         callback: windows_core::Ref<super::IFabricAsyncOperationCallback>,
     ) -> crate::WinResult<super::IFabricAsyncOperationContext> {
-        debug!("IFabricStatefulReplicaBridge::BeginClose");
         let inner = self.inner.clone();
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
@@ -643,14 +701,21 @@ where
         })
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret, err)
+    )]
     fn EndClose(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
-        debug!("IFabricStatefulReplicaBridge::EndClose");
         BridgeContext::result(context)?
     }
 
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret)
+    )]
     fn Abort(&self) {
         self.inner.as_ref().abort();
     }

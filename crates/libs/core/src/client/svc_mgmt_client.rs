@@ -284,6 +284,7 @@ impl ServiceManagementClient {
 }
 
 // Handle to the registered service notification filter
+#[cfg(feature = "tokio_async")]
 pub struct FilterIdHandle {
     id: i64,
 }
@@ -328,6 +329,7 @@ impl From<&PartitionKeyType> for FABRIC_PARTITION_KEY_TYPE {
     }
 }
 
+#[cfg(feature = "tokio_async")]
 impl PartitionKeyType {
     // get raw ptr to pass in com api
     fn get_raw_opt(&self) -> Option<*const c_void> {

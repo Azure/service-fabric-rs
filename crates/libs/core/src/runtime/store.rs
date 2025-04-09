@@ -12,7 +12,6 @@ use mssf_com::{
     },
     FabricTypes::{FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND},
 };
-use tracing::info;
 use windows_core::implement;
 
 use crate::types::{EseLocalStoreSettings, LocalStoreKind, ReplicatorSettings};
@@ -21,9 +20,11 @@ use crate::types::{EseLocalStoreSettings, LocalStoreKind, ReplicatorSettings};
 pub struct DummyStoreEventHandler {}
 
 impl IFabricStoreEventHandler_Impl for DummyStoreEventHandler_Impl {
-    fn OnDataLoss(&self) {
-        info!("DummyStoreEventHandler::OnDataLoss");
-    }
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, level = "debug", ret)
+    )]
+    fn OnDataLoss(&self) {}
 }
 
 pub fn create_com_key_value_store_replica(

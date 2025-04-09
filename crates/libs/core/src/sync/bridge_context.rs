@@ -96,7 +96,6 @@ where
             let cb = unsafe { self_cp.Callback().unwrap() };
             unsafe { cb.Invoke(&self_cp) };
         };
-        tracing::info!("debug span in context");
         /// Propagate the span so that the executor has the right trace.
         /// The trace would likely have BeginXXX as the function where spawn()
         /// is called.

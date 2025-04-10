@@ -73,7 +73,7 @@ impl<T: Send> JoinHandle<T> for DefaultJoinHandle<T> {
         match self.inner.await {
             Ok(x) => Ok(x),
             Err(e) => {
-                let e = if e.is_cancelled() {
+                let ec = if e.is_cancelled() {
                     // we never cancel in executor
                     ErrorCode::E_ABORT
                 } else if e.is_panic() {
@@ -82,8 +82,8 @@ impl<T: Send> JoinHandle<T> for DefaultJoinHandle<T> {
                     ErrorCode::E_FAIL
                 };
                 #[cfg(feature = "tracing")]
-                tracing::error!("DefaultJoinHandle: background task failed: {e}");
-                Err(e.into())
+                tracing::error!("DefaultJoinHandle: background task failed: {ec}, msg: {e}");
+                Err(ec.into())
             }
         }
     }

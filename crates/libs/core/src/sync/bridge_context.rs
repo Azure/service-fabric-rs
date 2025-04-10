@@ -84,7 +84,7 @@ where
         let self_cp: IFabricAsyncOperationContext = self.into();
         let self_cp2 = self_cp.clone();
         let rt_cp = rt.clone();
-        rt.spawn(async move {
+        let task = async move {
             // Run user code in a task and wait on its status.
             // If user code panics we propagate the error back to SF.
             let task_res = rt_cp.spawn(future).join().await;
@@ -95,7 +95,15 @@ where
             self_impl.set_content(task_res);
             let cb = unsafe { self_cp.Callback().unwrap() };
             unsafe { cb.Invoke(&self_cp) };
-        });
+        };
+        /// Propagate the span so that the executor has the right trace.
+        /// The trace would likely have BeginXXX as the function where spawn()
+        /// is called.
+        #[cfg(feature = "tracing")]
+        use tracing::Instrument;
+        #[cfg(feature = "tracing")]
+        let task = task.in_current_span();
+        rt.spawn(task);
         Ok(self_cp2)
     }
 

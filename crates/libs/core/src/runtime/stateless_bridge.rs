@@ -55,7 +55,7 @@ where
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn CreateInstance(
         &self,
@@ -125,7 +125,7 @@ where
 {
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginOpen(
         &self,
@@ -147,7 +147,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndOpen(
         &self,
@@ -158,7 +158,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn BeginClose(
         &self,
@@ -173,7 +173,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret, err)
+        tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
     fn EndClose(
         &self,
@@ -184,7 +184,7 @@ where
 
     #[cfg_attr(
         feature = "tracing",
-        tracing::instrument(skip_all, level = "debug", ret)
+        tracing::instrument(skip_all, ret(level = "debug"))
     )]
     fn Abort(&self) {
         self.inner.abort()

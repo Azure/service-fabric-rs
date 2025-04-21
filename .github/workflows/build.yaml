@@ -179,7 +179,7 @@ jobs:
       - name: tdnf
         run: |
           tdnf update -y
-          tdnf install -y tar
+          tdnf install -y tar unzip
 
       - uses: actions/checkout@v4
 

@@ -181,7 +181,7 @@ jobs:
       - name: tdnf install
         run: |
           tdnf update --noplugins --skipsignature -y
-          tdnf install --noplugins --skipsignature -y tar unzip ca-certificates gcc glibc-devel binutils
+          tdnf install --noplugins --skipsignature -y tar unzip ca-certificates gcc glibc-devel binutils make
 
       - uses: actions/checkout@v4
 

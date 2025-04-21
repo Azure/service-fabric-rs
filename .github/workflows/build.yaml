@@ -168,3 +168,37 @@ jobs:
 
     - name: Run cargo test
       run: cargo test --all -- --nocapture
+
+  # Do not run test because SF onebox is not supported on azl3 yet.
+  build-azl3:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/azurelinux/base/core:3.0
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "3.21.2"
+
+      - name: Install rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.86.0
+          components: rustfmt, clippy
+      
+      - name: Run cargo check
+        run: cargo check
+
+      - name: Run cargo fmt
+        run: cargo fmt --all -- --check
+      
+      - name: Run cargo clippy
+        run: cargo clippy -- -D warnings
+
+      - name: run cmake
+        run: > 
+          cmake . -DCMAKE_BUILD_TYPE=Debug -B build
+      - name: run build
+        run: cmake --build build --config Debug

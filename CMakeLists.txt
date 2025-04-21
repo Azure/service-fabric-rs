@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 project(service-fabric-rs LANGUAGES)
 
+if(WIN32)
 message(STATUS "fetching fabric_metadata")
 include(FetchContent)
 FetchContent_Declare(fabric_metadata
@@ -13,6 +14,7 @@ if(NOT fabric_metadata_POPULATED)
     FetchContent_Populate(fabric_metadata)
     # do not add to cmake build since we only need winmd file to generate code.
 endif()
+endif(WIN32)
 
 # generate rust code
 find_program (

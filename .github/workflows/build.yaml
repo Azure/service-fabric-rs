@@ -75,6 +75,12 @@ jobs:
         BUILD_TYPE: ["Debug"]
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install sudo
+      run: |
+        apt-get update
+        apt-get install -y sudo
+
     - name: apt-get
       run: sudo apt-get update && sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang -y
 

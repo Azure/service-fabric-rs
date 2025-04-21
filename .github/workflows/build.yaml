@@ -126,6 +126,8 @@ jobs:
 
     - name: install sfctl
       run: |
+        sudo apt-get install python3-pip -y
+        python3 -m pip install --upgrade pip
         pip3 install -I sfctl==11.1.0
         echo "~/.local/bin" >> $GITHUB_PATH
     

@@ -176,10 +176,17 @@ jobs:
       image: mcr.microsoft.com/azurelinux/base/core:3.0
       options: --privileged
     steps:
-      - name: tdnf
+      - name: tdnf init
         run: |
+          # Import the GPG key
+          rpm --import https://packages.microsoft.com/keys/microsoft.asc
+          # Clean and refresh repository metadata
+          tdnf clean all
+          tdnf makecache
           tdnf update -y
           tdnf install -y tar unzip
+      - name: tdnf install
+        run: tdnf install -y tar unzip
 
       - uses: actions/checkout@v4
 

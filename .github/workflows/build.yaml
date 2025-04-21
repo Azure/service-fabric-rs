@@ -82,7 +82,9 @@ jobs:
         apt-get install -y sudo
 
     - name: apt-get
-      run: sudo apt-get update && sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang -y
+      run: |
+        sudo apt-get update 
+        sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang unzip -y
 
     - name: install sf
       run: |

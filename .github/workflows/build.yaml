@@ -66,11 +66,13 @@ jobs:
       run: cargo test --all -- --nocapture
 
   build-linux:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:20.04
+      options: --privileged
     strategy:
       matrix:
         BUILD_TYPE: ["Debug"]
-        os: [ ubuntu-20.04 ]
     steps:
     - uses: actions/checkout@v4
     - name: apt-get

@@ -37,28 +37,13 @@ fn main() -> mssf_core::Result<()> {
 
     println!("node_count {}", node_count);
 
-    let mut count = 0;
-    while count < node_count {
-        let node: FABRIC_NODE_QUERY_RESULT_ITEM = unsafe { *node_list.offset(count as isize) };
+    if !node_list.is_null() {
+        let node: FABRIC_NODE_QUERY_RESULT_ITEM = unsafe { *node_list };
         println!(
             "node info: name: {}",
             mssf_core::WString::from(mssf_core::strings::WStringWrap::from(node.NodeName))
         );
-        count += 1;
     }
-
-    // if !node_list.is_null() {
-    //     let node: FABRIC_NODE_QUERY_RESULT_ITEM = unsafe { *node_list };
-    //     println!(
-    //         "node info: name: {}",
-    //         mssf_core::WString::from(mssf_core::strings::WStringWrap::from(node.NodeName))
-    //     );
-    // }
-    // let mut replica_desc = FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION {
-    //     NodeName:
-    // }
-    // replica_desc.
-    // c.BeginGetDeployedReplicaList(querydescription, timeoutmilliseconds, callback)
 
     Ok(())
 }

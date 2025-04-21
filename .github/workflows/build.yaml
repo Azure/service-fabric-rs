@@ -186,7 +186,7 @@ jobs:
           tdnf clean all
           tdnf makecache
           tdnf update -y
-          tdnf install -y tar unzip
+
       - name: tdnf install
         run: tdnf install -y tar unzip
 

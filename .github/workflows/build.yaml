@@ -176,6 +176,11 @@ jobs:
       image: mcr.microsoft.com/azurelinux/base/core:3.0
       options: --privileged
     steps:
+      - name: tdnf
+        run: |
+          tdnf update -y
+          tdnf install -y tar
+
       - uses: actions/checkout@v4
 
       - uses: lukka/get-cmake@latest

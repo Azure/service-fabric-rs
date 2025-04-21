@@ -1,7 +1,12 @@
-use crate::{WString, GUID, PCWSTR};
+use std::time::SystemTime;
+
+use crate::{types::ServicePartitionAccessStatus, WString, GUID, PCWSTR};
 use mssf_com::{
-    FabricClient::IFabricGetReplicaListResult2,
+    FabricClient::{IFabricGetDeployedServiceReplicaDetailResult, IFabricGetReplicaListResult2},
     FabricTypes::{
+        FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION,
+        FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM,
+        FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS, FABRIC_QUERY_SERVICE_REPLICA_STATUS_DOWN,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED, FABRIC_QUERY_SERVICE_REPLICA_STATUS_INBUILD,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_INVALID, FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
@@ -19,6 +24,8 @@ use crate::{
     strings::WStringWrap,
     types::{HealthState, ReplicaRole},
 };
+
+use super::{QueryReplicatorOperationName, QueryServiceOperationName};
 
 // FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION
 pub struct ServiceReplicaQueryDescription {
@@ -218,5 +225,146 @@ impl From<&RemoveReplicaDescription> for FABRIC_REMOVE_REPLICA_DESCRIPTION {
             ReplicaOrInstanceId: value.replica_or_instance_id,
             Reserved: std::ptr::null_mut(),
         }
+    }
+}
+
+// FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM
+#[derive(Debug, Clone)]
+pub struct DeployedStatefulServiceReplicaDetailQueryResult {
+    _owner: IFabricGetDeployedServiceReplicaDetailResult, // owns the memory
+    pub service_name: WString,
+    pub partition_id: GUID,
+    pub replica_id: i64,
+    pub current_service_operation: QueryServiceOperationName,
+    pub current_service_operation_start_time_utc: SystemTime,
+    pub current_replicator_operation: QueryReplicatorOperationName,
+    pub read_status: ServicePartitionAccessStatus,
+    pub write_status: ServicePartitionAccessStatus,
+    // pub reported_load: LoadMetricReportList, // TODO: convert value.ReportedLoad to LoadMetricReportList
+    // pub replicator_status: ReplicatorStatus, // TODO: convert value.ReplicatorStatus to ReplicatorStatus
+    // pub Reserved: *mut core::ffi::c_void,
+}
+
+impl DeployedStatefulServiceReplicaDetailQueryResult {
+    pub fn new(
+        value: &FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM,
+        owner: IFabricGetDeployedServiceReplicaDetailResult,
+    ) -> Self {
+        Self {
+            _owner: owner,
+            service_name: WString::from_wide(unsafe { PCWSTR(value.ServiceName.0).as_wide() }),
+            partition_id: value.PartitionId,
+            replica_id: value.ReplicaId,
+            current_service_operation: (value.CurrentServiceOperation).into(),
+            current_service_operation_start_time_utc: SystemTime::UNIX_EPOCH, // TODO: convert Win32 FILETIME to SystemTime in Unix or Win32 depending on the platform
+            current_replicator_operation: (value.CurrentReplicatorOperation).into(),
+            read_status: (value.ReadStatus).into(),
+            write_status: (value.WriteStatus).into(),
+        }
+    }
+}
+
+// FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM
+#[derive(Debug, Clone)]
+pub struct DeployedStatelessServiceInstanceQueryResult {
+    _owner: IFabricGetDeployedServiceReplicaDetailResult, // owns the memory
+    pub service_name: WString,
+    pub service_type_name: WString,
+    pub service_manifest_version: WString,
+    pub code_package_name: WString,
+    pub partition_id: GUID,
+    pub instance_id: i64,
+    pub replica_status: QueryServiceReplicaStatus,
+    pub address: WString,
+    // pub reserved: *mut core::ffi::c_void,
+}
+
+impl DeployedStatelessServiceInstanceQueryResult {
+    pub fn new(
+        value: &FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
+        owner: IFabricGetDeployedServiceReplicaDetailResult,
+    ) -> Self {
+        Self {
+            _owner: owner,
+            service_name: WString::from_wide(unsafe { PCWSTR(value.ServiceName.0).as_wide() }),
+            service_type_name: WString::from_wide(unsafe {
+                PCWSTR(value.ServiceTypeName.0).as_wide()
+            }),
+            service_manifest_version: WString::from_wide(unsafe {
+                PCWSTR(value.ServiceManifestVersion.0).as_wide()
+            }),
+            code_package_name: WString::from_wide(unsafe {
+                PCWSTR(value.CodePackageName.0).as_wide()
+            }),
+            partition_id: value.PartitionId,
+            instance_id: value.InstanceId,
+            replica_status: (&value.ReplicaStatus).into(),
+            address: WString::from_wide(unsafe { PCWSTR(value.Address.0).as_wide() }),
+        }
+    }
+}
+
+// FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION
+#[derive(Debug, Clone)]
+pub struct DeployedServiceReplicaDetailQueryDescription {
+    pub node_name: WString,
+    pub partition_id: GUID,
+    pub replica_id: i64,
+}
+
+impl From<&DeployedServiceReplicaDetailQueryDescription>
+    for FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION
+{
+    fn from(value: &DeployedServiceReplicaDetailQueryDescription) -> Self {
+        Self {
+            NodeName: PCWSTR(value.node_name.as_ptr()),
+            PartitionId: value.partition_id,
+            ReplicaId: value.replica_id,
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum DeployedServiceReplicaDetailQueryResultValue {
+    Invalid,
+    Stateful(DeployedStatefulServiceReplicaDetailQueryResult),
+    Stateless(DeployedStatelessServiceInstanceQueryResult),
+}
+
+// FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM
+pub struct DeployedServiceReplicaDetailQueryResult {
+    pub value: DeployedServiceReplicaDetailQueryResultValue,
+}
+
+impl DeployedServiceReplicaDetailQueryResult {
+    pub fn new(com: IFabricGetDeployedServiceReplicaDetailResult) -> Self {
+        let replica_detail = unsafe { com.get_ReplicaDetail().as_ref().unwrap() };
+        let value = match replica_detail.Kind {
+            FABRIC_SERVICE_KIND_STATEFUL => {
+                let raw = unsafe {
+                    (replica_detail.Value
+                        as *const FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM)
+                        .as_ref()
+                        .unwrap()
+                };
+                DeployedServiceReplicaDetailQueryResultValue::Stateful(
+                    DeployedStatefulServiceReplicaDetailQueryResult::new(raw, com),
+                )
+            }
+            FABRIC_SERVICE_KIND_STATELESS => {
+                let raw = unsafe {
+                    (replica_detail.Value
+                        as *const FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM)
+                        .as_ref()
+                        .unwrap()
+                };
+                DeployedServiceReplicaDetailQueryResultValue::Stateless(
+                    DeployedStatelessServiceInstanceQueryResult::new(raw, com),
+                )
+            }
+            _ => DeployedServiceReplicaDetailQueryResultValue::Invalid,
+        };
+        Self { value }
     }
 }

@@ -9,7 +9,8 @@ use std::time::SystemTime;
 
 use crate::WString;
 use mssf_com::{
-    FabricClient::IFabricGetPartitionLoadInformationResult, FabricTypes::FABRIC_LOAD_METRIC_REPORT,
+    FabricClient::IFabricGetPartitionLoadInformationResult,
+    FabricTypes::{FABRIC_LOAD_METRIC_REPORT, FABRIC_LOAD_METRIC_REPORT_LIST},
 };
 
 use crate::{
@@ -125,3 +126,28 @@ type PrimaryLoadMetricReportListIter<'a> =
     FabricIter<'a, FABRIC_LOAD_METRIC_REPORT, LoadMetricReport, PrimaryLoadMetricReportList>;
 type SecondaryLoadMetricReportListIter<'a> =
     FabricIter<'a, FABRIC_LOAD_METRIC_REPORT, LoadMetricReport, SecondaryLoadMetricReportList>;
+
+// FABRIC_LOAD_METRIC_REPORT_LIST
+#[derive(Debug, Clone)]
+pub struct LoadMetricReportList {
+    pub count: u32,
+    pub items: *const FABRIC_LOAD_METRIC_REPORT,
+}
+
+impl From<&FABRIC_LOAD_METRIC_REPORT_LIST> for LoadMetricReportList {
+    fn from(value: &FABRIC_LOAD_METRIC_REPORT_LIST) -> Self {
+        Self {
+            count: value.Count,
+            items: value.Items,
+        }
+    }
+}
+impl FabricListAccessor<FABRIC_LOAD_METRIC_REPORT> for LoadMetricReportList {
+    fn get_count(&self) -> u32 {
+        self.count
+    }
+
+    fn get_first_item(&self) -> *const FABRIC_LOAD_METRIC_REPORT {
+        self.items
+    }
+}

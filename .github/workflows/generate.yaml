@@ -12,14 +12,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Get MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-
-    - name: Get specific version CMake, v3.21.2
-      uses: lukka/get-cmake@v3.21.2
+    - uses: lukka/get-cmake@latest
+      with:
+        cmakeVersion: "3.21.2"
 
     - name: Install rust stable
       uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: 1.86.0
+        components: rustfmt, clippy
 
     - name: cmake configure
       run: > 
@@ -41,5 +42,4 @@ jobs:
       uses: dtolnay/rust-toolchain@nightly
 
     - name: check crate packaging
-      # TODO: move back to stable once package-workspace is stabilized
-      run: cargo +nightly -Z package-workspace package -p mssf-pal -p mssf-com -p mssf-core --allow-dirty 
+      run: cargo package -p mssf-pal -p mssf-com -p mssf-core --allow-dirty 

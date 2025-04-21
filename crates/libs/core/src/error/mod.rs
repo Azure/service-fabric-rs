@@ -64,10 +64,7 @@ impl From<crate::WinError> for Error {
 impl core::fmt::Debug for Error {
     fn fmt(&self, fmt: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let mut debug = fmt.debug_struct("FabricError");
-        let str_code = match ErrorCode::try_from(FABRIC_ERROR_CODE(self.0 .0)) {
-            Ok(c) => Some(c),
-            Err(_) => None,
-        };
+        let str_code = ErrorCode::try_from(FABRIC_ERROR_CODE(self.0 .0)).ok();
         debug.field("code", &self.0 .0);
         match str_code {
             Some(c) => debug.field("message", &c),
@@ -80,10 +77,7 @@ impl core::fmt::Debug for Error {
 
 impl core::fmt::Display for Error {
     fn fmt(&self, fmt: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let str_code = match ErrorCode::try_from(FABRIC_ERROR_CODE(self.0 .0)) {
-            Ok(c) => Some(c),
-            Err(_) => None,
-        };
+        let str_code = ErrorCode::try_from(FABRIC_ERROR_CODE(self.0 .0)).ok();
         match str_code {
             Some(c) => core::write!(fmt, "{} ({})", c, self.0 .0),
             None => core::write!(fmt, "{}", self.0 .0),

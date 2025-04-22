@@ -4,11 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        BUILD_TYPE: ["Debug"]
-        os: [ windows-latest ]
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
 
@@ -33,9 +29,9 @@ jobs:
 
     - name: run cmake
       run: > 
-        cmake . -DCMAKE_BUILD_TYPE=${{ matrix.BUILD_TYPE }} -B build
+        cmake . -DCMAKE_BUILD_TYPE=Debug -B build
     - name: run build
-      run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
+      run: cmake --build build --config Debug
 
     # mysql bin has conflicting dlls with fabric than prevents fabric from starting
     - name: Remove conflict dll paths
@@ -65,14 +61,11 @@ jobs:
     - name: Run cargo test
       run: cargo test --all -- --nocapture
 
-  build-linux:
+  build-u20:
     runs-on: ubuntu-latest
     container:
       image: ubuntu:20.04
-      options: --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0
-    strategy:
-      matrix:
-        BUILD_TYPE: ["Debug"]
+      options: --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0 -v /sys/fs/cgroup:/sys/fs/cgroup:ro 
     steps:
     - uses: actions/checkout@v4
 
@@ -84,7 +77,7 @@ jobs:
     - name: apt-get
       run: |
         sudo apt-get update 
-        sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang unzip systemd -y
+        sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang unzip systemd systemd-sysv -y
 
     - name: install sf
       run: |
@@ -120,9 +113,9 @@ jobs:
 
     - name: run cmake
       run: > 
-        cmake . -DCMAKE_BUILD_TYPE=${{ matrix.BUILD_TYPE }} -B build
+        cmake . -DCMAKE_BUILD_TYPE=Debug -B build
     - name: run build
-      run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
+      run: cmake --build build --config Debug
 
     - name: install sfctl
       run: |
@@ -134,6 +127,7 @@ jobs:
     - name: test sfctl
       run: sfctl --version
 
+    # Cannot start this up due to running in container.
     - name: start sf
       run: sudo /opt/microsoft/sdk/servicefabric/common/clustersetup/devclustersetup.sh
 

@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ubuntu:20.04
-      options: --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0 -v /sys/fs/cgroup:/sys/fs/cgroup:ro 
+      options: --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0
     steps:
     - uses: actions/checkout@v4
 
@@ -77,7 +77,7 @@ jobs:
     - name: apt-get
       run: |
         sudo apt-get update 
-        sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang unzip systemd systemd-sysv -y
+        sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang unzip -y
 
     - name: install sf
       run: |
@@ -128,42 +128,43 @@ jobs:
       run: sfctl --version
 
     # Cannot start this up due to running in container.
-    - name: start sf
-      run: sudo /opt/microsoft/sdk/servicefabric/common/clustersetup/devclustersetup.sh
+    # TODO: fix running SF in container and enable tests
+    # - name: start sf
+    #   run: sudo /opt/microsoft/sdk/servicefabric/common/clustersetup/devclustersetup.sh
 
-    - name: test cluster health
-      run: |
-        set +e # do not exit on error
-        counter=0
-        COMMAND_STATUS=1
-        until [ $COMMAND_STATUS -eq 0 ]; do
-          echo "attempt #${counter}"
-          sfctl cluster select
-          COMMAND_STATUS=$?
-          sleep 1
-          let counter=counter+1
-          if [[ $counter -eq 10 ]] ;
-          then
-            echo "Retry max reached" && exit 1
-          fi
-        done
-        sfctl cluster health
-
-    - name: run echo app
-      run: |
-        sleep 120 # wait for cluster to be up
-        sfctl application upload --path build/echoapp_root
-        sfctl application provision --application-type-build-path echoapp_root
-        sfctl application create --app-name fabric:/EchoApp --app-type EchoApp --app-version 0.0.1
-
-    # TODO: this fails in CI    
-    # - name: resolve service
+    # - name: test cluster health
     #   run: |
-    #     sleep 120 # wait for app to be up
-    #     sfctl service resolve --service-id EchoApp/EchoAppService
+    #     set +e # do not exit on error
+    #     counter=0
+    #     COMMAND_STATUS=1
+    #     until [ $COMMAND_STATUS -eq 0 ]; do
+    #       echo "attempt #${counter}"
+    #       sfctl cluster select
+    #       COMMAND_STATUS=$?
+    #       sleep 1
+    #       let counter=counter+1
+    #       if [[ $counter -eq 10 ]] ;
+    #       then
+    #         echo "Retry max reached" && exit 1
+    #       fi
+    #     done
+    #     sfctl cluster health
 
-    - name: Run cargo test
-      run: cargo test --all -- --nocapture
+    # - name: run echo app
+    #   run: |
+    #     sleep 120 # wait for cluster to be up
+    #     sfctl application upload --path build/echoapp_root
+    #     sfctl application provision --application-type-build-path echoapp_root
+    #     sfctl application create --app-name fabric:/EchoApp --app-type EchoApp --app-version 0.0.1
+
+    # # TODO: this fails in CI    
+    # # - name: resolve service
+    # #   run: |
+    # #     sleep 120 # wait for app to be up
+    # #     sfctl service resolve --service-id EchoApp/EchoAppService
+
+    # - name: Run cargo test
+    #   run: cargo test --all -- --nocapture
 
   # Do not run test because SF onebox is not supported on azl3 yet.
   build-azl3:

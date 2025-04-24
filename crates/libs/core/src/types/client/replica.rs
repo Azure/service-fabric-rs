@@ -231,7 +231,6 @@ impl From<&RemoveReplicaDescription> for FABRIC_REMOVE_REPLICA_DESCRIPTION {
 // FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM
 #[derive(Debug, Clone)]
 pub struct DeployedStatefulServiceReplicaDetailQueryResult {
-    _owner: IFabricGetDeployedServiceReplicaDetailResult, // owns the memory
     pub service_name: WString,
     pub partition_id: GUID,
     pub replica_id: i64,
@@ -246,12 +245,8 @@ pub struct DeployedStatefulServiceReplicaDetailQueryResult {
 }
 
 impl DeployedStatefulServiceReplicaDetailQueryResult {
-    pub fn new(
-        value: &FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM,
-        owner: IFabricGetDeployedServiceReplicaDetailResult,
-    ) -> Self {
+    pub fn new(value: &FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM) -> Self {
         Self {
-            _owner: owner,
             service_name: WString::from_wide(unsafe { PCWSTR(value.ServiceName.0).as_wide() }),
             partition_id: value.PartitionId,
             replica_id: value.ReplicaId,
@@ -267,7 +262,6 @@ impl DeployedStatefulServiceReplicaDetailQueryResult {
 // FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM
 #[derive(Debug, Clone)]
 pub struct DeployedStatelessServiceInstanceQueryResult {
-    _owner: IFabricGetDeployedServiceReplicaDetailResult, // owns the memory
     pub service_name: WString,
     pub service_type_name: WString,
     pub service_manifest_version: WString,
@@ -280,12 +274,8 @@ pub struct DeployedStatelessServiceInstanceQueryResult {
 }
 
 impl DeployedStatelessServiceInstanceQueryResult {
-    pub fn new(
-        value: &FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
-        owner: IFabricGetDeployedServiceReplicaDetailResult,
-    ) -> Self {
+    pub fn new(value: &FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM) -> Self {
         Self {
-            _owner: owner,
             service_name: WString::from_wide(unsafe { PCWSTR(value.ServiceName.0).as_wide() }),
             service_type_name: WString::from_wide(unsafe {
                 PCWSTR(value.ServiceTypeName.0).as_wide()
@@ -349,7 +339,7 @@ impl DeployedServiceReplicaDetailQueryResult {
                         .unwrap()
                 };
                 DeployedServiceReplicaDetailQueryResultValue::Stateful(
-                    DeployedStatefulServiceReplicaDetailQueryResult::new(raw, com),
+                    DeployedStatefulServiceReplicaDetailQueryResult::new(raw),
                 )
             }
             FABRIC_SERVICE_KIND_STATELESS => {
@@ -360,7 +350,7 @@ impl DeployedServiceReplicaDetailQueryResult {
                         .unwrap()
                 };
                 DeployedServiceReplicaDetailQueryResultValue::Stateless(
-                    DeployedStatelessServiceInstanceQueryResult::new(raw, com),
+                    DeployedStatelessServiceInstanceQueryResult::new(raw),
                 )
             }
             _ => DeployedServiceReplicaDetailQueryResultValue::Invalid,

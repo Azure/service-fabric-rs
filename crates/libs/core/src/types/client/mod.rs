@@ -28,8 +28,6 @@ pub use node::*;
 mod replica;
 use crate::WString;
 pub use replica::*;
-mod replicator;
-pub use replicator::*;
 mod metrics;
 pub use metrics::*;
 mod health;
@@ -106,7 +104,7 @@ impl From<ClientRole> for FABRIC_CLIENT_ROLE {
 }
 
 // FABRIC_QUERY_SERVICE_OPERATION_NAME
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum QueryServiceOperationName {
     Abort,
     ChangeRole,
@@ -130,7 +128,7 @@ impl From<FABRIC_QUERY_SERVICE_OPERATION_NAME> for QueryServiceOperationName {
 }
 
 // FABRIC_QUERY_REPLICATOR_OPERATION_NAME
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum QueryReplicatorOperationName {
     Abort,
     Build,

@@ -14,13 +14,14 @@ use mssf_core::{
         FabricClient,
     },
     types::{
-        PartitionLoadInformation, PartitionLoadInformationQueryDescription,
-        QueryServiceReplicaStatus, ReplicaRole, RestartReplicaDescription,
-        ServiceNotificationFilterDescription, ServiceNotificationFilterFlags,
-        ServicePartitionInformation, ServicePartitionQueryDescription, ServicePartitionQueryResult,
-        ServicePartitionStatus, ServiceReplicaQueryDescription, ServiceReplicaQueryResult,
-        SingletonPartitionInfomation, StatefulServicePartitionQueryResult,
-        StatefulServiceReplicaQueryResult,
+        DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
+        DeployedServiceReplicaDetailQueryResultValue, PartitionLoadInformation,
+        PartitionLoadInformationQueryDescription, QueryServiceReplicaStatus, ReplicaRole,
+        RestartReplicaDescription, ServiceNotificationFilterDescription,
+        ServiceNotificationFilterFlags, ServicePartitionAccessStatus, ServicePartitionInformation,
+        ServicePartitionQueryDescription, ServicePartitionQueryResult, ServicePartitionStatus,
+        ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
+        StatefulServicePartitionQueryResult, StatefulServiceReplicaQueryResult,
     },
     ErrorCode, WString, GUID,
 };
@@ -129,6 +130,23 @@ impl TestClient {
             .collect::<Vec<_>>();
         assert_eq!(secondary.len(), 2);
         Ok((primary, secondary[0].clone(), secondary[1].clone()))
+    }
+
+    async fn get_deployed_replica_detail(
+        &self,
+        node_name: &WString,
+        partition_id: GUID,
+        replica_id: i64,
+    ) -> mssf_core::Result<DeployedServiceReplicaDetailQueryResult> {
+        let qc = self.fc.get_query_manager();
+        let desc = DeployedServiceReplicaDetailQueryDescription {
+            node_name: node_name.clone(),
+            partition_id,
+            replica_id,
+        };
+
+        qc.get_deployed_replica_detail(&desc, self.timeout, None)
+            .await
     }
 
     // Resolve the service. The first return param is the primary.
@@ -264,7 +282,7 @@ async fn test_partition_info() {
     assert_ne!(single.id, GUID::zeroed());
 
     // test get replica info
-    let (p, _, _) = tc.get_replicas(single.id).await.unwrap();
+    let (p, s1, _s2) = tc.get_replicas(single.id).await.unwrap();
     assert_eq!(p.replica_status, QueryServiceReplicaStatus::Ready);
     assert_ne!(p.node_name, WString::new());
 
@@ -379,4 +397,32 @@ async fn test_partition_info() {
         .iter()
         .collect::<Vec<_>>();
     println!("Secondary metric loads: {:?}", secondary_loads);
+
+    // test get deployed service info
+    let deployed_replica_detail = tc
+        .get_deployed_replica_detail(&p.node_name, single.id, p.replica_id)
+        .await
+        .expect("get deployed replica detail failed");
+    let result = match deployed_replica_detail.value {
+        DeployedServiceReplicaDetailQueryResultValue::Stateful(s) => s,
+        _ => panic!("not stateful"),
+    };
+    // check write ad read status of primary is GRANTED
+    assert_eq!(result.write_status, ServicePartitionAccessStatus::Granted);
+    assert_eq!(result.read_status, ServicePartitionAccessStatus::Granted);
+
+    // check write and read status of secondary is NOT_PRIMARY
+    let deployed_replica_detail = tc
+        .get_deployed_replica_detail(&s1.node_name, single.id, s1.replica_id)
+        .await
+        .expect("get deployed replica detail failed");
+    let result = match deployed_replica_detail.value {
+        DeployedServiceReplicaDetailQueryResultValue::Stateful(s) => s,
+        _ => panic!("not stateful"),
+    };
+    assert_eq!(
+        result.write_status,
+        ServicePartitionAccessStatus::NotPrimary
+    );
+    assert_eq!(result.read_status, ServicePartitionAccessStatus::NotPrimary);
 }

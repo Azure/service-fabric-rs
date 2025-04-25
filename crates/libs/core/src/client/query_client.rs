@@ -10,14 +10,14 @@ use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{
     FabricClient::{
-        IFabricGetNodeListResult2, IFabricGetPartitionListResult2,
-        IFabricGetPartitionLoadInformationResult, IFabricGetReplicaListResult2,
-        IFabricQueryClient10,
+        IFabricGetDeployedServiceReplicaDetailResult, IFabricGetNodeListResult2,
+        IFabricGetPartitionListResult2, IFabricGetPartitionLoadInformationResult,
+        IFabricGetReplicaListResult2, IFabricQueryClient10,
     },
     FabricTypes::{
-        FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION_EX1,
-        FABRIC_NODE_QUERY_DESCRIPTION_EX2, FABRIC_NODE_QUERY_DESCRIPTION_EX3,
-        FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
+        FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION,
+        FABRIC_NODE_QUERY_DESCRIPTION_EX1, FABRIC_NODE_QUERY_DESCRIPTION_EX2,
+        FABRIC_NODE_QUERY_DESCRIPTION_EX3, FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
         FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION, FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
     },
 };
@@ -27,6 +27,7 @@ use crate::sync::{fabric_begin_end_proxy, CancellationToken, FabricReceiver};
 use crate::{
     strings::get_pcwstr_from_opt,
     types::{
+        DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
         NodeList, NodeQueryDescription, PartitionLoadInformation,
         PartitionLoadInformationQueryDescription, ServicePartitionList,
         ServicePartitionQueryDescription, ServiceReplicaList, ServiceReplicaQueryDescription,
@@ -108,6 +109,23 @@ impl QueryClient {
                 com1.BeginGetPartitionLoadInformation(desc, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndGetPartitionLoadInformation(ctx) },
+            cancellation_token,
+        )
+    }
+
+    fn get_deployed_replica_detail_internal(
+        &self,
+        desc: &FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<CancellationToken>,
+    ) -> FabricReceiver<crate::WinResult<IFabricGetDeployedServiceReplicaDetailResult>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetDeployedReplicaDetail(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetDeployedReplicaDetail(ctx) },
             cancellation_token,
         )
     }
@@ -209,5 +227,20 @@ impl QueryClient {
         }
         .await??;
         Ok(PartitionLoadInformation::new(com))
+    }
+
+    pub async fn get_deployed_replica_detail(
+        &self,
+        desc: &DeployedServiceReplicaDetailQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<CancellationToken>,
+    ) -> crate::Result<DeployedServiceReplicaDetailQueryResult> {
+        let com = {
+            let raw: FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION = desc.into();
+            let timeout_ms = timeout.as_micros() as u32;
+            self.get_deployed_replica_detail_internal(&raw, timeout_ms, cancellation_token)
+        }
+        .await??;
+        Ok(DeployedServiceReplicaDetailQueryResult::new(com))
     }
 }

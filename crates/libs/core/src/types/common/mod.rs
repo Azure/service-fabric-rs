@@ -17,8 +17,9 @@ use mssf_com::FabricTypes::{
     FABRIC_FAULT_TYPE, FABRIC_FAULT_TYPE_INVALID, FABRIC_FAULT_TYPE_PERMANENT,
     FABRIC_FAULT_TYPE_TRANSIENT, FABRIC_HEALTH_STATE, FABRIC_HEALTH_STATE_ERROR,
     FABRIC_HEALTH_STATE_INVALID, FABRIC_HEALTH_STATE_OK, FABRIC_HEALTH_STATE_UNKNOWN,
-    FABRIC_HEALTH_STATE_WARNING,
+    FABRIC_HEALTH_STATE_WARNING, FABRIC_URI,
 };
+use windows_core::WString;
 
 // FABRIC_HEALTH_STATE
 #[derive(Debug, PartialEq, Clone)]
@@ -81,5 +82,31 @@ impl From<FaultType> for FABRIC_FAULT_TYPE {
             FaultType::Permanent => FABRIC_FAULT_TYPE_PERMANENT,
             FaultType::Transient => FABRIC_FAULT_TYPE_TRANSIENT,
         }
+    }
+}
+
+/// FABRIC_URI interoperability type.
+#[derive(Debug, Clone, Default)]
+pub struct Uri(pub WString);
+impl Uri {
+    /// Needs to have the same lifetime as the original WString.
+    pub fn as_raw(&self) -> FABRIC_URI {
+        FABRIC_URI(self.0.as_ptr() as *mut u16)
+    }
+
+    pub fn new(s: WString) -> Self {
+        Self(s)
+    }
+}
+
+impl From<WString> for Uri {
+    fn from(value: WString) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for Uri {
+    fn from(value: &str) -> Self {
+        Self(WString::from(value))
     }
 }

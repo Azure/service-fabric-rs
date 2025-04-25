@@ -3,18 +3,31 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+#![cfg_attr(
+    not(feature = "tokio_async"),
+    allow(dead_code, reason = "code configured out")
+)]
+
+use std::ffi::c_void;
+
 use crate::{WString, GUID};
 use mssf_com::FabricTypes::{
     FABRIC_INT64_RANGE_PARTITION_INFORMATION, FABRIC_NAMED_PARTITION_INFORMATION,
-    FABRIC_SERVICE_PARTITION_ACCESS_STATUS, FABRIC_SERVICE_PARTITION_ACCESS_STATUS_GRANTED,
-    FABRIC_SERVICE_PARTITION_ACCESS_STATUS_INVALID,
+    FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION, FABRIC_PARTITION_SCHEME,
+    FABRIC_PARTITION_SCHEME_NAMED, FABRIC_PARTITION_SCHEME_SINGLETON,
+    FABRIC_PARTITION_SCHEME_UNIFORM_INT64_RANGE, FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE,
+    FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_EXCLUSIVE_PROCESS,
+    FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_SHARED_PROCESS, FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
+    FABRIC_SERVICE_PARTITION_ACCESS_STATUS_GRANTED, FABRIC_SERVICE_PARTITION_ACCESS_STATUS_INVALID,
     FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NOT_PRIMARY,
     FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NO_WRITE_QUORUM,
     FABRIC_SERVICE_PARTITION_ACCESS_STATUS_RECONFIGURATION_PENDING,
     FABRIC_SERVICE_PARTITION_INFORMATION, FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE,
     FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
     FABRIC_SERVICE_PARTITION_KIND_SINGLETON, FABRIC_SINGLETON_PARTITION_INFORMATION,
+    FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION,
 };
+use windows_core::PCWSTR;
 
 use crate::strings::WStringWrap;
 
@@ -159,6 +172,131 @@ impl From<ServicePartitionAccessStatus> for FABRIC_SERVICE_PARTITION_ACCESS_STAT
             ServicePartitionAccessStatus::NoWriteQuorum => {
                 FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NO_WRITE_QUORUM
             }
+        }
+    }
+}
+
+// Partition Schemes
+// FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION
+#[derive(Debug)]
+pub struct UniformIn64PartitionSchemeDescription {
+    internal: Box<FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION>,
+}
+
+impl UniformIn64PartitionSchemeDescription {
+    pub fn new(partition_count: i32, low_key: i64, high_key: i64) -> Self {
+        UniformIn64PartitionSchemeDescription {
+            internal: Box::new(FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION {
+                PartitionCount: partition_count,
+                LowKey: low_key,
+                HighKey: high_key,
+                Reserved: std::ptr::null_mut(),
+            }),
+        }
+    }
+    /// No lifetime requirement.
+    pub fn as_raw(&self) -> &FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION {
+        self.internal.as_ref()
+    }
+}
+
+impl Clone for UniformIn64PartitionSchemeDescription {
+    fn clone(&self) -> Self {
+        Self::new(
+            self.internal.PartitionCount,
+            self.internal.LowKey,
+            self.internal.HighKey,
+        )
+    }
+}
+
+// FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION
+#[derive(Debug)]
+pub struct NamedPartitionSchemeDescription {
+    _names: Vec<WString>,
+    _raw_names: Vec<PCWSTR>,
+    internal: Box<FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION>,
+}
+
+impl NamedPartitionSchemeDescription {
+    /// Must have lifetime as self. Can be moved.
+    pub fn as_raw(&self) -> &FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION {
+        self.internal.as_ref()
+    }
+
+    pub fn get_ref(&self) -> &Vec<WString> {
+        &self._names
+    }
+}
+
+impl NamedPartitionSchemeDescription {
+    pub fn new(names: Vec<WString>) -> Self {
+        let raw_names: Vec<PCWSTR> = names.iter().map(|name| name.as_pcwstr()).collect();
+        let internal = Box::new(FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION {
+            PartitionCount: raw_names.len() as i32,
+            Names: raw_names.as_ptr() as *mut _,
+            Reserved: std::ptr::null_mut(),
+        });
+        NamedPartitionSchemeDescription {
+            _names: names,
+            _raw_names: raw_names,
+            internal,
+        }
+    }
+}
+
+impl Clone for NamedPartitionSchemeDescription {
+    fn clone(&self) -> Self {
+        Self::new(self._names.clone())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub enum ServicePackageActivationMode {
+    // Invalid = 0,
+    #[default]
+    SharedProcess,
+    ExclusiveProcess,
+}
+
+impl From<ServicePackageActivationMode> for FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE {
+    fn from(mode: ServicePackageActivationMode) -> Self {
+        match mode {
+            ServicePackageActivationMode::SharedProcess => {
+                FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_SHARED_PROCESS
+            }
+            ServicePackageActivationMode::ExclusiveProcess => {
+                FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_EXCLUSIVE_PROCESS
+            }
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone)]
+pub enum PartitionSchemeDescription {
+    #[default]
+    Invalid,
+    Singleton, // This should be nullptr when passed to com.
+    Int64Range(UniformIn64PartitionSchemeDescription), // FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION
+    Named(NamedPartitionSchemeDescription),            // FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION
+}
+
+impl PartitionSchemeDescription {
+    /// Needs to have lifetime as self. Can be moved.
+    pub(crate) fn as_raw(&self) -> (FABRIC_PARTITION_SCHEME, *mut c_void) {
+        match self {
+            PartitionSchemeDescription::Singleton => {
+                (FABRIC_PARTITION_SCHEME_SINGLETON, std::ptr::null_mut())
+            }
+            PartitionSchemeDescription::Int64Range(ref scheme) => (
+                FABRIC_PARTITION_SCHEME_UNIFORM_INT64_RANGE,
+                scheme.as_raw() as *const _ as *mut _,
+            ),
+            PartitionSchemeDescription::Named(ref scheme) => (
+                FABRIC_PARTITION_SCHEME_NAMED,
+                scheme.as_raw() as *const _ as *mut _,
+            ),
+            PartitionSchemeDescription::Invalid => panic!("Invalid partition scheme description"),
         }
     }
 }

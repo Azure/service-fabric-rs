@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use core::panic;
 use std::time::Duration;
 
 use mssf_core::{
@@ -15,13 +16,15 @@ use mssf_core::{
     },
     types::{
         DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
-        DeployedServiceReplicaDetailQueryResultValue, PartitionLoadInformation,
-        PartitionLoadInformationQueryDescription, QueryServiceReplicaStatus, ReplicaRole,
-        RestartReplicaDescription, ServiceNotificationFilterDescription,
-        ServiceNotificationFilterFlags, ServicePartitionAccessStatus, ServicePartitionInformation,
+        DeployedServiceReplicaDetailQueryResultValue, NamedPartitionSchemeDescription,
+        PartitionLoadInformation, PartitionLoadInformationQueryDescription,
+        QueryServiceReplicaStatus, ReplicaRole, RestartReplicaDescription, ServiceDescription,
+        ServiceNotificationFilterDescription, ServiceNotificationFilterFlags,
+        ServicePartitionAccessStatus, ServicePartitionInformation,
         ServicePartitionQueryDescription, ServicePartitionQueryResult, ServicePartitionStatus,
         ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
-        StatefulServicePartitionQueryResult, StatefulServiceReplicaQueryResult,
+        StatefulServiceDescription, StatefulServicePartitionQueryResult,
+        StatefulServiceReplicaQueryResult, Uri,
     },
     ErrorCode, WString, GUID,
 };
@@ -425,4 +428,93 @@ async fn test_partition_info() {
         ServicePartitionAccessStatus::NotPrimary
     );
     assert_eq!(result.read_status, ServicePartitionAccessStatus::NotPrimary);
+}
+
+async fn test_service_create_delete(
+    fc: &FabricClient,
+    partition_scheme: &mssf_core::types::PartitionSchemeDescription,
+    service_name: &Uri,
+) {
+    let timeout = Duration::from_secs(30);
+    let smgr = fc.get_service_manager();
+    // TODO: get service first
+    let desc = ServiceDescription::Stateful(StatefulServiceDescription {
+        application_name: Uri::from("fabric:/StatefulEchoApp"),
+        service_name: service_name.clone(),
+        service_type_name: WString::from("StatefulEchoAppService"),
+        partition_scheme: partition_scheme.clone(),
+        target_replica_set_size: 1,
+        min_replica_set_size: 1,
+        initialization_data: Vec::new(),
+        has_persistent_state: true,
+        ..Default::default()
+    });
+    println!("creating service {:?}", service_name);
+    smgr.create_service(&desc, timeout, None).await.unwrap();
+
+    let key_type = match partition_scheme {
+        mssf_core::types::PartitionSchemeDescription::Singleton => PartitionKeyType::None,
+        mssf_core::types::PartitionSchemeDescription::Named(names) => {
+            PartitionKeyType::String(names.get_ref().first().unwrap().clone())
+        }
+        mssf_core::types::PartitionSchemeDescription::Int64Range(data) => {
+            PartitionKeyType::Int64(data.as_raw().LowKey)
+        }
+        mssf_core::types::PartitionSchemeDescription::Invalid => panic!("invalid partition scheme"),
+    };
+
+    // resolve until the service is ready
+    let mut count = 0;
+    loop {
+        let res = smgr
+            .resolve_service_partition(&service_name.0, &key_type, None, timeout, None)
+            .await;
+        match res {
+            Ok(info) => {
+                let addrs = info.get_endpoint_list().iter().collect::<Vec<_>>();
+                println!("Trial {count} resolved service addr for {service_name:?}: {addrs:?}");
+                break;
+            }
+            Err(_) => {
+                if count > 30 {
+                    panic!("service not ready");
+                }
+            }
+        }
+        tokio::time::sleep(Duration::from_secs(1)).await;
+        count += 1;
+    }
+
+    println!("deleting service {:?}", service_name);
+    smgr.delete_service(&service_name, timeout, None)
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn test_service_curd_singleton() {
+    let fc = FabricClient::builder().build().unwrap();
+    let partition_scheme = mssf_core::types::PartitionSchemeDescription::Singleton;
+    let service_name = Uri::from("fabric:/StatefulEchoApp/CurdTestServiceSingleton");
+    test_service_create_delete(&fc, &partition_scheme, &service_name).await;
+}
+
+#[tokio::test]
+async fn test_service_curd_named() {
+    let fc = FabricClient::builder().build().unwrap();
+    let partition_scheme = mssf_core::types::PartitionSchemeDescription::Named(
+        NamedPartitionSchemeDescription::new(vec![WString::from("test")]),
+    );
+    let service_name = Uri::from("fabric:/StatefulEchoApp/CurdTestServiceNamed");
+    test_service_create_delete(&fc, &partition_scheme, &service_name).await;
+}
+
+#[tokio::test]
+async fn test_service_curd_range() {
+    let fc = FabricClient::builder().build().unwrap();
+    let partition_scheme = mssf_core::types::PartitionSchemeDescription::Int64Range(
+        mssf_core::types::UniformIn64PartitionSchemeDescription::new(1, 10, 100),
+    );
+    let service_name = Uri::from("fabric:/StatefulEchoApp/CurdTestServiceNamed");
+    test_service_create_delete(&fc, &partition_scheme, &service_name).await;
 }

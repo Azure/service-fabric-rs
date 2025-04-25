@@ -8,7 +8,7 @@
 )]
 use std::{ffi::c_void, time::Duration};
 
-use crate::{types::ServiceDescription, WString, PCWSTR};
+use crate::{types::Uri, WString, PCWSTR};
 use mssf_com::{
     FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient6},
     FabricTypes::{
@@ -165,6 +165,23 @@ impl ServiceManagementClient {
             cancellation_token,
         )
     }
+
+    fn delete_service_internal(
+        &self,
+        name: FABRIC_URI,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<CancellationToken>,
+    ) -> FabricReceiver<crate::WinResult<()>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginDeleteService(name, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndDeleteService(ctx) },
+            cancellation_token,
+        )
+    }
 }
 
 impl From<IFabricServiceManagementClient6> for ServiceManagementClient {
@@ -301,13 +318,28 @@ impl ServiceManagementClient {
 
     pub async fn create_service(
         &self,
-        desc: &ServiceDescription,
+        desc: &crate::types::ServiceDescription,
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<()> {
         let desc_raw = desc.build_raw();
         self.create_service_internal(
             &desc_raw.as_raw(),
+            timeout.as_millis() as u32,
+            cancellation_token,
+        )
+        .await?
+        .map_err(crate::Error::from)
+    }
+
+    pub async fn delete_service(
+        &self,
+        name: &Uri,
+        timeout: Duration,
+        cancellation_token: Option<CancellationToken>,
+    ) -> crate::Result<()> {
+        self.delete_service_internal(
+            name.as_raw(),
             timeout.as_millis() as u32,
             cancellation_token,
         )

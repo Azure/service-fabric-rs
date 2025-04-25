@@ -3,6 +3,11 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+#![cfg_attr(
+    not(feature = "tokio_async"),
+    allow(dead_code, reason = "code configured out")
+)]
+
 use std::ffi::c_void;
 
 use mssf_com::FabricTypes::{
@@ -16,7 +21,7 @@ use mssf_com::FabricTypes::{
 };
 use windows_core::WString;
 
-use crate::types::{MoveCost, PartitionSchemeDescription, ServicePackageActivationMode};
+use crate::types::{MoveCost, PartitionSchemeDescription, ServicePackageActivationMode, Uri};
 
 pub enum ServiceDescription {
     // Invalid,
@@ -24,13 +29,14 @@ pub enum ServiceDescription {
     Stateless(StatelessServiceDescription), // FABRIC_STATELESS_SERVICE_DESCRIPTION
 }
 
+#[derive(Debug, Default)]
 pub struct StatefulServiceDescription {
     // common
-    pub application_name: WString,
-    pub service_name: WString,
+    pub application_name: Uri,
+    pub service_name: Uri,
     pub service_type_name: WString,
     pub initialization_data: Vec<u8>,
-    pub partition_scheme_description: PartitionSchemeDescription,
+    pub partition_scheme: PartitionSchemeDescription,
     // stateful
     pub min_replica_set_size: i32,
     pub target_replica_set_size: i32,
@@ -94,13 +100,13 @@ impl StatefulServiceDescription {
         });
 
         let internal = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION {
-            ApplicationName: FABRIC_URI(self.application_name.as_ptr() as *mut u16),
-            ServiceName: FABRIC_URI(self.service_name.as_ptr() as *mut u16),
+            ApplicationName: self.application_name.as_raw(),
+            ServiceName: self.service_name.as_raw(),
             ServiceTypeName: self.service_type_name.as_pcwstr(),
             InitializationDataSize: self.initialization_data.len() as u32,
             InitializationData: self.initialization_data.as_ptr() as *mut u8,
-            PartitionScheme: self.partition_scheme_description.as_raw().0,
-            PartitionSchemeDescription: self.partition_scheme_description.as_raw().1,
+            PartitionScheme: self.partition_scheme.as_raw().0,
+            PartitionSchemeDescription: self.partition_scheme.as_raw().1,
             TargetReplicaSetSize: self.target_replica_set_size,
             MinReplicaSetSize: self.min_replica_set_size,
             PlacementConstraints: self.placement_contraints.as_pcwstr(), // TODO:
@@ -216,7 +222,7 @@ pub(crate) enum ServiceDescriptionRaw {
 }
 
 impl ServiceDescriptionRaw {
-    pub fn as_raw(&self) -> FABRIC_SERVICE_DESCRIPTION {
+    pub(crate) fn as_raw(&self) -> FABRIC_SERVICE_DESCRIPTION {
         match self {
             ServiceDescriptionRaw::Stateful(ref desc) => FABRIC_SERVICE_DESCRIPTION {
                 Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,

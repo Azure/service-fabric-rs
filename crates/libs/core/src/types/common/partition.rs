@@ -3,6 +3,11 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+#![cfg_attr(
+    not(feature = "tokio_async"),
+    allow(dead_code, reason = "code configured out")
+)]
+
 use std::ffi::c_void;
 
 use crate::{WString, GUID};
@@ -173,6 +178,7 @@ impl From<ServicePartitionAccessStatus> for FABRIC_SERVICE_PARTITION_ACCESS_STAT
 
 // Partition Schemes
 // FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION
+#[derive(Debug)]
 pub struct UniformIn64PartitionSchemeDescription {
     internal: Box<FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION>,
 }
@@ -189,12 +195,23 @@ impl UniformIn64PartitionSchemeDescription {
         }
     }
     /// No lifetime requirement.
-    fn as_raw(&self) -> &FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION {
+    pub fn as_raw(&self) -> &FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION {
         self.internal.as_ref()
     }
 }
 
+impl Clone for UniformIn64PartitionSchemeDescription {
+    fn clone(&self) -> Self {
+        Self::new(
+            self.internal.PartitionCount,
+            self.internal.LowKey,
+            self.internal.HighKey,
+        )
+    }
+}
+
 // FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION
+#[derive(Debug)]
 pub struct NamedPartitionSchemeDescription {
     _names: Vec<WString>,
     _raw_names: Vec<PCWSTR>,
@@ -205,6 +222,10 @@ impl NamedPartitionSchemeDescription {
     /// Must have lifetime as self. Can be moved.
     pub fn as_raw(&self) -> &FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION {
         self.internal.as_ref()
+    }
+
+    pub fn get_ref(&self) -> &Vec<WString> {
+        &self._names
     }
 }
 
@@ -224,9 +245,16 @@ impl NamedPartitionSchemeDescription {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+impl Clone for NamedPartitionSchemeDescription {
+    fn clone(&self) -> Self {
+        Self::new(self._names.clone())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
 pub enum ServicePackageActivationMode {
     // Invalid = 0,
+    #[default]
     SharedProcess,
     ExclusiveProcess,
 }
@@ -244,8 +272,10 @@ impl From<ServicePackageActivationMode> for FABRIC_SERVICE_PACKAGE_ACTIVATION_MO
     }
 }
 
+#[derive(Debug, Default, Clone)]
 pub enum PartitionSchemeDescription {
-    // Invalid,
+    #[default]
+    Invalid,
     Singleton, // This should be nullptr when passed to com.
     Int64Range(UniformIn64PartitionSchemeDescription), // FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION
     Named(NamedPartitionSchemeDescription),            // FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION
@@ -266,6 +296,7 @@ impl PartitionSchemeDescription {
                 FABRIC_PARTITION_SCHEME_NAMED,
                 scheme.as_raw() as *const _ as *mut _,
             ),
+            PartitionSchemeDescription::Invalid => panic!("Invalid partition scheme description"),
         }
     }
 }

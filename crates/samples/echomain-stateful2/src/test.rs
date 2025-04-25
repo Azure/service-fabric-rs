@@ -285,7 +285,7 @@ async fn test_partition_info() {
     assert_ne!(single.id, GUID::zeroed());
 
     // test get replica info
-    let (p, s1, _s2) = tc.get_replicas(single.id).await.unwrap();
+    let (p, _, _) = tc.get_replicas(single.id).await.unwrap();
     assert_eq!(p.replica_status, QueryServiceReplicaStatus::Ready);
     assert_ne!(p.node_name, WString::new());
 
@@ -401,7 +401,8 @@ async fn test_partition_info() {
         .collect::<Vec<_>>();
     println!("Secondary metric loads: {:?}", secondary_loads);
 
-    // test get deployed service info
+    // test get deployed service info after failover
+    let (p, s1, _) = tc.get_replicas(single.id).await.unwrap();
     let deployed_replica_detail = tc
         .get_deployed_replica_detail(&p.node_name, single.id, p.replica_id)
         .await
@@ -515,6 +516,6 @@ async fn test_service_curd_range() {
     let partition_scheme = mssf_core::types::PartitionSchemeDescription::Int64Range(
         mssf_core::types::UniformIn64PartitionSchemeDescription::new(1, 10, 100),
     );
-    let service_name = Uri::from("fabric:/StatefulEchoApp/CurdTestServiceNamed");
+    let service_name = Uri::from("fabric:/StatefulEchoApp/CurdTestServiceRange");
     test_service_create_delete(&fc, &partition_scheme, &service_name).await;
 }

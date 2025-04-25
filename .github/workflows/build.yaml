@@ -4,11 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        BUILD_TYPE: ["Debug"]
-        os: [ windows-latest ]
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
 
@@ -33,9 +29,9 @@ jobs:
 
     - name: run cmake
       run: > 
-        cmake . -DCMAKE_BUILD_TYPE=${{ matrix.BUILD_TYPE }} -B build
+        cmake . -DCMAKE_BUILD_TYPE=Debug -B build
     - name: run build
-      run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
+      run: cmake --build build --config Debug
 
     # mysql bin has conflicting dlls with fabric than prevents fabric from starting
     - name: Remove conflict dll paths
@@ -65,16 +61,23 @@ jobs:
     - name: Run cargo test
       run: cargo test --all -- --nocapture
 
-  build-linux:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        BUILD_TYPE: ["Debug"]
-        os: [ ubuntu-20.04 ]
+  build-u20:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:20.04
+      options: --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install sudo
+      run: |
+        apt-get update
+        apt-get install -y sudo
+
     - name: apt-get
-      run: sudo apt-get update && sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang -y
+      run: |
+        sudo apt-get update 
+        sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang unzip -y
 
     - name: install sf
       run: |
@@ -110,51 +113,94 @@ jobs:
 
     - name: run cmake
       run: > 
-        cmake . -DCMAKE_BUILD_TYPE=${{ matrix.BUILD_TYPE }} -B build
+        cmake . -DCMAKE_BUILD_TYPE=Debug -B build
     - name: run build
-      run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
+      run: cmake --build build --config Debug
 
     - name: install sfctl
       run: |
+        sudo apt-get install python3-pip -y
+        python3 -m pip install --upgrade pip
         pip3 install -I sfctl==11.1.0
         echo "~/.local/bin" >> $GITHUB_PATH
     
     - name: test sfctl
       run: sfctl --version
 
-    - name: start sf
-      run: sudo /opt/microsoft/sdk/servicefabric/common/clustersetup/devclustersetup.sh
+    # Cannot start this up due to running in container.
+    # TODO: fix running SF in container and enable tests
+    # - name: start sf
+    #   run: sudo /opt/microsoft/sdk/servicefabric/common/clustersetup/devclustersetup.sh
 
-    - name: test cluster health
-      run: |
-        set +e # do not exit on error
-        counter=0
-        COMMAND_STATUS=1
-        until [ $COMMAND_STATUS -eq 0 ]; do
-          echo "attempt #${counter}"
-          sfctl cluster select
-          COMMAND_STATUS=$?
-          sleep 1
-          let counter=counter+1
-          if [[ $counter -eq 10 ]] ;
-          then
-            echo "Retry max reached" && exit 1
-          fi
-        done
-        sfctl cluster health
-
-    - name: run echo app
-      run: |
-        sleep 120 # wait for cluster to be up
-        sfctl application upload --path build/echoapp_root
-        sfctl application provision --application-type-build-path echoapp_root
-        sfctl application create --app-name fabric:/EchoApp --app-type EchoApp --app-version 0.0.1
-
-    # TODO: this fails in CI    
-    # - name: resolve service
+    # - name: test cluster health
     #   run: |
-    #     sleep 120 # wait for app to be up
-    #     sfctl service resolve --service-id EchoApp/EchoAppService
+    #     set +e # do not exit on error
+    #     counter=0
+    #     COMMAND_STATUS=1
+    #     until [ $COMMAND_STATUS -eq 0 ]; do
+    #       echo "attempt #${counter}"
+    #       sfctl cluster select
+    #       COMMAND_STATUS=$?
+    #       sleep 1
+    #       let counter=counter+1
+    #       if [[ $counter -eq 10 ]] ;
+    #       then
+    #         echo "Retry max reached" && exit 1
+    #       fi
+    #     done
+    #     sfctl cluster health
 
-    - name: Run cargo test
-      run: cargo test --all -- --nocapture
+    # - name: run echo app
+    #   run: |
+    #     sleep 120 # wait for cluster to be up
+    #     sfctl application upload --path build/echoapp_root
+    #     sfctl application provision --application-type-build-path echoapp_root
+    #     sfctl application create --app-name fabric:/EchoApp --app-type EchoApp --app-version 0.0.1
+
+    # # TODO: this fails in CI    
+    # # - name: resolve service
+    # #   run: |
+    # #     sleep 120 # wait for app to be up
+    # #     sfctl service resolve --service-id EchoApp/EchoAppService
+
+    # - name: Run cargo test
+    #   run: cargo test --all -- --nocapture
+
+  # Do not run test because SF onebox is not supported on azl3 yet.
+  build-azl3:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/azurelinux/base/core:3.0
+      options: --privileged
+    steps:
+      - name: tdnf install
+        run: |
+          tdnf update --noplugins --skipsignature -y
+          tdnf install --noplugins --skipsignature -y tar unzip ca-certificates gcc glibc-devel binutils make
+
+      - uses: actions/checkout@v4
+
+      - uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "3.21.2"
+
+      - name: Install rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.86.0
+          components: rustfmt, clippy
+      
+      - name: Run cargo check
+        run: cargo check
+
+      - name: Run cargo fmt
+        run: cargo fmt --all -- --check
+      
+      - name: Run cargo clippy
+        run: cargo clippy -- -D warnings
+
+      - name: run cmake
+        run: > 
+          cmake . -DCMAKE_BUILD_TYPE=Debug -B build
+      - name: run build
+        run: cmake --build build --config Debug

@@ -57,8 +57,9 @@ impl LoadMetricListRef<'_> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub enum MoveCost {
+    #[default]
     Zero,
     Low,
     Medium,

@@ -36,7 +36,11 @@ mod settings;
 pub use settings::*;
 
 mod service;
-pub use service::{ServiceDescription, StatefulServiceDescription, StatelessServiceDescription};
+pub use service::{
+    NamedRepartitionDescription, ServiceDescription, ServiceRepartitionDescription,
+    ServiceUpdateDescription, StatefulServiceDescription, StatefulServiceUpdateDescription,
+    StatelessServiceDescription, StatelessServiceUpdateDescription,
+};
 
 // FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS
 bitflags::bitflags! {

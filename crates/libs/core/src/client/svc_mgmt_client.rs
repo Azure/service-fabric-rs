@@ -21,7 +21,8 @@ use mssf_com::{
         FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE, FABRIC_SERVICE_PARTITION_KIND_INVALID,
         FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
         FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
-        FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS, FABRIC_URI,
+        FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS,
+        FABRIC_SERVICE_UPDATE_DESCRIPTION, FABRIC_URI,
     },
 };
 
@@ -162,6 +163,24 @@ impl ServiceManagementClient {
                 com1.BeginCreateService(desc, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndCreateService(ctx) },
+            cancellation_token,
+        )
+    }
+
+    fn update_service_internal(
+        &self,
+        name: FABRIC_URI,
+        desc: &FABRIC_SERVICE_UPDATE_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<CancellationToken>,
+    ) -> FabricReceiver<crate::WinResult<()>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginUpdateService(name, desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndUpdateService(ctx) },
             cancellation_token,
         )
     }
@@ -324,7 +343,25 @@ impl ServiceManagementClient {
     ) -> crate::Result<()> {
         let desc_raw = desc.build_raw();
         self.create_service_internal(
-            &desc_raw.as_raw(),
+            &desc_raw.as_ffi(),
+            timeout.as_millis() as u32,
+            cancellation_token,
+        )
+        .await?
+        .map_err(crate::Error::from)
+    }
+
+    pub async fn update_service(
+        &self,
+        name: &Uri,
+        desc: &crate::types::ServiceUpdateDescription,
+        timeout: Duration,
+        cancellation_token: Option<CancellationToken>,
+    ) -> crate::Result<()> {
+        let desc_raw = desc.build_raw();
+        self.update_service_internal(
+            name.as_raw(),
+            &desc_raw.as_ffi(),
             timeout.as_millis() as u32,
             cancellation_token,
         )

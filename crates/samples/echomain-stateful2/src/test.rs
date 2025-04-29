@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use core::panic;
 use std::time::Duration;
 
 use mssf_core::{
@@ -17,14 +16,15 @@ use mssf_core::{
     types::{
         DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
         DeployedServiceReplicaDetailQueryResultValue, NamedPartitionSchemeDescription,
-        PartitionLoadInformation, PartitionLoadInformationQueryDescription,
-        QueryServiceReplicaStatus, ReplicaRole, RestartReplicaDescription, ServiceDescription,
-        ServiceNotificationFilterDescription, ServiceNotificationFilterFlags,
-        ServicePartitionAccessStatus, ServicePartitionInformation,
+        NamedRepartitionDescription, PartitionLoadInformation,
+        PartitionLoadInformationQueryDescription, QueryServiceReplicaStatus, ReplicaRole,
+        RestartReplicaDescription, ServiceDescription, ServiceNotificationFilterDescription,
+        ServiceNotificationFilterFlags, ServicePartitionAccessStatus, ServicePartitionInformation,
         ServicePartitionQueryDescription, ServicePartitionQueryResult, ServicePartitionStatus,
-        ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
-        StatefulServiceDescription, StatefulServicePartitionQueryResult,
-        StatefulServiceReplicaQueryResult, Uri,
+        ServiceReplicaQueryDescription, ServiceReplicaQueryResult, ServiceUpdateDescription,
+        SingletonPartitionInfomation, StatefulServiceDescription,
+        StatefulServicePartitionQueryResult, StatefulServiceReplicaQueryResult,
+        StatefulServiceUpdateDescription, Uri,
     },
     ErrorCode, WString, GUID,
 };
@@ -431,27 +431,114 @@ async fn test_partition_info() {
     assert_eq!(result.read_status, ServicePartitionAccessStatus::NotPrimary);
 }
 
+pub struct TestCreateUpdateClient {
+    fc: FabricClient,
+    timeout: Duration,
+}
+
+impl TestCreateUpdateClient {
+    fn new(fc: FabricClient) -> Self {
+        Self {
+            fc,
+            timeout: Duration::from_secs(30),
+        }
+    }
+
+    async fn create_service(
+        &self,
+        service_name: &Uri,
+        partition_scheme: &mssf_core::types::PartitionSchemeDescription,
+    ) {
+        // TODO: get service first
+        let desc = ServiceDescription::Stateful(StatefulServiceDescription {
+            application_name: Uri::from("fabric:/StatefulEchoApp"),
+            service_name: service_name.clone(),
+            service_type_name: WString::from("StatefulEchoAppService"),
+            partition_scheme: partition_scheme.clone(),
+            target_replica_set_size: 1,
+            min_replica_set_size: 1,
+            initialization_data: Vec::new(),
+            has_persistent_state: true,
+            ..Default::default()
+        });
+        println!("creating service {:?}", service_name);
+        self.fc
+            .get_service_manager()
+            .create_service(&desc, self.timeout, None)
+            .await
+            .unwrap();
+    }
+
+    async fn delete_service(&self, service_name: &Uri) {
+        println!("deleting service {:?}", service_name);
+        self.fc
+            .get_service_manager()
+            .delete_service(service_name, self.timeout, None)
+            .await
+            .unwrap();
+    }
+
+    async fn resolve_service(
+        &self,
+        service_name: &Uri,
+        key_type: PartitionKeyType,
+    ) -> Vec<ResolvedServiceEndpoint> {
+        let smgr = self.fc.get_service_manager();
+        // resolve until the service is ready
+        let mut count = 0;
+        loop {
+            let res = smgr
+                .resolve_service_partition(&service_name.0, &key_type, None, self.timeout, None)
+                .await;
+            match res {
+                Ok(info) => {
+                    return info.get_endpoint_list().iter().collect::<Vec<_>>();
+                }
+                Err(_) => {
+                    if count > 30 {
+                        panic!("service not ready");
+                    }
+                }
+            }
+            tokio::time::sleep(Duration::from_secs(1)).await;
+            count += 1;
+        }
+    }
+
+    async fn update_service(
+        &self,
+        service_name: &Uri,
+        names_to_add: Vec<WString>,
+        names_to_remove: Vec<WString>,
+    ) {
+        let desc = ServiceUpdateDescription::Stateful(
+            StatefulServiceUpdateDescription::new().with_repartition_description(
+                mssf_core::types::ServiceRepartitionDescription::Named(
+                    NamedRepartitionDescription {
+                        names_to_add,
+                        names_to_remove,
+                    },
+                ),
+            ),
+        );
+        println!("updating service {:?}", service_name);
+        self.fc
+            .get_service_manager()
+            .update_service(service_name, &desc, self.timeout, None)
+            .await
+            .unwrap();
+    }
+}
+
 async fn test_service_create_delete(
     fc: &FabricClient,
     partition_scheme: &mssf_core::types::PartitionSchemeDescription,
     service_name: &Uri,
 ) {
-    let timeout = Duration::from_secs(30);
-    let smgr = fc.get_service_manager();
     // TODO: get service first
-    let desc = ServiceDescription::Stateful(StatefulServiceDescription {
-        application_name: Uri::from("fabric:/StatefulEchoApp"),
-        service_name: service_name.clone(),
-        service_type_name: WString::from("StatefulEchoAppService"),
-        partition_scheme: partition_scheme.clone(),
-        target_replica_set_size: 1,
-        min_replica_set_size: 1,
-        initialization_data: Vec::new(),
-        has_persistent_state: true,
-        ..Default::default()
-    });
-    println!("creating service {:?}", service_name);
-    smgr.create_service(&desc, timeout, None).await.unwrap();
+    let tc = TestCreateUpdateClient::new(fc.clone());
+    // create service
+    tc.create_service(service_name, partition_scheme).await;
 
     let key_type = match partition_scheme {
         mssf_core::types::PartitionSchemeDescription::Singleton => PartitionKeyType::None,
@@ -465,31 +552,11 @@ async fn test_service_create_delete(
     };
 
     // resolve until the service is ready
-    let mut count = 0;
-    loop {
-        let res = smgr
-            .resolve_service_partition(&service_name.0, &key_type, None, timeout, None)
-            .await;
-        match res {
-            Ok(info) => {
-                let addrs = info.get_endpoint_list().iter().collect::<Vec<_>>();
-                println!("Trial {count} resolved service addr for {service_name:?}: {addrs:?}");
-                break;
-            }
-            Err(_) => {
-                if count > 30 {
-                    panic!("service not ready");
-                }
-            }
-        }
-        tokio::time::sleep(Duration::from_secs(1)).await;
-        count += 1;
-    }
+    let addrs = tc.resolve_service(service_name, key_type).await;
+    println!("resolved service {:?}", addrs);
 
-    println!("deleting service {:?}", service_name);
-    smgr.delete_service(&service_name, timeout, None)
-        .await
-        .unwrap();
+    // delete service
+    tc.delete_service(service_name).await;
 }
 
 #[tokio::test]
@@ -518,4 +585,52 @@ async fn test_service_curd_range() {
     );
     let service_name = Uri::from("fabric:/StatefulEchoApp/CurdTestServiceRange");
     test_service_create_delete(&fc, &partition_scheme, &service_name).await;
+}
+
+#[tokio::test]
+async fn test_service_reparition() {
+    let fc = FabricClient::builder().build().unwrap();
+    let tc = TestCreateUpdateClient::new(fc.clone());
+    // Note: SF does not support 0 named partitions.
+    let partition_scheme = mssf_core::types::PartitionSchemeDescription::Named(
+        NamedPartitionSchemeDescription::new(vec![WString::from("1")]),
+    );
+    let service_name = Uri::from("fabric:/StatefulEchoApp/RepartitionTest");
+
+    // create service
+    tc.create_service(&service_name, &partition_scheme).await;
+
+    // resolve until the service is ready
+    {
+        let key_type = PartitionKeyType::String(WString::from("1"));
+        let addrs = tc.resolve_service(&service_name, key_type).await;
+        println!("resolved service {:?}", addrs);
+    }
+
+    // Add a partition 2
+    {
+        println!("adding partition 2: {:?}", service_name);
+        let names_to_add = vec![WString::from("2")];
+        let names_to_remove = vec![];
+        tc.update_service(&service_name, names_to_add, names_to_remove)
+            .await;
+    }
+
+    {
+        let key_type = PartitionKeyType::String(WString::from("2"));
+        let addrs = tc.resolve_service(&service_name, key_type).await;
+        println!("resolved service partition 2 {:?}", addrs);
+    }
+
+    // remove parition 1
+    {
+        println!("removing partition 1: {:?}", service_name);
+        let names_to_add = vec![];
+        let names_to_remove = vec![WString::from("1")];
+        tc.update_service(&service_name, names_to_add, names_to_remove)
+            .await;
+    }
+
+    // delete service
+    tc.delete_service(&service_name).await;
 }

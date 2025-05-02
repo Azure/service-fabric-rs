@@ -8,7 +8,7 @@
     allow(dead_code, reason = "code configured out")
 )]
 
-use std::ffi::c_void;
+use std::{ffi::c_void, marker::PhantomData};
 
 use mssf_com::FabricTypes::{
     FABRIC_NAMED_REPARTITION_DESCRIPTION, FABRIC_SERVICE_DESCRIPTION,
@@ -37,32 +37,97 @@ pub enum ServiceDescription {
     Stateless(StatelessServiceDescription), // FABRIC_STATELESS_SERVICE_DESCRIPTION
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct StatefulServiceDescription {
     // common
-    pub application_name: Uri,
-    pub service_name: Uri,
-    pub service_type_name: WString,
-    pub initialization_data: Vec<u8>,
-    pub partition_scheme: PartitionSchemeDescription,
+    // Note: if application_name is not set, SF com api will succeed but the service does not show up in the SF explorer.
+    // May need to file a bug with SF team.
+    application_name: Uri,
+    service_name: Uri,
+    service_type_name: WString,
+    initialization_data: Option<Vec<u8>>,
+    partition_scheme: PartitionSchemeDescription,
     // stateful
-    pub min_replica_set_size: i32,
-    pub target_replica_set_size: i32,
+    min_replica_set_size: i32,
+    target_replica_set_size: i32,
     // common
-    pub placement_contraints: WString,
-    pub correlations: Vec<WString>, // TODO: FABRIC_SERVICE_CORRELATION_DESCRIPTION
-    pub metrics: Vec<WString>,      // TODO: FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION
-    pub has_persistent_state: bool,
+    placement_contraints: WString,
+    _correlations: Vec<WString>, // TODO: FABRIC_SERVICE_CORRELATION_DESCRIPTION
+    _metrics: Vec<WString>,      // TODO: FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION
+    has_persistent_state: bool,
     // ex1
-    pub policy_list: Vec<WString>, // TODO: FABRIC_SERVICE_PLACEMENT_POLICY_DESCRIPTION
-    pub failover_settings: WString, // TODO: FABRIC_SERVICE_PARTITION_KIND
+    _policy_list: Vec<WString>, // TODO: FABRIC_SERVICE_PLACEMENT_POLICY_DESCRIPTION
+    _failover_settings: WString, // TODO: FABRIC_SERVICE_PARTITION_KIND
     // ex2
-    pub default_move_cost: Option<MoveCost>, // TODO: FABRIC_MOVE_COST
+    default_move_cost: Option<MoveCost>, // TODO: FABRIC_MOVE_COST
     // ex3
-    pub service_package_activation_mode: ServicePackageActivationMode,
-    pub service_dns_name: WString, // TODO: FABRIC_SERVICE_DNS_NAME
+    service_package_activation_mode: ServicePackageActivationMode,
+    _service_dns_name: Option<WString>, // TODO: FABRIC_SERVICE_DNS_NAME
     // ex4
-    pub service_scaling_policys: Vec<WString>, // TODO: FABRIC_SERVICE_SCALING_POLICY
+    _service_scaling_policys: Vec<WString>, // TODO: FABRIC_SERVICE_SCALING_POLICY
+}
+
+impl StatefulServiceDescription {
+    /// Following the csharp validator code:
+    /// The required fields are here, but optional fields can be set by other setters.
+    pub fn new(
+        application_name: Uri,
+        service_name: Uri,
+        service_type_name: WString,
+        partition_scheme: PartitionSchemeDescription,
+    ) -> Self {
+        Self {
+            application_name,
+            service_name,
+            service_type_name,
+            initialization_data: None,
+            partition_scheme,
+            min_replica_set_size: 1,
+            target_replica_set_size: 1,
+            placement_contraints: WString::default(),
+            _correlations: Vec::new(),
+            _metrics: Vec::new(),
+            has_persistent_state: false,
+            _policy_list: Vec::new(),
+            _failover_settings: WString::default(),
+            default_move_cost: None,
+            service_package_activation_mode: ServicePackageActivationMode::default(),
+            _service_dns_name: None,
+            _service_scaling_policys: Vec::new(),
+        }
+    }
+
+    // TODO: add more setters for the fields.
+
+    pub fn with_initialization_data(mut self, initialization_data: Vec<u8>) -> Self {
+        self.initialization_data = Some(initialization_data);
+        self
+    }
+
+    pub fn with_min_replica_set_size(mut self, min_replica_set_size: i32) -> Self {
+        self.min_replica_set_size = min_replica_set_size;
+        self
+    }
+    pub fn with_target_replica_set_size(mut self, target_replica_set_size: i32) -> Self {
+        self.target_replica_set_size = target_replica_set_size;
+        self
+    }
+    pub fn with_has_persistent_state(mut self, has_persistent_state: bool) -> Self {
+        self.has_persistent_state = has_persistent_state;
+        self
+    }
+
+    pub fn with_default_move_cost(mut self, default_move_cost: MoveCost) -> Self {
+        self.default_move_cost = Some(default_move_cost);
+        self
+    }
+    pub fn with_service_activation_mode(
+        mut self,
+        service_package_activation_mode: ServicePackageActivationMode,
+    ) -> Self {
+        self.service_package_activation_mode = service_package_activation_mode;
+        self
+    }
 }
 
 pub(crate) struct StatefulServiceDescriptionRaw<'a> {
@@ -71,7 +136,7 @@ pub(crate) struct StatefulServiceDescriptionRaw<'a> {
     _internal_ex2: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2>,
     _internal_ex3: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3>,
     _internal_ex4: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4>,
-    _owner: &'a StatefulServiceDescription,
+    phantom: PhantomData<&'a StatefulServiceDescription>,
 }
 
 impl StatefulServiceDescriptionRaw<'_> {
@@ -89,7 +154,7 @@ impl StatefulServiceDescription {
             Reserved: std::ptr::null_mut(),
         });
         let ex3 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3 {
-            ServiceDnsName: self.service_dns_name.as_pcwstr(),
+            ServiceDnsName: windows_core::PCWSTR::null(), // TODO: FABRIC_SERVICE_DNS_NAME
             ServicePackageActivationMode: self.service_package_activation_mode.clone().into(),
             Reserved: ex4.as_ref() as *const _ as *mut c_void,
         });
@@ -108,12 +173,18 @@ impl StatefulServiceDescription {
             Reserved: ex2.as_ref() as *const _ as *mut c_void,
         });
 
+        let (init_data, init_data_len) = self
+            .initialization_data
+            .as_ref()
+            .map(|v| (v.as_ptr() as *mut u8, v.len() as u32))
+            .unwrap_or((std::ptr::null_mut(), 0));
+
         let internal = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION {
             ApplicationName: self.application_name.as_raw(),
             ServiceName: self.service_name.as_raw(),
             ServiceTypeName: self.service_type_name.as_pcwstr(),
-            InitializationDataSize: self.initialization_data.len() as u32,
-            InitializationData: self.initialization_data.as_ptr() as *mut u8,
+            InitializationDataSize: init_data_len,
+            InitializationData: init_data,
             PartitionScheme: self.partition_scheme.as_raw().0,
             PartitionSchemeDescription: self.partition_scheme.as_raw().1,
             TargetReplicaSetSize: self.target_replica_set_size,
@@ -133,35 +204,83 @@ impl StatefulServiceDescription {
             _internal_ex2: ex2,
             _internal_ex3: ex3,
             _internal_ex4: ex4,
-            _owner: self,
+            phantom: PhantomData,
         }
     }
 }
 
 pub struct StatelessServiceDescription {
     // common
-    pub application_name: WString,
-    pub service_name: WString,
-    pub service_type_name: WString,
-    pub initialization_data: Vec<u8>,
-    pub partition_scheme_description: PartitionSchemeDescription,
+    application_name: WString,
+    service_name: WString,
+    service_type_name: WString,
+    initialization_data: Option<Vec<u8>>,
+    partition_scheme_description: PartitionSchemeDescription,
     // stateless
-    pub instance_count: i32,
+    instance_count: i32,
     // common
-    pub placement_contraints: WString,
-    pub correlations: Vec<WString>, // TODO: FABRIC_SERVICE_CORRELATION_DESCRIPTION
-    pub metrics: Vec<WString>,      // TODO: FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION
+    placement_contraints: WString,
+    _correlations: Vec<WString>, // TODO: FABRIC_SERVICE_CORRELATION_DESCRIPTION
+    _metrics: Vec<WString>,      // TODO: FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION
     // ex1
-    pub policy_list: Vec<WString>, // TODO: FABRIC_SERVICE_PLACEMENT_POLICY_DESCRIPTION
+    _policy_list: Vec<WString>, // TODO: FABRIC_SERVICE_PLACEMENT_POLICY_DESCRIPTION
     // ex2
-    pub default_move_cost: Option<MoveCost>, // TODO: FABRIC_MOVE_COST
+    default_move_cost: Option<MoveCost>, // TODO: FABRIC_MOVE_COST
     // ex3
-    pub service_package_activation_mode: ServicePackageActivationMode, // TODO: FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE
-    pub service_dns_name: WString, // TODO: FABRIC_SERVICE_DNS_NAME
+    service_package_activation_mode: ServicePackageActivationMode, // TODO: FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE
+    _service_dns_name: WString,                                    // TODO: FABRIC_SERVICE_DNS_NAME
     // ex4
-    pub service_scaling_policys: Vec<WString>, // TODO: FABRIC_SERVICE_SCALING_POLICY
+    _service_scaling_policys: Vec<WString>, // TODO: FABRIC_SERVICE_SCALING_POLICY
 }
+impl StatelessServiceDescription {
+    pub fn new(
+        application_name: WString,
+        service_name: WString,
+        service_type_name: WString,
+        partition_scheme_description: PartitionSchemeDescription,
+    ) -> Self {
+        Self {
+            application_name,
+            service_name,
+            service_type_name,
+            initialization_data: None,
+            partition_scheme_description,
+            instance_count: 1,
+            placement_contraints: WString::default(),
+            _correlations: Vec::new(),
+            _metrics: Vec::new(),
+            _policy_list: Vec::new(),
+            default_move_cost: None,
+            service_package_activation_mode: ServicePackageActivationMode::default(),
+            _service_dns_name: WString::default(),
+            _service_scaling_policys: Vec::new(),
+        }
+    }
 
+    pub fn with_initialization_data(mut self, initialization_data: Vec<u8>) -> Self {
+        self.initialization_data = Some(initialization_data);
+        self
+    }
+    pub fn with_instance_count(mut self, instance_count: i32) -> Self {
+        self.instance_count = instance_count;
+        self
+    }
+    pub fn with_placement_constraints(mut self, placement_contraints: WString) -> Self {
+        self.placement_contraints = placement_contraints;
+        self
+    }
+    pub fn with_default_move_cost(mut self, default_move_cost: MoveCost) -> Self {
+        self.default_move_cost = Some(default_move_cost);
+        self
+    }
+    pub fn with_service_activation_mode(
+        mut self,
+        service_package_activation_mode: ServicePackageActivationMode,
+    ) -> Self {
+        self.service_package_activation_mode = service_package_activation_mode;
+        self
+    }
+}
 pub(crate) struct StatelessServiceDescriptionRaw<'a> {
     internal: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION>,
     _internal_ex1: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION_EX1>,
@@ -169,7 +288,7 @@ pub(crate) struct StatelessServiceDescriptionRaw<'a> {
     _internal_ex3: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3>,
     _internal_ex4: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4>,
     // String buffers memory owner
-    _owner: &'a StatelessServiceDescription,
+    phantom: PhantomData<&'a StatelessServiceDescription>,
 }
 impl StatelessServiceDescriptionRaw<'_> {
     pub fn as_ffi(&self) -> &FABRIC_STATELESS_SERVICE_DESCRIPTION {
@@ -185,7 +304,7 @@ impl StatelessServiceDescription {
             Reserved: std::ptr::null_mut(),
         });
         let ex3 = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3 {
-            ServiceDnsName: self.service_dns_name.as_pcwstr(),
+            ServiceDnsName: windows_core::PCWSTR::null(), // TODO: FABRIC_SERVICE_DNS_NAME
             ServicePackageActivationMode: self.service_package_activation_mode.clone().into(),
             Reserved: ex4.as_ref() as *const _ as *mut c_void,
         });
@@ -202,12 +321,19 @@ impl StatelessServiceDescription {
             PolicyList: std::ptr::null_mut(), // TODO:
             Reserved: ex2.as_ref() as *const _ as *mut c_void,
         });
+
+        let (init_data, init_data_len) = self
+            .initialization_data
+            .as_ref()
+            .map(|v| (v.as_ptr() as *mut u8, v.len() as u32))
+            .unwrap_or((std::ptr::null_mut(), 0));
+
         let internal = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION {
             ApplicationName: FABRIC_URI(self.application_name.as_ptr() as *mut u16),
             ServiceName: FABRIC_URI(self.service_name.as_ptr() as *mut u16),
             ServiceTypeName: self.service_type_name.as_pcwstr(),
-            InitializationDataSize: self.initialization_data.len() as u32,
-            InitializationData: self.initialization_data.as_ptr() as *mut u8,
+            InitializationDataSize: init_data_len,
+            InitializationData: init_data,
             PartitionScheme: self.partition_scheme_description.as_raw().0,
             PartitionSchemeDescription: self.partition_scheme_description.as_raw().1,
             InstanceCount: self.instance_count,
@@ -224,7 +350,7 @@ impl StatelessServiceDescription {
             _internal_ex2: ex2,
             _internal_ex3: ex3,
             _internal_ex4: ex4,
-            _owner: self,
+            phantom: PhantomData,
         }
     }
 }
@@ -287,7 +413,7 @@ pub(crate) struct NamedRepartitionDescriptionRaw<'a> {
     _names_to_remove: Vec<PCWSTR>,
     internal: Box<FABRIC_NAMED_REPARTITION_DESCRIPTION>,
     // owner of string buffers
-    _owner: &'a NamedRepartitionDescription,
+    phantom: PhantomData<&'a NamedRepartitionDescription>,
 }
 
 impl NamedRepartitionDescription {
@@ -313,7 +439,7 @@ impl NamedRepartitionDescription {
             _names_to_add: names_to_add,
             _names_to_remove: names_to_remove,
             internal,
-            _owner: self,
+            phantom: PhantomData,
         }
     }
 }

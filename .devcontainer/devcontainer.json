@@ -2,20 +2,25 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/cpp
 {
 	"name": "C++",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
+	// "build": {
+	// 	"dockerfile": "Dockerfile"
+	// },
+	// "runArgs": ["--privileged"],
+	"dockerComposeFile": [
+		"docker-compose.yml"
+	],
+	"workspaceFolder": "/workspaces/repo",
+	"service": "repo",
+	// "forwardPorts": [19080], // Share onebox port with host
 
 	// "image" : "fabric-metadata:v1",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "gcc -v",
+	// Run onebox in background.
+	// "postStartCommand": "cd /opt/microsoft/servicefabric/ClusterDeployer && (setsid ./ClusterDeployer.sh > ./sf.log 2>&1 &)",
 
 	// Configure tool-specific properties.
 	// "customizations": {},
@@ -23,7 +28,7 @@
 	"customizations": {
     "vscode": {
       "extensions": [
-				"ms-vscode.cpptools-extension-pack",
+				"ms-vscode.cmake-tools",
 				"rust-lang.rust-analyzer"]
     }
   }

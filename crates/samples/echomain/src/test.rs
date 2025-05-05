@@ -125,6 +125,7 @@ async fn test_fabric_client() {
     // channel for client connection notification
     let (cc_tx, mut cc_rx) = tokio::sync::mpsc::channel::<GatewayInformationResult>(1);
     let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
         .with_on_service_notification(move |notification| {
             sn_tx
                 .blocking_send(notification.clone())

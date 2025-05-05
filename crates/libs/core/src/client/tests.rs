@@ -7,19 +7,22 @@
 
 use std::time::Duration;
 
-use crate::WString;
+use crate::{client::FabricClient, WString};
 use mssf_com::FabricTypes::FABRIC_E_SERVICE_DOES_NOT_EXIST;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-    client::{svc_mgmt_client::PartitionKeyType, FabricClient},
+    client::svc_mgmt_client::PartitionKeyType,
     error::ErrorCode,
     types::{NodeQueryDescription, NodeStatusFilter, PagedQueryDescription},
 };
 
 #[tokio::test]
 async fn test_fabric_client() {
-    let c = FabricClient::builder().build().unwrap();
+    let c = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
     let qc = c.get_query_manager();
     let timeout = Duration::from_secs(1);
     let paging_status;

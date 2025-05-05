@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/mirror/docker/library/ubuntu:20.04 as base
+FROM mcr.microsoft.com/mirror/docker/library/ubuntu:20.04
 
 RUN apt-get update && apt-get upgrade
 
@@ -34,26 +34,9 @@ ENV PATH="${PATH}:~/.local/bin"
 # expose sf shared libs
 ENV LD_LIBRARY_PATH "$LD_LIBRARY_PATH:/opt/microsoft/servicefabric/bin/Fabric/Fabric.Code:"
 
-FROM base AS onebox
-
 COPY ./onebox/ClusterDeployer.sh /opt/microsoft/servicefabric/ClusterDeployer/ClusterDeployer.sh
 COPY ./onebox/ClusterManifest.SingleMachineFSS.xml /opt/microsoft/servicefabric/ClusterDeployer/ClusterManifest.SingleMachineFSS.xml
 RUN chmod +x /opt/microsoft/servicefabric/ClusterDeployer/ClusterDeployer.sh
 
 WORKDIR /opt/microsoft/servicefabric/ClusterDeployer
 ENTRYPOINT ["/opt/microsoft/servicefabric/ClusterDeployer/ClusterDeployer.sh"]
-
-FROM base as repo
-# install rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > ./rustup.sh
-RUN chmod u+x ./rustup.sh && ./rustup.sh -y
-
-# more tools for dev
-RUN apt-get install git socat -y
-RUN pip install cmake --upgrade
-
-# Forward onebox ports to host
-COPY ./port_forward.sh /usr/local/bin/port_forward.sh
-RUN chmod +x /usr/local/bin/port_forward.sh
-ENTRYPOINT ["/usr/local/bin/port_forward.sh"]
-WORKDIR /workspace/repo

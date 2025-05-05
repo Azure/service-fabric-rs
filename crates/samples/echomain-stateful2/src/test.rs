@@ -271,7 +271,10 @@ impl TestClient {
 // Uses fabric client to perform various actions for this service.
 #[tokio::test]
 async fn test_partition_info() {
-    let fc = FabricClient::builder().build().unwrap();
+    let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
     let tc = TestClient::new(fc.clone());
     let timeout = Duration::from_secs(1);
 
@@ -561,7 +564,10 @@ async fn test_service_create_delete(
 
 #[tokio::test]
 async fn test_service_curd_singleton() {
-    let fc = FabricClient::builder().build().unwrap();
+    let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
     let partition_scheme = mssf_core::types::PartitionSchemeDescription::Singleton;
     let service_name = Uri::from("fabric:/StatefulEchoApp/CurdTestServiceSingleton");
     test_service_create_delete(&fc, &partition_scheme, &service_name).await;
@@ -569,7 +575,10 @@ async fn test_service_curd_singleton() {
 
 #[tokio::test]
 async fn test_service_curd_named() {
-    let fc = FabricClient::builder().build().unwrap();
+    let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
     let partition_scheme = mssf_core::types::PartitionSchemeDescription::Named(
         NamedPartitionSchemeDescription::new(vec![WString::from("test")]),
     );
@@ -579,7 +588,10 @@ async fn test_service_curd_named() {
 
 #[tokio::test]
 async fn test_service_curd_range() {
-    let fc = FabricClient::builder().build().unwrap();
+    let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
     let partition_scheme = mssf_core::types::PartitionSchemeDescription::Int64Range(
         mssf_core::types::UniformIn64PartitionSchemeDescription::new(1, 10, 100),
     );
@@ -589,7 +601,10 @@ async fn test_service_curd_range() {
 
 #[tokio::test]
 async fn test_service_reparition() {
-    let fc = FabricClient::builder().build().unwrap();
+    let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
     let tc = TestCreateUpdateClient::new(fc.clone());
     // Note: SF does not support 0 named partitions.
     let partition_scheme = mssf_core::types::PartitionSchemeDescription::Named(

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  onebox:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: onebox
+    privileged: true
+    ports:
+      - "19080:19080"
+      - "19000:19000"
+  repo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: repo
+    volumes:
+      - ../:/workspaces/repo
+    depends_on:
+      - onebox
+    
+  

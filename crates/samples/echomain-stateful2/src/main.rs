@@ -14,7 +14,7 @@ use tracing::info;
 mod echo;
 mod statefulstore;
 // Disable test for Linux ci for now due to SF app problem
-#[cfg(target_os = "windows")]
+//#[cfg(target_os = "windows")]
 #[cfg(test)]
 mod test;
 

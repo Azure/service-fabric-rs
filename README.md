@@ -16,8 +16,15 @@ This lib is in alpha state, and apis are subjected to change.
 * Install Service Fabric Runtime for Windows. See [Prepare your development environment on Windows](https://learn.microsoft.com/en-us/azure/service-fabric/service-fabric-get-started)
 * Install [Visual Studio](https://visualstudio.microsoft.com/) with "Desktop development with C++" to include MSVC toolchain
 
+## Getting Started - Ubuntu Dev Container
+* Clone the repo on linux host machine.
+* Follow [quick-start-open-an-existing-folder-in-a-container](https://code.visualstudio.com/docs/devcontainers/containers#_quick-start-open-an-existing-folder-in-a-container)
+to open the project in devcontainer. The devcontainer setting is [devcontainer.json](./.devcontainer/devcontainer.json).
+
+DevContainer brings up 2 containers: `onebox` container has a SF onebox running, and `repo` container has the repo code, and inside repo container, the SF onebox container ports are forwarded to localhost, so u can use sfctl in repo container as if onebox runs inside the same container.
+
 ## Getting Started - Ubuntu
-<em>Note: Service Fabric currently only supports Ubuntu 18.04 LTS and Ubuntu 20.04 LTS.</em>
+<em>Note: Service Fabric currently only supports Ubuntu 20.04 LTS.</em>
 
 * Install Service Fabric Runtime for Linux (Ubuntu). See [Prepare your development environment on Linux](https://learn.microsoft.com/en-us/azure/service-fabric/service-fabric-get-started-linux?tabs=sdksetupubuntu%2Clocalclusteroneboxcontainer)
 * Following the documentation, proceed to **Manual installation** and skip **Step 6. Add Azul JDK Key**..

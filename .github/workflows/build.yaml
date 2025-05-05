@@ -216,6 +216,7 @@ jobs:
         uses: devcontainers/ci@v0.3
         with:
           runCmd: |
+            cmake . -DCMAKE_BUILD_TYPE=Debug -B build
             cmake --build build --config Debug
 
             set +e # do not exit on error
@@ -238,6 +239,6 @@ jobs:
             sfctl application upload --path build/echoapp_root
             sfctl application provision --application-type-build-path echoapp_root
             sfctl application create --app-name fabric:/EchoApp --app-type EchoApp --app-version 0.0.1
-            
+
             sleep 10 # wait for cluster to be up
             sfctl service resolve --service-id EchoApp/EchoAppService

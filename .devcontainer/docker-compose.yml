@@ -16,7 +16,8 @@ services:
       dockerfile: Dockerfile
       target: repo
     volumes:
-      - ../:/workspaces/repo
+      - ../:/workspaces/repo # repo dir
+      - ~/.ssh:/root/.ssh:ro # git creds
     depends_on:
       - onebox
     

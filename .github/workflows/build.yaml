@@ -204,3 +204,40 @@ jobs:
           cmake . -DCMAKE_BUILD_TYPE=Debug -B build
       - name: run build
         run: cmake --build build --config Debug
+
+  build-devcontainer:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run in Dev Container
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: |
+            cmake --build build --config Debug
+
+            set +e # do not exit on error
+            counter=0
+            COMMAND_STATUS=1
+            until [ $COMMAND_STATUS -eq 0 ]; do
+              echo "attempt #${counter}"
+              sfctl cluster select
+              COMMAND_STATUS=$?
+              sleep 1
+              let counter=counter+1
+              if [[ $counter -eq 10 ]] ;
+              then
+                echo "Retry max reached" && exit 1
+              fi
+            done
+            sfctl cluster health
+            
+            sleep 30 # wait for cluster to be up
+            sfctl application upload --path build/echoapp_root
+            sfctl application provision --application-type-build-path echoapp_root
+            sfctl application create --app-name fabric:/EchoApp --app-type EchoApp --app-version 0.0.1
+            
+            sleep 10 # wait for cluster to be up
+            sfctl service resolve --service-id EchoApp/EchoAppService

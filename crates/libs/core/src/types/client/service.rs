@@ -287,7 +287,6 @@ pub(crate) struct StatelessServiceDescriptionRaw<'a> {
     _internal_ex2: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2>,
     _internal_ex3: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3>,
     _internal_ex4: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4>,
-    // String buffers memory owner
     phantom: PhantomData<&'a StatelessServiceDescription>,
 }
 impl StatelessServiceDescriptionRaw<'_> {
@@ -412,7 +411,6 @@ pub(crate) struct NamedRepartitionDescriptionRaw<'a> {
     _names_to_add: Vec<PCWSTR>,
     _names_to_remove: Vec<PCWSTR>,
     internal: Box<FABRIC_NAMED_REPARTITION_DESCRIPTION>,
-    // owner of string buffers
     phantom: PhantomData<&'a NamedRepartitionDescription>,
 }
 

@@ -127,45 +127,6 @@ jobs:
     - name: test sfctl
       run: sfctl --version
 
-    # Cannot start this up due to running in container.
-    # TODO: fix running SF in container and enable tests
-    # - name: start sf
-    #   run: sudo /opt/microsoft/sdk/servicefabric/common/clustersetup/devclustersetup.sh
-
-    # - name: test cluster health
-    #   run: |
-    #     set +e # do not exit on error
-    #     counter=0
-    #     COMMAND_STATUS=1
-    #     until [ $COMMAND_STATUS -eq 0 ]; do
-    #       echo "attempt #${counter}"
-    #       sfctl cluster select
-    #       COMMAND_STATUS=$?
-    #       sleep 1
-    #       let counter=counter+1
-    #       if [[ $counter -eq 10 ]] ;
-    #       then
-    #         echo "Retry max reached" && exit 1
-    #       fi
-    #     done
-    #     sfctl cluster health
-
-    # - name: run echo app
-    #   run: |
-    #     sleep 120 # wait for cluster to be up
-    #     sfctl application upload --path build/echoapp_root
-    #     sfctl application provision --application-type-build-path echoapp_root
-    #     sfctl application create --app-name fabric:/EchoApp --app-type EchoApp --app-version 0.0.1
-
-    # # TODO: this fails in CI    
-    # # - name: resolve service
-    # #   run: |
-    # #     sleep 120 # wait for app to be up
-    # #     sfctl service resolve --service-id EchoApp/EchoAppService
-
-    # - name: Run cargo test
-    #   run: cargo test --all -- --nocapture
-
   # Do not run test because SF onebox is not supported on azl3 yet.
   build-azl3:
     runs-on: ubuntu-latest
@@ -204,3 +165,50 @@ jobs:
           cmake . -DCMAKE_BUILD_TYPE=Debug -B build
       - name: run build
         run: cmake --build build --config Debug
+
+  build-devcontainer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run in Dev Container
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: |
+            cmake . -DCMAKE_BUILD_TYPE=Debug -B build
+            cmake --build build --config Debug
+
+            set +e # do not exit on error
+            counter=0
+            COMMAND_STATUS=1
+            until [ $COMMAND_STATUS -eq 0 ]; do
+              echo "attempt #${counter}"
+              sfctl cluster select
+              COMMAND_STATUS=$?
+              sleep 1
+              let counter=counter+1
+              if [[ $counter -eq 10 ]] ;
+              then
+                echo "Retry max reached" && exit 1
+              fi
+            done
+            sfctl cluster health
+            
+            sleep 10 # wait for cluster to be up
+            echo "Uploading applications"
+            sfctl application upload --path build/echoapp_root
+            sfctl application provision --application-type-build-path echoapp_root
+            sfctl application create --app-name fabric:/EchoApp --app-type EchoApp --app-version 0.0.1
+
+            sfctl application upload --path build/echoapp_root_stateful2
+            sfctl application provision --application-type-build-path echoapp_root_stateful2
+            sfctl application create --app-name fabric:/StatefulEchoApp --app-type StatefulEchoApp --app-version 0.0.1
+
+            sleep 10 # wait for services to be up
+            echo "Resolving services"
+            sfctl service resolve --service-id EchoApp/EchoAppService
+            sfctl service resolve --service-id StatefulEchoApp/StatefulEchoAppService
+
+            echo "Running tests"
+            cargo test --all -- --nocapture

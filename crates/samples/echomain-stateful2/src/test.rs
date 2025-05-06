@@ -453,17 +453,18 @@ impl TestCreateUpdateClient {
         partition_scheme: &mssf_core::types::PartitionSchemeDescription,
     ) {
         // TODO: get service first
-        let desc = ServiceDescription::Stateful(StatefulServiceDescription {
-            application_name: Uri::from("fabric:/StatefulEchoApp"),
-            service_name: service_name.clone(),
-            service_type_name: WString::from("StatefulEchoAppService"),
-            partition_scheme: partition_scheme.clone(),
-            target_replica_set_size: 1,
-            min_replica_set_size: 1,
-            initialization_data: Vec::new(),
-            has_persistent_state: true,
-            ..Default::default()
-        });
+        let desc = ServiceDescription::Stateful(
+            StatefulServiceDescription::new(
+                Uri::from("fabric:/StatefulEchoApp"),
+                service_name.clone(),
+                WString::from("StatefulEchoAppService"),
+                partition_scheme.clone(),
+            )
+            .with_has_persistent_state(true)
+            .with_service_activation_mode(
+                mssf_core::types::ServicePackageActivationMode::SharedProcess,
+            ),
+        );
         println!("creating service {:?}", service_name);
         self.fc
             .get_service_manager()
@@ -497,9 +498,9 @@ impl TestCreateUpdateClient {
                 Ok(info) => {
                     return info.get_endpoint_list().iter().collect::<Vec<_>>();
                 }
-                Err(_) => {
+                Err(e) => {
                     if count > 30 {
-                        panic!("service not ready");
+                        panic!("service not ready, {e}");
                     }
                 }
             }

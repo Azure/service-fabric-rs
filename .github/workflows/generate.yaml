@@ -41,5 +41,7 @@ jobs:
     - name: Install rust nightly
       uses: dtolnay/rust-toolchain@nightly
 
+    # TODO: move back to stable once package-workspace is stabilized
+    # https://doc.rust-lang.org/cargo/reference/unstable.html#package-workspace
     - name: check crate packaging
-      run: cargo package -p mssf-pal -p mssf-com -p mssf-core --allow-dirty 
+      run: cargo +nightly -Z package-workspace package -p mssf-pal -p mssf-com -p mssf-core --allow-dirty 

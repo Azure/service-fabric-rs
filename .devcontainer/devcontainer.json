@@ -9,9 +9,11 @@
 	"service": "repo",
 	"customizations": {
     "vscode": {
-      "extensions": [
-				"ms-vscode.cmake-tools",
-				"rust-lang.rust-analyzer"]
+      	"extensions": [
+			"ms-vscode.cmake-tools",
+			"rust-lang.rust-analyzer",
+			"tamasfe.even-better-toml"
+		]
     }
   }
 }

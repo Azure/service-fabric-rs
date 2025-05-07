@@ -184,6 +184,24 @@ impl From<&String> for WString {
     }
 }
 
+impl From<&PCWSTR> for WString {
+    /// Requires value points to valid memory location
+    /// Null is ok.
+    fn from(value: &PCWSTR) -> Self {
+        if value.is_null() {
+            Self::new()
+        } else {
+            Self::from_wide(unsafe { value.as_wide() })
+        }
+    }
+}
+
+impl From<PCWSTR> for WString {
+    fn from(value: PCWSTR) -> Self {
+        Self::from(&value)
+    }
+}
+
 impl core::fmt::Display for WString {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         // convert u16 to char gracefully and write to formatter.
@@ -220,7 +238,7 @@ mod tests {
             assert_eq!(s, h.to_string_lossy());
             assert_eq!(h.as_wide().len(), s.len());
             let raw = h.as_ptr();
-            let h2 = WString::from_wide(unsafe { PCWSTR(raw).as_wide() });
+            let h2 = WString::from(PCWSTR(raw));
             assert_eq!(s, h2.to_string_lossy());
             assert_eq!(h, h2);
             assert_ne!(h, WString::from("dummy"));

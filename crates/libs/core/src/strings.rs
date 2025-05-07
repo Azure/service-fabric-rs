@@ -3,8 +3,15 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{WString, PCWSTR};
-use mssf_com::FabricCommon::{IFabricStringResult, IFabricStringResult_Impl};
+use std::marker::PhantomData;
+
+use crate::{
+    iter::{FabricIter, FabricListAccessor},
+    WString, PCWSTR,
+};
+use mssf_com::FabricCommon::{
+    IFabricStringListResult, IFabricStringResult, IFabricStringResult_Impl,
+};
 use windows_core::implement;
 
 // Basic implementation of fabric string result
@@ -30,15 +37,14 @@ impl IFabricStringResult_Impl for StringResult_Impl {
     }
 }
 
+// TODO: deprecate
 // If nullptr returns empty string.
 // requires the PCWSTR points to a valid buffer with null terminatior
 fn safe_pwstr_to_wstring(raw: PCWSTR) -> WString {
-    if raw.is_null() {
-        return WString::new();
-    }
-    WString::from_wide(unsafe { raw.as_wide() })
+    WString::from(&raw)
 }
 
+// TODO: deprecate
 // Convert helper for WString and PCWSTR and IFabricStringResult
 pub struct WStringWrap {
     h: WString,
@@ -90,6 +96,57 @@ pub fn get_pcwstr_from_opt(opt: &Option<WString>) -> PCWSTR {
         None => PCWSTR::null(),
     }
 }
+
+// IFabricStringListResult
+
+pub struct WStringList {
+    data: Vec<WString>,
+}
+
+impl WStringList {
+    pub fn into_vec(self) -> Vec<WString> {
+        self.data
+    }
+}
+
+impl From<&IFabricStringListResult> for WStringList {
+    fn from(value: &IFabricStringListResult) -> Self {
+        // cpp code should not error if the parameters are not null.
+        let mut itemcount = 0_u32;
+        let first_str = unsafe {
+            value
+                .GetStrings(std::ptr::addr_of_mut!(itemcount))
+                .expect("cannot get strings")
+        };
+        let l = FabricStringListAccessor {
+            itemcount,
+            first_str,
+            phantom: PhantomData,
+        };
+        let itr = FabricStringListAccessorIter::new(&l, &l);
+        let data = itr.collect::<Vec<_>>();
+        Self { data }
+    }
+}
+
+struct FabricStringListAccessor<'a> {
+    itemcount: u32,
+    first_str: *mut PCWSTR,
+    phantom: PhantomData<&'a IFabricStringListResult>,
+}
+
+impl FabricListAccessor<PCWSTR> for FabricStringListAccessor<'_> {
+    fn get_count(&self) -> u32 {
+        self.itemcount
+    }
+
+    fn get_first_item(&self) -> *const PCWSTR {
+        self.first_str
+    }
+}
+
+type FabricStringListAccessorIter<'a> =
+    FabricIter<'a, PCWSTR, WString, FabricStringListAccessor<'a>>;
 
 #[cfg(test)]
 mod test {

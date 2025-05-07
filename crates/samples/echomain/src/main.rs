@@ -59,6 +59,14 @@ fn main() -> mssf_core::Result<()> {
     let code_info = actctx.get_code_package_info();
     info!("code package info: {:?}", code_info);
 
+    // inspect and check the code package
+    let names = actctx.get_code_package_names();
+    assert_eq!(names.len(), 1);
+    for name in names {
+        info!("code package {name}: {:?}", actctx.get_code_package(&name));
+        assert_eq!(name.to_string_lossy(), "Code");
+    }
+
     // get listening port
     let endpoint = actctx
         .get_endpoint_resource(&WString::from("ServiceEndpoint1"))

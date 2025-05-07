@@ -5,7 +5,8 @@
 
 use mssf_com::{
     FabricRuntime::{
-        IFabricCodePackageActivationContext6, IFabricConfigurationPackageChangeHandler,
+        IFabricCodePackage, IFabricCodePackageActivationContext6,
+        IFabricConfigurationPackageChangeHandler,
     },
     FabricTypes::{FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT_SEND_OPTIONS},
 };
@@ -112,6 +113,21 @@ impl CodePackageActivationContext {
         }
     }
 
+    pub fn get_code_package_names(&self) -> Vec<WString> {
+        // cpp code never returns failure.
+        let com = unsafe {
+            self.com_impl
+                .GetCodePackageNames()
+                .expect("cannot get code package names")
+        };
+        crate::strings::WStringList::from(&com).into_vec()
+    }
+
+    pub fn get_code_package(&self, name: &WString) -> crate::Result<CodePackage> {
+        let com = unsafe { self.com_impl.GetCodePackage(name.as_pcwstr())? };
+        Ok(CodePackage::from(&com))
+    }
+
     /// The health information describes the report details, like the source ID, the property,
     /// the health state and other relevant details. The code package activation context uses an
     /// internal health client to send the reports to the health store. The client optimizes messages to
@@ -183,5 +199,38 @@ impl CodePackageActivationContext {
 impl From<IFabricCodePackageActivationContext6> for CodePackageActivationContext {
     fn from(value: IFabricCodePackageActivationContext6) -> Self {
         CodePackageActivationContext { com_impl: value }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct CodePackage {
+    // description section
+    pub name: WString,
+    pub version: WString,
+    pub service_manifest_name: WString,
+    pub service_manifest_version: WString,
+    pub is_shared: bool,
+    pub setup_entrypoint: Option<WString>, // TODO
+    pub entrypoint: Option<WString>,       // TODO
+
+    // standalone section
+    pub path: WString,
+    // TODO: ex2 fields
+}
+
+impl From<&IFabricCodePackage> for CodePackage {
+    fn from(value: &IFabricCodePackage) -> Self {
+        let desc = unsafe { value.get_Description().as_ref().unwrap() };
+        let path = unsafe { value.get_Path() };
+        Self {
+            name: desc.Name.into(),
+            version: desc.Version.into(),
+            service_manifest_name: desc.ServiceManifestName.into(),
+            service_manifest_version: desc.ServiceManifestVersion.into(),
+            is_shared: desc.IsShared,
+            setup_entrypoint: None,
+            entrypoint: None,
+            path: WString::from(path),
+        }
     }
 }

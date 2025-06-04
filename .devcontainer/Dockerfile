@@ -1,9 +1,9 @@
 FROM mcr.microsoft.com/mirror/docker/library/ubuntu:20.04 as base
 
-RUN apt-get update && apt-get upgrade
+RUN apt-get update -y && apt-get upgrade -y
 
 # install tools for sf
-RUN apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils -y
+RUN apt-get install -y apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils
 
 # install sf
 RUN wget -q https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb \
@@ -14,10 +14,10 @@ RUN echo "servicefabric servicefabric/accepted-eula-ga select true" | debconf-se
   && echo "servicefabricsdkcommon servicefabricsdkcommon/accepted-eula-ga select true" | debconf-set-selections
 
 RUN wget https://download.microsoft.com/download/3/1/F/31F3FEEB-F073-4E27-A98B-8E691FF74F40/ServiceFabric.U20.10.1.2319.1.deb
-RUN apt-get install ./ServiceFabric.U20.10.1.2319.1.deb -y
+RUN apt-get install -y ./ServiceFabric.U20.10.1.2319.1.deb 
 RUN rm ServiceFabric.U20.10.1.2319.1.deb
 
-RUN apt install  -y net-tools locales \
+RUN apt install -y net-tools locales \
  && locale-gen en_US.UTF-8 \
  && update-locale LANG=en_US.UTF-8
 

@@ -341,12 +341,11 @@ impl ServiceManagementClient {
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<()> {
-        let desc_raw = desc.build_raw();
-        self.create_service_internal(
-            &desc_raw.as_ffi(),
-            timeout.as_millis() as u32,
-            cancellation_token,
-        )
+        {
+            let desc_raw = desc.build_raw();
+            let ffi_raw = desc_raw.as_ffi();
+            self.create_service_internal(&ffi_raw, timeout.as_millis() as u32, cancellation_token)
+        }
         .await?
         .map_err(crate::Error::from)
     }
@@ -358,13 +357,16 @@ impl ServiceManagementClient {
         timeout: Duration,
         cancellation_token: Option<CancellationToken>,
     ) -> crate::Result<()> {
-        let desc_raw = desc.build_raw();
-        self.update_service_internal(
-            name.as_raw(),
-            &desc_raw.as_ffi(),
-            timeout.as_millis() as u32,
-            cancellation_token,
-        )
+        {
+            let desc_raw = desc.build_raw();
+            let ffi_raw = desc_raw.as_ffi();
+            self.update_service_internal(
+                name.as_raw(),
+                &ffi_raw,
+                timeout.as_millis() as u32,
+                cancellation_token,
+            )
+        }
         .await?
         .map_err(crate::Error::from)
     }

@@ -183,6 +183,10 @@ pub struct UniformIn64PartitionSchemeDescription {
     internal: Box<FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION>,
 }
 
+/// SAFETY: This is thread safe because we do not use the raw pointer.
+unsafe impl Send for UniformIn64PartitionSchemeDescription {}
+unsafe impl Sync for UniformIn64PartitionSchemeDescription {}
+
 impl UniformIn64PartitionSchemeDescription {
     pub fn new(partition_count: i32, low_key: i64, high_key: i64) -> Self {
         UniformIn64PartitionSchemeDescription {
@@ -217,6 +221,10 @@ pub struct NamedPartitionSchemeDescription {
     _raw_names: Vec<PCWSTR>,
     internal: Box<FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION>,
 }
+
+/// SAFETY: This is thread safe because the raw pointers points to heap allocated memory.
+unsafe impl Send for NamedPartitionSchemeDescription {}
+unsafe impl Sync for NamedPartitionSchemeDescription {}
 
 impl NamedPartitionSchemeDescription {
     /// Must have lifetime as self. Can be moved.

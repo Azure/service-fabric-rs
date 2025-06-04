@@ -465,21 +465,25 @@ impl TestCreateUpdateClient {
                 mssf_core::types::ServicePackageActivationMode::SharedProcess,
             ),
         );
+        // Run client operation on separate task to ensure that the api is task safe.
         println!("creating service {:?}", service_name);
-        self.fc
-            .get_service_manager()
-            .create_service(&desc, self.timeout, None)
+        let sm = self.fc.get_service_manager().clone();
+        let timeout = self.timeout;
+        tokio::spawn(async move { sm.create_service(&desc, timeout, None).await })
             .await
-            .unwrap();
+            .expect("task panicked")
+            .expect("create failed");
     }
 
     async fn delete_service(&self, service_name: &Uri) {
         println!("deleting service {:?}", service_name);
-        self.fc
-            .get_service_manager()
-            .delete_service(service_name, self.timeout, None)
+        let sm = self.fc.get_service_manager().clone();
+        let timeout = self.timeout;
+        let service_name = service_name.clone();
+        tokio::spawn(async move { sm.delete_service(&service_name, timeout, None).await })
             .await
-            .unwrap();
+            .expect("task panicked")
+            .expect("delete failed");
     }
 
     async fn resolve_service(
@@ -526,11 +530,13 @@ impl TestCreateUpdateClient {
             ),
         );
         println!("updating service {:?}", service_name);
-        self.fc
-            .get_service_manager()
-            .update_service(service_name, &desc, self.timeout, None)
+        let sm = self.fc.get_service_manager().clone();
+        let timeout = self.timeout;
+        let service_name = service_name.clone();
+        tokio::spawn(async move { sm.update_service(&service_name, &desc, timeout, None).await })
             .await
-            .unwrap();
+            .expect("task panicked")
+            .expect("delete failed");
     }
 }
 

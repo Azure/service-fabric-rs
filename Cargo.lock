@@ -229,14 +229,14 @@ dependencies = [
 
 [[package]]
 name = "mssf-com"
-version = "0.0.23"
+version = "0.1.0"
 dependencies = [
  "mssf-pal",
 ]
 
 [[package]]
 name = "mssf-core"
-version = "0.0.23"
+version = "0.1.0"
 dependencies = [
  "bitflags",
  "config",
@@ -253,7 +253,7 @@ dependencies = [
 
 [[package]]
 name = "mssf-pal"
-version = "0.0.23"
+version = "0.1.0"
 dependencies = [
  "windows-core",
 ]

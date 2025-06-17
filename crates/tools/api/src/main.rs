@@ -84,6 +84,7 @@ fn main() {
                 .chain(filter_common)
                 .chain(filter_runtime)
                 .chain(filter_client),
-        );
+        )
+        .unwrap();
     }
 }

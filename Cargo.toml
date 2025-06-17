@@ -23,5 +23,6 @@ trait-variant = "0.1"
 serde = "*"
 serde_derive = "*"
 # crates in this repo
-mssf-com = { path = "./crates/libs/com" }
+mssf-com = { path = "./crates/libs/com", default-features = false }
 mssf-core = { path = "./crates/libs/core", default-features = true }
+mssf-pal = { path = "./crates/libs/pal", default-features = true }

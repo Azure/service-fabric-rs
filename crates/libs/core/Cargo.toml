@@ -48,14 +48,14 @@ features = [
 
 # treat pal as the windows core.
 # see mssf-pal documentation why it is used this way.
+# Cannot use workspace dep because the package rename/aliasing.
 [dependencies.windows-core]
 package = "mssf-pal"
 path = "../pal"
 version = "0.1.0"
 
 [dependencies.mssf-com]
-path = "../com"
-version = "0.1.0"
+workspace = true
 default-features = false
 features = [
     "ServiceFabric_FabricClient",

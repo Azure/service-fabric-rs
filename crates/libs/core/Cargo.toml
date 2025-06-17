@@ -21,13 +21,13 @@ tracing = ["dep:tracing"]
 
 [dependencies]
 tracing = { workspace = true, optional = true }
-tokio = { version = "1", features = ["sync", "rt"], optional = true }
-tokio-util = { version = "0.7", optional = true }
-trait-variant = "0.1"
-bitflags = "2"
-config = { version = "0.14", default-features = false, optional = true }
-libloading = "0.8"
-lazy_static = "1"
+tokio = { workspace = true, features = ["sync", "rt"], optional = true }
+tokio-util = { workspace = true , optional = true }
+trait-variant.workspace = true
+bitflags.workspace = true
+config = { workspace = true, optional = true }
+libloading.workspace = true
+lazy_static.workspace = true
 
 [dev-dependencies]
 # need time for testing
@@ -48,14 +48,14 @@ features = [
 
 # treat pal as the windows core.
 # see mssf-pal documentation why it is used this way.
+# Cannot use workspace dep because the package rename/aliasing.
 [dependencies.windows-core]
 package = "mssf-pal"
 path = "../pal"
 version = "0.1.0"
 
 [dependencies.mssf-com]
-path = "../com"
-version = "0.1.0"
+workspace = true
 default-features = false
 features = [
     "ServiceFabric_FabricClient",

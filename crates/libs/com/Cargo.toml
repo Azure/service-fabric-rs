@@ -16,9 +16,8 @@ include = ["**/*.rs", "Cargo.toml"]
 default-target = "x86_64-pc-windows-msvc"
 targets = []
 
-[dependencies.mssf-pal]
-path = "../pal"
-version = "0.1.0"
+[dependencies]
+mssf-pal.workspace = true
 
 [features]
 default = []

@@ -9,20 +9,27 @@ members = [
 ]
 
 [workspace.dependencies]
+bitflags = "2"
+config = { version = "0.14", default-features = false }
+ctrlc = { version = "3.4", features = [
+    "termination",
+], default-features = false }
+libloading = "0.8"
+lazy_static = "1.5"
+serde = "1"
+serde_derive = "1"
+tokio = { version = "1", features = ["full"], default-features = false }
+tokio-util = "0.7"
 tracing = { version = "0.1", features = ["log"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = [
     "fmt",
 ] }
-tokio-util = "0.7"
-ctrlc = { version = "3.0", features = ["termination"] }
-tokio = { version = "1", features = ["full"] }
-windows = { version = "0.61", default-features = false }
-windows-core = "0.61"
-windows-bindgen = "0.61"
 trait-variant = "0.1"
-serde = "*"
-serde_derive = "*"
+windows = { version = "0.61", default-features = false }
+windows-bindgen = "0.61"
+windows-core = "0.61"
+
 # crates in this repo
-mssf-com = { path = "./crates/libs/com", default-features = false }
-mssf-core = { path = "./crates/libs/core", default-features = true }
-mssf-pal = { path = "./crates/libs/pal", default-features = true }
+mssf-com = { version = "0.1.0", path = "./crates/libs/com", default-features = false }
+mssf-core = { version = "0.1.0", path = "./crates/libs/core", default-features = true }
+mssf-pal = { version = "0.1.0", path = "./crates/libs/pal", default-features = true }

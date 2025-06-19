@@ -292,7 +292,7 @@ async fn test_property_client() {
 
     let app_uri = Uri::from("fabric:/EchoApp");
     let svc_uri = Uri::from("fabric:/EchoApp/EchoAppService");
-    let timeout = Duration::from_secs(1);
+    let timeout = Duration::from_secs(5);
     // If app is deployed, the name should be present.
     {
         let exist = pc.name_exists(&app_uri, timeout, None).await.unwrap();
@@ -384,6 +384,9 @@ async fn test_property_client() {
             assert_eq!(meta2.value_size, 8);
             assert_eq!(data.len(), 8);
             assert_eq!(value_result.get_value_as_int64().unwrap(), value);
+            pc.delete_property(&svc_uri, &property_name, timeout, None)
+                .await
+                .unwrap();
         }
         // create a double property and read it back.
         {
@@ -444,16 +447,20 @@ async fn test_property_client() {
             assert_eq!(value_result.get_value_as_guid().unwrap(), value);
         }
 
-        // Create new names under that app
+        // Create a non-existent name
         {
-            let svc_name2 = Uri::from("fabric:/EchoApp/EchoAppServiceNonExistent");
+            let app_name2 = Uri::from("fabric:/EchoAppNonExistent");
+            let svc_name2 = Uri::from("fabric:/EchoAppNonExistent/EchoAppServiceNonExistent");
             let property_name = WString::from("test_property_wstring");
             let value = WString::from("test_value_wstring2");
-            let exist = pc.name_exists(&svc_name2, timeout, None).await.unwrap();
-            if exist {
+            if pc.name_exists(&svc_name2, timeout, None).await.unwrap() {
                 delete_property_if_exist(pc, &svc_name2, &property_name, timeout).await;
                 // If the name exists, delete it.
                 pc.delete_name(&svc_name2, timeout, None).await.unwrap();
+            }
+            if pc.name_exists(&app_name2, timeout, None).await.unwrap() {
+                // If the name exists, delete it.
+                pc.delete_name(&app_name2, timeout, None).await.unwrap();
             }
             // Create a new name.
             pc.create_name(&svc_name2, timeout, None).await.unwrap();

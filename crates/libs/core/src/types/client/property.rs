@@ -40,6 +40,7 @@ impl NameEnumerationResult {
         unsafe { self.com.get_EnumerationStatus().into() }
     }
 
+    /// returns all SF names from the enumeration result.
     pub fn get_names(&self) -> crate::Result<Vec<Uri>> {
         let mut count = 0;
         let first_ptr = unsafe { self.com.GetNames(&mut count)? };
@@ -84,6 +85,7 @@ impl From<FABRIC_ENUMERATION_STATUS> for EnumerationStatus {
     }
 }
 
+/// Metadata for a named property.
 pub struct NamedPropertyMetadata {
     pub property_name: WString,
     pub property_type_id: PropertyTypeId,
@@ -123,7 +125,6 @@ impl PropertyMetadataResult {
 }
 
 // See: https://github.com/microsoft/service-fabric/blob/master/src/prod/src/managed/Api/src/System/Fabric/CheckValuePropertyOperation.cs
-// TOOD: implement this
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PropertyTypeId {
     Invalid = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_INVALID.0 as isize,
@@ -154,6 +155,7 @@ impl From<PropertyTypeId> for mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID {
     }
 }
 
+// TODO: batch operations is net yet supported.
 // // FABRIC_PROPERTY_BATCH_OPERATION
 // pub enum PropertyBatchOperation {
 //     Invalid,
@@ -168,11 +170,12 @@ impl From<PropertyTypeId> for mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID {
 
 // FABRIC_CHECK_EXISTS_PROPERTY_OPERATION
 
-// IFabricPropertyValueResult
+/// Represents the result of a property value operation.
 pub struct PropertyValueResult {
     com: mssf_com::FabricClient::IFabricPropertyValueResult,
 }
 
+/// Converts a raw buffer into a `Vec<u8>` by making a copy.
 fn raw_to_vec(ptr: *const u8, size: i32) -> Vec<u8> {
     if size <= 0 {
         return Vec::new();
@@ -185,6 +188,7 @@ impl PropertyValueResult {
         Self { com }
     }
 
+    /// Get the property as raw bytes regardless of type.
     pub fn get_named_property(&self) -> (NamedPropertyMetadata, Vec<u8>) {
         let ptr = unsafe { self.com.get_Property().as_ref() }.unwrap();
         let meta = NamedPropertyMetadata::from_raw(unsafe { ptr.Metadata.as_ref().unwrap() });

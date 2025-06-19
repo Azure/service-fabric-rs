@@ -28,12 +28,13 @@ mod notification;
 
 // Export public client modules
 pub mod health_client;
+mod property_client;
 pub mod query_client;
 pub mod svc_mgmt_client;
-
 // reexport
 pub use connection::GatewayInformationResult;
 pub use notification::ServiceNotification;
+pub use property_client::PropertyManagementClient;
 
 #[cfg(test)]
 mod tests;
@@ -314,22 +315,5 @@ impl FabricClient {
     /// Get the client for get/set Service Fabric health properties.
     pub fn get_health_manager(&self) -> &HealthClient {
         &self.health_client
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct PropertyManagementClient {
-    com: IFabricPropertyManagementClient2,
-}
-
-impl From<IFabricPropertyManagementClient2> for PropertyManagementClient {
-    fn from(com: IFabricPropertyManagementClient2) -> Self {
-        Self { com }
-    }
-}
-
-impl From<PropertyManagementClient> for IFabricPropertyManagementClient2 {
-    fn from(value: PropertyManagementClient) -> Self {
-        value.com
     }
 }

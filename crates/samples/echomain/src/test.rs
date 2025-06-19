@@ -11,14 +11,14 @@ use mssf_core::{
             PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartitionInfo,
             ServiceEndpointRole, ServicePartitionKind,
         },
-        FabricClient, GatewayInformationResult, ServiceNotification,
+        FabricClient, GatewayInformationResult, PropertyManagementClient, ServiceNotification,
     },
     types::{
         QueryServiceReplicaStatus, RemoveReplicaDescription, ServiceNotificationFilterDescription,
         ServiceNotificationFilterFlags, ServicePartitionInformation,
         ServicePartitionQueryDescription, ServicePartitionQueryResult, ServicePartitionStatus,
         ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
-        StatelessServiceInstanceQueryResult, StatelessServicePartitionQueryResult,
+        StatelessServiceInstanceQueryResult, StatelessServicePartitionQueryResult, Uri,
     },
     ErrorCode, WString, GUID,
 };
@@ -252,4 +252,279 @@ async fn test_fabric_client() {
     mgmt.unregister_service_notification_filter(filter_handle, timeout, None)
         .await
         .unwrap();
+}
+
+async fn delete_property_if_exist(
+    pc: &PropertyManagementClient,
+    svc_uri: &Uri,
+    property_name: &WString,
+    timeout: Duration,
+) {
+    match pc
+        .get_property_metadata(svc_uri, property_name, timeout, None)
+        .await
+    {
+        Ok(_) => {
+            // Property already exists, remove it.
+            pc.delete_property(svc_uri, property_name, timeout, None)
+                .await
+                .unwrap();
+        }
+        Err(e) => {
+            if e.try_as_fabric_error_code().unwrap() == ErrorCode::FABRIC_E_PROPERTY_DOES_NOT_EXIST
+            {
+                // Property does not exist, continue.
+            } else {
+                panic!("unexpected error: {}", e);
+            }
+        }
+    };
+}
+
+#[tokio::test]
+async fn test_property_client() {
+    let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
+
+    let pc = fc.get_property_manager();
+
+    let app_uri = Uri::from("fabric:/EchoApp");
+    let svc_uri = Uri::from("fabric:/EchoApp/EchoAppService");
+    let timeout = Duration::from_secs(5);
+    // If app is deployed, the name should be present.
+    {
+        let exist = pc.name_exists(&app_uri, timeout, None).await.unwrap();
+        assert!(exist);
+        let sub_names = pc
+            .enumerate_sub_names(&app_uri, None, false, timeout, None)
+            .await
+            .unwrap();
+        assert_eq!(
+            sub_names.get_enumeration_status(),
+            mssf_core::types::EnumerationStatus::ConsistentFinished
+        );
+        let names = sub_names.get_names().unwrap();
+        assert!(names.contains(&svc_uri));
+    }
+    {
+        let exist = pc.name_exists(&svc_uri, timeout, None).await.unwrap();
+        assert!(exist);
+    }
+    // create new property test
+    // Clean up previous runs.
+    for property_name in [
+        WString::from("test_property_binary"),
+        WString::from("test_property_int64"),
+        WString::from("test_property_double"),
+        WString::from("test_property_wstring"),
+        WString::from("test_property_guid"),
+    ] {
+        delete_property_if_exist(pc, &svc_uri, &property_name, timeout).await;
+
+        // Create a binary property and read it back.
+        {
+            let property_name = WString::from("test_property_binary");
+            let value = WString::from("test_binary_value");
+            pc.put_property_binary(
+                &svc_uri,
+                &property_name,
+                value.to_string_lossy().as_bytes(),
+                timeout,
+                None,
+            )
+            .await
+            .unwrap();
+            let meta = pc
+                .get_property_metadata(&svc_uri, &property_name, timeout, None)
+                .await
+                .unwrap();
+            assert_eq!(meta.get_metadata().unwrap().name, svc_uri);
+            let value_result = pc
+                .get_property(&svc_uri, &property_name, timeout, None)
+                .await
+                .unwrap();
+            let (meta2, data) = value_result.get_named_property();
+            assert_eq!(meta2.name, svc_uri);
+            assert_eq!(meta2.value_size, data.len() as i32);
+            assert_eq!(data, value.to_string_lossy().as_bytes());
+
+            let data2 = value_result.get_value_as_binary().unwrap();
+            assert_eq!(data2, value.to_string_lossy().as_bytes());
+            assert_eq!(
+                value_result
+                    .get_value_as_double()
+                    .err()
+                    .unwrap()
+                    .try_as_fabric_error_code()
+                    .unwrap(),
+                ErrorCode::E_INVALIDARG
+            );
+        }
+
+        // Create an int64 property and read it back.
+        {
+            let property_name = WString::from("test_property_int64");
+            let value = 1234567890_i64;
+            pc.put_property_int64(&svc_uri, &property_name, value, timeout, None)
+                .await
+                .unwrap();
+            let meta = pc
+                .get_property_metadata(&svc_uri, &property_name, timeout, None)
+                .await
+                .unwrap();
+            assert_eq!(meta.get_metadata().unwrap().name, svc_uri);
+            let value_result = pc
+                .get_property(&svc_uri, &property_name, timeout, None)
+                .await
+                .unwrap();
+            let (meta2, data) = value_result.get_named_property();
+            assert_eq!(meta2.name, svc_uri);
+            assert_eq!(meta2.value_size, 8);
+            assert_eq!(data.len(), 8);
+            assert_eq!(value_result.get_value_as_int64().unwrap(), value);
+            pc.delete_property(&svc_uri, &property_name, timeout, None)
+                .await
+                .unwrap();
+        }
+        // create a double property and read it back.
+        {
+            let property_name = WString::from("test_property_double");
+            let value = 1234.5678_f64;
+            pc.put_property_double(&svc_uri, &property_name, value, timeout, None)
+                .await
+                .unwrap();
+            let value_result = pc
+                .get_property(&svc_uri, &property_name, timeout, None)
+                .await
+                .unwrap();
+            let (meta2, data) = value_result.get_named_property();
+            assert_eq!(meta2.name, svc_uri);
+            assert_eq!(meta2.value_size, 8);
+            assert_eq!(data.len(), 8);
+            assert_eq!(value_result.get_value_as_double().unwrap(), value);
+        }
+        // Create a wstring property and read it back.
+        {
+            let property_name = WString::from("test_property_wstring");
+            let value = WString::from("test_value_wstring");
+            pc.put_property_wstring(&svc_uri, &property_name, &value, timeout, None)
+                .await
+                .unwrap();
+            let value_result = pc
+                .get_property(&svc_uri, &property_name, timeout, None)
+                .await
+                .unwrap();
+            let (meta2, data) = value_result.get_named_property();
+            assert_eq!(meta2.name, svc_uri);
+            assert_eq!(meta2.value_size, (value.len() + 1) as i32 * 2); // +1 for null terminator
+            assert_eq!(meta2.value_size, data.len() as i32);
+
+            let data2 = value_result.get_value_as_wstring().unwrap();
+            assert_eq!(data2, value);
+        }
+        // Create a guid property and read it back.
+        {
+            let property_name = WString::from("test_property_guid");
+            let value = GUID::from_values(
+                0x12345678,
+                0x1234,
+                0x5678,
+                [0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef],
+            );
+            pc.put_property_guid(&svc_uri, &property_name, &value, timeout, None)
+                .await
+                .unwrap();
+            let value_result = pc
+                .get_property(&svc_uri, &property_name, timeout, None)
+                .await
+                .unwrap();
+            let (meta2, data) = value_result.get_named_property();
+            assert_eq!(meta2.name, svc_uri);
+            assert_eq!(meta2.value_size, 16);
+            assert_eq!(data.len(), 16);
+            assert_eq!(value_result.get_value_as_guid().unwrap(), value);
+        }
+
+        // Create a non-existent name
+        {
+            let app_name2 = Uri::from("fabric:/EchoAppNonExistent");
+            let svc_name2 = Uri::from("fabric:/EchoAppNonExistent/EchoAppServiceNonExistent");
+            let property_name = WString::from("test_property_wstring");
+            let value = WString::from("test_value_wstring2");
+
+            let svc_name2_cp = svc_name2.clone();
+            let pc_cp = pc.clone();
+            if tokio::spawn(async move {
+                pc_cp
+                    .name_exists(&svc_name2_cp, timeout, None)
+                    .await
+                    .unwrap()
+            })
+            .await
+            .unwrap()
+            {
+                delete_property_if_exist(pc, &svc_name2, &property_name, timeout).await;
+                // If the name exists, delete it.
+                let pc_cp = pc.clone();
+                let svc_name2_cp = svc_name2.clone();
+                tokio::spawn(async move {
+                    pc_cp
+                        .delete_name(&svc_name2_cp, timeout, None)
+                        .await
+                        .unwrap()
+                })
+                .await
+                .unwrap();
+            }
+            if pc.name_exists(&app_name2, timeout, None).await.unwrap() {
+                // If the name exists, delete it.
+                pc.delete_name(&app_name2, timeout, None).await.unwrap();
+            }
+            // Create a new name.
+            let pc_cp = pc.clone();
+            let svc_name2_cp = svc_name2.clone();
+            tokio::spawn(async move {
+                pc_cp
+                    .create_name(&svc_name2_cp, timeout, None)
+                    .await
+                    .unwrap()
+            })
+            .await
+            .unwrap();
+            // Check if the name exists.
+            let exist = pc.name_exists(&svc_name2, timeout, None).await.unwrap();
+            assert!(exist);
+            // create a property under that name.
+            let pc_cp = pc.clone();
+            let svc_name2_cp = svc_name2.clone();
+            let property_name_cp = property_name.clone();
+            let value_cp = value.clone();
+            tokio::spawn(async move {
+                pc_cp
+                    .put_property_wstring(
+                        &svc_name2_cp,
+                        &property_name_cp,
+                        &value_cp,
+                        timeout,
+                        None,
+                    )
+                    .await
+                    .unwrap()
+            })
+            .await
+            .unwrap();
+            let pc_cp = pc.clone();
+            let res = tokio::spawn(async move {
+                pc_cp
+                    .get_property(&svc_name2, &property_name, timeout, None)
+                    .await
+                    .unwrap()
+            })
+            .await
+            .unwrap();
+            assert_eq!(res.get_value_as_wstring().unwrap(), value);
+        }
+    }
 }

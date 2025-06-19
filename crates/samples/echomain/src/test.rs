@@ -453,28 +453,77 @@ async fn test_property_client() {
             let svc_name2 = Uri::from("fabric:/EchoAppNonExistent/EchoAppServiceNonExistent");
             let property_name = WString::from("test_property_wstring");
             let value = WString::from("test_value_wstring2");
-            if pc.name_exists(&svc_name2, timeout, None).await.unwrap() {
+
+            let svc_name2_cp = svc_name2.clone();
+            let pc_cp = pc.clone();
+            if tokio::spawn(async move {
+                pc_cp
+                    .name_exists(&svc_name2_cp, timeout, None)
+                    .await
+                    .unwrap()
+            })
+            .await
+            .unwrap()
+            {
                 delete_property_if_exist(pc, &svc_name2, &property_name, timeout).await;
                 // If the name exists, delete it.
-                pc.delete_name(&svc_name2, timeout, None).await.unwrap();
+                let pc_cp = pc.clone();
+                let svc_name2_cp = svc_name2.clone();
+                tokio::spawn(async move {
+                    pc_cp
+                        .delete_name(&svc_name2_cp, timeout, None)
+                        .await
+                        .unwrap()
+                })
+                .await
+                .unwrap();
             }
             if pc.name_exists(&app_name2, timeout, None).await.unwrap() {
                 // If the name exists, delete it.
                 pc.delete_name(&app_name2, timeout, None).await.unwrap();
             }
             // Create a new name.
-            pc.create_name(&svc_name2, timeout, None).await.unwrap();
+            let pc_cp = pc.clone();
+            let svc_name2_cp = svc_name2.clone();
+            tokio::spawn(async move {
+                pc_cp
+                    .create_name(&svc_name2_cp, timeout, None)
+                    .await
+                    .unwrap()
+            })
+            .await
+            .unwrap();
             // Check if the name exists.
             let exist = pc.name_exists(&svc_name2, timeout, None).await.unwrap();
             assert!(exist);
             // create a property under that name.
-            pc.put_property_wstring(&svc_name2, &property_name, &value, timeout, None)
-                .await
-                .unwrap();
-            let res = pc
-                .get_property(&svc_name2, &property_name, timeout, None)
-                .await
-                .unwrap();
+            let pc_cp = pc.clone();
+            let svc_name2_cp = svc_name2.clone();
+            let property_name_cp = property_name.clone();
+            let value_cp = value.clone();
+            tokio::spawn(async move {
+                pc_cp
+                    .put_property_wstring(
+                        &svc_name2_cp,
+                        &property_name_cp,
+                        &value_cp,
+                        timeout,
+                        None,
+                    )
+                    .await
+                    .unwrap()
+            })
+            .await
+            .unwrap();
+            let pc_cp = pc.clone();
+            let res = tokio::spawn(async move {
+                pc_cp
+                    .get_property(&svc_name2, &property_name, timeout, None)
+                    .await
+                    .unwrap()
+            })
+            .await
+            .unwrap();
             assert_eq!(res.get_value_as_wstring().unwrap(), value);
         }
     }

@@ -405,7 +405,7 @@ impl PropertyManagementClient {
     /// For example, fabric:/myapp/mysvc service will create 2 names in the same hierarchy:
     /// - fabric:/myapp
     /// - fabric:/myapp/mysvc
-    /// 
+    ///
     /// One can create names not related to any app or service as well.
     pub async fn create_name(
         &self,

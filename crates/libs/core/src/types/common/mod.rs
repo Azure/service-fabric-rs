@@ -86,7 +86,7 @@ impl From<FaultType> for FABRIC_FAULT_TYPE {
 }
 
 /// FABRIC_URI interoperability type.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Uri(pub WString);
 impl Uri {
     /// Needs to have the same lifetime as the original WString.

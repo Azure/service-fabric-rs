@@ -34,6 +34,11 @@ mod health;
 pub use health::*;
 mod settings;
 pub use settings::*;
+mod property;
+pub use property::{
+    EnumerationStatus, NameEnumerationResult, PropertyMetadataResult, PropertyTypeId,
+    PropertyValueResult,
+};
 
 mod service;
 pub use service::{

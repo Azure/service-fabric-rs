@@ -10,7 +10,7 @@ members = [
 
 [workspace.dependencies]
 bitflags = "2"
-config = { version = "0.14", default-features = false }
+config = { version = "0.15", default-features = false }
 ctrlc = { version = "3.4", features = [
     "termination",
 ], default-features = false }
@@ -26,7 +26,7 @@ tracing-subscriber = { version = "0.3", default-features = false, features = [
 ] }
 trait-variant = "0.1"
 windows = { version = "0.61", default-features = false }
-windows-bindgen = "0.61"
+windows-bindgen = "0.62"
 windows-core = "0.61"
 
 # crates in this repo

@@ -129,10 +129,10 @@ impl From<&IFabricStringListResult> for WStringList {
     }
 }
 
-struct FabricStringListAccessor<'a> {
-    itemcount: u32,
-    first_str: *mut PCWSTR,
-    phantom: PhantomData<&'a IFabricStringListResult>,
+pub(crate) struct FabricStringListAccessor<'a> {
+    pub(crate) itemcount: u32,
+    pub(crate) first_str: *mut PCWSTR,
+    pub(crate) phantom: PhantomData<&'a IFabricStringListResult>,
 }
 
 impl FabricListAccessor<PCWSTR> for FabricStringListAccessor<'_> {
@@ -145,7 +145,7 @@ impl FabricListAccessor<PCWSTR> for FabricStringListAccessor<'_> {
     }
 }
 
-type FabricStringListAccessorIter<'a> =
+pub(crate) type FabricStringListAccessorIter<'a> =
     FabricIter<'a, PCWSTR, WString, FabricStringListAccessor<'a>>;
 
 #[cfg(test)]

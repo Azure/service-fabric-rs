@@ -35,7 +35,7 @@ fn main() -> mssf_core::Result<()> {
     let node_count = unsafe { (*nodes).Count };
     let node_list = unsafe { (*nodes).Items };
 
-    println!("node_count {}", node_count);
+    println!("node_count {node_count}");
 
     if !node_list.is_null() {
         let node: FABRIC_NODE_QUERY_RESULT_ITEM = unsafe { *node_list };

@@ -123,12 +123,12 @@ mod test {
         let fe = Error::from(FABRIC_E_CODE_PACKAGE_NOT_FOUND);
         // check debug string
         assert_eq!(
-            format!("{:?}", fe),
+            format!("{fe:?}"),
             "FabricError { code: -2147017733, message: FABRIC_E_CODE_PACKAGE_NOT_FOUND }"
         );
         // check display string
         assert_eq!(
-            format!("{}", fe),
+            format!("{fe}"),
             "FABRIC_E_CODE_PACKAGE_NOT_FOUND (-2147017733)"
         );
         let e = crate::WinError::from(fe.clone());
@@ -152,9 +152,9 @@ mod test {
         // use an error that is not fabric error
         let fe = Error::from(SEC_E_INTERNAL_ERROR);
         // check display string
-        assert_eq!(format!("{}", fe), "-2146893052");
+        assert_eq!(format!("{fe}"), "-2146893052");
         assert_eq!(
-            format!("{:?}", fe),
+            format!("{fe:?}"),
             "FabricError { code: -2146893052, message: \"unknown fabric error\" }"
         );
     }

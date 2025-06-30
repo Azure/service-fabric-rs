@@ -50,10 +50,10 @@ impl core::fmt::Display for FabricClientCreationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             FabricClientCreationError::InvalidFabricClientSettings(error) => {
-                write!(f, "InvalidFabricClientSettings({})", error)
+                write!(f, "InvalidFabricClientSettings({error})")
             }
             FabricClientCreationError::InvalidFabricSecurityCredentials(error) => {
-                write!(f, "InvalidFabricSecurityCredentialss({})", error)
+                write!(f, "InvalidFabricSecurityCredentialss({error})")
             }
         }
     }

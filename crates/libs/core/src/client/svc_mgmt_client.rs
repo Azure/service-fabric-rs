@@ -477,7 +477,7 @@ impl From<FABRIC_SERVICE_PARTITION_KIND> for ServicePartitionKind {
             FABRIC_SERVICE_PARTITION_KIND_SINGLETON => ServicePartitionKind::Singleton,
             _ => {
                 if cfg!(debug_assertions) {
-                    panic!("unknown type: {:?}", value);
+                    panic!("unknown type: {value:?}");
                 } else {
                     ServicePartitionKind::Invalid
                 }
@@ -573,7 +573,7 @@ impl From<FABRIC_SERVICE_ENDPOINT_ROLE> for ServiceEndpointRole {
             FABRIC_SERVICE_ROLE_STATELESS => ServiceEndpointRole::Stateless,
             _ => {
                 if cfg!(debug_assertions) {
-                    panic!("unknown type: {:?}", value);
+                    panic!("unknown type: {value:?}");
                 } else {
                     ServiceEndpointRole::Invalid
                 }

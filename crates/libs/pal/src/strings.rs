@@ -218,7 +218,7 @@ impl core::fmt::Display for WString {
 
 impl core::fmt::Debug for WString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "\"{}\"", self)
+        write!(f, "\"{self}\"")
     }
 }
 
@@ -234,7 +234,7 @@ mod tests {
             let h = WString::from(s);
             assert_eq!(s.len(), h.len());
             assert_eq!(s.is_empty(), h.is_empty());
-            assert_eq!(format!("{}", h), s);
+            assert_eq!(format!("{h}"), s);
             assert_eq!(s, h.to_string_lossy());
             assert_eq!(h.as_wide().len(), s.len());
             let raw = h.as_ptr();

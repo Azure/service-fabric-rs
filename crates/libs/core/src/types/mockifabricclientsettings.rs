@@ -51,13 +51,11 @@ pub(crate) mod test_utilities {
                 let actual_value_ptr = unsafe { actual_values_start.add(i) };
                 assert!(
                     !actual_value_ptr.is_null(),
-                    "Pointer at index {} should not be null",
-                    i
+                    "Pointer at index {i} should not be null"
                 );
                 assert!(
                     actual_value_ptr.is_aligned(),
-                    "Pointer at index {} should be aligned",
-                    i
+                    "Pointer at index {i} should be aligned"
                 );
                 // SAFETY: caller promises it's within lifetime. non-null and alignment is checked above
                 let actual_value = unsafe { actual_value_ptr.as_ref() }.unwrap();

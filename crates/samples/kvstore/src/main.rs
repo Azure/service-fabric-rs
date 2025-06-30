@@ -2,8 +2,8 @@ use mssf_core::WString;
 use mssf_core::{
     debug::wait_for_debugger,
     runtime::{
-        executor::{DefaultExecutor, Executor},
         CodePackageActivationContext,
+        executor::{DefaultExecutor, Executor},
     },
 };
 use tracing::info;

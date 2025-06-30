@@ -4,8 +4,8 @@
 // ------------------------------------------------------------
 
 use crate::{
-    types::{FabricClientSettings, FabricSecurityCredentials},
     Interface,
+    types::{FabricClientSettings, FabricSecurityCredentials},
 };
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use health_client::HealthClient;

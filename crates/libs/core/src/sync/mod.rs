@@ -24,7 +24,7 @@ pub use bridge_context::BridgeContext;
 #[cfg(feature = "tokio_async")]
 mod channel;
 #[cfg(feature = "tokio_async")]
-pub use channel::{oneshot_channel, FabricReceiver, FabricSender};
+pub use channel::{FabricReceiver, FabricSender, oneshot_channel};
 
 #[cfg(feature = "tokio_async")]
 mod proxy;

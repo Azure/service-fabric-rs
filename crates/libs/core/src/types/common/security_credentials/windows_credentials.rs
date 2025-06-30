@@ -11,10 +11,10 @@ use std::{
 };
 
 use mssf_com::FabricTypes::{
-    FABRIC_SECURITY_CREDENTIALS, FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS,
+    FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS, FABRIC_SECURITY_CREDENTIALS,
     FABRIC_WINDOWS_CREDENTIALS,
 };
-use windows_core::{WString, PCWSTR};
+use windows_core::{PCWSTR, WString};
 
 use super::{FabricProtectionLevel, FabricSecurityCredentialKind};
 
@@ -72,8 +72,8 @@ mod test {
     use std::sync::{Arc, Mutex};
 
     use crate::strings::WStringWrap;
-    use crate::types::mockifabricclientsettings::test_utilities::check_array_parameter;
     use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
+    use crate::types::mockifabricclientsettings::test_utilities::check_array_parameter;
 
     use super::*;
     const TEST_REMOTE_SPN_1: &str = "TEST_SPN_1";

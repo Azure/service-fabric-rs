@@ -15,10 +15,10 @@ pub mod imp {
     pub use windows_core::imp::*;
 }
 pub use windows_core::{
-    implement, AsImpl, ComObject, ComObjectInner, ComObjectInterface, CopyType, Error,
-    IInspectable, IInspectable_Vtbl, IUnknown, IUnknownImpl, IUnknown_Vtbl, Interface,
-    InterfaceRef, OutParam, OutRef, Param, ParamValue, Ref, Result, RuntimeName, RuntimeType,
-    StaticComObject, Type, TypeKind, BOOL, DYNAMIC_CAST_IID, GUID, HRESULT,
+    AsImpl, BOOL, ComObject, ComObjectInner, ComObjectInterface, CopyType, DYNAMIC_CAST_IID, Error,
+    GUID, HRESULT, IInspectable, IInspectable_Vtbl, IUnknown, IUnknown_Vtbl, IUnknownImpl,
+    Interface, InterfaceRef, OutParam, OutRef, Param, ParamValue, Ref, Result, RuntimeName,
+    RuntimeType, StaticComObject, Type, TypeKind, implement,
 };
 
 // provide other implemenations missing for linux

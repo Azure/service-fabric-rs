@@ -8,10 +8,10 @@
 use std::{ffi::c_void, ptr::addr_of_mut};
 
 use mssf_com::FabricTypes::{
-    FABRIC_CLAIMS_CREDENTIALS, FABRIC_CLAIMS_CREDENTIALS_EX1, FABRIC_SECURITY_CREDENTIALS,
-    FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS,
+    FABRIC_CLAIMS_CREDENTIALS, FABRIC_CLAIMS_CREDENTIALS_EX1,
+    FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS, FABRIC_SECURITY_CREDENTIALS,
 };
-use windows_core::{WString, PCWSTR};
+use windows_core::{PCWSTR, WString};
 
 use super::{FabricProtectionLevel, FabricSecurityCredentialKind};
 
@@ -93,9 +93,9 @@ mod test {
     use std::sync::{Arc, Mutex};
 
     use crate::strings::WStringWrap;
+    use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
     use crate::types::mockifabricclientsettings::test_constants::*;
     use crate::types::mockifabricclientsettings::test_utilities::check_array_parameter;
-    use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
 
     use super::*;
     fn make_credentials() -> FabricClaimsCredentials {

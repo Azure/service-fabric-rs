@@ -5,7 +5,7 @@
 
 use std::time::SystemTime;
 
-use crate::{types::ServicePartitionAccessStatus, WString, GUID, PCWSTR};
+use crate::{GUID, PCWSTR, WString, types::ServicePartitionAccessStatus};
 use mssf_com::{
     FabricClient::{IFabricGetDeployedServiceReplicaDetailResult, IFabricGetReplicaListResult2},
     FabricTypes::{
@@ -252,7 +252,7 @@ pub struct DeployedStatefulServiceReplicaDetailQueryResult {
 impl DeployedStatefulServiceReplicaDetailQueryResult {
     pub fn new(value: &FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM) -> Self {
         Self {
-            service_name: WString::from_wide(unsafe { PCWSTR(value.ServiceName.0).as_wide() }),
+            service_name: WString::from(PCWSTR(value.ServiceName.0)),
             partition_id: value.PartitionId,
             replica_id: value.ReplicaId,
             current_service_operation: (value.CurrentServiceOperation).into(),
@@ -281,20 +281,14 @@ pub struct DeployedStatelessServiceInstanceQueryResult {
 impl DeployedStatelessServiceInstanceQueryResult {
     pub fn new(value: &FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM) -> Self {
         Self {
-            service_name: WString::from_wide(unsafe { PCWSTR(value.ServiceName.0).as_wide() }),
-            service_type_name: WString::from_wide(unsafe {
-                PCWSTR(value.ServiceTypeName.0).as_wide()
-            }),
-            service_manifest_version: WString::from_wide(unsafe {
-                PCWSTR(value.ServiceManifestVersion.0).as_wide()
-            }),
-            code_package_name: WString::from_wide(unsafe {
-                PCWSTR(value.CodePackageName.0).as_wide()
-            }),
+            service_name: WString::from(PCWSTR(value.ServiceName.0)),
+            service_type_name: WString::from(value.ServiceTypeName),
+            service_manifest_version: WString::from(value.ServiceManifestVersion),
+            code_package_name: WString::from(value.CodePackageName),
             partition_id: value.PartitionId,
             instance_id: value.InstanceId,
             replica_status: (&value.ReplicaStatus).into(),
-            address: WString::from_wide(unsafe { PCWSTR(value.Address.0).as_wide() }),
+            address: WString::from(value.Address),
         }
     }
 }

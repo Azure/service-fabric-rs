@@ -11,7 +11,7 @@ use mssf_com::FabricRuntime::{IFabricNodeContextResult, IFabricNodeContextResult
 use crate::{strings::WStringWrap, types::NodeId};
 
 #[cfg(feature = "tokio_async")]
-use crate::sync::{fabric_begin_end_proxy, CancellationToken};
+use crate::sync::{CancellationToken, fabric_begin_end_proxy};
 
 #[cfg(feature = "tokio_async")]
 pub fn get_com_node_context(

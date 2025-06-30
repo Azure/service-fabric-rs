@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{WString, HRESULT};
+use crate::{HRESULT, WString};
 
 // Fills the error info as string for better debugging.
 // SF has separate last error set and get from windows.

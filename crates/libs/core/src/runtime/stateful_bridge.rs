@@ -10,17 +10,18 @@
 
 use std::sync::Arc;
 
-use crate::{runtime::stateful_proxy::StatefulServicePartition, Interface};
+use crate::{Interface, runtime::stateful_proxy::StatefulServicePartition};
 use windows_core::implement;
 
 use mssf_com::{
     FabricCommon::IFabricStringResult,
     FabricRuntime::{
         IFabricPrimaryReplicator, IFabricPrimaryReplicator_Impl, IFabricReplicator,
-        IFabricReplicatorCatchupSpecificQuorum, IFabricReplicatorCatchupSpecificQuorum_Impl,
-        IFabricReplicator_Impl, IFabricStatefulServiceFactory, IFabricStatefulServiceFactory_Impl,
-        IFabricStatefulServicePartition, IFabricStatefulServicePartition3,
-        IFabricStatefulServiceReplica, IFabricStatefulServiceReplica_Impl,
+        IFabricReplicator_Impl, IFabricReplicatorCatchupSpecificQuorum,
+        IFabricReplicatorCatchupSpecificQuorum_Impl, IFabricStatefulServiceFactory,
+        IFabricStatefulServiceFactory_Impl, IFabricStatefulServicePartition,
+        IFabricStatefulServicePartition3, IFabricStatefulServiceReplica,
+        IFabricStatefulServiceReplica_Impl,
     },
     FabricTypes::{
         FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_ROLE,

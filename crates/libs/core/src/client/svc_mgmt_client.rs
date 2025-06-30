@@ -8,7 +8,7 @@
 )]
 use std::{ffi::c_void, time::Duration};
 
-use crate::{types::Uri, WString, PCWSTR};
+use crate::{PCWSTR, WString, types::Uri};
 use mssf_com::{
     FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient6},
     FabricTypes::{
@@ -27,7 +27,7 @@ use mssf_com::{
 };
 
 #[cfg(feature = "tokio_async")]
-use crate::sync::{fabric_begin_end_proxy, CancellationToken, FabricReceiver};
+use crate::sync::{CancellationToken, FabricReceiver, fabric_begin_end_proxy};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
@@ -636,7 +636,7 @@ impl From<&FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpoint {
 
 #[cfg(test)]
 mod tests {
-    use crate::{WString, PCWSTR};
+    use crate::{PCWSTR, WString};
 
     use super::{PartitionKeyType, ServicePartitionKind};
 
@@ -660,8 +660,7 @@ mod tests {
         let k = PartitionKeyType::String(src.clone());
         // check the raw ptr is ok
         let raw = k.get_raw_opt();
-        let s =
-            WString::from_wide(unsafe { PCWSTR::from_raw(raw.unwrap() as *const u16).as_wide() });
+        let s = WString::from(PCWSTR::from_raw(raw.unwrap() as *const u16));
         assert_eq!(s, src);
 
         let service_type = ServicePartitionKind::Named;

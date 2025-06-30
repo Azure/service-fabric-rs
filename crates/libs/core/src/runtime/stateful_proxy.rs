@@ -17,7 +17,7 @@ use mssf_com::FabricRuntime::{
 use crate::{
     error::ErrorCode,
     strings::WStringWrap,
-    sync::{fabric_begin_end_proxy, CancellationToken},
+    sync::{CancellationToken, fabric_begin_end_proxy},
     types::{
         FaultType, HealthInformation, LoadMetric, LoadMetricListRef, MoveCost, ReplicaRole,
         ServicePartitionAccessStatus, ServicePartitionInformation,
@@ -70,7 +70,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
 
         // TODO: cast without clone will cause access violation on AddRef in SF runtime.
         let p_rplctr: IFabricPrimaryReplicator = rplctr.clone().cast().unwrap(); // must work
-                                                                                 // Replicator must impl primary replicator as well.
+        // Replicator must impl primary replicator as well.
 
         let res = PrimaryReplicatorProxy::new(p_rplctr);
         Ok(res)

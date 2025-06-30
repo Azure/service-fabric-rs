@@ -6,12 +6,13 @@
 use std::time::Duration;
 
 use mssf_core::{
+    ErrorCode, GUID, WString,
     client::{
+        FabricClient,
         svc_mgmt_client::{
             PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartition,
             ServiceEndpointRole, ServicePartitionKind,
         },
-        FabricClient,
     },
     types::{
         DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
@@ -26,7 +27,6 @@ use mssf_core::{
         StatefulServicePartitionQueryResult, StatefulServiceReplicaQueryResult,
         StatefulServiceUpdateDescription, Uri,
     },
-    ErrorCode, WString, GUID,
 };
 
 static SVC_URI: &str = "fabric:/StatefulEchoApp/StatefulEchoAppService";

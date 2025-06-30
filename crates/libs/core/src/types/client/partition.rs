@@ -3,14 +3,14 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{WString, GUID};
+use crate::{GUID, WString};
 use mssf_com::{
     FabricClient::{IFabricGetPartitionListResult2, IFabricGetPartitionLoadInformationResult},
     FabricTypes::{
         FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION, FABRIC_QUERY_SERVICE_PARTITION_STATUS,
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_DELETING,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_INVALID,
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_IN_QUORUM_LOSS,
+        FABRIC_QUERY_SERVICE_PARTITION_STATUS_INVALID,
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_NOT_READY,
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY,
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_RECONFIGURING, FABRIC_SERVICE_KIND_STATEFUL,

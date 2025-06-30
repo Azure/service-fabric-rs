@@ -7,8 +7,8 @@
 #![deny(clippy::undocumented_unsafe_blocks)]
 use mssf_com::{
     FabricClient::{
-        IFabricClientSettings2, IFabricClientSettings2_Impl, IFabricClientSettingsResult,
-        IFabricClientSettings_Impl,
+        IFabricClientSettings_Impl, IFabricClientSettings2, IFabricClientSettings2_Impl,
+        IFabricClientSettingsResult,
     },
     FabricTypes::{
         FABRIC_CLIENT_SETTINGS, FABRIC_E_INVALID_CONFIGURATION, FABRIC_E_INVALID_CREDENTIALS,

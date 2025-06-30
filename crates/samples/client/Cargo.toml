@@ -1,7 +1,8 @@
 [package]
 name = "samples_client"
 version = "0.0.1"
-edition = "2018"
+edition.workspace = true
+publish = false
 
 [dependencies]
 windows-core.workspace = true

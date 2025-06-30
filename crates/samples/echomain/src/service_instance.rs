@@ -6,12 +6,12 @@
 use std::cell::Cell;
 use std::sync::Arc;
 
+use mssf_core::WString;
 use mssf_core::runtime::stateless::{StatelessServiceInstance, StatelessServicePartition};
 use mssf_core::sync::CancellationToken;
 use mssf_core::types::ServicePartitionInformation;
-use mssf_core::WString;
-use tokio::sync::oneshot::{self, Sender};
 use tokio::sync::Mutex;
+use tokio::sync::oneshot::{self, Sender};
 use tokio::task::JoinHandle;
 use tracing::info;
 
@@ -46,7 +46,7 @@ impl StatelessServiceInstance for ServiceInstance {
         info!("open");
         let info = partition.get_partition_info().unwrap();
         let ServicePartitionInformation::Singleton(s) = info else {
-            panic!("paritionkind not match manifeset: {:?}", info);
+            panic!("paritionkind not match manifeset: {info:?}");
         };
         info!("open parition id {:?}", s.id);
 

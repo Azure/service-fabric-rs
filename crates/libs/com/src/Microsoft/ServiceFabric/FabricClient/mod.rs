@@ -579,8 +579,8 @@ pub trait IFabricApplicationManagementClient_Impl: windows_core::IUnknownImpl {
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricApplicationManagementClient_Vtbl {
-    pub const fn new<Identity: IFabricApplicationManagementClient_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricApplicationManagementClient_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginProvisionApplicationType<
             Identity: IFabricApplicationManagementClient_Impl,
             const OFFSET: isize,
@@ -1050,8 +1050,8 @@ pub trait IFabricApplicationManagementClient10_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricApplicationManagementClient10_Vtbl {
-    pub const fn new<Identity: IFabricApplicationManagementClient10_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricApplicationManagementClient10_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginProvisionApplicationType3<
             Identity: IFabricApplicationManagementClient10_Impl,
             const OFFSET: isize,
@@ -1313,8 +1313,8 @@ pub trait IFabricApplicationManagementClient2_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricApplicationManagementClient2_Vtbl {
-    pub const fn new<Identity: IFabricApplicationManagementClient2_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricApplicationManagementClient2_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginGetApplicationManifest<
             Identity: IFabricApplicationManagementClient2_Impl,
             const OFFSET: isize,
@@ -1667,8 +1667,8 @@ pub trait IFabricApplicationManagementClient3_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricApplicationManagementClient3_Vtbl {
-    pub const fn new<Identity: IFabricApplicationManagementClient3_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricApplicationManagementClient3_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginUpdateApplicationUpgrade<
             Identity: IFabricApplicationManagementClient3_Impl,
             const OFFSET: isize,
@@ -1949,8 +1949,8 @@ pub trait IFabricApplicationManagementClient4_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricApplicationManagementClient4_Vtbl {
-    pub const fn new<Identity: IFabricApplicationManagementClient4_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricApplicationManagementClient4_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginDeployServicePackageToNode<
             Identity: IFabricApplicationManagementClient4_Impl,
             const OFFSET: isize,
@@ -2133,8 +2133,8 @@ pub trait IFabricApplicationManagementClient5_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricApplicationManagementClient5_Vtbl {
-    pub const fn new<Identity: IFabricApplicationManagementClient5_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricApplicationManagementClient5_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginRollbackApplicationUpgrade<
             Identity: IFabricApplicationManagementClient5_Impl,
             const OFFSET: isize,
@@ -2311,8 +2311,8 @@ pub trait IFabricApplicationManagementClient6_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricApplicationManagementClient6_Vtbl {
-    pub const fn new<Identity: IFabricApplicationManagementClient6_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricApplicationManagementClient6_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginUpdateApplication<
             Identity: IFabricApplicationManagementClient6_Impl,
             const OFFSET: isize,
@@ -2491,8 +2491,8 @@ pub trait IFabricApplicationManagementClient7_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricApplicationManagementClient7_Vtbl {
-    pub const fn new<Identity: IFabricApplicationManagementClient7_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricApplicationManagementClient7_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginDeleteApplication2<
             Identity: IFabricApplicationManagementClient7_Impl,
             const OFFSET: isize,
@@ -2673,8 +2673,8 @@ pub trait IFabricApplicationManagementClient8_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricApplicationManagementClient8_Vtbl {
-    pub const fn new<Identity: IFabricApplicationManagementClient8_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricApplicationManagementClient8_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginProvisionApplicationType2<
             Identity: IFabricApplicationManagementClient8_Impl,
             const OFFSET: isize,
@@ -2857,8 +2857,8 @@ pub trait IFabricApplicationManagementClient9_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricApplicationManagementClient9_Vtbl {
-    pub const fn new<Identity: IFabricApplicationManagementClient9_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricApplicationManagementClient9_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginUnprovisionApplicationType2<
             Identity: IFabricApplicationManagementClient9_Impl,
             const OFFSET: isize,
@@ -3586,8 +3586,8 @@ pub trait IFabricChaosScheduleDescriptionResult_Impl: windows_core::IUnknownImpl
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricChaosScheduleDescriptionResult_Vtbl {
-    pub const fn new<Identity: IFabricChaosScheduleDescriptionResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricChaosScheduleDescriptionResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_ChaosScheduleDescriptionResult<
             Identity: IFabricChaosScheduleDescriptionResult_Impl,
             const OFFSET: isize,
@@ -3691,8 +3691,8 @@ pub trait IFabricClientConnectionEventHandler_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
 }
 impl IFabricClientConnectionEventHandler_Vtbl {
-    pub const fn new<Identity: IFabricClientConnectionEventHandler_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricClientConnectionEventHandler_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn OnConnected<
             Identity: IFabricClientConnectionEventHandler_Impl,
             const OFFSET: isize,
@@ -3812,8 +3812,8 @@ pub trait IFabricClientConnectionEventHandler2_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricClientConnectionEventHandler2_Vtbl {
-    pub const fn new<Identity: IFabricClientConnectionEventHandler2_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricClientConnectionEventHandler2_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn OnClaimsRetrieval<
             Identity: IFabricClientConnectionEventHandler2_Impl,
             const OFFSET: isize,
@@ -8329,8 +8329,8 @@ pub trait IFabricDeployedApplicationHealthResult_Impl: windows_core::IUnknownImp
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricDeployedApplicationHealthResult_Vtbl {
-    pub const fn new<Identity: IFabricDeployedApplicationHealthResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricDeployedApplicationHealthResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_DeployedApplicationHealth<
             Identity: IFabricDeployedApplicationHealthResult_Impl,
             const OFFSET: isize,
@@ -9607,8 +9607,8 @@ pub trait IFabricGetApplicationNetworkListResult_Impl: windows_core::IUnknownImp
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetApplicationNetworkListResult_Vtbl {
-    pub const fn new<Identity: IFabricGetApplicationNetworkListResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricGetApplicationNetworkListResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_ApplicationNetworkList<
             Identity: IFabricGetApplicationNetworkListResult_Impl,
             const OFFSET: isize,
@@ -9679,8 +9679,8 @@ pub trait IFabricGetApplicationTypeListResult_Impl: windows_core::IUnknownImpl {
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetApplicationTypeListResult_Vtbl {
-    pub const fn new<Identity: IFabricGetApplicationTypeListResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricGetApplicationTypeListResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_ApplicationTypeList<
             Identity: IFabricGetApplicationTypeListResult_Impl,
             const OFFSET: isize,
@@ -9825,8 +9825,8 @@ pub trait IFabricGetClusterHealthChunkResult_Impl: windows_core::IUnknownImpl {
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetClusterHealthChunkResult_Vtbl {
-    pub const fn new<Identity: IFabricGetClusterHealthChunkResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricGetClusterHealthChunkResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_ClusterHealthChunk<
             Identity: IFabricGetClusterHealthChunkResult_Impl,
             const OFFSET: isize,
@@ -9894,8 +9894,8 @@ pub trait IFabricGetClusterLoadInformationResult_Impl: windows_core::IUnknownImp
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetClusterLoadInformationResult_Vtbl {
-    pub const fn new<Identity: IFabricGetClusterLoadInformationResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricGetClusterLoadInformationResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_ClusterLoadInformation<
             Identity: IFabricGetClusterLoadInformationResult_Impl,
             const OFFSET: isize,
@@ -10256,8 +10256,8 @@ pub trait IFabricGetDeployedNetworkListResult_Impl: windows_core::IUnknownImpl {
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetDeployedNetworkListResult_Vtbl {
-    pub const fn new<Identity: IFabricGetDeployedNetworkListResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricGetDeployedNetworkListResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_DeployedNetworkList<
             Identity: IFabricGetDeployedNetworkListResult_Impl,
             const OFFSET: isize,
@@ -10328,8 +10328,8 @@ pub trait IFabricGetDeployedReplicaListResult_Impl: windows_core::IUnknownImpl {
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetDeployedReplicaListResult_Vtbl {
-    pub const fn new<Identity: IFabricGetDeployedReplicaListResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricGetDeployedReplicaListResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_DeployedReplicaList<
             Identity: IFabricGetDeployedReplicaListResult_Impl,
             const OFFSET: isize,
@@ -10582,8 +10582,8 @@ pub trait IFabricGetNetworkApplicationListResult_Impl: windows_core::IUnknownImp
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetNetworkApplicationListResult_Vtbl {
-    pub const fn new<Identity: IFabricGetNetworkApplicationListResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricGetNetworkApplicationListResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_NetworkApplicationList<
             Identity: IFabricGetNetworkApplicationListResult_Impl,
             const OFFSET: isize,
@@ -10763,7 +10763,7 @@ unsafe impl Sync for IFabricGetNetworkNodeListResult {}
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 pub trait IFabricGetNetworkNodeListResult_Impl: windows_core::IUnknownImpl {
     fn get_NetworkNodeList(&self)
-        -> *mut super::FabricTypes::FABRIC_NETWORK_NODE_QUERY_RESULT_LIST;
+    -> *mut super::FabricTypes::FABRIC_NETWORK_NODE_QUERY_RESULT_LIST;
     fn get_PagingStatus(&self) -> *mut super::FabricTypes::FABRIC_PAGING_STATUS;
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -10979,8 +10979,8 @@ pub trait IFabricGetNodeLoadInformationResult_Impl: windows_core::IUnknownImpl {
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetNodeLoadInformationResult_Vtbl {
-    pub const fn new<Identity: IFabricGetNodeLoadInformationResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricGetNodeLoadInformationResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_NodeLoadInformation<
             Identity: IFabricGetNodeLoadInformationResult_Impl,
             const OFFSET: isize,
@@ -11553,8 +11553,8 @@ pub trait IFabricGetReplicaLoadInformationResult_Impl: windows_core::IUnknownImp
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetReplicaLoadInformationResult_Vtbl {
-    pub const fn new<Identity: IFabricGetReplicaLoadInformationResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricGetReplicaLoadInformationResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_ReplicaLoadInformation<
             Identity: IFabricGetReplicaLoadInformationResult_Impl,
             const OFFSET: isize,
@@ -11671,8 +11671,8 @@ pub trait IFabricGetServiceGroupMemberListResult_Impl: windows_core::IUnknownImp
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetServiceGroupMemberListResult_Vtbl {
-    pub const fn new<Identity: IFabricGetServiceGroupMemberListResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricGetServiceGroupMemberListResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_ServiceGroupMemberList<
             Identity: IFabricGetServiceGroupMemberListResult_Impl,
             const OFFSET: isize,
@@ -11992,7 +11992,7 @@ unsafe impl Sync for IFabricGetServiceTypeListResult {}
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 pub trait IFabricGetServiceTypeListResult_Impl: windows_core::IUnknownImpl {
     fn get_ServiceTypeList(&self)
-        -> *mut super::FabricTypes::FABRIC_SERVICE_TYPE_QUERY_RESULT_LIST;
+    -> *mut super::FabricTypes::FABRIC_SERVICE_TYPE_QUERY_RESULT_LIST;
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricGetServiceTypeListResult_Vtbl {
@@ -14854,8 +14854,8 @@ pub trait IFabricInfrastructureServiceClient_Impl: windows_core::IUnknownImpl {
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricInfrastructureServiceClient_Vtbl {
-    pub const fn new<Identity: IFabricInfrastructureServiceClient_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricInfrastructureServiceClient_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginInvokeInfrastructureCommand<
             Identity: IFabricInfrastructureServiceClient_Impl,
             const OFFSET: isize,
@@ -16371,8 +16371,8 @@ pub trait IFabricNodeTransitionProgressResult_Impl: windows_core::IUnknownImpl {
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricNodeTransitionProgressResult_Vtbl {
-    pub const fn new<Identity: IFabricNodeTransitionProgressResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricNodeTransitionProgressResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_Progress<
             Identity: IFabricNodeTransitionProgressResult_Impl,
             const OFFSET: isize,
@@ -16507,8 +16507,8 @@ pub trait IFabricPartitionDataLossProgressResult_Impl: windows_core::IUnknownImp
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricPartitionDataLossProgressResult_Vtbl {
-    pub const fn new<Identity: IFabricPartitionDataLossProgressResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricPartitionDataLossProgressResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_Progress<
             Identity: IFabricPartitionDataLossProgressResult_Impl,
             const OFFSET: isize,
@@ -16703,8 +16703,8 @@ pub trait IFabricPartitionRestartProgressResult_Impl: windows_core::IUnknownImpl
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricPartitionRestartProgressResult_Vtbl {
-    pub const fn new<Identity: IFabricPartitionRestartProgressResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricPartitionRestartProgressResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_Progress<
             Identity: IFabricPartitionRestartProgressResult_Impl,
             const OFFSET: isize,
@@ -24748,8 +24748,8 @@ pub trait IFabricResolvedServicePartitionResult_Impl: windows_core::IUnknownImpl
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricResolvedServicePartitionResult_Vtbl {
-    pub const fn new<Identity: IFabricResolvedServicePartitionResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricResolvedServicePartitionResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_Partition<
             Identity: IFabricResolvedServicePartitionResult_Impl,
             const OFFSET: isize,
@@ -25806,8 +25806,8 @@ pub trait IFabricServiceGroupDescriptionResult_Impl: windows_core::IUnknownImpl 
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricServiceGroupDescriptionResult_Vtbl {
-    pub const fn new<Identity: IFabricServiceGroupDescriptionResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricServiceGroupDescriptionResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_Description<
             Identity: IFabricServiceGroupDescriptionResult_Impl,
             const OFFSET: isize,
@@ -26079,8 +26079,8 @@ pub trait IFabricServiceGroupManagementClient_Impl: windows_core::IUnknownImpl {
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricServiceGroupManagementClient_Vtbl {
-    pub const fn new<Identity: IFabricServiceGroupManagementClient_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricServiceGroupManagementClient_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginCreateServiceGroup<
             Identity: IFabricServiceGroupManagementClient_Impl,
             const OFFSET: isize,
@@ -26351,8 +26351,8 @@ pub trait IFabricServiceGroupManagementClient2_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricServiceGroupManagementClient2_Vtbl {
-    pub const fn new<Identity: IFabricServiceGroupManagementClient2_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricServiceGroupManagementClient2_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginUpdateServiceGroup<
             Identity: IFabricServiceGroupManagementClient2_Impl,
             const OFFSET: isize,
@@ -26545,8 +26545,8 @@ pub trait IFabricServiceGroupManagementClient3_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricServiceGroupManagementClient3_Vtbl {
-    pub const fn new<Identity: IFabricServiceGroupManagementClient3_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricServiceGroupManagementClient3_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginCreateServiceGroupFromTemplate<
             Identity: IFabricServiceGroupManagementClient3_Impl,
             const OFFSET: isize,
@@ -26734,8 +26734,8 @@ pub trait IFabricServiceGroupManagementClient4_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricServiceGroupManagementClient4_Vtbl {
-    pub const fn new<Identity: IFabricServiceGroupManagementClient4_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricServiceGroupManagementClient4_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn BeginCreateServiceGroupFromTemplate2<
             Identity: IFabricServiceGroupManagementClient4_Impl,
             const OFFSET: isize,
@@ -29047,8 +29047,8 @@ pub trait IFabricServiceNotificationEventHandler_Impl: windows_core::IUnknownImp
     ) -> windows_core::Result<()>;
 }
 impl IFabricServiceNotificationEventHandler_Vtbl {
-    pub const fn new<Identity: IFabricServiceNotificationEventHandler_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricServiceNotificationEventHandler_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn OnNotification<
             Identity: IFabricServiceNotificationEventHandler_Impl,
             const OFFSET: isize,

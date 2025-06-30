@@ -7,16 +7,16 @@ use mssf_com::{
     FabricTypes::FABRIC_REPLICATOR_ADDRESS,
 };
 use mssf_core::{
+    Error, GUID, WString,
     runtime::{
         executor::{DefaultExecutor, Executor},
         stateful::{PrimaryReplicator, StatefulServiceFactory, StatefulServiceReplica},
         stateful_proxy::{StatefulServicePartition, StatefulServiceReplicaProxy},
-        store::{create_com_key_value_store_replica, DummyStoreEventHandler},
+        store::{DummyStoreEventHandler, create_com_key_value_store_replica},
         store_proxy::KVStoreProxy,
     },
     sync::CancellationToken,
     types::{LocalStoreKind, OpenMode, ReplicaRole, ReplicatorSettings},
-    Error, WString, GUID,
 };
 use tokio::{
     select,

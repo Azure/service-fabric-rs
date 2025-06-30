@@ -35,7 +35,7 @@ pub mod sync;
 pub mod types;
 
 // re-export some windows types
-pub use windows_core::{Interface, WString, GUID, HRESULT, PCWSTR};
+pub use windows_core::{GUID, HRESULT, Interface, PCWSTR, WString};
 // Note cannot re-export windows_core::implement because the macro using it has hard coded mod name.
 /// Windows error type.
 pub use windows_core::Error as WinError;

@@ -6,7 +6,7 @@
 use crate::sync::CancellationToken;
 use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
 
-use super::{oneshot_channel, FabricReceiver};
+use super::{FabricReceiver, oneshot_channel};
 
 // proxy impl
 
@@ -72,7 +72,7 @@ where
 mod test {
     use std::{
         cell::Cell,
-        sync::{atomic::AtomicBool, Arc, Mutex},
+        sync::{Arc, Mutex, atomic::AtomicBool},
         time::Duration,
     };
 

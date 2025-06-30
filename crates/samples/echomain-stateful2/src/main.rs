@@ -4,11 +4,11 @@
 // ------------------------------------------------------------
 
 use crate::statefulstore::Factory;
-use mssf_core::runtime::{
-    executor::{DefaultExecutor, Executor},
-    CodePackageActivationContext,
-};
 use mssf_core::WString;
+use mssf_core::runtime::{
+    CodePackageActivationContext,
+    executor::{DefaultExecutor, Executor},
+};
 use tracing::info;
 
 mod echo;

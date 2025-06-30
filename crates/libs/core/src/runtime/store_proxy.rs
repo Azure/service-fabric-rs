@@ -11,7 +11,7 @@ use mssf_com::{
     FabricTypes::{FABRIC_KEY_VALUE_STORE_ITEM, FABRIC_KEY_VALUE_STORE_ITEM_METADATA},
 };
 
-use crate::sync::{fabric_begin_end_proxy, CancellationToken};
+use crate::sync::{CancellationToken, fabric_begin_end_proxy};
 
 use crate::types::TransactionIsolationLevel;
 

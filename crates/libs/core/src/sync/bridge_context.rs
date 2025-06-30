@@ -12,7 +12,7 @@ use crate::{
 use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl,
 };
-use windows_core::{implement, AsImpl};
+use windows_core::{AsImpl, implement};
 
 use crate::sync::CancellationToken;
 

@@ -1,7 +1,8 @@
 [package]
 name = "samples_echomain_stateful"
 version = "0.0.1"
-edition = "2018"
+edition.workspace = true
+publish = false
 
 [dependencies]
 tracing.workspace = true

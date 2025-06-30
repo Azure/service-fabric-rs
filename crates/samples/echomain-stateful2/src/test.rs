@@ -6,12 +6,13 @@
 use std::time::Duration;
 
 use mssf_core::{
+    ErrorCode, GUID, WString,
     client::{
+        FabricClient,
         svc_mgmt_client::{
             PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartition,
             ServiceEndpointRole, ServicePartitionKind,
         },
-        FabricClient,
     },
     types::{
         DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
@@ -26,7 +27,6 @@ use mssf_core::{
         StatefulServicePartitionQueryResult, StatefulServiceReplicaQueryResult,
         StatefulServiceUpdateDescription, Uri,
     },
-    ErrorCode, WString, GUID,
 };
 
 static SVC_URI: &str = "fabric:/StatefulEchoApp/StatefulEchoAppService";
@@ -249,7 +249,7 @@ impl TestClient {
             };
             if p2.node_name != p.node_name {
                 assert_ne!(p.replica_id, p2.replica_id);
-                println!("replica id updated after {} retries", count);
+                println!("replica id updated after {count} retries");
                 break;
             } else {
                 // failover is not yet finished.
@@ -328,7 +328,7 @@ async fn test_partition_info() {
             };
 
             if p2_endpoint.address != p_endpoint.address {
-                println!("addr updated after {} retries", count);
+                println!("addr updated after {count} retries");
                 break;
             } else {
                 // addr update might be slow.
@@ -369,7 +369,7 @@ async fn test_partition_info() {
             match p2_endpoint_res {
                 Ok(p2_endpoint) => {
                     if p2_endpoint.address != p_endpoint.address {
-                        println!("addr updated after {} retries", count);
+                        println!("addr updated after {count} retries");
                         break;
                     } else {
                         // addr update might be slow.
@@ -397,12 +397,12 @@ async fn test_partition_info() {
         .primary_load_metric_reports
         .iter()
         .collect::<Vec<_>>();
-    println!("Primary metric loads: {:?}", primary_loads);
+    println!("Primary metric loads: {primary_loads:?}");
     let secondary_loads = partition_load_info
         .secondary_load_metric_reports
         .iter()
         .collect::<Vec<_>>();
-    println!("Secondary metric loads: {:?}", secondary_loads);
+    println!("Secondary metric loads: {secondary_loads:?}");
 
     // test get deployed service info after failover
     let (p, s1, _) = tc.get_replicas(single.id).await.unwrap();
@@ -466,7 +466,7 @@ impl TestCreateUpdateClient {
             ),
         );
         // Run client operation on separate task to ensure that the api is task safe.
-        println!("creating service {:?}", service_name);
+        println!("creating service {service_name:?}");
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
         tokio::spawn(async move { sm.create_service(&desc, timeout, None).await })
@@ -476,7 +476,7 @@ impl TestCreateUpdateClient {
     }
 
     async fn delete_service(&self, service_name: &Uri) {
-        println!("deleting service {:?}", service_name);
+        println!("deleting service {service_name:?}");
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
         let service_name = service_name.clone();
@@ -529,7 +529,7 @@ impl TestCreateUpdateClient {
                 ),
             ),
         );
-        println!("updating service {:?}", service_name);
+        println!("updating service {service_name:?}");
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
         let service_name = service_name.clone();
@@ -563,7 +563,7 @@ async fn test_service_create_delete(
 
     // resolve until the service is ready
     let addrs = tc.resolve_service(service_name, key_type).await;
-    println!("resolved service {:?}", addrs);
+    println!("resolved service {addrs:?}");
 
     // delete service
     tc.delete_service(service_name).await;
@@ -626,12 +626,12 @@ async fn test_service_reparition() {
     {
         let key_type = PartitionKeyType::String(WString::from("1"));
         let addrs = tc.resolve_service(&service_name, key_type).await;
-        println!("resolved service {:?}", addrs);
+        println!("resolved service {addrs:?}");
     }
 
     // Add a partition 2
     {
-        println!("adding partition 2: {:?}", service_name);
+        println!("adding partition 2: {service_name:?}");
         let names_to_add = vec![WString::from("2")];
         let names_to_remove = vec![];
         tc.update_service(&service_name, names_to_add, names_to_remove)
@@ -641,12 +641,12 @@ async fn test_service_reparition() {
     {
         let key_type = PartitionKeyType::String(WString::from("2"));
         let addrs = tc.resolve_service(&service_name, key_type).await;
-        println!("resolved service partition 2 {:?}", addrs);
+        println!("resolved service partition 2 {addrs:?}");
     }
 
     // remove parition 1
     {
-        println!("removing partition 1: {:?}", service_name);
+        println!("removing partition 1: {service_name:?}");
         let names_to_add = vec![];
         let names_to_remove = vec![WString::from("1")];
         tc.update_service(&service_name, names_to_add, names_to_remove)

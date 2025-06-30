@@ -27,7 +27,7 @@ impl Error {
 
     /// Convert to fabric error code if possible.
     pub fn try_as_fabric_error_code(&self) -> std::result::Result<ErrorCode, &str> {
-        ErrorCode::try_from(FABRIC_ERROR_CODE(self.0 .0))
+        ErrorCode::try_from(FABRIC_ERROR_CODE(self.0.0))
     }
 }
 
@@ -64,8 +64,8 @@ impl From<crate::WinError> for Error {
 impl core::fmt::Debug for Error {
     fn fmt(&self, fmt: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let mut debug = fmt.debug_struct("FabricError");
-        let str_code = ErrorCode::try_from(FABRIC_ERROR_CODE(self.0 .0)).ok();
-        debug.field("code", &self.0 .0);
+        let str_code = ErrorCode::try_from(FABRIC_ERROR_CODE(self.0.0)).ok();
+        debug.field("code", &self.0.0);
         match str_code {
             Some(c) => debug.field("message", &c),
             None => debug.field("message", &"unknown fabric error"),
@@ -77,10 +77,10 @@ impl core::fmt::Debug for Error {
 
 impl core::fmt::Display for Error {
     fn fmt(&self, fmt: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let str_code = ErrorCode::try_from(FABRIC_ERROR_CODE(self.0 .0)).ok();
+        let str_code = ErrorCode::try_from(FABRIC_ERROR_CODE(self.0.0)).ok();
         match str_code {
-            Some(c) => core::write!(fmt, "{} ({})", c, self.0 .0),
-            None => core::write!(fmt, "{}", self.0 .0),
+            Some(c) => core::write!(fmt, "{} ({})", c, self.0.0),
+            None => core::write!(fmt, "{}", self.0.0),
         }
     }
 }
@@ -123,12 +123,12 @@ mod test {
         let fe = Error::from(FABRIC_E_CODE_PACKAGE_NOT_FOUND);
         // check debug string
         assert_eq!(
-            format!("{:?}", fe),
+            format!("{fe:?}"),
             "FabricError { code: -2147017733, message: FABRIC_E_CODE_PACKAGE_NOT_FOUND }"
         );
         // check display string
         assert_eq!(
-            format!("{}", fe),
+            format!("{fe}"),
             "FABRIC_E_CODE_PACKAGE_NOT_FOUND (-2147017733)"
         );
         let e = crate::WinError::from(fe.clone());
@@ -152,9 +152,9 @@ mod test {
         // use an error that is not fabric error
         let fe = Error::from(SEC_E_INTERNAL_ERROR);
         // check display string
-        assert_eq!(format!("{}", fe), "-2146893052");
+        assert_eq!(format!("{fe}"), "-2146893052");
         assert_eq!(
-            format!("{:?}", fe),
+            format!("{fe:?}"),
             "FabricError { code: -2146893052, message: \"unknown fabric error\" }"
         );
     }

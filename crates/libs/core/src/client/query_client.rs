@@ -23,7 +23,7 @@ use mssf_com::{
 };
 
 #[cfg(feature = "tokio_async")]
-use crate::sync::{fabric_begin_end_proxy, CancellationToken, FabricReceiver};
+use crate::sync::{CancellationToken, FabricReceiver, fabric_begin_end_proxy};
 use crate::{
     strings::get_pcwstr_from_opt,
     types::{

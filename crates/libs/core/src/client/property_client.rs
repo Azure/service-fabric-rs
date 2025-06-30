@@ -12,12 +12,12 @@ use std::time::Duration;
 
 #[cfg(feature = "tokio_async")]
 use crate::{
-    sync::fabric_begin_end_proxy,
+    WString,
     sync::CancellationToken,
     sync::FabricReceiver,
+    sync::fabric_begin_end_proxy,
     types::{NameEnumerationResult, Uri},
     types::{PropertyMetadataResult, PropertyValueResult},
-    WString,
 };
 #[cfg(feature = "tokio_async")]
 use mssf_com::{

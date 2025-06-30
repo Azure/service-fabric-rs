@@ -7,7 +7,7 @@
 
 use std::{ffi::c_void, marker::PhantomData};
 
-use crate::{WString, PCWSTR};
+use crate::{PCWSTR, WString};
 use mssf_com::FabricTypes::{
     FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1,
     FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_OPEN_MODE_EXISTING, FABRIC_REPLICA_OPEN_MODE_INVALID,

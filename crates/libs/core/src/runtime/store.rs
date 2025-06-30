@@ -5,7 +5,7 @@
 
 use std::ffi::c_void;
 
-use crate::{WString, PCWSTR};
+use crate::{PCWSTR, WString};
 use mssf_com::{
     FabricRuntime::{
         IFabricKeyValueStoreReplica2, IFabricStoreEventHandler, IFabricStoreEventHandler_Impl,

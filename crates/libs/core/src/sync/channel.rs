@@ -11,7 +11,7 @@ use std::{
 
 use mssf_com::FabricCommon::IFabricAsyncOperationContext;
 
-use crate::{sync::CancellationToken, ErrorCode};
+use crate::{ErrorCode, sync::CancellationToken};
 
 // Token that wraps oneshot receiver.
 // The future recieve does not have error. This is designed for the use
@@ -187,7 +187,7 @@ pub fn oneshot_channel<T>(
 mod test {
     use tokio_util::sync::CancellationToken;
 
-    use crate::{sync::oneshot_channel, ErrorCode};
+    use crate::{ErrorCode, sync::oneshot_channel};
 
     /// Test various cancellation cases for the channel used
     /// to send data in proxy layer.

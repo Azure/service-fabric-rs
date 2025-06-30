@@ -6,12 +6,13 @@
 use std::time::Duration;
 
 use mssf_core::{
+    ErrorCode, GUID, WString,
     client::{
+        FabricClient, GatewayInformationResult, PropertyManagementClient, ServiceNotification,
         svc_mgmt_client::{
             PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartitionInfo,
             ServiceEndpointRole, ServicePartitionKind,
         },
-        FabricClient, GatewayInformationResult, PropertyManagementClient, ServiceNotification,
     },
     types::{
         QueryServiceReplicaStatus, RemoveReplicaDescription, ServiceNotificationFilterDescription,
@@ -20,7 +21,6 @@ use mssf_core::{
         ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
         StatelessServiceInstanceQueryResult, StatelessServicePartitionQueryResult, Uri,
     },
-    ErrorCode, WString, GUID,
 };
 
 static ECHO_SVC_URI: &str = "fabric:/EchoApp/EchoAppService";
@@ -275,7 +275,7 @@ async fn delete_property_if_exist(
             {
                 // Property does not exist, continue.
             } else {
-                panic!("unexpected error: {}", e);
+                panic!("unexpected error: {e}");
             }
         }
     };

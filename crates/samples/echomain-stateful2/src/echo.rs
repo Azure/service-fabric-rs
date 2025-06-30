@@ -7,9 +7,9 @@
 
 use std::io::Error;
 
+use mssf_core::WString;
 use mssf_core::runtime::stateful_proxy::StatefulServicePartition;
 use mssf_core::types::LoadMetric;
-use mssf_core::WString;
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 use tracing::{error, info};

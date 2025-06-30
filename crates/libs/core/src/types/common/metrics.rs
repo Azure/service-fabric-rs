@@ -5,7 +5,7 @@
 
 //! Module for handling fabric metrics
 
-use crate::{WString, PCWSTR};
+use crate::{PCWSTR, WString};
 use mssf_com::FabricTypes::{
     FABRIC_LOAD_METRIC, FABRIC_MOVE_COST, FABRIC_MOVE_COST_HIGH, FABRIC_MOVE_COST_LOW,
     FABRIC_MOVE_COST_MEDIUM, FABRIC_MOVE_COST_ZERO,

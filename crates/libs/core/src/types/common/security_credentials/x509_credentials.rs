@@ -12,13 +12,13 @@
 use std::{ffi::c_void, ptr::addr_of_mut};
 
 use mssf_com::FabricTypes::{
-    FABRIC_PROTECTION_LEVEL, FABRIC_SECURITY_CREDENTIALS, FABRIC_SECURITY_CREDENTIAL_KIND_X509,
+    FABRIC_PROTECTION_LEVEL, FABRIC_SECURITY_CREDENTIAL_KIND_X509, FABRIC_SECURITY_CREDENTIALS,
     FABRIC_X509_CREDENTIALS, FABRIC_X509_FIND_TYPE, FABRIC_X509_FIND_TYPE_FINDBYEXTENSION,
     FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME, FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT,
     FABRIC_X509_STORE_LOCATION, FABRIC_X509_STORE_LOCATION_CURRENTUSER,
     FABRIC_X509_STORE_LOCATION_INVALID, FABRIC_X509_STORE_LOCATION_LOCALMACHINE,
 };
-use windows_core::{WString, PCWSTR};
+use windows_core::{PCWSTR, WString};
 
 use super::{FabricProtectionLevel, FabricSecurityCredentialKind};
 
@@ -160,9 +160,9 @@ mod test {
     use std::sync::{Arc, Mutex};
 
     use crate::strings::WStringWrap;
+    use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
     use crate::types::mockifabricclientsettings::test_constants::*;
     use crate::types::mockifabricclientsettings::test_utilities::check_array_parameter;
-    use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
 
     use super::*;
     const TEST_STORE_1: &str = "TEST_STORE_1";

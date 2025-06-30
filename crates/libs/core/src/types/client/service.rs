@@ -27,7 +27,7 @@ use mssf_com::FabricTypes::{
     FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX2,
     FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX3, FABRIC_URI,
 };
-use windows_core::{WString, PCWSTR};
+use windows_core::{PCWSTR, WString};
 
 use crate::types::{MoveCost, PartitionSchemeDescription, ServicePackageActivationMode, Uri};
 
@@ -362,11 +362,11 @@ pub(crate) enum ServiceDescriptionRaw<'a> {
 impl ServiceDescriptionRaw<'_> {
     pub(crate) fn as_ffi(&self) -> FABRIC_SERVICE_DESCRIPTION {
         match self {
-            ServiceDescriptionRaw::Stateful(ref desc) => FABRIC_SERVICE_DESCRIPTION {
+            ServiceDescriptionRaw::Stateful(desc) => FABRIC_SERVICE_DESCRIPTION {
                 Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
                 Value: desc.as_ffi() as *const _ as *mut c_void,
             },
-            ServiceDescriptionRaw::Stateless(ref desc) => FABRIC_SERVICE_DESCRIPTION {
+            ServiceDescriptionRaw::Stateless(desc) => FABRIC_SERVICE_DESCRIPTION {
                 Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
                 Value: desc.as_ffi() as *const _ as *mut c_void,
             },
@@ -379,10 +379,8 @@ impl ServiceDescription {
     /// mssf build the raw type on the stack and call the SF API with it.
     pub(crate) fn build_raw(&self) -> ServiceDescriptionRaw {
         match self {
-            ServiceDescription::Stateful(ref desc) => {
-                ServiceDescriptionRaw::Stateful(desc.build_raw())
-            }
-            ServiceDescription::Stateless(ref desc) => {
+            ServiceDescription::Stateful(desc) => ServiceDescriptionRaw::Stateful(desc.build_raw()),
+            ServiceDescription::Stateless(desc) => {
                 ServiceDescriptionRaw::Stateless(desc.build_raw())
             }
         }
@@ -457,7 +455,7 @@ pub(crate) enum ServiceRepartitionDescriptionRaw<'a> {
 impl ServiceRepartitionDescription {
     pub(crate) fn as_raw(&self) -> ServiceRepartitionDescriptionRaw {
         match self {
-            ServiceRepartitionDescription::Named(ref desc) => {
+            ServiceRepartitionDescription::Named(desc) => {
                 ServiceRepartitionDescriptionRaw::Named(desc.as_raw())
             }
             ServiceRepartitionDescription::Invalid => ServiceRepartitionDescriptionRaw::Invalid,
@@ -468,7 +466,7 @@ impl ServiceRepartitionDescription {
 impl ServiceRepartitionDescriptionRaw<'_> {
     pub(crate) fn as_ffi(&self) -> (FABRIC_SERVICE_PARTITION_KIND, *const c_void) {
         match self {
-            ServiceRepartitionDescriptionRaw::Named(ref desc) => (
+            ServiceRepartitionDescriptionRaw::Named(desc) => (
                 FABRIC_SERVICE_PARTITION_KIND_NAMED,
                 desc.as_ffi() as *const _ as *const _,
             ),
@@ -515,10 +513,10 @@ impl ServiceUpdateDescription {
     /// mssf build the raw type on the stack and call the SF API with it.
     pub(crate) fn build_raw(&self) -> ServiceUpdateDescriptionRaw {
         match self {
-            ServiceUpdateDescription::Stateful(ref desc) => {
+            ServiceUpdateDescription::Stateful(desc) => {
                 ServiceUpdateDescriptionRaw::Stateful(desc.build_raw())
             }
-            ServiceUpdateDescription::Stateless(ref desc) => {
+            ServiceUpdateDescription::Stateless(desc) => {
                 ServiceUpdateDescriptionRaw::Stateless(desc.build_raw())
             }
         }
@@ -672,11 +670,11 @@ impl ServiceUpdateDescriptionRaw<'_> {
     /// Must have the same lifetime as the original struct
     pub(crate) fn as_ffi(&self) -> FABRIC_SERVICE_UPDATE_DESCRIPTION {
         match self {
-            ServiceUpdateDescriptionRaw::Stateful(ref desc) => FABRIC_SERVICE_UPDATE_DESCRIPTION {
+            ServiceUpdateDescriptionRaw::Stateful(desc) => FABRIC_SERVICE_UPDATE_DESCRIPTION {
                 Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
                 Value: desc.as_ffi() as *const _ as *mut c_void,
             },
-            ServiceUpdateDescriptionRaw::Stateless(ref desc) => FABRIC_SERVICE_UPDATE_DESCRIPTION {
+            ServiceUpdateDescriptionRaw::Stateless(desc) => FABRIC_SERVICE_UPDATE_DESCRIPTION {
                 Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
                 Value: desc.as_ffi() as *const _ as *mut c_void,
             },

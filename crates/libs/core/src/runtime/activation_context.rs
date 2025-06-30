@@ -12,19 +12,19 @@ use mssf_com::{
 };
 
 use crate::{
+    Error, PCWSTR, WString,
     strings::WStringWrap,
     types::{EndpointResourceDescription, HealthInformation, HealthReportSendOption},
-    Error, WString, PCWSTR,
 };
 
 use super::{
     config::ConfigurationPackage,
     package_change::{
+        ConfigurationPackageChangeEvent,
         config::{
             ConfigurationPackageChangeCallbackHandle, ConfigurationPackageChangeEventHandlerBridge,
             LambdaConfigurationPackageEventHandler,
         },
-        ConfigurationPackageChangeEvent,
     },
 };
 

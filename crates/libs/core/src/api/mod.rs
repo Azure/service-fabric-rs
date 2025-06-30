@@ -48,6 +48,7 @@ fn load_fn<T>(lib: &'static libloading::Library, name: &str) -> libloading::Symb
 
 /// Contains all SF APIs loaded from SF libs needed for mssf.
 /// More APIs can be added here when mssf needs them.
+#[allow(non_snake_case)]
 pub struct ApiTable {
     fabric_get_last_error_message_fn: libloading::Symbol<
         'static,

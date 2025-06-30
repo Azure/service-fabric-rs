@@ -5,8 +5,8 @@
 
 #![deny(non_snake_case)] // this file is safe rust
 
-use crate::sync::CancellationToken;
 use crate::WString;
+use crate::sync::CancellationToken;
 use mssf_com::FabricRuntime::IFabricStatelessServicePartition;
 
 use crate::types::ServicePartitionInformation;

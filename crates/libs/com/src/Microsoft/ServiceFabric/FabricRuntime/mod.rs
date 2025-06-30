@@ -940,7 +940,7 @@ pub trait IFabricCodePackage2_Impl: IFabricCodePackage_Impl {
         &self,
     ) -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION;
     fn get_EntryPointRunAsPolicy(&self)
-        -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION;
+    -> *mut super::FabricTypes::FABRIC_RUNAS_POLICY_DESCRIPTION;
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricCodePackage2_Vtbl {
@@ -1345,8 +1345,8 @@ pub trait IFabricCodePackageActivationContext_Impl: windows_core::IUnknownImpl {
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricCodePackageActivationContext_Vtbl {
-    pub const fn new<Identity: IFabricCodePackageActivationContext_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricCodePackageActivationContext_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_ContextId<
             Identity: IFabricCodePackageActivationContext_Impl,
             const OFFSET: isize,
@@ -1877,8 +1877,8 @@ pub trait IFabricCodePackageActivationContext2_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricCodePackageActivationContext2_Vtbl {
-    pub const fn new<Identity: IFabricCodePackageActivationContext2_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricCodePackageActivationContext2_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_ApplicationName<
             Identity: IFabricCodePackageActivationContext2_Impl,
             const OFFSET: isize,
@@ -2070,8 +2070,8 @@ pub trait IFabricCodePackageActivationContext3_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricCodePackageActivationContext3_Vtbl {
-    pub const fn new<Identity: IFabricCodePackageActivationContext3_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricCodePackageActivationContext3_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn ReportApplicationHealth<
             Identity: IFabricCodePackageActivationContext3_Impl,
             const OFFSET: isize,
@@ -2269,8 +2269,8 @@ pub trait IFabricCodePackageActivationContext4_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricCodePackageActivationContext4_Vtbl {
-    pub const fn new<Identity: IFabricCodePackageActivationContext4_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricCodePackageActivationContext4_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn ReportApplicationHealth2<
             Identity: IFabricCodePackageActivationContext4_Impl,
             const OFFSET: isize,
@@ -2411,8 +2411,8 @@ pub trait IFabricCodePackageActivationContext5_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricCodePackageActivationContext5_Vtbl {
-    pub const fn new<Identity: IFabricCodePackageActivationContext5_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricCodePackageActivationContext5_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_ServiceListenAddress<
             Identity: IFabricCodePackageActivationContext5_Impl,
             const OFFSET: isize,
@@ -2528,8 +2528,8 @@ pub trait IFabricCodePackageActivationContext6_Impl:
     feature = "ServiceFabric_FabricTypes"
 ))]
 impl IFabricCodePackageActivationContext6_Vtbl {
-    pub const fn new<Identity: IFabricCodePackageActivationContext6_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricCodePackageActivationContext6_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn GetDirectory<
             Identity: IFabricCodePackageActivationContext6_Impl,
             const OFFSET: isize,
@@ -4039,8 +4039,8 @@ pub trait IFabricEseLocalStoreSettingsResult_Impl: windows_core::IUnknownImpl {
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricEseLocalStoreSettingsResult_Vtbl {
-    pub const fn new<Identity: IFabricEseLocalStoreSettingsResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricEseLocalStoreSettingsResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_Settings<
             Identity: IFabricEseLocalStoreSettingsResult_Impl,
             const OFFSET: isize,
@@ -4380,8 +4380,8 @@ pub trait IFabricKeyValueStoreItemEnumerator_Impl: windows_core::IUnknownImpl {
     fn get_Current(&self) -> Option<IFabricKeyValueStoreItemResult>;
 }
 impl IFabricKeyValueStoreItemEnumerator_Vtbl {
-    pub const fn new<Identity: IFabricKeyValueStoreItemEnumerator_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricKeyValueStoreItemEnumerator_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn MoveNext<
             Identity: IFabricKeyValueStoreItemEnumerator_Impl,
             const OFFSET: isize,
@@ -4460,8 +4460,8 @@ pub trait IFabricKeyValueStoreItemEnumerator2_Impl:
     fn TryMoveNext(&self) -> windows_core::Result<u8>;
 }
 impl IFabricKeyValueStoreItemEnumerator2_Vtbl {
-    pub const fn new<Identity: IFabricKeyValueStoreItemEnumerator2_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricKeyValueStoreItemEnumerator2_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn TryMoveNext<
             Identity: IFabricKeyValueStoreItemEnumerator2_Impl,
             const OFFSET: isize,
@@ -4691,8 +4691,8 @@ pub trait IFabricKeyValueStoreItemMetadataResult_Impl: windows_core::IUnknownImp
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricKeyValueStoreItemMetadataResult_Vtbl {
-    pub const fn new<Identity: IFabricKeyValueStoreItemMetadataResult_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricKeyValueStoreItemMetadataResult_Impl, const OFFSET: isize>()
+    -> Self {
         unsafe extern "system" fn get_Metadata<
             Identity: IFabricKeyValueStoreItemMetadataResult_Impl,
             const OFFSET: isize,
@@ -8743,8 +8743,8 @@ unsafe impl Send for IFabricReplicatorCatchupSpecificQuorum {}
 unsafe impl Sync for IFabricReplicatorCatchupSpecificQuorum {}
 pub trait IFabricReplicatorCatchupSpecificQuorum_Impl: windows_core::IUnknownImpl {}
 impl IFabricReplicatorCatchupSpecificQuorum_Vtbl {
-    pub const fn new<Identity: IFabricReplicatorCatchupSpecificQuorum_Impl, const OFFSET: isize>(
-    ) -> Self {
+    pub const fn new<Identity: IFabricReplicatorCatchupSpecificQuorum_Impl, const OFFSET: isize>()
+    -> Self {
         Self {
             base__: windows_core::IUnknown_Vtbl::new::<Identity, OFFSET>(),
         }

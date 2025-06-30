@@ -11,7 +11,7 @@ pub mod store;
 
 use mssf_com::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION;
 
-use crate::{strings::WStringWrap, WString};
+use crate::{WString, strings::WStringWrap};
 
 #[derive(Debug)]
 pub struct EndpointResourceDescription {

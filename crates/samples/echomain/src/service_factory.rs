@@ -6,8 +6,8 @@
 use std::sync::Arc;
 
 use mssf_core::{
-    runtime::stateless::{StatelessServiceFactory, StatelessServiceInstance},
     WString,
+    runtime::stateless::{StatelessServiceFactory, StatelessServiceInstance},
 };
 use tracing::info;
 

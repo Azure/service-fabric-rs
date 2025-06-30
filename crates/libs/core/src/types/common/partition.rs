@@ -10,7 +10,7 @@
 
 use std::ffi::c_void;
 
-use crate::{WString, GUID};
+use crate::{GUID, WString};
 use mssf_com::FabricTypes::{
     FABRIC_INT64_RANGE_PARTITION_INFORMATION, FABRIC_NAMED_PARTITION_INFORMATION,
     FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION, FABRIC_PARTITION_SCHEME,
@@ -19,8 +19,8 @@ use mssf_com::FabricTypes::{
     FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_EXCLUSIVE_PROCESS,
     FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_SHARED_PROCESS, FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
     FABRIC_SERVICE_PARTITION_ACCESS_STATUS_GRANTED, FABRIC_SERVICE_PARTITION_ACCESS_STATUS_INVALID,
-    FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NOT_PRIMARY,
     FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NO_WRITE_QUORUM,
+    FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NOT_PRIMARY,
     FABRIC_SERVICE_PARTITION_ACCESS_STATUS_RECONFIGURATION_PENDING,
     FABRIC_SERVICE_PARTITION_INFORMATION, FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE,
     FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
@@ -296,11 +296,11 @@ impl PartitionSchemeDescription {
             PartitionSchemeDescription::Singleton => {
                 (FABRIC_PARTITION_SCHEME_SINGLETON, std::ptr::null_mut())
             }
-            PartitionSchemeDescription::Int64Range(ref scheme) => (
+            PartitionSchemeDescription::Int64Range(scheme) => (
                 FABRIC_PARTITION_SCHEME_UNIFORM_INT64_RANGE,
                 scheme.as_raw() as *const _ as *mut _,
             ),
-            PartitionSchemeDescription::Named(ref scheme) => (
+            PartitionSchemeDescription::Named(scheme) => (
                 FABRIC_PARTITION_SCHEME_NAMED,
                 scheme.as_raw() as *const _ as *mut _,
             ),

@@ -11,8 +11,8 @@
 //! This sample demonstrates it is possible to use the library with default-features = false and ensures that that scenario remains compiling as PRs go into the repository.
 //!
 
-use mssf_core::runtime::{package_change::PackageChangeEvent, CodePackageActivationContext};
-#[no_mangle]
+use mssf_core::runtime::{CodePackageActivationContext, package_change::PackageChangeEvent};
+#[unsafe(no_mangle)]
 fn test_fn() {
     let my_ctx = CodePackageActivationContext::create().unwrap();
 

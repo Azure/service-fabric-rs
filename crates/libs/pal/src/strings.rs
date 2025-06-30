@@ -50,9 +50,9 @@ impl PCWSTR {
     pub unsafe fn len(&self) -> usize {
         let mut len = 0;
         let mut ptr = self.0;
-        while ptr.read() != 0 {
+        while unsafe { ptr.read() } != 0 {
             len += 1;
-            ptr = ptr.add(1);
+            ptr = unsafe { ptr.add(1) };
         }
         len
     }
@@ -63,7 +63,7 @@ impl PCWSTR {
     ///
     /// The `PCWSTR`'s pointer needs to be valid for reads up until and including the next `\0`.
     pub unsafe fn is_empty(&self) -> bool {
-        self.len() == 0
+        unsafe { self.len() == 0 }
     }
 
     /// String data without the trailing 0
@@ -72,7 +72,7 @@ impl PCWSTR {
     ///
     /// The `PCWSTR`'s pointer needs to be valid for reads up until and including the next `\0`.
     pub unsafe fn as_wide(&self) -> &[u16] {
-        core::slice::from_raw_parts(self.0, self.len())
+        unsafe { core::slice::from_raw_parts(self.0, self.len()) }
     }
 }
 
@@ -218,7 +218,7 @@ impl core::fmt::Display for WString {
 
 impl core::fmt::Debug for WString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "\"{}\"", self)
+        write!(f, "\"{self}\"")
     }
 }
 
@@ -234,7 +234,7 @@ mod tests {
             let h = WString::from(s);
             assert_eq!(s.len(), h.len());
             assert_eq!(s.is_empty(), h.is_empty());
-            assert_eq!(format!("{}", h), s);
+            assert_eq!(format!("{h}"), s);
             assert_eq!(s, h.to_string_lossy());
             assert_eq!(h.as_wide().len(), s.len());
             let raw = h.as_ptr();

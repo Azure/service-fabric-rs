@@ -1,7 +1,7 @@
 use crate::PCWSTR;
 use mssf_com::FabricTypes::{FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT_SEND_OPTIONS};
 
-use crate::{strings::WStringWrap, types::HealthState, WString};
+use crate::{WString, strings::WStringWrap, types::HealthState};
 
 pub type SequenceNumber = i64;
 

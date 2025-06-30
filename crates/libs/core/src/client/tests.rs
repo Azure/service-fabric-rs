@@ -7,7 +7,7 @@
 
 use std::time::Duration;
 
-use crate::{client::FabricClient, WString};
+use crate::{WString, client::FabricClient};
 use mssf_com::FabricTypes::FABRIC_E_SERVICE_DOES_NOT_EXIST;
 use tokio_util::sync::CancellationToken;
 
@@ -47,7 +47,7 @@ async fn test_fabric_client() {
         let v = list.iter().collect::<Vec<_>>();
         assert_ne!(v.len(), 0);
         for n in v {
-            println!("Node: {:?}", n)
+            println!("Node: {n:?}")
         }
     }
     // get more nodes using paging
@@ -63,7 +63,7 @@ async fn test_fabric_client() {
         let list = qc.get_node_list(&desc, timeout, None).await.unwrap();
         let v = list.iter().collect::<Vec<_>>();
         for n in v {
-            println!("More Node: {:?}", n)
+            println!("More Node: {n:?}")
         }
     }
 
@@ -94,10 +94,10 @@ async fn test_fabric_client() {
         match res {
             Ok(ptt) => {
                 let info = ptt.get_info();
-                println!("Info: {:?}", info);
+                println!("Info: {info:?}");
                 let list = ptt.get_endpoint_list();
                 let v = list.iter().collect::<Vec<_>>();
-                println!("Endpoints: {:?}", v);
+                println!("Endpoints: {v:?}");
             }
             Err(e) => {
                 // If the app is not provisioned we validate the error.

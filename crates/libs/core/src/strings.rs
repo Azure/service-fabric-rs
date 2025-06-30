@@ -6,8 +6,8 @@
 use std::marker::PhantomData;
 
 use crate::{
+    PCWSTR, WString,
     iter::{FabricIter, FabricListAccessor},
-    WString, PCWSTR,
 };
 use mssf_com::FabricCommon::{
     IFabricStringListResult, IFabricStringResult, IFabricStringResult_Impl,

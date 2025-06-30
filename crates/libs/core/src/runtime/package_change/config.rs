@@ -8,7 +8,7 @@ use mssf_com::FabricRuntime::{
     IFabricConfigurationPackageChangeHandler, IFabricConfigurationPackageChangeHandler_Impl,
 };
 
-use crate::runtime::{config::ConfigurationPackage, CodePackageActivationContext};
+use crate::runtime::{CodePackageActivationContext, config::ConfigurationPackage};
 
 use super::ConfigurationPackageChangeEvent;
 

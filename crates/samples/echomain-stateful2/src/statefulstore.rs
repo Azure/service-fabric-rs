@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use mssf_core::{Error, WString};
 use mssf_core::{
     runtime::{
         executor::{DefaultExecutor, Executor},
@@ -13,7 +14,6 @@ use mssf_core::{
         Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig, ReplicaSetQuorumMode,
     },
 };
-use mssf_core::{Error, WString};
 use std::{
     cell::Cell,
     sync::{Arc, Mutex},
@@ -143,8 +143,10 @@ impl PrimaryReplicator for AppFabricReplicator {
         currentconfiguration: &ReplicaSetConfig,
         previousconfiguration: &ReplicaSetConfig,
     ) -> mssf_core::Result<()> {
-        info!("AppFabricReplicator2::PrimaryReplicator::update_catch_up_replica_set_configuration: curr: {currentconfiguration:?}, prev: {previousconfiguration:?},{:?}",
-            self.ctx.get_trace_read_write_status());
+        info!(
+            "AppFabricReplicator2::PrimaryReplicator::update_catch_up_replica_set_configuration: curr: {currentconfiguration:?}, prev: {previousconfiguration:?},{:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         Ok(())
     }
 
@@ -184,8 +186,10 @@ impl PrimaryReplicator for AppFabricReplicator {
         &self,
         currentconfiguration: &ReplicaSetConfig,
     ) -> mssf_core::Result<()> {
-        info!("AppFabricReplicator2::PrimaryReplicator::update_current_replica_set_configuration {currentconfiguration:?} {:?}",
-            self.ctx.get_trace_read_write_status());
+        info!(
+            "AppFabricReplicator2::PrimaryReplicator::update_current_replica_set_configuration {currentconfiguration:?} {:?}",
+            self.ctx.get_trace_read_write_status()
+        );
         Ok(())
     }
 

@@ -19,7 +19,16 @@ libloading = "0.8"
 lazy_static = "1.5"
 serde = "1"
 serde_derive = "1"
-tokio = { version = "1", features = ["full"], default-features = false }
+tokio = { version = "1", features = [
+    "sync",
+    "rt-multi-thread",
+    "rt",
+    "macros",
+    "time",
+    "io-util",
+    "net",
+    "signal"
+], default-features = false }
 tokio-util = "0.7"
 tracing = { version = "0.1", features = ["log"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = [

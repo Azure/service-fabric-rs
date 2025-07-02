@@ -34,6 +34,9 @@ pub mod strings;
 pub mod sync;
 pub mod types;
 
+// Rename the mssf_pal dependency
+// This is needed because windows_core macro looks for the `windows_core` token.
+extern crate mssf_pal as windows_core;
 // re-export some windows types
 pub use windows_core::{GUID, HRESULT, Interface, PCWSTR, WString};
 // Note cannot re-export windows_core::implement because the macro using it has hard coded mod name.

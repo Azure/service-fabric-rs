@@ -31,6 +31,8 @@ pub mod stateful_proxy;
 pub mod stateless;
 #[cfg(feature = "tokio_async")]
 pub mod stateless_bridge;
+mod stateless_proxy;
+pub use stateless_proxy::StatelessServicePartition;
 pub mod store;
 #[cfg(feature = "tokio_async")]
 pub mod store_proxy;

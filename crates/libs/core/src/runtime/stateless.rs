@@ -6,28 +6,8 @@
 #![deny(non_snake_case)] // this file is safe rust
 
 use crate::WString;
+use crate::runtime::StatelessServicePartition;
 use crate::sync::CancellationToken;
-use mssf_com::FabricRuntime::IFabricStatelessServicePartition;
-
-use crate::types::ServicePartitionInformation;
-
-// wrap of com interface
-pub struct StatelessServicePartition {
-    com_impl: IFabricStatelessServicePartition,
-}
-
-impl StatelessServicePartition {
-    pub fn new(com_impl: IFabricStatelessServicePartition) -> StatelessServicePartition {
-        StatelessServicePartition { com_impl }
-    }
-
-    pub fn get_partition_info(&self) -> crate::Result<ServicePartitionInformation> {
-        let raw = unsafe { self.com_impl.GetPartitionInfo() }?;
-        let raw_ref = unsafe { raw.as_ref().unwrap() };
-        assert!(!raw.is_null());
-        Ok(raw_ref.into())
-    }
-}
 
 /// Stateless service factories are registered with the FabricRuntime by service hosts via
 /// Runtime::register_stateless_service_factory().

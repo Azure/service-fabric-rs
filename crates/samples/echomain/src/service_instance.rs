@@ -7,9 +7,9 @@ use std::cell::Cell;
 use std::sync::Arc;
 
 use mssf_core::WString;
-use mssf_core::runtime::stateless::{StatelessServiceInstance, StatelessServicePartition};
+use mssf_core::runtime::{StatelessServicePartition, stateless::StatelessServiceInstance};
 use mssf_core::sync::CancellationToken;
-use mssf_core::types::ServicePartitionInformation;
+use mssf_core::types::{HealthInformation, ServicePartitionInformation};
 use tokio::sync::Mutex;
 use tokio::sync::oneshot::{self, Sender};
 use tokio::task::JoinHandle;
@@ -60,6 +60,8 @@ impl StatelessServiceInstance for ServiceInstance {
             .spawn(async move { echo::start_echo(rx, addr).await });
         self.task_.lock().await.set(Some(t));
         self.tx_.lock().await.set(Some(tx));
+        // send health report
+        send_instance_health_report(partition);
         Ok(WString::from(self.ctx.get_addr()))
     }
 
@@ -100,5 +102,21 @@ impl StatelessServiceInstance for ServiceInstance {
             // never cancel
             self.close(CancellationToken::new()).await.unwrap();
         });
+    }
+}
+
+/// Send health ok to SF to validate health reporting code
+fn send_instance_health_report(p: &StatelessServicePartition) {
+    let healthinfo = HealthInformation {
+        source_id: WString::from("echoapp"),
+        property: WString::from("echo-opened"),
+        time_to_live_seconds: 300,
+        state: mssf_core::types::HealthState::Ok,
+        description: WString::from("echo instance opened"),
+        sequence_number: 1,
+        remove_when_expired: true,
+    };
+    if let Err(e) = p.report_instance_health(&healthinfo) {
+        tracing::error!("report instance health failed: {e:?}");
     }
 }

@@ -8,9 +8,7 @@
 
 use std::sync::Arc;
 
-use crate::{
-    runtime::stateless::StatelessServicePartition, strings::WStringWrap, sync::BridgeContext,
-};
+use crate::{runtime::StatelessServicePartition, strings::WStringWrap, sync::BridgeContext};
 use mssf_com::{
     FabricCommon::IFabricStringResult,
     FabricRuntime::{

@@ -21,23 +21,17 @@ tracing = ["dep:tracing"]
 
 [dependencies]
 tracing = { workspace = true, optional = true }
-tokio = { workspace = true, features = ["sync", "rt"], optional = true }
+tokio = { workspace = true, features = ["sync", "rt"], optional = true, default-features = false}
 tokio-util = { workspace = true , optional = true }
 trait-variant.workspace = true
 bitflags.workspace = true
 config = { workspace = true, optional = true }
 libloading.workspace = true
 lazy_static.workspace = true
+mssf-pal.workspace = true
 
 [dev-dependencies]
-# need time for testing
-tokio = { version = "1", features = [
-    "sync",
-    "rt-multi-thread",
-    "rt",
-    "macros",
-    "time",
-] }
+tokio.workspace = true
 
 # windows dep is only enabled on windows os.
 [target.'cfg(windows)'.dependencies.windows]
@@ -45,14 +39,6 @@ workspace = true
 features = [
     "Win32_System_Diagnostics_Debug_Extensions", # for debug api
 ]
-
-# treat pal as the windows core.
-# see mssf-pal documentation why it is used this way.
-# Cannot use workspace dep because the package rename/aliasing.
-[dependencies.windows-core]
-package = "mssf-pal"
-path = "../pal"
-version = "0.1.0"
 
 [dependencies.mssf-com]
 workspace = true

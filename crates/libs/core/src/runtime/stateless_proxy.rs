@@ -16,6 +16,7 @@ use windows_core::Interface;
 pub struct StatelessServicePartition {
     com_impl: IFabricStatelessServicePartition3,
 }
+
 impl StatelessServicePartition {
     pub fn new(com_impl: IFabricStatelessServicePartition) -> StatelessServicePartition {
         StatelessServicePartition {

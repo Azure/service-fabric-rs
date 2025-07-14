@@ -16,6 +16,7 @@ pub struct StatelessServicePartition {
     com_impl: IFabricStatelessServicePartition3,
 }
 
+#[derive(Debug, Clone)]
 impl StatelessServicePartition {
     pub fn new(com_impl: IFabricStatelessServicePartition) -> StatelessServicePartition {
         StatelessServicePartition {

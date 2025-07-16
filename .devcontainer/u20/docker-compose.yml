@@ -3,8 +3,8 @@ version: '3.8'
 services:
   onebox:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: u20/Dockerfile
       target: onebox
     privileged: true
     ports:
@@ -12,11 +12,11 @@ services:
       - "19000:19000"
   repo:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: u20/Dockerfile
       target: repo
     volumes:
-      - ../:/workspaces/repo # repo dir
+      - ../../:/workspaces/repo # repo dir
       - ~/.ssh:/root/.ssh:ro # git creds
     depends_on:
       - onebox

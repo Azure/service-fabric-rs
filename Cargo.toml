@@ -41,5 +41,5 @@ windows-core = "0.61"
 
 # crates in this repo
 mssf-com = { version = "0.2.0", path = "./crates/libs/com", default-features = false }
-mssf-core = { version = "0.2.0", path = "./crates/libs/core", default-features = true }
+mssf-core = { version = "0.2.1", path = "./crates/libs/core", default-features = true }
 mssf-pal = { version = "0.2.0", path = "./crates/libs/pal", default-features = true }

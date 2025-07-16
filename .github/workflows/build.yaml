@@ -167,6 +167,9 @@ jobs:
         run: cmake --build build --config Debug
 
   build-devcontainer:
+    strategy:
+      matrix:
+        devcontainer-type: ["u20", "u22"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -175,6 +178,7 @@ jobs:
       - name: Run in Dev Container
         uses: devcontainers/ci@v0.3
         with:
+          configFile: .devcontainer/${{ matrix.devcontainer-type }}/devcontainer.json
           runCmd: |
             cmake . -DCMAKE_BUILD_TYPE=Debug -B build
             cmake --build build --config Debug

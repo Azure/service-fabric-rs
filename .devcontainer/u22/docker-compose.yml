@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  onebox-u22:
+  onebox:
     build:
       context: ..
       dockerfile: u22/Dockerfile
@@ -19,6 +19,6 @@ services:
       - ../../:/workspaces/repo # repo dir
       - ~/.ssh:/root/.ssh:ro # git creds
     depends_on:
-      - onebox-u22
+      - onebox
     
   

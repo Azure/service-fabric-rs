@@ -10,7 +10,7 @@ jobs:
         BUILD_TYPE: ["Debug"]
         os: [ windows-latest ]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - uses: lukka/get-cmake@latest
       with:

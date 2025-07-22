@@ -8,12 +8,12 @@
 	"workspaceFolder": "/workspaces/repo",
 	"service": "repo-u22",
 	"customizations": {
-    "vscode": {
-      	"extensions": [
-			"ms-vscode.cmake-tools",
-			"rust-lang.rust-analyzer",
-			"tamasfe.even-better-toml"
-		]
-    }
-  }
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cmake-tools",
+				"rust-lang.rust-analyzer",
+				"tamasfe.even-better-toml"
+			]
+		}
+	}
 }

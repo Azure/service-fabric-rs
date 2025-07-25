@@ -30,11 +30,13 @@ mod notification;
 pub mod health_client;
 mod property_client;
 pub mod query_client;
+mod resolve;
 pub mod svc_mgmt_client;
 // reexport
 pub use connection::GatewayInformationResult;
 pub use notification::ServiceNotification;
 pub use property_client::PropertyManagementClient;
+pub use resolve::ServicePartitionResolver;
 
 #[cfg(test)]
 mod tests;

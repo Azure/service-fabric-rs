@@ -103,6 +103,28 @@ impl core::fmt::Display for ErrorCode {
     }
 }
 
+impl ErrorCode {
+    /// Matches the FabricTransientException mapping in InteropExceptionMap.cs
+    pub fn is_transient(&self) -> bool {
+        matches!(
+            self,
+            crate::ErrorCode::FABRIC_E_SERVICE_OFFLINE
+                | crate::ErrorCode::FABRIC_E_APPLICATION_UPDATE_IN_PROGRESS
+                | crate::ErrorCode::FABRIC_E_RECONFIGURATION_PENDING
+                | crate::ErrorCode::FABRIC_E_NO_WRITE_QUORUM
+                | crate::ErrorCode::FABRIC_E_REPLICATION_QUEUE_FULL
+                | crate::ErrorCode::FABRIC_E_SERVICE_TOO_BUSY
+                | crate::ErrorCode::FABRIC_E_GATEWAY_NOT_REACHABLE
+                | crate::ErrorCode::E_ABORT // This is the same as OperationCanceled.
+                | crate::ErrorCode::FABRIC_E_ACQUIRE_FILE_LOCK_FAILED
+                | crate::ErrorCode::FABRIC_E_IMAGEBUILDER_TIMEOUT
+                | crate::ErrorCode::FABRIC_E_CONSTRAINT_KEY_UNDEFINED
+                | crate::ErrorCode::FABRIC_E_STOP_IN_PROGRESS
+                | crate::ErrorCode::FABRIC_E_DATABASE_MIGRATION_IN_PROGRESS
+        )
+    }
+}
+
 // This defines all the fabric error codes.
 // list copied from https://github.com/microsoft/service-fabric/blob/19791eb97c8d876517daa030e5a403f4bcad25b1/src/prod/src/idl/public/FabricTypes.idl#L60C18-L60C35
 define_fabric_error_code!(

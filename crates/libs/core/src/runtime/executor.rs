@@ -89,6 +89,23 @@ impl<T: Send> JoinHandle<T> for DefaultJoinHandle<T> {
     }
 }
 
+/// Runtime independent sleep trait.
+pub trait Timer: Send + Sync + 'static {
+    fn sleep(&self, duration: std::time::Duration) -> std::pin::Pin<Box<dyn Sleep>>;
+}
+
+pub struct DefaultTimer;
+
+impl Timer for DefaultTimer {
+    fn sleep(&self, duration: std::time::Duration) -> std::pin::Pin<Box<dyn Sleep>> {
+        Box::pin(tokio::time::sleep(duration))
+    }
+}
+
+// Default sleep implementation for tokio
+pub trait Sleep: Send + Sync + Future<Output = ()> {}
+impl Sleep for tokio::time::Sleep {}
+
 #[cfg(test)]
 mod test {
     use super::DefaultExecutor;

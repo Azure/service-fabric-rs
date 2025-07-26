@@ -436,21 +436,22 @@ async fn test_partition_info() {
 
 pub struct TestCreateUpdateClient {
     fc: FabricClient,
-    timeout: Duration,
+    pub(crate) timeout: Duration,
 }
 
 impl TestCreateUpdateClient {
-    fn new(fc: FabricClient) -> Self {
+    pub(crate) fn new(fc: FabricClient) -> Self {
         Self {
             fc,
             timeout: Duration::from_secs(30),
         }
     }
 
-    async fn create_service(
+    pub(crate) async fn create_service(
         &self,
         service_name: &Uri,
         partition_scheme: &mssf_core::types::PartitionSchemeDescription,
+        replica_count: Option<i32>,
     ) {
         // TODO: get service first
         let desc = ServiceDescription::Stateful(
@@ -463,7 +464,9 @@ impl TestCreateUpdateClient {
             .with_has_persistent_state(true)
             .with_service_activation_mode(
                 mssf_core::types::ServicePackageActivationMode::SharedProcess,
-            ),
+            )
+            .with_min_replica_set_size(replica_count.unwrap_or(1))
+            .with_target_replica_set_size(replica_count.unwrap_or(1)),
         );
         // Run client operation on separate task to ensure that the api is task safe.
         println!("creating service {service_name:?}");
@@ -475,7 +478,7 @@ impl TestCreateUpdateClient {
             .expect("create failed");
     }
 
-    async fn delete_service(&self, service_name: &Uri) {
+    pub(crate) async fn delete_service(&self, service_name: &Uri) {
         println!("deleting service {service_name:?}");
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
@@ -548,7 +551,8 @@ async fn test_service_create_delete(
     // TODO: get service first
     let tc = TestCreateUpdateClient::new(fc.clone());
     // create service
-    tc.create_service(service_name, partition_scheme).await;
+    tc.create_service(service_name, partition_scheme, None)
+        .await;
 
     let key_type = match partition_scheme {
         mssf_core::types::PartitionSchemeDescription::Singleton => PartitionKeyType::None,
@@ -620,7 +624,8 @@ async fn test_service_reparition() {
     let service_name = Uri::from("fabric:/StatefulEchoApp/RepartitionTest");
 
     // create service
-    tc.create_service(&service_name, &partition_scheme).await;
+    tc.create_service(&service_name, &partition_scheme, None)
+        .await;
 
     // resolve until the service is ready
     {

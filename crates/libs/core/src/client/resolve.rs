@@ -57,7 +57,7 @@ impl TimeCounter {
     /// returns a future that will sleep until the remaining time is up.
     pub fn sleep_until_remaining(
         &self,
-        timer: &Box<dyn Timer>,
+        timer: &dyn Timer,
     ) -> crate::Result<impl Future<Output = ()>> {
         let remaining = self.remaining()?;
         Ok(timer.sleep(remaining))
@@ -132,7 +132,7 @@ impl ServicePartitionResolver {
             };
         loop {
             let rsp_res = tokio::select! {
-                _ = timer.sleep_until_remaining(&self.timer)? => {
+                _ = timer.sleep_until_remaining(self.timer.as_ref())? => {
                     // Timeout reached, return error.
                     return Err(crate::ErrorCode::FABRIC_E_TIMEOUT.into());
                 }
@@ -176,14 +176,14 @@ impl ServicePartitionResolver {
                         sm.register_service_notification_filter(&desc, timeout, token_cp)
                             .await
                     };
-                    self.handle_notification(name, reg_fn).await?;
+                    Self::handle_notification(&self.registration_cache, name, reg_fn).await?;
                 }
                 return Ok(rsp);
             }
             // sleep for a while before retrying.
             tokio::select! {
                 _ = self.timer.sleep(self.max_retry_interval) => {},
-                _ = timer.sleep_until_remaining(&self.timer)? => {
+                _ = timer.sleep_until_remaining(self.timer.as_ref())? => {
                     // Timeout reached, return error.
                     return Err(crate::ErrorCode::FABRIC_E_TIMEOUT.into());
                 }
@@ -195,7 +195,11 @@ impl ServicePartitionResolver {
         }
     }
 
-    async fn handle_notification<F, Fut>(&self, name: &WString, reg_fn: F) -> crate::Result<()>
+    async fn handle_notification<F, Fut>(
+        cache: &RegistrationCache,
+        name: &WString,
+        reg_fn: F,
+    ) -> crate::Result<()>
     where
         F: FnOnce(WString) -> Fut,
         Fut: Future<Output = crate::Result<FilterIdHandle>> + Send + 'static,
@@ -205,30 +209,32 @@ impl ServicePartitionResolver {
         // There is a chance that 2 threads try to register at the same time, but one fails, and the svc is not registered,
         // But there is a failure returned to user.
         {
-            let mut cache = self.registration_cache.0.lock().unwrap();
-            if !cache.contains_key(&name) {
+            let mut cache = cache.0.lock().unwrap();
+            if !cache.contains_key(name) {
                 cache.insert(name.clone(), None);
+            } else {
+                // Already registered, no need to register again.
+                return Ok(());
             }
         }
         // Call the registration function
         match reg_fn(name.clone()).await {
             Ok(handle) => {
-                let prev = self
-                    .registration_cache
+                let prev = cache
                     .0
                     .lock()
                     .unwrap()
-                    .insert(name.clone(), Some(handle));
+                    .insert(name.clone(), Some(handle))
+                    .expect("none id should be present.");
                 assert!(prev.is_none(), "Filter already registered for {name}");
                 Ok(())
             }
             Err(e) => {
-                let prev = self
-                    .registration_cache
+                let prev = cache
                     .0
                     .lock()
                     .unwrap()
-                    .remove(&name)
+                    .remove(name)
                     .expect("none id should be present");
                 assert!(prev.is_none(), "Filter should be none on failure.");
                 Err(e)
@@ -240,3 +246,74 @@ impl ServicePartitionResolver {
 // TODO: once notification is added, we don't ever unregister it, but we only rely on FabricClient drop to do all the cleanup.
 #[derive(Debug, Default)]
 pub struct RegistrationCache(Mutex<HashMap<WString, Option<FilterIdHandle>>>);
+
+#[cfg(test)]
+mod tests {
+    use std::sync::{Arc, atomic};
+
+    use super::*;
+
+    #[tokio::test]
+    async fn test_registration_cache() {
+        let cache = Arc::new(RegistrationCache::default());
+        assert!(cache.0.lock().unwrap().is_empty());
+
+        let uri = WString::from("fabric:/test");
+
+        let count = Arc::new(atomic::AtomicUsize::new(0));
+
+        let mut join_set = tokio::task::JoinSet::new();
+        for _ in 0..10 {
+            let cache = cache.clone();
+            let uri = uri.clone();
+            let count = count.clone();
+            join_set.spawn(async move {
+                ServicePartitionResolver::handle_notification(&cache, &uri, |_name| async move {
+                    count.fetch_add(1, atomic::Ordering::Relaxed);
+                    Ok(FilterIdHandle { id: 1 })
+                })
+                .await
+                .unwrap();
+            });
+        }
+
+        // Cache should be added once.
+        join_set.join_all().await;
+        let cache = cache.0.lock().unwrap();
+        assert_eq!(cache.len(), 1);
+        assert!(cache.contains_key(&uri));
+        assert_eq!(cache.get(&uri).unwrap(), &Some(FilterIdHandle { id: 1 }));
+        assert_eq!(count.load(atomic::Ordering::Relaxed), 1); // Only one registration should have succeeded.
+    }
+
+    #[tokio::test]
+    async fn test_registration_failure() {
+        let cache = Arc::new(RegistrationCache::default());
+        assert!(cache.0.lock().unwrap().is_empty());
+
+        let uri = WString::from("fabric:/test");
+
+        let count = Arc::new(atomic::AtomicUsize::new(0));
+
+        let mut join_set = tokio::task::JoinSet::new();
+        for _ in 0..10 {
+            let cache = cache.clone();
+            let uri = uri.clone();
+            let count = count.clone();
+            join_set.spawn(async move {
+                ServicePartitionResolver::handle_notification(&cache, &uri, |_name| async move {
+                    count.fetch_add(1, atomic::Ordering::Relaxed);
+                    Err(crate::ErrorCode::E_FAIL.into())
+                })
+                .await
+                .unwrap_err(); // Expecting an error
+            });
+        }
+
+        // Cache should not be added.
+        join_set.join_all().await;
+        let cache = cache.0.lock().unwrap();
+        assert!(cache.is_empty());
+        assert_eq!(count.load(atomic::Ordering::Relaxed), 10); // All registrations should have failed.
+    }
+}

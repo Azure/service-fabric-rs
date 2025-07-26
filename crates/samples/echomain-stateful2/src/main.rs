@@ -17,6 +17,9 @@ mod statefulstore;
 #[cfg(test)]
 mod test;
 
+#[cfg(test)]
+mod test2;
+
 fn main() -> mssf_core::Result<()> {
     tracing_subscriber::fmt().init();
     info!("main start");

@@ -1,9 +1,14 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 use crate::test::TestCreateUpdateClient;
 use mssf_core::{
     WString,
     client::{
         FabricClient, ServicePartitionResolver,
-        svc_mgmt_client::{PartitionKeyType, ServiceEndpointRole},
+        svc_mgmt_client::{PartitionKeyType, ResolvedServicePartition, ServiceEndpointRole},
     },
     types::{ReplicaRole, ServicePartitionInformation, ServicePartitionQueryResult, Uri},
 };
@@ -64,8 +69,87 @@ async fn restart_primary(uri: &Uri, fc: &FabricClient) {
         .unwrap();
 }
 
+// returns the new rsp.
+async fn resolve_until_change(
+    srv: &ServicePartitionResolver,
+    uri: &Uri,
+    prev: ResolvedServicePartition,
+    complain: bool,
+) -> ResolvedServicePartition {
+    let start_time = std::time::Instant::now();
+    // retry for 30 seconds without complaints
+    // notification should eventually arrive.
+    let prev_original = prev.clone();
+    let p1 = prev_original
+        .get_endpoint_list()
+        .iter()
+        .filter(|ep| ep.role == ServiceEndpointRole::StatefulPrimary)
+        .collect::<Vec<_>>();
+    assert_eq!(p1.len(), 1);
+    let p1 = p1.first().unwrap();
+    let old_addr = p1.address.clone();
+    // Use prev if we complain to force client to refresh cache.
+    let mut rsp_opt = if complain { Some(prev) } else { None };
+    let mut rsp_final = None;
+    for i in 0..30 {
+        let new_rsp = srv
+            .resolve(
+                &uri.0,
+                &PartitionKeyType::None,
+                rsp_opt.as_ref(),
+                None,
+                None,
+            )
+            .await
+            .unwrap();
+        let p2 = new_rsp
+            .get_endpoint_list()
+            .iter()
+            .filter(|ep| ep.role == ServiceEndpointRole::StatefulPrimary)
+            .collect::<Vec<_>>();
+        assert_eq!(p2.len(), 1);
+        if i < 1 {
+            // Not changed because we do not complain. And notification has not triggered yet.
+            let p2 = p2.first().unwrap();
+            assert!(prev_original.compare_version(&new_rsp).unwrap() == 0);
+            assert_eq!(p1, p2);
+        } else {
+            // After 2 seconds, we should have a new primary.
+            if prev_original.compare_version(&new_rsp).unwrap() < 0 && p1 != p2.first().unwrap() {
+                rsp_final = Some(new_rsp);
+                break;
+            } else {
+                // Not changed yet, retry.
+            }
+        }
+        if complain {
+            rsp_opt = Some(new_rsp);
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await
+    }
+    assert!(
+        rsp_final.is_some(),
+        "Notification did not arrive after 30 seconds."
+    );
+    let elapsed = start_time.elapsed();
+    assert!(elapsed.as_secs() < 30, "Test took too long.");
+    let new_addr = rsp_final
+        .as_ref()
+        .unwrap()
+        .get_endpoint_list()
+        .iter()
+        .collect::<Vec<_>>()
+        .first()
+        .unwrap()
+        .address
+        .clone();
+    println!("Addr changed: {old_addr} -> {new_addr}, after {elapsed:?}, complain: {complain}");
+    rsp_final.unwrap()
+}
+
 /// For manual clean up:
 /// Remove-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/ResolveNotificationTest
+/// Resolve-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/ResolveNotificationTest -PartitionKindSingleton
 #[tokio::test]
 async fn test_resolve_notification() {
     let fc = FabricClient::builder()
@@ -82,10 +166,20 @@ async fn test_resolve_notification() {
     )
     .await;
 
+    // Register notification of the service.
+    let filter_id = {
+        let desc = mssf_core::types::ServiceNotificationFilterDescription {
+            name: uri.clone().0,
+            flags: mssf_core::types::ServiceNotificationFilterFlags::NamePrefix,
+        };
+        fc.get_service_manager()
+            .register_service_notification_filter(&desc, sm.timeout, None)
+            .await
+            .unwrap()
+    };
+
     // Resolve the service until all replicas are ready.
-    let srv = ServicePartitionResolver::builder(fc.clone())
-        .with_notification(true)
-        .build();
+    let srv = ServicePartitionResolver::builder(fc.clone()).build();
     let mut prev = None;
     let rsp = loop {
         let rsp = srv
@@ -101,73 +195,24 @@ async fn test_resolve_notification() {
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     };
 
-    let p1 = rsp
-        .get_endpoint_list()
-        .iter()
-        .filter(|ep| ep.role == ServiceEndpointRole::StatefulPrimary)
-        .collect::<Vec<_>>();
-    assert_eq!(p1.len(), 1);
-    let p1 = p1.first().unwrap();
-
     // Trigger a failover
+    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
     restart_primary(&uri, &fc).await;
+    // (it happended once that primary not changed after restart, need to stress this in future
+    // tests to find if the notification is missing or restart failed.)
+    let rsp2 = resolve_until_change(&srv, &uri, rsp.clone(), false).await;
+    // restart primary again
+    restart_primary(&uri, &fc).await;
+    let rsp3 = resolve_until_change(&srv, &uri, rsp2, true).await;
+    restart_primary(&uri, &fc).await;
+    let rsp4 = resolve_until_change(&srv, &uri, rsp3, true).await;
+    restart_primary(&uri, &fc).await;
+    let _ = resolve_until_change(&srv, &uri, rsp4, false).await;
 
-    // retry for 30 seconds without complaints
-    // notification should eventually arrive.
-    let mut notified = false;
-    for i in 0..30 {
-        let rsp2 = srv
-            .resolve(&uri.0, &PartitionKeyType::None, None, None, None)
-            .await
-            .unwrap();
-        let p2 = rsp2
-            .get_endpoint_list()
-            .iter()
-            .filter(|ep| ep.role == ServiceEndpointRole::StatefulPrimary)
-            .collect::<Vec<_>>();
-        assert_eq!(p2.len(), 1);
-        if i < 1 {
-            // Not changed because we do not complain. And notification has not triggered yet.
-            let p2 = p2.first().unwrap();
-            assert_eq!(rsp.compare_version(&rsp2).unwrap(), 0);
-            assert_eq!(p1, p2);
-            println!("Primary replica is still the same: {}", p2.address);
-        } else {
-            // After 2 seconds, we should have a new primary.
-            if rsp.compare_version(&rsp2).unwrap() == 0 {
-                // Not changed yet.
-            } else {
-                notified = true;
-                assert_ne!(p1, p2.first().unwrap());
-                println!(
-                    "Primary replica has changed after {i} seconds: {}",
-                    p2.first().unwrap().address
-                );
-                break;
-            }
-        }
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await
-    }
-    assert!(notified, "Notification did not arrive after 30 seconds.");
-
-    // {
-    //     // resolve with complaint
-    //     let rsp3 = srv
-    //         .resolve(&uri.0, &PartitionKeyType::None, Some(&rsp), None, None)
-    //         .await
-    //         .unwrap();
-    //     let p3 = rsp3
-    //         .get_endpoint_list()
-    //         .iter()
-    //         .filter(|ep| ep.role == ServiceEndpointRole::StatefulPrimary)
-    //         .collect::<Vec<_>>();
-    //     assert_eq!(p3.len(), 1);
-    //     let p3 = p3.first().unwrap();
-    //     // Should be different because we complain.
-    //     assert!(rsp.compare_version(&rsp3).unwrap() < 0);
-    //     assert_ne!(p1, p3);
-    //     println!("Primary replica has changed: {}", p3.address);
-    // }
-
+    // Unregister the notification filter.
+    fc.get_service_manager()
+        .unregister_service_notification_filter(filter_id, sm.timeout, None)
+        .await
+        .unwrap();
     sm.delete_service(&uri).await;
 }

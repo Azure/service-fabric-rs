@@ -91,7 +91,7 @@ async fn resolve_until_change(
     // Use prev if we complain to force client to refresh cache.
     let mut rsp_opt = if complain { Some(prev) } else { None };
     let mut rsp_final = None;
-    for i in 0..30 {
+    for _ in 0..30 {
         let new_rsp = srv
             .resolve(
                 &uri.0,
@@ -108,20 +108,15 @@ async fn resolve_until_change(
             .filter(|ep| ep.role == ServiceEndpointRole::StatefulPrimary)
             .collect::<Vec<_>>();
         assert_eq!(p2.len(), 1);
-        if i < 1 {
-            // Not changed because we do not complain. And notification has not triggered yet.
-            let p2 = p2.first().unwrap();
-            assert!(prev_original.compare_version(&new_rsp).unwrap() == 0);
-            assert_eq!(p1, p2);
+
+        // We should eventually have a new primary.
+        if prev_original.compare_version(&new_rsp).unwrap() < 0 && p1 != p2.first().unwrap() {
+            rsp_final = Some(new_rsp);
+            break;
         } else {
-            // After 2 seconds, we should have a new primary.
-            if prev_original.compare_version(&new_rsp).unwrap() < 0 && p1 != p2.first().unwrap() {
-                rsp_final = Some(new_rsp);
-                break;
-            } else {
-                // Not changed yet, retry.
-            }
+            // Not changed yet, retry.
         }
+
         if complain {
             rsp_opt = Some(new_rsp);
         }

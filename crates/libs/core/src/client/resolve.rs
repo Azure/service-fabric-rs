@@ -19,6 +19,8 @@ use crate::{
 
 /// The same as dotnet sdk:
 /// https://github.com/microsoft/service-fabric-services-and-actors-dotnet/blob/develop/src/Microsoft.ServiceFabric.Services/Client/ServicePartitionResolver.cs
+/// But this does not register notification on resolve success.
+/// User needs to register notification manually on the FabricClient before creating this resolver.
 pub struct ServicePartitionResolver {
     sm: ServiceManagementClient,
     timer: Box<dyn Timer>,
@@ -104,6 +106,8 @@ impl ServicePartitionResolver {
         ServicePartitionResolverBuilder::new(fc)
     }
 
+    /// Resolve the service partition by name and key type.
+    /// It retries all transient errors and timeouts.
     pub async fn resolve(
         &self,
         name: &WString,

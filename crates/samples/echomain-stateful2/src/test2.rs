@@ -138,7 +138,9 @@ async fn resolve_until_change(
         .unwrap()
         .address
         .clone();
-    println!("Addr changed: {old_addr} -> {new_addr}, after {elapsed:?}, complain: {complain}");
+    tracing::info!(
+        "Addr changed: {old_addr} -> {new_addr}, after {elapsed:?}, complain: {complain}"
+    );
     rsp_final.unwrap()
 }
 
@@ -147,6 +149,8 @@ async fn resolve_until_change(
 /// Resolve-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/ResolveNotificationTest -PartitionKindSingleton
 #[tokio::test]
 async fn test_resolve_notification() {
+    // set up tracing
+    let _ = tracing_subscriber::fmt().try_init();
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
         .build()
@@ -186,7 +190,7 @@ async fn test_resolve_notification() {
         } else {
             prev = Some(rsp);
         }
-        println!("Waiting for service to be ready...");
+        tracing::debug!("Waiting for service to be ready...");
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     };
 

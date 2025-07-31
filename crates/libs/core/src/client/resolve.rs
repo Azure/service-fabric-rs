@@ -108,6 +108,10 @@ impl ServicePartitionResolver {
 
     /// Resolve the service partition by name and key type.
     /// It retries all transient errors and timeouts.
+    #[cfg_attr(
+        feature = "tracing",
+        tracing::instrument(skip_all, fields(uri = %name, timeout = ?timeout.unwrap_or(self.default_timeout)), err)
+    )]
     pub async fn resolve(
         &self,
         name: &WString,
@@ -143,6 +147,11 @@ impl ServicePartitionResolver {
                 Err(e) => match e.try_as_fabric_error_code() {
                     Ok(ec) => {
                         if ec == crate::ErrorCode::FABRIC_E_TIMEOUT || ec.is_transient() {
+                            #[cfg(feature = "tracing")]
+                            tracing::debug!(
+                                "Service partition transient error {ec}. Remaining time {:?}. Retrying...",
+                                timer.remaining()?
+                            );
                             // do nothing, retry.
                             None
                         } else {

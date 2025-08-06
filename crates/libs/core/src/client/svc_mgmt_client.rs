@@ -389,8 +389,9 @@ impl ServiceManagementClient {
 
 // Handle to the registered service notification filter
 #[cfg(feature = "tokio_async")]
+#[derive(Debug, PartialEq)]
 pub struct FilterIdHandle {
-    id: i64,
+    pub(crate) id: i64,
 }
 
 // see ComFabricClient.cpp for conversion details in cpp
@@ -611,7 +612,7 @@ impl FabricListAccessor<FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEnd
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ResolvedServiceEndpoint {
     pub address: WString,
     pub role: ServiceEndpointRole,

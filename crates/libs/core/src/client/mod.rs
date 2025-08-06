@@ -30,11 +30,15 @@ mod notification;
 pub mod health_client;
 mod property_client;
 pub mod query_client;
+#[cfg(feature = "tokio_async")]
+mod resolve;
 pub mod svc_mgmt_client;
 // reexport
 pub use connection::GatewayInformationResult;
 pub use notification::ServiceNotification;
 pub use property_client::PropertyManagementClient;
+#[cfg(feature = "tokio_async")]
+pub use resolve::ServicePartitionResolver;
 
 #[cfg(test)]
 mod tests;

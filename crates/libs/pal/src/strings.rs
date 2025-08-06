@@ -99,7 +99,7 @@ impl windows_core::TypeKind for PCSTR {
 /// WString is the utf16 string, similar to std::wstring in cpp.
 /// It is used for passing utf16 string buffers between Rust and COM.
 // The inner buffer is null terminated u16 vec.
-#[derive(Clone, PartialEq, Eq, Default)]
+#[derive(Clone, PartialEq, Eq, Default, Hash)]
 pub struct WString(Option<Vec<u16>>);
 const EMPTY: [u16; 1] = [0];
 

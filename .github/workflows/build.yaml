@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - uses: lukka/get-cmake@latest
       with:
@@ -67,7 +67,7 @@ jobs:
       image: ubuntu:20.04
       options: --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Install sudo
       run: |
@@ -139,7 +139,7 @@ jobs:
           tdnf update --noplugins --skipsignature -y
           tdnf install --noplugins --skipsignature -y tar unzip ca-certificates gcc glibc-devel binutils make
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: lukka/get-cmake@latest
         with:
@@ -173,7 +173,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Run in Dev Container
         uses: devcontainers/ci@v0.3

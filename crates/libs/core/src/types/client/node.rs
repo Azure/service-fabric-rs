@@ -92,7 +92,7 @@ impl From<IFabricGetNodeListResult2> for NodeList {
 }
 
 impl NodeList {
-    pub fn iter(&self) -> NodeListIter {
+    pub fn iter(&self) -> NodeListIter<'_> {
         NodeListIter::new(self, self)
     }
 

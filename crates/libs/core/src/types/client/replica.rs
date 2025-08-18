@@ -59,7 +59,7 @@ impl ServiceReplicaList {
         Self { com }
     }
 
-    pub fn iter(&self) -> ServiceReplicaListIter {
+    pub fn iter(&self) -> ServiceReplicaListIter<'_> {
         ServiceReplicaListIter::new(self, self)
     }
 }

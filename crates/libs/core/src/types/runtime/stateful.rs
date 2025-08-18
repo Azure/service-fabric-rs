@@ -150,7 +150,7 @@ impl From<&FABRIC_REPLICA_SET_CONFIGURATION> for ReplicaSetConfig {
 
 impl ReplicaSetConfig {
     // view has the lifetime as self
-    pub fn get_view(&self) -> ReplicaSetConfigView {
+    pub fn get_view(&self) -> ReplicaSetConfigView<'_> {
         // fast return for raw types needed by COM
         let mut replica_raw_cache: Vec<FABRIC_REPLICA_INFORMATION> = vec![];
         let mut replica_ex1_cache: Vec<FABRIC_REPLICA_INFORMATION_EX1> = vec![];
@@ -219,10 +219,10 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInformation {
     fn from(r: &FABRIC_REPLICA_INFORMATION) -> Self {
         let ex1 = r.Reserved as *const FABRIC_REPLICA_INFORMATION_EX1;
         let mut must_catchup = false;
-        if !ex1.is_null() {
-            if let Some(ex1ref) = unsafe { ex1.as_ref() } {
-                must_catchup = ex1ref.MustCatchup;
-            }
+        if !ex1.is_null()
+            && let Some(ex1ref) = unsafe { ex1.as_ref() }
+        {
+            must_catchup = ex1ref.MustCatchup;
         }
         ReplicaInformation {
             id: r.Id,

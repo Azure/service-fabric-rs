@@ -73,7 +73,7 @@ impl PrimaryLoadMetricReportList {
         Self { com }
     }
 
-    pub fn iter(&self) -> PrimaryLoadMetricReportListIter {
+    pub fn iter(&self) -> PrimaryLoadMetricReportListIter<'_> {
         PrimaryLoadMetricReportListIter::new(self, self)
     }
 }
@@ -116,7 +116,7 @@ impl SecondaryLoadMetricReportList {
         Self { com }
     }
 
-    pub fn iter(&self) -> SecondaryLoadMetricReportListIter {
+    pub fn iter(&self) -> SecondaryLoadMetricReportListIter<'_> {
         SecondaryLoadMetricReportListIter::new(self, self)
     }
 }

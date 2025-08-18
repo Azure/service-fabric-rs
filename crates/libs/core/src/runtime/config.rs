@@ -47,7 +47,7 @@ impl ConfigurationSectionList {
         let raw = unsafe { self.com.get_Settings().as_ref().unwrap() };
         unsafe { raw.Sections.as_ref().unwrap() }
     }
-    pub fn iter(&self) -> ConfigurationSectionListIter {
+    pub fn iter(&self) -> ConfigurationSectionListIter<'_> {
         ConfigurationSectionListIter::new(self, self)
     }
 }
@@ -171,7 +171,7 @@ pub struct ConfigurationParameterList {
 }
 
 impl ConfigurationParameterList {
-    pub fn iter(&self) -> ConfigurationParameterListIter {
+    pub fn iter(&self) -> ConfigurationParameterListIter<'_> {
         ConfigurationParameterListIter::new(self, self)
     }
 }

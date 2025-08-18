@@ -595,7 +595,7 @@ impl From<IFabricResolvedServicePartitionResult> for ResolvedServiceEndpointList
 
 impl ResolvedServiceEndpointList {
     // Get iterator for the list
-    pub fn iter(&self) -> ResolvedServiceEndpointListIter {
+    pub fn iter(&self) -> ResolvedServiceEndpointListIter<'_> {
         ResolvedServiceEndpointListIter::new(self, self)
     }
 }

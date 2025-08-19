@@ -81,10 +81,66 @@ mod test {
     use tokio_util::sync::CancellationToken;
 
     use crate::{
-        error::ErrorCode, runtime::executor::DefaultExecutor, sync::bridge_context::BridgeContext,
+        error::ErrorCode,
+        runtime::executor::{Executor, JoinHandle},
+        sync::bridge_context::BridgeContext,
     };
 
     use super::fabric_begin_end_proxy;
+
+    /// Temporary test executor for running tasks
+    /// TODO: remove this. Or move the sync tests to the util crate.
+    #[derive(Clone)]
+    struct TestExecutor {
+        rt: Handle,
+    }
+
+    impl TestExecutor {
+        pub fn new(rt: Handle) -> Self {
+            Self { rt }
+        }
+    }
+
+    impl Executor for TestExecutor {
+        fn spawn<F>(&self, future: F) -> impl JoinHandle<F::Output>
+        where
+            F: Future + Send + 'static,
+            F::Output: Send,
+        {
+            let h = self.rt.spawn(future);
+            TestJoinHandle::<F::Output> { inner: h }
+        }
+
+        fn block_on<F: Future>(&self, future: F) -> F::Output {
+            self.rt.block_on(future)
+        }
+    }
+
+    struct TestJoinHandle<T> {
+        inner: tokio::task::JoinHandle<T>,
+    }
+
+    impl<T> JoinHandle<T> for TestJoinHandle<T>
+    where
+        T: Send,
+    {
+        async fn join(self) -> crate::Result<T> {
+            match self.inner.await {
+                Ok(x) => Ok(x),
+                Err(e) => {
+                    let ec = if e.is_cancelled() {
+                        // we never cancel in executor
+                        ErrorCode::E_ABORT
+                    } else if e.is_panic() {
+                        ErrorCode::E_UNEXPECTED
+                    } else {
+                        ErrorCode::E_FAIL
+                    };
+                    Err(ec.into())
+                }
+            }
+        }
+    }
 
     /// Test trait for cancellation
     /// The whole test focuses on testing cancelation propergation from SF api to rust api
@@ -211,7 +267,7 @@ mod test {
     /// into a SF Async Begin and End api.
     pub struct MyObjBridge<T: IMyObj> {
         inner: Arc<T>,
-        rt: DefaultExecutor,
+        rt: TestExecutor,
     }
 
     impl<T: IMyObj> Clone for MyObjBridge<T> {
@@ -227,7 +283,7 @@ mod test {
         pub fn new(rt: Handle, inner: T) -> Self {
             Self {
                 inner: Arc::new(inner),
-                rt: DefaultExecutor::new(rt),
+                rt: TestExecutor::new(rt),
             }
         }
 

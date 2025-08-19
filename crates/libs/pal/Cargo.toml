@@ -2,10 +2,12 @@
 name = "mssf-pal"
 version = "0.2.0"
 edition.workspace = true
-license = "MIT"
+license.workspace = true
+documentation.workspace = true
+repository.workspace = true
+authors.workspace = true
+
 description = "mssf-pal enables service fabric rust to run on linux"
-documentation = "https://learn.microsoft.com/en-us/azure/service-fabric/"
-repository = "https://github.com/Azure/service-fabric-rs"
 readme = "README.md"
 include = ["**/*.rs", "Cargo.toml"]
 

@@ -14,10 +14,10 @@ use mssf_core::conf::{Config, FabricConfigSource};
 use mssf_core::debug::wait_for_debugger;
 use mssf_core::runtime::CodePackageActivationContext;
 use mssf_core::runtime::config::ConfigurationPackage;
-use mssf_core::runtime::executor::{DefaultExecutor, Executor};
 use mssf_core::runtime::node_context::NodeContext;
 use mssf_core::runtime::package_change::PackageChangeEvent;
 use mssf_core::types::{HealthInformation, HealthReportSendOption};
+use mssf_util::tokio::TokioExecutor;
 use tracing::{error, info};
 
 use crate::config::MySettings;
@@ -80,7 +80,7 @@ fn main() -> mssf_core::Result<()> {
     let hostname = ctx.ip_address_or_fqdn;
 
     let rt = tokio::runtime::Runtime::new().unwrap();
-    let e = DefaultExecutor::new(rt.handle().clone());
+    let e = TokioExecutor::new(rt.handle().clone());
 
     let runtime = mssf_core::runtime::Runtime::create(e.clone()).unwrap();
     let app_ctx = AppContext::new(port, hostname, rt.handle().clone());
@@ -89,9 +89,7 @@ fn main() -> mssf_core::Result<()> {
         .register_stateless_service_factory(&WString::from("EchoAppService"), factory)
         .unwrap();
 
-    e.block_on(async {
-        tokio::signal::ctrl_c().await.expect("fail to get ctrl-c");
-    });
+    e.block_until_ctrlc();
     Ok(())
 }
 

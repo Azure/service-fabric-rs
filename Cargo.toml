@@ -6,8 +6,13 @@ members = [
     "crates/libs/com",
     "crates/libs/core",
     "crates/libs/pal",
+    "crates/libs/util",
 ]
 package.edition = "2024"
+package.authors = [ "youyuanwu@outlook.com" ]
+package.documentation = "https://learn.microsoft.com/en-us/azure/service-fabric/"
+package.repository = "https://github.com/Azure/service-fabric-rs"
+package.license = "MIT"
 
 [workspace.dependencies]
 bitflags = "2"
@@ -41,5 +46,6 @@ windows-core = "0.61"
 
 # crates in this repo
 mssf-com = { version = "0.2.0", path = "./crates/libs/com", default-features = false }
-mssf-core = { version = "0.2.1", path = "./crates/libs/core", default-features = true }
+mssf-core = { version = "0.2.1", path = "./crates/libs/core", default-features = false }
 mssf-pal = { version = "0.2.0", path = "./crates/libs/pal", default-features = true }
+mssf-util = { version = "0.2.0", path = "./crates/libs/util", default-features = true }

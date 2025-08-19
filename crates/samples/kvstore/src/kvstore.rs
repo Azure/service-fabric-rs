@@ -9,7 +9,6 @@ use mssf_com::{
 use mssf_core::{
     Error, GUID, WString,
     runtime::{
-        executor::{DefaultExecutor, Executor},
         stateful::{PrimaryReplicator, StatefulServiceFactory, StatefulServiceReplica},
         stateful_proxy::{StatefulServicePartition, StatefulServiceReplicaProxy},
         store::{DummyStoreEventHandler, create_com_key_value_store_replica},
@@ -18,6 +17,7 @@ use mssf_core::{
     sync::CancellationToken,
     types::{LocalStoreKind, OpenMode, ReplicaRole, ReplicatorSettings},
 };
+use mssf_util::tokio::TokioExecutor;
 use tokio::{
     select,
     sync::oneshot::{self, Sender},
@@ -27,11 +27,11 @@ use windows_core::Interface;
 
 pub struct Factory {
     replication_port: u32,
-    rt: DefaultExecutor,
+    rt: TokioExecutor,
 }
 
 impl Factory {
-    pub fn create(replication_port: u32, rt: DefaultExecutor) -> Factory {
+    pub fn create(replication_port: u32, rt: TokioExecutor) -> Factory {
         Factory {
             replication_port,
             rt,
@@ -107,12 +107,12 @@ impl Replica {
 // The serving of the database.
 pub struct Service {
     kvproxy: KVStoreProxy,
-    rt: DefaultExecutor,
+    rt: TokioExecutor,
     tx: Mutex<Cell<Option<Sender<()>>>>,
 }
 
 impl Service {
-    pub fn new(com: IFabricKeyValueStoreReplica2, rt: DefaultExecutor) -> Service {
+    pub fn new(com: IFabricKeyValueStoreReplica2, rt: TokioExecutor) -> Service {
         Service {
             kvproxy: KVStoreProxy::new(com),
             rt,
@@ -125,7 +125,7 @@ impl Service {
         let kv = self.kvproxy.clone();
         self.stop();
         self.tx.lock().unwrap().set(Some(tx));
-        self.rt.spawn(async move {
+        self.rt.get_ref().spawn(async move {
             let mut counter = 0;
             loop {
                 info!("Service::run_single: {}", counter);

@@ -118,6 +118,7 @@ version = "0.1.0"
 dependencies = [
  "mssf-com",
  "mssf-core",
+ "mssf-util",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -207,6 +208,16 @@ name = "mssf-pal"
 version = "0.2.0"
 dependencies = [
  "windows-core",
+]
+
+[[package]]
+name = "mssf-util"
+version = "0.2.0"
+dependencies = [
+ "mssf-core",
+ "tokio",
+ "tokio-util",
+ "tracing",
 ]
 
 [[package]]
@@ -300,6 +311,7 @@ name = "samples_echomain"
 version = "0.0.1"
 dependencies = [
  "mssf-core",
+ "mssf-util",
  "serde",
  "serde_derive",
  "tokio",
@@ -325,6 +337,7 @@ name = "samples_echomain_stateful2"
 version = "0.1.0"
 dependencies = [
  "mssf-core",
+ "mssf-util",
  "tokio",
  "tokio-util",
  "tracing",

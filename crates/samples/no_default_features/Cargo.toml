@@ -10,9 +10,5 @@ crate-type = ["cdylib","staticlib"]
 
 [dependencies]
 mssf-com.workspace = true
-
 # disable all features
-[dependencies.mssf-core]
-path = "../../libs/core"
-default-features = false
-features = []
+mssf-core = { workspace = true, default-features = false, features = []}

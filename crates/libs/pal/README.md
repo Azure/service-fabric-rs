@@ -5,3 +5,5 @@ Service Fabric Rust app and test all requires this pal shared library to work.
 This crate is forced to be linked with fabric_base crate.
 
 Originally this crate is a shared lib, but it is a rlib now to avoid dynamic loading and packaging.
+
+See the main [README.md](../../../README.md) for details.

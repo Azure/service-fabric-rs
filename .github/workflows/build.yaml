@@ -168,6 +168,7 @@ jobs:
 
   build-devcontainer:
     strategy:
+      fail-fast: false
       matrix:
         devcontainer-type: ["u20", "u22"]
     runs-on: ubuntu-latest

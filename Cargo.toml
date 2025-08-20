@@ -20,6 +20,7 @@ config = { version = "0.15", default-features = false }
 ctrlc = { version = "3.4", features = [
     "termination",
 ], default-features = false }
+futures-channel = { version = "0.3", features = [], default-features = false }
 libloading = "0.8"
 lazy_static = "1.5"
 serde = "1"

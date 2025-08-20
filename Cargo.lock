@@ -78,6 +78,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "futures-channel"
+version = "0.3.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2dff15bf788c671c1934e366d07e30c1814a8ef514e1af724a602e8a2fbe1b10"
+dependencies = [
+ "futures-core",
+]
+
+[[package]]
 name = "futures-core"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -192,6 +201,7 @@ version = "0.2.1"
 dependencies = [
  "bitflags",
  "config",
+ "futures-channel",
  "lazy_static",
  "libloading",
  "mssf-com",

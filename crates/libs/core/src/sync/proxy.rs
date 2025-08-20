@@ -81,9 +81,7 @@ mod test {
     use tokio_util::sync::CancellationToken;
 
     use crate::{
-        error::ErrorCode,
-        runtime::executor::{Executor, JoinHandle},
-        sync::bridge_context::BridgeContext,
+        error::ErrorCode, runtime::executor::Executor, sync::bridge_context::BridgeContext,
     };
 
     use super::fabric_begin_end_proxy;
@@ -102,43 +100,12 @@ mod test {
     }
 
     impl Executor for TestExecutor {
-        fn spawn<F>(&self, future: F) -> impl JoinHandle<F::Output>
+        fn spawn<F>(&self, future: F)
         where
             F: Future + Send + 'static,
             F::Output: Send,
         {
-            let h = self.rt.spawn(future);
-            TestJoinHandle::<F::Output> { inner: h }
-        }
-
-        fn block_on<F: Future>(&self, future: F) -> F::Output {
-            self.rt.block_on(future)
-        }
-    }
-
-    struct TestJoinHandle<T> {
-        inner: tokio::task::JoinHandle<T>,
-    }
-
-    impl<T> JoinHandle<T> for TestJoinHandle<T>
-    where
-        T: Send,
-    {
-        async fn join(self) -> crate::Result<T> {
-            match self.inner.await {
-                Ok(x) => Ok(x),
-                Err(e) => {
-                    let ec = if e.is_cancelled() {
-                        // we never cancel in executor
-                        ErrorCode::E_ABORT
-                    } else if e.is_panic() {
-                        ErrorCode::E_UNEXPECTED
-                    } else {
-                        ErrorCode::E_FAIL
-                    };
-                    Err(ec.into())
-                }
-            }
+            self.rt.spawn(future);
         }
     }
 

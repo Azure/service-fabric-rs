@@ -13,21 +13,20 @@ use mssf_com::FabricCommon::IFabricAsyncOperationContext;
 
 use crate::{ErrorCode, sync::CancellationToken};
 
+pub use futures_channel::oneshot::{self, Receiver, Sender};
+
 // Token that wraps oneshot receiver.
 // The future recieve does not have error. This is designed for the use
 // case where SF guarantees that sender will be called.
 pub struct FabricReceiver<T> {
-    rx: tokio::sync::oneshot::Receiver<T>,
+    rx: Receiver<T>,
     token: Option<CancellationToken>,
     // saved ctx from SF Begin COM api for cancalling.
     ctx: Option<IFabricAsyncOperationContext>,
 }
 
 impl<T> FabricReceiver<T> {
-    fn new(
-        rx: tokio::sync::oneshot::Receiver<T>,
-        token: Option<CancellationToken>,
-    ) -> FabricReceiver<T> {
+    fn new(rx: Receiver<T>, token: Option<CancellationToken>) -> FabricReceiver<T> {
         FabricReceiver {
             rx,
             token,
@@ -91,7 +90,7 @@ impl<T> Future for FabricReceiver<T> {
         // than cancelled error.
 
         // Try to receive the value from the sender
-        let inner = <tokio::sync::oneshot::Receiver<T> as Future>::poll(Pin::new(&mut self.rx), cx);
+        let inner = <Receiver<T> as Future>::poll(Pin::new(&mut self.rx), cx);
         match (inner, self.token.as_ref()) {
             (Poll::Ready(Ok(data)), _) => Poll::Ready(Ok(data)),
             (Poll::Ready(Err(_)), Some(t)) => {
@@ -140,15 +139,12 @@ impl<T> Future for FabricReceiver<T> {
 }
 
 pub struct FabricSender<T> {
-    tx: tokio::sync::oneshot::Sender<T>,
+    tx: Sender<T>,
     token: Option<CancellationToken>,
 }
 
 impl<T> FabricSender<T> {
-    fn new(
-        tx: tokio::sync::oneshot::Sender<T>,
-        token: Option<CancellationToken>,
-    ) -> FabricSender<T> {
+    fn new(tx: Sender<T>, token: Option<CancellationToken>) -> FabricSender<T> {
         FabricSender { tx, token }
     }
 
@@ -176,7 +172,7 @@ impl<T> FabricSender<T> {
 pub fn oneshot_channel<T>(
     token: Option<CancellationToken>,
 ) -> (FabricSender<T>, FabricReceiver<T>) {
-    let (tx, rx) = tokio::sync::oneshot::channel::<T>();
+    let (tx, rx) = oneshot::channel::<T>();
     (
         FabricSender::new(tx, token.clone()),
         FabricReceiver::new(rx, token),

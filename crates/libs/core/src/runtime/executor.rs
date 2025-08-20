@@ -16,21 +16,10 @@ pub trait Executor: Clone + Sync + Send + 'static {
     /// This is primarily used by mssf Bridge to execute user app async callbacks/notifications.
     /// User app impl future may panic, and mssf propagates panic as an error in JoinHandle
     /// to SF.
-    fn spawn<F>(&self, future: F) -> impl JoinHandle<F::Output>
+    fn spawn<F>(&self, future: F)
     where
         F: Future + Send + 'static,
         F::Output: Send;
-
-    /// run the future on the executor until completion.
-    fn block_on<F: Future>(&self, future: F) -> F::Output;
-}
-
-/// Handle can be awaited to get the success status of the task.
-/// The handle is primarily needed to propagate background task error
-/// back to SF.
-#[trait_variant::make(JoinHandle: Send)]
-pub trait LocalJoinHandle<T> {
-    async fn join(self) -> crate::Result<T>;
 }
 
 /// Runtime independent sleep trait.

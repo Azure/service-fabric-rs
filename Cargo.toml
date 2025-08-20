@@ -35,7 +35,7 @@ tokio = { version = "1", features = [
     "net",
     "signal"
 ], default-features = false }
-tokio-util = "0.7"
+tokio-util = { version = "0.7", default-features = false, features = [] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = [
     "fmt",

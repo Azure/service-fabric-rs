@@ -224,10 +224,12 @@ dependencies = [
 name = "mssf-util"
 version = "0.2.0"
 dependencies = [
+ "mssf-com",
  "mssf-core",
  "tokio",
  "tokio-util",
  "tracing",
+ "trait-variant",
 ]
 
 [[package]]

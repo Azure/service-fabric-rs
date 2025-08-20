@@ -14,6 +14,9 @@ use std::{
 use mssf_core::runtime::executor::{Executor, Sleep, Timer};
 use tokio::runtime::Handle;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Clone)]
 pub struct TokioExecutor {
     rt: Handle,

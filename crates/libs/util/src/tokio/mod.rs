@@ -104,15 +104,20 @@ impl<T: Send> JoinHandle<T> for TokioJoinHandle<T> {
     }
 }
 
+/// Sleep timer implementation for tokio
 pub struct TokioTimer;
 
+// TODO: the return type may be simplified if using return impl
 impl Timer for TokioTimer {
     fn sleep(&self, duration: std::time::Duration) -> std::pin::Pin<Box<dyn Sleep>> {
         Box::pin(TokioSleep::new(tokio::time::sleep(duration)))
     }
 }
 
+/// Sleep future implementation for tokio
 pub struct TokioSleep {
+    // May need to use pin_project
+    // to remove the Pin because the inner is not Unpin
     inner: Pin<Box<tokio::time::Sleep>>,
 }
 
@@ -124,7 +129,6 @@ impl TokioSleep {
     }
 }
 
-// Default sleep implementation for tokio
 impl Sleep for TokioSleep {}
 
 impl Future for TokioSleep {

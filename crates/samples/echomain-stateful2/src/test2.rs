@@ -7,11 +7,12 @@ use crate::test::TestCreateUpdateClient;
 use mssf_core::{
     WString,
     client::{
-        FabricClient, ServicePartitionResolver,
+        FabricClient,
         svc_mgmt_client::{PartitionKeyType, ResolvedServicePartition, ServiceEndpointRole},
     },
     types::{ReplicaRole, ServicePartitionInformation, ServicePartitionQueryResult, Uri},
 };
+use mssf_util::resolve::ServicePartitionResolver;
 
 async fn restart_primary(uri: &Uri, fc: &FabricClient) {
     let sm = TestCreateUpdateClient::new(fc.clone());

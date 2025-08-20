@@ -5,16 +5,13 @@
 
 use std::{pin::Pin, time::Duration};
 
-use crate::runtime::executor::Timer;
+use mssf_core::runtime::executor::Timer;
+use mssf_core::{ErrorCode, WString};
 use tokio_util::sync::CancellationToken;
-use windows_core::WString;
 
-use crate::{
-    client::{
-        FabricClient,
-        svc_mgmt_client::{PartitionKeyType, ResolvedServicePartition, ServiceManagementClient},
-    },
-    iter::FabricListAccessor,
+use mssf_core::client::{
+    FabricClient,
+    svc_mgmt_client::{PartitionKeyType, ResolvedServicePartition, ServiceManagementClient},
 };
 
 /// The same as dotnet sdk:
@@ -46,11 +43,11 @@ impl TimeCounter {
         self.start.elapsed()
     }
 
-    pub fn remaining(&self) -> crate::Result<Duration> {
+    pub fn remaining(&self) -> mssf_core::Result<Duration> {
         if self.elapsed() < self.timeout {
             Ok(self.timeout - self.elapsed())
         } else {
-            Err(crate::ErrorCode::FABRIC_E_TIMEOUT.into())
+            Err(ErrorCode::FABRIC_E_TIMEOUT.into())
         }
     }
 
@@ -58,7 +55,7 @@ impl TimeCounter {
     pub fn sleep_until_remaining(
         &self,
         timer: &dyn Timer,
-    ) -> crate::Result<impl Future<Output = ()>> {
+    ) -> mssf_core::Result<impl Future<Output = ()>> {
         let remaining = self.remaining()?;
         Ok(timer.sleep(remaining))
     }
@@ -90,9 +87,7 @@ impl ServicePartitionResolverBuilder {
     pub fn build(self) -> ServicePartitionResolver {
         ServicePartitionResolver {
             sm: self.fc.get_service_manager().clone(),
-            timer: self
-                .timer
-                .unwrap_or(Box::new(crate::runtime::executor::DefaultTimer)),
+            timer: self.timer.unwrap_or(Box::new(crate::tokio::TokioTimer)),
             default_timeout: self.default_timeout.unwrap_or(Duration::from_secs(30)),
             max_retry_interval: self
                 .default_max_retry_interval
@@ -119,7 +114,7 @@ impl ServicePartitionResolver {
         prev: Option<&ResolvedServicePartition>,
         timeout: Option<Duration>, // Total timeout for the operation
         token: Option<CancellationToken>,
-    ) -> crate::Result<ResolvedServicePartition> {
+    ) -> mssf_core::Result<ResolvedServicePartition> {
         let timeout = timeout.unwrap_or(self.default_timeout);
         let timer = TimeCounter::new(timeout);
         let mut cancel: Pin<Box<dyn std::future::Future<Output = ()> + Send>> =
@@ -132,11 +127,11 @@ impl ServicePartitionResolver {
             let rsp_res = tokio::select! {
                 _ = timer.sleep_until_remaining(self.timer.as_ref())? => {
                     // Timeout reached, return error.
-                    return Err(crate::ErrorCode::FABRIC_E_TIMEOUT.into());
+                    return Err(ErrorCode::FABRIC_E_TIMEOUT.into());
                 }
                 _ = &mut cancel => {
                     // Cancellation requested, return error.
-                    return Err(crate::ErrorCode::E_ABORT.into());
+                    return Err(ErrorCode::E_ABORT.into());
                 }
                 rsp_opt = self
                     .sm
@@ -146,7 +141,7 @@ impl ServicePartitionResolver {
                 Ok(partition) => Some(partition),
                 Err(e) => match e.try_as_fabric_error_code() {
                     Ok(ec) => {
-                        if ec == crate::ErrorCode::FABRIC_E_TIMEOUT || ec.is_transient() {
+                        if ec == ErrorCode::FABRIC_E_TIMEOUT || ec.is_transient() {
                             #[cfg(feature = "tracing")]
                             tracing::debug!(
                                 "Service partition transient error {ec}. Remaining time {:?}. Retrying...",
@@ -165,7 +160,7 @@ impl ServicePartitionResolver {
             // Check rsp is valid and save in the cache.
             // Sometimes endpoint is empty (may due to service removed), so we need to retry.
             if let Some(rsp) = rsp_opt
-                && rsp.get_endpoint_list().get_count() != 0
+                && rsp.get_endpoint_list().iter().count() > 0
             {
                 return Ok(rsp);
             }
@@ -174,11 +169,11 @@ impl ServicePartitionResolver {
                 _ = self.timer.sleep(self.max_retry_interval) => {},
                 _ = timer.sleep_until_remaining(self.timer.as_ref())? => {
                     // Timeout reached, return error.
-                    return Err(crate::ErrorCode::FABRIC_E_TIMEOUT.into());
+                    return Err(ErrorCode::FABRIC_E_TIMEOUT.into());
                 }
                 _ = &mut cancel => {
                     // Cancellation requested, return error.
-                    return Err(crate::ErrorCode::E_ABORT.into());
+                    return Err(ErrorCode::E_ABORT.into());
                 }
             }
         }

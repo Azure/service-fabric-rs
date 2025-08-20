@@ -6,7 +6,6 @@
 use mssf_core::{Error, WString};
 use mssf_core::{
     runtime::{
-        executor::{DefaultExecutor, Executor},
         stateful::{PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServiceReplica},
         stateful_proxy::StatefulServicePartition,
     },
@@ -14,6 +13,7 @@ use mssf_core::{
         Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig, ReplicaSetQuorumMode,
     },
 };
+use mssf_util::tokio::TokioExecutor;
 use std::{
     cell::Cell,
     sync::{Arc, Mutex},
@@ -26,11 +26,11 @@ use crate::echo;
 pub struct Factory {
     replication_port: u32,
     hostname: WString,
-    rt: DefaultExecutor,
+    rt: TokioExecutor,
 }
 
 impl Factory {
-    pub fn create(replication_port: u32, hostname: WString, rt: DefaultExecutor) -> Factory {
+    pub fn create(replication_port: u32, hostname: WString, rt: TokioExecutor) -> Factory {
         Factory {
             replication_port,
             hostname,
@@ -264,11 +264,11 @@ pub struct Service {
     hostname_: WString,
 
     cancel: Mutex<Cell<Option<CancellationToken>>>,
-    rt: DefaultExecutor,
+    rt: TokioExecutor,
 }
 
 impl Service {
-    pub fn new(rt: DefaultExecutor, tcp_port: u32, hostname: WString) -> Service {
+    pub fn new(rt: TokioExecutor, tcp_port: u32, hostname: WString) -> Service {
         Service {
             tcp_port,
             hostname_: hostname,
@@ -286,7 +286,7 @@ impl Service {
         let hostname_copy = self.hostname_.clone();
         let partition_cp = partition.clone();
         // start the echo server in background
-        self.rt.spawn(async move {
+        self.rt.get_ref().spawn(async move {
             info!("Service: start echo");
             echo::start_echo(token, port_copy, hostname_copy, partition_cp).await
         });

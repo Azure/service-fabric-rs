@@ -2,12 +2,13 @@
 name = "mssf-core"
 version = "0.2.1"
 edition.workspace = true
-license = "MIT"
+license.workspace = true
+documentation.workspace = true
+repository.workspace = true
+authors.workspace = true
+
 description = "Rust for Azure Service Fabric. Rust safe APIs."
-documentation = "https://learn.microsoft.com/en-us/azure/service-fabric/"
-repository = "https://github.com/Azure/service-fabric-rs"
 readme = "README.md"
-authors = ["youyuanwu@outlook.com"]
 include = ["**/*.rs", "Cargo.toml"]
 
 [features]

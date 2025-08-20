@@ -11,5 +11,5 @@ ctrlc.workspace = true
 tokio.workspace = true
 windows-core.workspace = true
 mssf-com.workspace = true
-mssf-core = { workspace = true, features = []} # do not use any features
+mssf-core = { workspace = true, features = [], default-features = false } # do not use any features
 

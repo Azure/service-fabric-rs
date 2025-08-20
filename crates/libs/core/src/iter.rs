@@ -107,7 +107,7 @@ mod test {
     type MyVecIter<'a> = FabricIter<'a, MyVal, MyVal2, MyVec>;
 
     impl MyVec {
-        fn get_iter(&self) -> MyVecIter {
+        fn get_iter(&self) -> MyVecIter<'_> {
             MyVecIter::new(self, self)
         }
     }

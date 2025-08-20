@@ -72,7 +72,7 @@ pub struct ServiceEndpointList {
 
 impl ServiceEndpointList {
     // Get iterator for the list
-    pub fn iter(&self) -> ServiceEndpointListIter {
+    pub fn iter(&self) -> ServiceEndpointListIter<'_> {
         ServiceEndpointListIter::new(self, self)
     }
 }

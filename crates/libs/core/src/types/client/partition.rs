@@ -78,7 +78,7 @@ impl ServicePartitionList {
         Self { com }
     }
 
-    pub fn iter(&self) -> ServicePartitionListIter {
+    pub fn iter(&self) -> ServicePartitionListIter<'_> {
         ServicePartitionListIter::new(self, self)
     }
 }

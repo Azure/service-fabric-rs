@@ -346,7 +346,7 @@ mod test {
     /// Converts option ref to windows ref for testing.
     /// They have the same ABI.
     /// Returned ref has the same lifetime as the opt.
-    fn option_to_ref<T>(opt: Option<&T>) -> windows_core::Ref<T>
+    fn option_to_ref<T>(opt: Option<&T>) -> windows_core::Ref<'_, T>
     where
         T: crate::Interface,
     {

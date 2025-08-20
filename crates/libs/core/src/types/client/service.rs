@@ -147,7 +147,7 @@ impl StatefulServiceDescriptionRaw<'_> {
 
 impl StatefulServiceDescription {
     // Initializes the internal struct
-    fn build_raw(&self) -> StatefulServiceDescriptionRaw {
+    fn build_raw(&self) -> StatefulServiceDescriptionRaw<'_> {
         let ex4 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4 {
             ServiceScalingPolicies: std::ptr::null_mut(), // TODO: support scaling policies
             ScalingPolicyCount: 0,
@@ -296,7 +296,7 @@ impl StatelessServiceDescriptionRaw<'_> {
 }
 
 impl StatelessServiceDescription {
-    fn build_raw(&self) -> StatelessServiceDescriptionRaw {
+    fn build_raw(&self) -> StatelessServiceDescriptionRaw<'_> {
         let ex4 = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4 {
             ServiceScalingPolicies: std::ptr::null_mut(), // TODO: support scaling policies
             ScalingPolicyCount: 0,
@@ -377,7 +377,7 @@ impl ServiceDescriptionRaw<'_> {
 impl ServiceDescription {
     /// The raw type contains the ffi pointers on heap to be used by SF.
     /// mssf build the raw type on the stack and call the SF API with it.
-    pub(crate) fn build_raw(&self) -> ServiceDescriptionRaw {
+    pub(crate) fn build_raw(&self) -> ServiceDescriptionRaw<'_> {
         match self {
             ServiceDescription::Stateful(desc) => ServiceDescriptionRaw::Stateful(desc.build_raw()),
             ServiceDescription::Stateless(desc) => {
@@ -413,7 +413,7 @@ pub(crate) struct NamedRepartitionDescriptionRaw<'a> {
 }
 
 impl NamedRepartitionDescription {
-    pub(crate) fn as_raw(&self) -> NamedRepartitionDescriptionRaw {
+    pub(crate) fn as_raw(&self) -> NamedRepartitionDescriptionRaw<'_> {
         let names_to_add = self
             .names_to_add
             .iter()
@@ -453,7 +453,7 @@ pub(crate) enum ServiceRepartitionDescriptionRaw<'a> {
 }
 
 impl ServiceRepartitionDescription {
-    pub(crate) fn as_raw(&self) -> ServiceRepartitionDescriptionRaw {
+    pub(crate) fn as_raw(&self) -> ServiceRepartitionDescriptionRaw<'_> {
         match self {
             ServiceRepartitionDescription::Named(desc) => {
                 ServiceRepartitionDescriptionRaw::Named(desc.as_raw())
@@ -511,7 +511,7 @@ pub enum ServiceUpdateDescription {
 impl ServiceUpdateDescription {
     /// The raw type contains the ffi pointers on heap to be used by SF.
     /// mssf build the raw type on the stack and call the SF API with it.
-    pub(crate) fn build_raw(&self) -> ServiceUpdateDescriptionRaw {
+    pub(crate) fn build_raw(&self) -> ServiceUpdateDescriptionRaw<'_> {
         match self {
             ServiceUpdateDescription::Stateful(desc) => {
                 ServiceUpdateDescriptionRaw::Stateful(desc.build_raw())
@@ -683,7 +683,7 @@ impl ServiceUpdateDescriptionRaw<'_> {
 }
 
 impl StatefulServiceUpdateDescription {
-    pub(crate) fn build_raw(&self) -> StatefulServiceUpdateDescriptionRaw {
+    pub(crate) fn build_raw(&self) -> StatefulServiceUpdateDescriptionRaw<'_> {
         let repartition_raw = self.repartition_description.as_raw();
         let ex5 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5 {
             RepartitionDescription: repartition_raw.as_ffi().1 as *const _ as *mut _,

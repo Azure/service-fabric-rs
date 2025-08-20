@@ -14,9 +14,10 @@ RUN echo "servicefabric servicefabric/accepted-eula-ga select true" | debconf-se
   && echo "servicefabricsdkcommon servicefabricsdkcommon/accepted-eula-ga select true" | debconf-set-selections
 # RUN apt-get install -y servicefabricsdkcommon
 
-RUN wget https://download.microsoft.com/download/3/1/F/31F3FEEB-F073-4E27-A98B-8E691FF74F40/ServiceFabric.U22.10.1.2935.9590.deb
-RUN apt-get install -y ./ServiceFabric.U22.10.1.2935.9590.deb
-RUN rm ServiceFabric.U22.10.1.2935.9590.deb
+ENV SF_VERSION=11.1.208.4
+RUN wget https://download.microsoft.com/download/3/1/F/31F3FEEB-F073-4E27-A98B-8E691FF74F40/ServiceFabric.U22.${SF_VERSION}.deb
+RUN apt-get install -y ./ServiceFabric.U22.${SF_VERSION}.deb
+RUN rm ServiceFabric.U22.${SF_VERSION}.deb
 
 RUN apt install -y net-tools locales \
  && locale-gen en_US.UTF-8 \

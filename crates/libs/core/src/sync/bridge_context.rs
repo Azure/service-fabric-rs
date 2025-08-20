@@ -90,7 +90,13 @@ where
                 let _ = tx.send(res);
             });
             // The sender should never drop so if it fails the user code must panicked.
-            let task_res = rx.await.map_err(|_| ErrorCode::E_UNEXPECTED.into());
+            let task_res = rx
+                .await
+                .inspect_err(|_e| {
+                    #[cfg(feature = "tracing")]
+                    tracing::error!("BridgeContext: background task failed: {_e}");
+                })
+                .map_err(|_| ErrorCode::E_UNEXPECTED.into());
 
             // TODO: maybe it is good to report health to SF here the same way that sf dotnet app works.
 

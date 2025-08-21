@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::sync::CancellationToken;
+use crate::{runtime::executor::CancelToken, sync::NONE_CANCEL_TOKEN};
 use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
 
 use super::{FabricReceiver, oneshot_channel};
@@ -39,7 +39,7 @@ use super::{FabricReceiver, oneshot_channel};
 pub fn fabric_begin_end_proxy<BEGIN, END, T>(
     begin: BEGIN,
     end: END,
-    token: Option<CancellationToken>,
+    token: Option<impl CancelToken>,
 ) -> FabricReceiver<crate::WinResult<T>>
 where
     BEGIN: FnOnce(
@@ -62,7 +62,7 @@ where
             rx
         }
         Err(e) => {
-            let (tx2, rx2) = oneshot_channel(None);
+            let (tx2, rx2) = oneshot_channel(NONE_CANCEL_TOKEN);
             tx2.send(Err(e));
             rx2
         }

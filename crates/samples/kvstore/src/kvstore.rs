@@ -9,12 +9,13 @@ use mssf_com::{
 use mssf_core::{
     Error, GUID, WString,
     runtime::{
+        executor::CancelToken,
         stateful::{PrimaryReplicator, StatefulServiceFactory, StatefulServiceReplica},
         stateful_proxy::{StatefulServicePartition, StatefulServiceReplicaProxy},
         store::{DummyStoreEventHandler, create_com_key_value_store_replica},
         store_proxy::KVStoreProxy,
     },
-    sync::CancellationToken,
+    sync::NONE_CANCEL_TOKEN,
     types::{LocalStoreKind, OpenMode, ReplicaRole, ReplicatorSettings},
 };
 use mssf_util::tokio::TokioExecutor;
@@ -164,7 +165,7 @@ impl Service {
             let key = WString::from("mykey");
             let value = String::from("myvalue");
             kv.add(&tx, key.as_wide(), value.as_bytes())?;
-            seq = tx.commit(1000, None).await?;
+            seq = tx.commit(1000, NONE_CANCEL_TOKEN).await?;
         }
 
         // remove kv
@@ -172,7 +173,7 @@ impl Service {
             let tx = kv.create_transaction()?;
             let key = WString::from("mykey");
             kv.remove(&tx, key.as_wide(), seq)?;
-            let _ = tx.commit(1000, None).await?;
+            let _ = tx.commit(1000, NONE_CANCEL_TOKEN).await?;
         }
         Ok(())
     }
@@ -183,7 +184,7 @@ impl StatefulServiceReplica for Replica {
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
-        cancellation_token: CancellationToken,
+        cancellation_token: impl CancelToken,
     ) -> mssf_core::Result<impl PrimaryReplicator> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
@@ -192,7 +193,7 @@ impl StatefulServiceReplica for Replica {
     async fn change_role(
         &self,
         newrole: ReplicaRole,
-        cancellation_token: CancellationToken,
+        cancellation_token: impl CancelToken,
     ) -> mssf_core::Result<WString> {
         info!("Replica::change_role {:?}", newrole);
         let addr = self
@@ -204,7 +205,7 @@ impl StatefulServiceReplica for Replica {
         }
         Ok(addr)
     }
-    async fn close(&self, cancellation_token: CancellationToken) -> mssf_core::Result<()> {
+    async fn close(&self, cancellation_token: impl CancelToken) -> mssf_core::Result<()> {
         info!("Replica::close");
         self.svc.stop();
         self.kv.close(cancellation_token).await

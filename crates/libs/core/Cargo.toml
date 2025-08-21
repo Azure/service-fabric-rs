@@ -12,9 +12,7 @@ readme = "README.md"
 include = ["**/*.rs", "Cargo.toml"]
 
 [features]
-default = ["config_source", "tokio_async", "tracing"]
-# Requires CancellationToken
-tokio_async = ["dep:tokio-util"]
+default = ["config_source", "tracing"]
 # Config crate required to implement its interface. 
 config_source = ["dep:config"]
 tracing = ["dep:tracing"]
@@ -22,7 +20,6 @@ tracing = ["dep:tracing"]
 [dependencies]
 futures-channel = { workspace = true, default-features = false, features = ["std"] }
 tracing = { workspace = true, optional = true }
-tokio-util = { workspace = true , optional = true , default-features = false, features = [] }
 trait-variant.workspace = true
 bitflags.workspace = true
 config = { workspace = true, optional = true }

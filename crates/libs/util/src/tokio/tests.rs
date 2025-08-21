@@ -11,14 +11,14 @@ mod proxy_test {
 
     use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
     use tokio::{runtime::Handle, select};
-    use tokio_util::sync::CancellationToken;
 
     use mssf_core::{
         ErrorCode,
-        sync::{BridgeContext, fabric_begin_end_proxy},
+        runtime::executor::CancelToken,
+        sync::{BridgeContext, NONE_CANCEL_TOKEN, fabric_begin_end_proxy},
     };
 
-    use crate::tokio::TokioExecutor;
+    use crate::tokio::{TokioCancelToken, TokioExecutor};
 
     /// Test trait for cancellation
     /// The whole test focuses on testing cancelation propergation from SF api to rust api
@@ -34,14 +34,14 @@ mod proxy_test {
             &self,
             delay: Duration,
             ignore_cancel: bool, // ignores the token
-            token: Option<CancellationToken>,
+            token: Option<impl CancelToken>,
         ) -> mssf_core::WinResult<String>;
 
         async fn set_data_delay(
             &self,
             input: String,
             delay: Duration,
-            token: Option<CancellationToken>,
+            token: Option<impl CancelToken>,
         ) -> mssf_core::WinResult<()>;
     }
 
@@ -57,7 +57,7 @@ mod proxy_test {
             &self,
             delay: Duration,
             ignore_cancel: bool,
-            token: Option<CancellationToken>,
+            token: Option<impl CancelToken>,
         ) -> mssf_core::WinResult<String> {
             if self.panic.load(std::sync::atomic::Ordering::Relaxed) {
                 panic!("test panic is set")
@@ -70,7 +70,7 @@ mod proxy_test {
             match (token, ignore_cancel) {
                 (Some(t), false) => {
                     select! {
-                        _ = t.cancelled() => {
+                        _ = t.wait() => {
                             // The token was cancelled
                             Err(ErrorCode::E_ABORT.into())
                         }
@@ -91,7 +91,7 @@ mod proxy_test {
             &self,
             input: String,
             delay: Duration,
-            token: Option<CancellationToken>,
+            token: Option<impl CancelToken>,
         ) -> mssf_core::WinResult<()> {
             if self.panic.load(std::sync::atomic::Ordering::Relaxed) {
                 panic!("test panic is set")
@@ -105,7 +105,7 @@ mod proxy_test {
             match token {
                 Some(t) => {
                     select! {
-                        _ = t.cancelled() => {
+                        _ = t.wait() => {
                             // The token was cancelled
                             Err(ErrorCode::E_ABORT.into())
                         }
@@ -237,7 +237,7 @@ mod proxy_test {
             &self,
             delay: Duration,
             ignore_cancel: bool,
-            token: Option<CancellationToken>,
+            token: Option<impl CancelToken>,
         ) -> mssf_core::WinResult<String> {
             let com1 = &self.com;
             let com2 = self.com.clone();
@@ -255,7 +255,7 @@ mod proxy_test {
             &self,
             input: String,
             delay: Duration,
-            token: Option<CancellationToken>,
+            token: Option<impl CancelToken>,
         ) -> mssf_core::WinResult<()> {
             let com1 = &self.com;
             let com2 = self.com.clone();
@@ -291,7 +291,7 @@ mod proxy_test {
     async fn test_cancel_interface(obj: &impl IMyObj, init_data: &str) {
         // get with no cancel
         {
-            let token = CancellationToken::new();
+            let token = TokioCancelToken::new();
             let out = obj
                 .get_data_delay(Duration::ZERO, false, Some(token))
                 .await
@@ -300,7 +300,7 @@ mod proxy_test {
         }
         // get with cancel
         {
-            let token = CancellationToken::new();
+            let token = TokioCancelToken::new();
             let fu = obj.get_data_delay(Duration::from_secs(5), false, Some(token.clone()));
             token.cancel();
             let err = fu.await.unwrap_err();
@@ -311,7 +311,7 @@ mod proxy_test {
         // This shows that the sender and receiver does not short circuit the future when token is cancelled,
         // the future result is always the result from the (SF) background task.
         {
-            let token = CancellationToken::new();
+            let token = TokioCancelToken::new();
             let fu = obj.get_data_delay(Duration::from_millis(3), true, Some(token.clone()));
             token.cancel();
             let out = fu.await.unwrap();
@@ -319,7 +319,7 @@ mod proxy_test {
         }
         // set with cancel
         {
-            let token = CancellationToken::new();
+            let token = TokioCancelToken::new();
             let fu = obj.set_data_delay(
                 "random_data".to_string(),
                 Duration::from_millis(15),
@@ -334,7 +334,7 @@ mod proxy_test {
             // sleep past the delay time to observe the final state
             tokio::time::sleep(Duration::from_millis(20)).await;
             let out = obj
-                .get_data_delay(Duration::ZERO, false, None)
+                .get_data_delay(Duration::ZERO, false, NONE_CANCEL_TOKEN)
                 .await
                 .unwrap();
             assert_eq!(out, init_data);
@@ -342,14 +342,18 @@ mod proxy_test {
         let expected_data2 = "mydata2";
         // set without cancel
         {
-            obj.set_data_delay(expected_data2.to_string(), Duration::from_millis(1), None)
-                .await
-                .expect("fail to set data");
+            obj.set_data_delay(
+                expected_data2.to_string(),
+                Duration::from_millis(1),
+                NONE_CANCEL_TOKEN,
+            )
+            .await
+            .expect("fail to set data");
         }
         // read the set.
         {
             let out = obj
-                .get_data_delay(Duration::ZERO, false, None)
+                .get_data_delay(Duration::ZERO, false, NONE_CANCEL_TOKEN)
                 .await
                 .unwrap();
             assert_eq!(out, expected_data2);
@@ -358,7 +362,7 @@ mod proxy_test {
         // So that the next test can reuse the obj.
         {
             {
-                obj.set_data_delay(init_data.to_string(), Duration::ZERO, None)
+                obj.set_data_delay(init_data.to_string(), Duration::ZERO, NONE_CANCEL_TOKEN)
                     .await
                     .expect("fail to set data");
             }
@@ -417,7 +421,7 @@ mod proxy_test {
                     res.unwrap();
                     break;
                 }
-                data = IMyObj::get_data_delay(obj,Duration::ZERO, false, None) =>{
+                data = IMyObj::get_data_delay(obj,Duration::ZERO, false, NONE_CANCEL_TOKEN) =>{
                     assert_eq!(data.unwrap(), expected_data);
                     count += 1;
                     if rx.try_recv().is_ok(){
@@ -437,7 +441,7 @@ mod proxy_test {
         let inner = MyObj::new(expected_data1.to_string());
         let proxy = MyObjProxy::new(h.clone(), inner);
         {
-            let out = IMyObj::get_data_delay(&proxy, Duration::ZERO, false, None)
+            let out = IMyObj::get_data_delay(&proxy, Duration::ZERO, false, NONE_CANCEL_TOKEN)
                 .await
                 .expect("fail to get data");
             assert_eq!(out, expected_data1);
@@ -450,7 +454,7 @@ mod proxy_test {
             .panic
             .store(true, std::sync::atomic::Ordering::Relaxed);
         {
-            let out = IMyObj::get_data_delay(&proxy, Duration::ZERO, false, None)
+            let out = IMyObj::get_data_delay(&proxy, Duration::ZERO, false, NONE_CANCEL_TOKEN)
                 .await
                 .expect_err("should error out");
             assert_eq!(out, ErrorCode::E_UNEXPECTED.into());

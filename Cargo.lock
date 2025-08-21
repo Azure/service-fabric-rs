@@ -207,7 +207,6 @@ dependencies = [
  "mssf-com",
  "mssf-pal",
  "tokio",
- "tokio-util",
  "tracing",
  "trait-variant",
  "windows",

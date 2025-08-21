@@ -2,10 +2,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
-#![cfg_attr(
-    not(feature = "tokio_async"),
-    allow(unused_imports, reason = "code configured out")
-)]
 use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{
@@ -22,8 +18,10 @@ use mssf_com::{
     },
 };
 
-#[cfg(feature = "tokio_async")]
-use crate::sync::{CancellationToken, FabricReceiver, fabric_begin_end_proxy};
+use crate::{
+    runtime::executor::CancelToken,
+    sync::{FabricReceiver, fabric_begin_end_proxy},
+};
 use crate::{
     strings::get_pcwstr_from_opt,
     types::{
@@ -42,13 +40,13 @@ pub struct QueryClient {
 // Internal implementation block
 // Internal functions focuses on changing SF callback to async future,
 // while the public apis impl focuses on type conversion.
-#[cfg(feature = "tokio_async")]
+
 impl QueryClient {
     pub fn get_node_list_internal(
         &self,
         query_description: &FABRIC_NODE_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<IFabricGetNodeListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -66,7 +64,7 @@ impl QueryClient {
         &self,
         desc: &FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<IFabricGetPartitionListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -83,7 +81,7 @@ impl QueryClient {
         &self,
         desc: &FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<IFabricGetReplicaListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -100,7 +98,7 @@ impl QueryClient {
         &self,
         desc: &FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<IFabricGetPartitionLoadInformationResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -117,7 +115,7 @@ impl QueryClient {
         &self,
         desc: &FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<IFabricGetDeployedServiceReplicaDetailResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -143,14 +141,13 @@ impl From<QueryClient> for IFabricQueryClient10 {
     }
 }
 
-#[cfg(feature = "tokio_async")]
 impl QueryClient {
     // List nodes in the cluster
     pub async fn get_node_list(
         &self,
         desc: &NodeQueryDescription,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<NodeList> {
         // Note that the SF raw structs are scoped to avoid having them across await points.
         // This makes api Send. All FabricClient api should follow this pattern.
@@ -188,7 +185,7 @@ impl QueryClient {
         &self,
         desc: &ServicePartitionQueryDescription,
         timeout: Duration,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<ServicePartitionList> {
         let com = {
             let raw: FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION = desc.into();
@@ -203,7 +200,7 @@ impl QueryClient {
         &self,
         desc: &ServiceReplicaQueryDescription,
         timeout: Duration,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<ServiceReplicaList> {
         let com = {
             let raw: FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION = desc.into();
@@ -218,7 +215,7 @@ impl QueryClient {
         &self,
         desc: &PartitionLoadInformationQueryDescription,
         timeout: Duration,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<PartitionLoadInformation> {
         let com = {
             let raw: FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION = desc.into();
@@ -233,7 +230,7 @@ impl QueryClient {
         &self,
         desc: &DeployedServiceReplicaDetailQueryDescription,
         timeout: Duration,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<DeployedServiceReplicaDetailQueryResult> {
         let com = {
             let raw: FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION = desc.into();

@@ -6,12 +6,16 @@
 use std::{
     future::Future,
     pin::Pin,
+    sync::Arc,
     task::{Context, Poll},
 };
 
 use mssf_com::FabricCommon::IFabricAsyncOperationContext;
 
-use crate::{ErrorCode, sync::CancellationToken};
+use crate::{
+    ErrorCode,
+    runtime::executor::{CancelToken, EventFuture},
+};
 
 pub use futures_channel::oneshot::{self, Receiver, Sender};
 
@@ -20,15 +24,18 @@ pub use futures_channel::oneshot::{self, Receiver, Sender};
 // case where SF guarantees that sender will be called.
 pub struct FabricReceiver<T> {
     rx: Receiver<T>,
-    token: Option<CancellationToken>,
+    token: Option<Arc<dyn CancelToken + 'static>>,
+    // event for cancelling
+    cancel_event: Option<Pin<Box<dyn EventFuture + 'static>>>,
     // saved ctx from SF Begin COM api for cancalling.
     ctx: Option<IFabricAsyncOperationContext>,
 }
 
 impl<T> FabricReceiver<T> {
-    fn new(rx: Receiver<T>, token: Option<CancellationToken>) -> FabricReceiver<T> {
+    fn new(rx: Receiver<T>, token: Option<Arc<dyn CancelToken + 'static>>) -> FabricReceiver<T> {
         FabricReceiver {
             rx,
+            cancel_event: token.as_ref().map(|t| t.wait()),
             token,
             ctx: None,
         }
@@ -78,7 +85,7 @@ impl<T> Future for FabricReceiver<T> {
     // of SF ctx returns other errors.
     // (TODO: observe other error code from SF, maybe some code should be ignored).
     type Output = crate::WinResult<T>;
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         // Poll the receiver first, if ready then return the output,
         // else poll the cancellation token, if cancelled propergate the cancel to SF ctx,
         // and return pending. SF task should continue finish execute in the background,
@@ -89,16 +96,19 @@ impl<T> Future for FabricReceiver<T> {
         // then got the result. The next poll will return received output rather
         // than cancelled error.
 
+        let this = self.get_mut();
+
         // Try to receive the value from the sender
-        let inner = <Receiver<T> as Future>::poll(Pin::new(&mut self.rx), cx);
-        match (inner, self.token.as_ref()) {
+        let inner = <Receiver<T> as Future>::poll(Pin::new(&mut this.rx), cx);
+        match (inner, this.token.as_ref()) {
             (Poll::Ready(Ok(data)), _) => Poll::Ready(Ok(data)),
             (Poll::Ready(Err(_)), Some(t)) => {
                 if t.is_cancelled() {
                     // clear the token since we only propergate the signal once.
-                    self.token.take();
+                    this.token.take();
+                    this.cancel_event.take();
                     // cancel the SF ctx and clear it.
-                    if let Err(e) = self.cancel_inner_ctx() {
+                    if let Err(e) = this.cancel_inner_ctx() {
                         Poll::Ready(Err(e))
                     } else {
                         Poll::Ready(Err(ErrorCode::E_ABORT.into()))
@@ -110,17 +120,21 @@ impl<T> Future for FabricReceiver<T> {
             (Poll::Ready(Err(_)), None) => {
                 panic!("sender dropped without sending")
             }
-            (Poll::Pending, Some(t)) => {
+            (Poll::Pending, Some(_)) => {
                 // If the action is canceled we can safely stop and return canceled error.
                 // this is cancel safe so we can poll it once and discard
-                let fu = t.cancelled();
-                let inner = std::pin::pin!(fu).poll(cx);
+                let event = this
+                    .cancel_event
+                    .as_mut()
+                    .expect("cancel event should be set");
+                let inner = std::pin::pin!(event).poll(cx);
                 match inner {
                     Poll::Ready(_) => {
                         // clear the token since we only propergate the signal once.
-                        self.token.take();
+                        this.cancel_event.take();
+                        this.cancel_event.take();
                         // operation cancelled. Propergate to inner sf ctx.
-                        if let Err(e) = self.cancel_inner_ctx() {
+                        if let Err(e) = this.cancel_inner_ctx() {
                             Poll::Ready(Err(e))
                         } else {
                             // The cancellation is propergated to sf task,
@@ -140,11 +154,11 @@ impl<T> Future for FabricReceiver<T> {
 
 pub struct FabricSender<T> {
     tx: Sender<T>,
-    token: Option<CancellationToken>,
+    token: Option<Arc<dyn CancelToken + 'static>>,
 }
 
 impl<T> FabricSender<T> {
-    fn new(tx: Sender<T>, token: Option<CancellationToken>) -> FabricSender<T> {
+    fn new(tx: Sender<T>, token: Option<Arc<dyn CancelToken + 'static>>) -> FabricSender<T> {
         FabricSender { tx, token }
     }
 
@@ -169,21 +183,24 @@ impl<T> FabricSender<T> {
 
 /// Creates a fabric oneshot channel.
 /// Operation can be cancelled by cancelling the token.
-pub fn oneshot_channel<T>(
-    token: Option<CancellationToken>,
+pub fn oneshot_channel<T, C: CancelToken>(
+    token: Option<C>,
 ) -> (FabricSender<T>, FabricReceiver<T>) {
+    let arc_token = token.map(|t| Arc::new(t) as Arc<dyn CancelToken + 'static>);
     let (tx, rx) = oneshot::channel::<T>();
     (
-        FabricSender::new(tx, token.clone()),
-        FabricReceiver::new(rx, token),
+        FabricSender::new(tx, arc_token.clone()),
+        FabricReceiver::new(rx, arc_token),
     )
 }
 
 #[cfg(test)]
 mod test {
-    use tokio_util::sync::CancellationToken;
 
-    use crate::{ErrorCode, sync::oneshot_channel};
+    use crate::{
+        ErrorCode,
+        sync::{SimpleCancelToken, oneshot_channel},
+    };
 
     /// Test various cancellation cases for the channel used
     /// to send data in proxy layer.
@@ -191,38 +208,38 @@ mod test {
     async fn test_channel() {
         // success send
         {
-            let (tx, rx) = oneshot_channel::<bool>(Some(CancellationToken::new()));
+            let (tx, rx) = oneshot_channel::<bool, _>(Some(SimpleCancelToken::new()));
             tx.send(true);
             assert!(rx.await.unwrap());
         }
         // receiver cancelled after send, still received the result.
         {
-            let token = CancellationToken::new();
-            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
+            let token = SimpleCancelToken::new();
+            let (tx, rx) = oneshot_channel::<bool, _>(Some(token.clone()));
             tx.send(true);
             token.cancel();
             assert!(rx.await.unwrap());
         }
         // receiver cancelled before send, still received the result.
         {
-            let token = CancellationToken::new();
-            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
+            let token = SimpleCancelToken::new();
+            let (tx, rx) = oneshot_channel::<bool, _>(Some(token.clone()));
             token.cancel();
             tx.send(true);
             assert!(rx.await.unwrap(),);
         }
         // receiver cancelled and droped, send is no op
         {
-            let token = CancellationToken::new();
-            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
+            let token = SimpleCancelToken::new();
+            let (tx, rx) = oneshot_channel::<bool, _>(Some(token.clone()));
             token.cancel();
             std::mem::drop(rx);
             tx.send(true);
         }
         // receiver cancelled and sender dropped. receiver get error
         {
-            let token = CancellationToken::new();
-            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
+            let token = SimpleCancelToken::new();
+            let (tx, rx) = oneshot_channel::<bool, _>(Some(token.clone()));
             token.cancel();
             std::mem::drop(tx);
             assert_eq!(rx.await.unwrap_err(), ErrorCode::E_ABORT.into());

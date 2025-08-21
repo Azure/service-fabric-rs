@@ -11,20 +11,15 @@ use std::{
     task::{Context, Poll},
 };
 
-use mssf_core::{
-    ErrorCode,
-    runtime::executor::{Executor, JoinHandle, Sleep, Timer},
-};
+use mssf_core::runtime::executor::{Executor, Sleep, Timer};
 use tokio::runtime::Handle;
+
+#[cfg(test)]
+mod tests;
 
 #[derive(Clone)]
 pub struct TokioExecutor {
     rt: Handle,
-}
-
-/// Default implementation of the JoinHandle using tokio
-pub struct TokioJoinHandle<T> {
-    inner: tokio::task::JoinHandle<T>,
 }
 
 impl TokioExecutor {
@@ -69,38 +64,12 @@ impl TokioExecutor {
 }
 
 impl Executor for TokioExecutor {
-    fn spawn<F>(&self, future: F) -> impl JoinHandle<F::Output>
+    fn spawn<F>(&self, future: F)
     where
         F: Future + Send + 'static,
         F::Output: Send,
     {
-        let h = self.rt.spawn(future);
-        TokioJoinHandle::<F::Output> { inner: h }
-    }
-
-    fn block_on<F: Future>(&self, future: F) -> F::Output {
-        self.rt.block_on(future)
-    }
-}
-
-impl<T: Send> JoinHandle<T> for TokioJoinHandle<T> {
-    async fn join(self) -> mssf_core::Result<T> {
-        match self.inner.await {
-            Ok(x) => Ok(x),
-            Err(e) => {
-                let ec = if e.is_cancelled() {
-                    // we never cancel in executor
-                    ErrorCode::E_ABORT
-                } else if e.is_panic() {
-                    ErrorCode::E_UNEXPECTED
-                } else {
-                    ErrorCode::E_FAIL
-                };
-                #[cfg(feature = "tracing")]
-                tracing::error!("DefaultJoinHandle: background task failed: {ec}, msg: {e}");
-                Err(ec.into())
-            }
-        }
+        self.rt.spawn(future);
     }
 }
 

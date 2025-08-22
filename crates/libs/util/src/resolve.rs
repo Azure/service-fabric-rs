@@ -5,7 +5,7 @@
 
 use std::{pin::Pin, time::Duration};
 
-use mssf_core::runtime::executor::Timer;
+use mssf_core::runtime::executor::{CancelToken, Timer};
 use mssf_core::{ErrorCode, WString};
 use tokio_util::sync::CancellationToken;
 
@@ -13,6 +13,8 @@ use mssf_core::client::{
     FabricClient,
     svc_mgmt_client::{PartitionKeyType, ResolvedServicePartition, ServiceManagementClient},
 };
+
+use crate::tokio::TokioCancelToken;
 
 /// The same as dotnet sdk:
 /// https://github.com/microsoft/service-fabric-services-and-actors-dotnet/blob/develop/src/Microsoft.ServiceFabric.Services/Client/ServicePartitionResolver.cs
@@ -115,11 +117,13 @@ impl ServicePartitionResolver {
         timeout: Option<Duration>, // Total timeout for the operation
         token: Option<CancellationToken>,
     ) -> mssf_core::Result<ResolvedServicePartition> {
+        let token = token.map(TokioCancelToken::from);
+
         let timeout = timeout.unwrap_or(self.default_timeout);
         let timer = TimeCounter::new(timeout);
         let mut cancel: Pin<Box<dyn std::future::Future<Output = ()> + Send>> =
             if let Some(t) = &token {
-                Box::pin(t.cancelled())
+                t.wait()
             } else {
                 Box::pin(std::future::pending())
             };

@@ -3,23 +3,14 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-#![cfg_attr(
-    not(feature = "tokio_async"),
-    allow(unused_imports, reason = "code configured out")
-)]
-
 use std::time::Duration;
 
-#[cfg(feature = "tokio_async")]
 use crate::{
     WString,
-    sync::CancellationToken,
-    sync::FabricReceiver,
-    sync::fabric_begin_end_proxy,
-    types::{NameEnumerationResult, Uri},
-    types::{PropertyMetadataResult, PropertyValueResult},
+    runtime::executor::CancelToken,
+    sync::{FabricReceiver, fabric_begin_end_proxy},
+    types::{NameEnumerationResult, PropertyMetadataResult, PropertyValueResult, Uri},
 };
-#[cfg(feature = "tokio_async")]
 use mssf_com::{
     FabricClient::{
         IFabricNameEnumerationResult, IFabricPropertyBatchResult, IFabricPropertyEnumerationResult,
@@ -47,13 +38,12 @@ impl From<PropertyManagementClient> for IFabricPropertyManagementClient2 {
     }
 }
 
-#[cfg(feature = "tokio_async")]
 impl PropertyManagementClient {
     fn create_name_internal(
         &self,
         name: &Uri,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -70,7 +60,7 @@ impl PropertyManagementClient {
         &self,
         name: &Uri,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -87,7 +77,7 @@ impl PropertyManagementClient {
         &self,
         name: &Uri,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<u8>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -106,7 +96,7 @@ impl PropertyManagementClient {
         prev: Option<&IFabricNameEnumerationResult>,
         recursive: bool,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<IFabricNameEnumerationResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -131,7 +121,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         data: &[u8],
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -156,7 +146,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         data: i64,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -181,7 +171,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         data: f64,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -206,7 +196,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         data: &WString,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -231,7 +221,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         data: &windows_core::GUID,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -255,7 +245,7 @@ impl PropertyManagementClient {
         name: &Uri,
         property_name: &WString,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -278,7 +268,7 @@ impl PropertyManagementClient {
         name: &Uri,
         property_name: &WString,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<IFabricPropertyMetadataResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -301,7 +291,7 @@ impl PropertyManagementClient {
         name: &Uri,
         property_name: &WString,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<IFabricPropertyValueResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -327,7 +317,7 @@ impl PropertyManagementClient {
         name: &Uri,
         batch: &[FABRIC_PROPERTY_BATCH_OPERATION],
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<(u32, IFabricPropertyBatchResult)>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -353,7 +343,7 @@ impl PropertyManagementClient {
         include_values: bool,
         prev: Option<&IFabricPropertyEnumerationResult>,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<IFabricPropertyEnumerationResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -379,7 +369,7 @@ impl PropertyManagementClient {
         name: &Uri,
         property_operation: &FABRIC_PUT_CUSTOM_PROPERTY_OPERATION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -398,7 +388,6 @@ impl PropertyManagementClient {
     }
 }
 
-#[cfg(feature = "tokio_async")]
 impl PropertyManagementClient {
     /// Creates a SF name in Naming Service.
     /// Provisioned app and service will automatically create names:
@@ -411,7 +400,7 @@ impl PropertyManagementClient {
         &self,
         name: &Uri,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<()> {
         self.create_name_internal(
             name,
@@ -429,7 +418,7 @@ impl PropertyManagementClient {
         &self,
         name: &Uri,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<()> {
         self.delete_name_internal(
             name,
@@ -445,7 +434,7 @@ impl PropertyManagementClient {
         &self,
         name: &Uri,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<bool> {
         self.name_exists_internal(
             name,
@@ -467,7 +456,7 @@ impl PropertyManagementClient {
         prev: Option<&NameEnumerationResult>,
         recursive: bool,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<NameEnumerationResult> {
         self.enumerate_sub_names_internal(
             name,
@@ -488,7 +477,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         data: &[u8],
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<()> {
         self.put_property_binary_internal(
             name,
@@ -508,7 +497,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         data: f64,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<()> {
         self.put_property_double_internal(
             name,
@@ -528,7 +517,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         data: i64,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<()> {
         self.put_property_int64_internal(
             name,
@@ -548,7 +537,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         data: &WString,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<()> {
         self.put_property_wstring_internal(
             name,
@@ -568,7 +557,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         data: &windows_core::GUID,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<()> {
         self.put_property_guid_internal(
             name,
@@ -587,7 +576,7 @@ impl PropertyManagementClient {
         name: &Uri,
         property_name: &WString,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<()> {
         self.delete_property_internal(
             name,
@@ -605,7 +594,7 @@ impl PropertyManagementClient {
         name: &Uri,
         property_name: &WString,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<PropertyMetadataResult> {
         self.get_property_metadata_internal(
             name,
@@ -624,7 +613,7 @@ impl PropertyManagementClient {
         name: &Uri,
         property_name: &WString,
         timeout: Duration,
-        cancellation_token: Option<crate::sync::CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<PropertyValueResult> {
         self.get_property_internal(
             name,

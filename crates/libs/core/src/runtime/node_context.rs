@@ -2,21 +2,18 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
-#[cfg(feature = "tokio_async")]
+
 use std::time::Duration;
 
 use crate::{Interface, WString};
 use mssf_com::FabricRuntime::{IFabricNodeContextResult, IFabricNodeContextResult2};
 
+use crate::{runtime::executor::CancelToken, sync::fabric_begin_end_proxy};
 use crate::{strings::WStringWrap, types::NodeId};
 
-#[cfg(feature = "tokio_async")]
-use crate::sync::{CancellationToken, fabric_begin_end_proxy};
-
-#[cfg(feature = "tokio_async")]
 pub fn get_com_node_context(
     timeout_milliseconds: u32,
-    cancellation_token: Option<CancellationToken>,
+    cancellation_token: Option<impl CancelToken>,
 ) -> crate::sync::FabricReceiver<crate::WinResult<IFabricNodeContextResult>> {
     fabric_begin_end_proxy(
         move |callback| {
@@ -37,12 +34,11 @@ pub struct NodeContext {
     pub node_id: NodeId,
 }
 
-#[cfg(feature = "tokio_async")]
 impl NodeContext {
     // Get the node context from SF runtime
     pub async fn get(
         timeout: Duration,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<Self> {
         let com = get_com_node_context(timeout.as_millis().try_into().unwrap(), cancellation_token)
             .await??;

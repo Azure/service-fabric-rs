@@ -11,7 +11,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use mssf_core::runtime::executor::{Executor, Sleep, Timer};
+use mssf_core::runtime::executor::{EventFuture, Executor, Timer};
 use tokio::runtime::Handle;
 
 #[cfg(test)]
@@ -78,7 +78,7 @@ pub struct TokioTimer;
 
 // TODO: the return type may be simplified if using return impl
 impl Timer for TokioTimer {
-    fn sleep(&self, duration: std::time::Duration) -> std::pin::Pin<Box<dyn Sleep>> {
+    fn sleep(&self, duration: std::time::Duration) -> std::pin::Pin<Box<dyn EventFuture>> {
         Box::pin(TokioSleep::new(tokio::time::sleep(duration)))
     }
 }
@@ -98,13 +98,57 @@ impl TokioSleep {
     }
 }
 
-impl Sleep for TokioSleep {}
-
 impl Future for TokioSleep {
     type Output = ();
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         // Poll the inner Sleep future
         self.inner.as_mut().poll(cx)
+    }
+}
+
+/// CancelToken implementation for tokio
+/// User can use tokio's token and integrate with mssf.
+#[derive(Debug, Clone)]
+pub struct TokioCancelToken {
+    token: tokio_util::sync::CancellationToken,
+}
+
+impl mssf_core::runtime::executor::CancelToken for TokioCancelToken {
+    fn is_cancelled(&self) -> bool {
+        self.token.is_cancelled()
+    }
+
+    fn cancel(&self) {
+        self.token.cancel()
+    }
+
+    fn wait(&self) -> Pin<Box<dyn EventFuture>> {
+        let fut = self.token.clone().cancelled_owned();
+        Box::pin(fut) as Pin<Box<dyn EventFuture>>
+    }
+}
+
+impl TokioCancelToken {
+    pub fn new() -> Self {
+        TokioCancelToken {
+            token: tokio_util::sync::CancellationToken::new(),
+        }
+    }
+
+    pub fn get_ref(&self) -> &tokio_util::sync::CancellationToken {
+        &self.token
+    }
+}
+
+impl From<tokio_util::sync::CancellationToken> for TokioCancelToken {
+    fn from(token: tokio_util::sync::CancellationToken) -> Self {
+        TokioCancelToken { token }
+    }
+}
+
+impl Default for TokioCancelToken {
+    fn default() -> Self {
+        Self::new()
     }
 }

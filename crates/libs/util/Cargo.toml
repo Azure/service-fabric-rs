@@ -19,7 +19,7 @@ tracing = ["dep:tracing"]
 tokio = { workspace = true, features = ["rt", "signal"], optional = true, default-features = false }
 tokio-util = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
-mssf-core = { workspace = true, default-features = false, features = ["tokio_async"] }
+mssf-core = { workspace = true, default-features = false }
 
 [dev-dependencies]
 mssf-com.workspace = true

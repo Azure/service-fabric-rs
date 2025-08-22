@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::PCWSTR;
+use crate::{PCWSTR, runtime::executor::CancelToken};
 use mssf_com::{
     FabricRuntime::{
         IFabricKeyValueStoreItemResult, IFabricKeyValueStoreReplica2, IFabricTransaction,
@@ -11,7 +11,7 @@ use mssf_com::{
     FabricTypes::{FABRIC_KEY_VALUE_STORE_ITEM, FABRIC_KEY_VALUE_STORE_ITEM_METADATA},
 };
 
-use crate::sync::{CancellationToken, fabric_begin_end_proxy};
+use crate::sync::fabric_begin_end_proxy;
 
 use crate::types::TransactionIsolationLevel;
 
@@ -112,7 +112,7 @@ impl TransactionProxy {
     pub async fn commit(
         &self,
         timeoutmilliseconds: u32,
-        cancellation_token: Option<CancellationToken>,
+        cancellation_token: Option<impl CancelToken>,
     ) -> crate::Result<i64> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();

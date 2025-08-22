@@ -13,25 +13,19 @@ use mssf_com::FabricCommon::{
 };
 use windows_core::implement;
 
+mod token;
 pub mod wait;
+pub use token::{NONE_CANCEL_TOKEN, SimpleCancelToken};
 
 // This is intentional private. User should directly use bridge mod.
-#[cfg(feature = "tokio_async")]
 mod bridge_context;
-#[cfg(feature = "tokio_async")]
 pub use bridge_context::BridgeContext;
 
-#[cfg(feature = "tokio_async")]
 mod channel;
-#[cfg(feature = "tokio_async")]
 pub use channel::{FabricReceiver, FabricSender, oneshot_channel};
 
-#[cfg(feature = "tokio_async")]
 mod proxy;
-#[cfg(feature = "tokio_async")]
 pub use proxy::fabric_begin_end_proxy;
-#[cfg(feature = "tokio_async")]
-pub use tokio_util::sync::CancellationToken;
 
 // fabric code begins here
 

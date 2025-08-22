@@ -5,13 +5,11 @@
 
 use std::{cell::Cell, future::Future};
 
-use crate::{error::ErrorCode, runtime::executor::Executor};
+use crate::{error::ErrorCode, runtime::executor::Executor, sync::SimpleCancelToken};
 use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl,
 };
 use windows_core::{AsImpl, implement};
-
-use crate::sync::CancellationToken;
 
 /// Async operation context for bridging rust code into SF COM api that supports cancellation.
 #[implement(IFabricAsyncOperationContext)]
@@ -32,14 +30,14 @@ where
     /// This is always false.
     is_completed_synchronously: bool,
     callback: IFabricAsyncOperationCallback,
-    token: CancellationToken,
+    token: SimpleCancelToken,
 }
 
 impl<T> BridgeContext<T>
 where
     T: Send,
 {
-    fn new(callback: IFabricAsyncOperationCallback, token: CancellationToken) -> Self {
+    fn new(callback: IFabricAsyncOperationCallback, token: SimpleCancelToken) -> Self {
         Self {
             content: Cell::new(None),
             is_completed: std::sync::atomic::AtomicBool::new(false),
@@ -54,8 +52,8 @@ where
     /// where Cancel() api cancels the operation.
     pub fn make(
         callback: windows_core::Ref<IFabricAsyncOperationCallback>,
-    ) -> (Self, CancellationToken) {
-        let token = CancellationToken::new();
+    ) -> (Self, SimpleCancelToken) {
+        let token = SimpleCancelToken::new();
         let ctx = Self::new(callback.unwrap().clone(), token.clone());
         (ctx, token)
     }

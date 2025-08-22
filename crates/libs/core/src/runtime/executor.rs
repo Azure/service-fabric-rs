@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use std::future::Future;
+use std::{future::Future, pin::Pin};
 
 // Executor is used by rs to post jobs to execute in the background
 // Sync is needed due to we use the executor across await boundary.
@@ -24,8 +24,22 @@ pub trait Executor: Clone + Sync + Send + 'static {
 
 /// Runtime independent sleep trait.
 pub trait Timer: Send + Sync + 'static {
-    fn sleep(&self, duration: std::time::Duration) -> std::pin::Pin<Box<dyn Sleep>>;
+    /// Returns a future that is ready after duration.
+    fn sleep(&self, duration: std::time::Duration) -> Pin<Box<dyn EventFuture>>;
 }
 
-/// Runtime independent sleep future
-pub trait Sleep: Send + Sync + Future<Output = ()> {}
+/// Runtime independent event future.
+pub trait EventFuture: Send + Future<Output = ()> {}
+
+impl<T> EventFuture for T where T: Future<Output = ()> + Send {}
+
+pub trait CancelToken: Send + Sync + 'static {
+    /// Get a future to wait for cancellation.
+    fn wait(&self) -> Pin<Box<dyn EventFuture>>;
+
+    /// Is the token cancelled
+    fn is_cancelled(&self) -> bool;
+
+    /// Cancel the token.
+    fn cancel(&self);
+}

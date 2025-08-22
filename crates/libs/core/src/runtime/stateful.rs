@@ -5,7 +5,7 @@
 
 // stateful contains rs definition of stateful traits that user needs to implement
 
-use crate::sync::CancellationToken;
+use crate::runtime::executor::CancelToken;
 use crate::types::ReplicaRole;
 
 use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuorumMode};
@@ -43,7 +43,7 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
-        cancellation_token: CancellationToken,
+        cancellation_token: impl CancelToken,
     ) -> crate::Result<impl PrimaryReplicator>;
 
     /// Changes the role of the service replica to one of the ReplicaRole.
@@ -56,11 +56,11 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
     async fn change_role(
         &self,
         newrole: ReplicaRole,
-        cancellation_token: CancellationToken,
+        cancellation_token: impl CancelToken,
     ) -> crate::Result<crate::WString>;
 
     /// Closes the service replica gracefully when it is being shut down.
-    async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
+    async fn close(&self, cancellation_token: impl CancelToken) -> crate::Result<()>;
 
     /// Ungracefully terminates the service replica.
     /// Remarks: Network issues resulting in Service Fabric process shutdown
@@ -76,8 +76,8 @@ pub trait LocalReplicator: Send + Sync + 'static {
     /// in ReplicaInformation.
     /// Remarks:
     /// Replicator does not have an assigned role yet and should setup listening endpoint.
-    async fn open(&self, cancellation_token: CancellationToken) -> crate::Result<crate::WString>;
-    async fn close(&self, cancellation_token: CancellationToken) -> crate::Result<()>;
+    async fn open(&self, cancellation_token: impl CancelToken) -> crate::Result<crate::WString>;
+    async fn close(&self, cancellation_token: impl CancelToken) -> crate::Result<()>;
 
     /// Change the replicator role.
     ///
@@ -87,7 +87,7 @@ pub trait LocalReplicator: Send + Sync + 'static {
         &self,
         epoch: &Epoch,
         role: &ReplicaRole,
-        cancellation_token: CancellationToken,
+        cancellation_token: impl CancelToken,
     ) -> crate::Result<()>;
 
     /// (TODO: This doc is from IStateProvider but not Replicator.)
@@ -101,7 +101,7 @@ pub trait LocalReplicator: Send + Sync + 'static {
     async fn update_epoch(
         &self,
         epoch: &Epoch,
-        cancellation_token: CancellationToken,
+        cancellation_token: impl CancelToken,
     ) -> crate::Result<()>;
 
     /// Get the current LSN, end of log, called on secondaries.
@@ -142,7 +142,7 @@ pub trait LocalPrimaryReplicator: Replicator {
     // SF calls this to indicate that possible data loss has occurred (write quorum loss),
     // returns is isStateChanged. If true, SF will re-create other secondaries.
     // The default SF impl might be a pass through to the state provider.
-    async fn on_data_loss(&self, cancellation_token: CancellationToken) -> crate::Result<u8>;
+    async fn on_data_loss(&self, cancellation_token: impl CancelToken) -> crate::Result<u8>;
 
     // Remarks on replicator configuration:
     // At any time the replicator can have one or two configurations. There is always a current
@@ -211,7 +211,7 @@ pub trait LocalPrimaryReplicator: Replicator {
     async fn wait_for_catch_up_quorum(
         &self,
         catchupmode: ReplicaSetQuorumMode,
-        cancellation_token: CancellationToken,
+        cancellation_token: impl CancelToken,
     ) -> crate::Result<()>;
 
     /// Transferring state up to the current quorum LSN to a new or existing replica
@@ -233,7 +233,7 @@ pub trait LocalPrimaryReplicator: Replicator {
     async fn build_replica(
         &self,
         replica: &ReplicaInformation,
-        cancellation_token: CancellationToken,
+        cancellation_token: impl CancelToken,
     ) -> crate::Result<()>;
 
     /// Notifies primary that an idle replica built by build_replica() api call

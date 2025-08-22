@@ -14,7 +14,6 @@ use mssf_core::{
             ServiceEndpointRole, ServicePartitionKind,
         },
     },
-    sync::NONE_CANCEL_TOKEN,
     types::{
         QueryServiceReplicaStatus, RemoveReplicaDescription, ServiceNotificationFilterDescription,
         ServiceNotificationFilterFlags, ServicePartitionInformation,
@@ -56,7 +55,7 @@ impl EchoTestClient {
             partition_id_filter: None,
         };
         let list = qc
-            .get_partition_list(&desc, self.timeout, NONE_CANCEL_TOKEN)
+            .get_partition_list(&desc, self.timeout, None)
             .await
             .unwrap();
         // there is only one partition
@@ -82,9 +81,7 @@ impl EchoTestClient {
             partition_id,
             replica_id_or_instance_id_filter: None,
         };
-        let replicas = qc
-            .get_replica_list(&desc, self.timeout, NONE_CANCEL_TOKEN)
-            .await?;
+        let replicas = qc.get_replica_list(&desc, self.timeout, None).await?;
         let replica_op = replicas.iter().next(); // only one replica
         match replica_op {
             Some(replica) => Ok(match replica {
@@ -104,7 +101,7 @@ impl EchoTestClient {
                 &PartitionKeyType::None,
                 None,
                 self.timeout,
-                NONE_CANCEL_TOKEN,
+                None,
             )
             .await
             .expect("resolve failed");
@@ -184,7 +181,7 @@ async fn test_fabric_client() {
             flags: ServiceNotificationFilterFlags::NamePrefix,
         };
         // register takes more than 1 sec.
-        mgmt.register_service_notification_filter(&desc, Duration::from_secs(10), NONE_CANCEL_TOKEN)
+        mgmt.register_service_notification_filter(&desc, Duration::from_secs(10), None)
             .await
             .unwrap()
     };
@@ -203,7 +200,7 @@ async fn test_fabric_client() {
             partition_id: single.id,
             replica_or_instance_id: stateless_replica.instance_id,
         };
-        mgmt.remove_replica(&desc, timeout, NONE_CANCEL_TOKEN)
+        mgmt.remove_replica(&desc, timeout, None)
             .await
             .expect("Failed to remove replica");
     }
@@ -252,7 +249,7 @@ async fn test_fabric_client() {
     }
 
     // unregisters the notification
-    mgmt.unregister_service_notification_filter(filter_handle, timeout, NONE_CANCEL_TOKEN)
+    mgmt.unregister_service_notification_filter(filter_handle, timeout, None)
         .await
         .unwrap();
 }
@@ -264,12 +261,12 @@ async fn delete_property_if_exist(
     timeout: Duration,
 ) {
     match pc
-        .get_property_metadata(svc_uri, property_name, timeout, NONE_CANCEL_TOKEN)
+        .get_property_metadata(svc_uri, property_name, timeout, None)
         .await
     {
         Ok(_) => {
             // Property already exists, remove it.
-            pc.delete_property(svc_uri, property_name, timeout, NONE_CANCEL_TOKEN)
+            pc.delete_property(svc_uri, property_name, timeout, None)
                 .await
                 .unwrap();
         }
@@ -298,13 +295,10 @@ async fn test_property_client() {
     let timeout = Duration::from_secs(5);
     // If app is deployed, the name should be present.
     {
-        let exist = pc
-            .name_exists(&app_uri, timeout, NONE_CANCEL_TOKEN)
-            .await
-            .unwrap();
+        let exist = pc.name_exists(&app_uri, timeout, None).await.unwrap();
         assert!(exist);
         let sub_names = pc
-            .enumerate_sub_names(&app_uri, None, false, timeout, NONE_CANCEL_TOKEN)
+            .enumerate_sub_names(&app_uri, None, false, timeout, None)
             .await
             .unwrap();
         assert_eq!(
@@ -315,10 +309,7 @@ async fn test_property_client() {
         assert!(names.contains(&svc_uri));
     }
     {
-        let exist = pc
-            .name_exists(&svc_uri, timeout, NONE_CANCEL_TOKEN)
-            .await
-            .unwrap();
+        let exist = pc.name_exists(&svc_uri, timeout, None).await.unwrap();
         assert!(exist);
     }
     // create new property test
@@ -341,17 +332,17 @@ async fn test_property_client() {
                 &property_name,
                 value.to_string_lossy().as_bytes(),
                 timeout,
-                NONE_CANCEL_TOKEN,
+                None,
             )
             .await
             .unwrap();
             let meta = pc
-                .get_property_metadata(&svc_uri, &property_name, timeout, NONE_CANCEL_TOKEN)
+                .get_property_metadata(&svc_uri, &property_name, timeout, None)
                 .await
                 .unwrap();
             assert_eq!(meta.get_metadata().unwrap().name, svc_uri);
             let value_result = pc
-                .get_property(&svc_uri, &property_name, timeout, NONE_CANCEL_TOKEN)
+                .get_property(&svc_uri, &property_name, timeout, None)
                 .await
                 .unwrap();
             let (meta2, data) = value_result.get_named_property();
@@ -376,16 +367,16 @@ async fn test_property_client() {
         {
             let property_name = WString::from("test_property_int64");
             let value = 1234567890_i64;
-            pc.put_property_int64(&svc_uri, &property_name, value, timeout, NONE_CANCEL_TOKEN)
+            pc.put_property_int64(&svc_uri, &property_name, value, timeout, None)
                 .await
                 .unwrap();
             let meta = pc
-                .get_property_metadata(&svc_uri, &property_name, timeout, NONE_CANCEL_TOKEN)
+                .get_property_metadata(&svc_uri, &property_name, timeout, None)
                 .await
                 .unwrap();
             assert_eq!(meta.get_metadata().unwrap().name, svc_uri);
             let value_result = pc
-                .get_property(&svc_uri, &property_name, timeout, NONE_CANCEL_TOKEN)
+                .get_property(&svc_uri, &property_name, timeout, None)
                 .await
                 .unwrap();
             let (meta2, data) = value_result.get_named_property();
@@ -393,7 +384,7 @@ async fn test_property_client() {
             assert_eq!(meta2.value_size, 8);
             assert_eq!(data.len(), 8);
             assert_eq!(value_result.get_value_as_int64().unwrap(), value);
-            pc.delete_property(&svc_uri, &property_name, timeout, NONE_CANCEL_TOKEN)
+            pc.delete_property(&svc_uri, &property_name, timeout, None)
                 .await
                 .unwrap();
         }
@@ -401,11 +392,11 @@ async fn test_property_client() {
         {
             let property_name = WString::from("test_property_double");
             let value = 1234.5678_f64;
-            pc.put_property_double(&svc_uri, &property_name, value, timeout, NONE_CANCEL_TOKEN)
+            pc.put_property_double(&svc_uri, &property_name, value, timeout, None)
                 .await
                 .unwrap();
             let value_result = pc
-                .get_property(&svc_uri, &property_name, timeout, NONE_CANCEL_TOKEN)
+                .get_property(&svc_uri, &property_name, timeout, None)
                 .await
                 .unwrap();
             let (meta2, data) = value_result.get_named_property();
@@ -418,11 +409,11 @@ async fn test_property_client() {
         {
             let property_name = WString::from("test_property_wstring");
             let value = WString::from("test_value_wstring");
-            pc.put_property_wstring(&svc_uri, &property_name, &value, timeout, NONE_CANCEL_TOKEN)
+            pc.put_property_wstring(&svc_uri, &property_name, &value, timeout, None)
                 .await
                 .unwrap();
             let value_result = pc
-                .get_property(&svc_uri, &property_name, timeout, NONE_CANCEL_TOKEN)
+                .get_property(&svc_uri, &property_name, timeout, None)
                 .await
                 .unwrap();
             let (meta2, data) = value_result.get_named_property();
@@ -442,11 +433,11 @@ async fn test_property_client() {
                 0x5678,
                 [0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef],
             );
-            pc.put_property_guid(&svc_uri, &property_name, &value, timeout, NONE_CANCEL_TOKEN)
+            pc.put_property_guid(&svc_uri, &property_name, &value, timeout, None)
                 .await
                 .unwrap();
             let value_result = pc
-                .get_property(&svc_uri, &property_name, timeout, NONE_CANCEL_TOKEN)
+                .get_property(&svc_uri, &property_name, timeout, None)
                 .await
                 .unwrap();
             let (meta2, data) = value_result.get_named_property();
@@ -467,7 +458,7 @@ async fn test_property_client() {
             let pc_cp = pc.clone();
             if tokio::spawn(async move {
                 pc_cp
-                    .name_exists(&svc_name2_cp, timeout, NONE_CANCEL_TOKEN)
+                    .name_exists(&svc_name2_cp, timeout, None)
                     .await
                     .unwrap()
             })
@@ -480,39 +471,30 @@ async fn test_property_client() {
                 let svc_name2_cp = svc_name2.clone();
                 tokio::spawn(async move {
                     pc_cp
-                        .delete_name(&svc_name2_cp, timeout, NONE_CANCEL_TOKEN)
+                        .delete_name(&svc_name2_cp, timeout, None)
                         .await
                         .unwrap()
                 })
                 .await
                 .unwrap();
             }
-            if pc
-                .name_exists(&app_name2, timeout, NONE_CANCEL_TOKEN)
-                .await
-                .unwrap()
-            {
+            if pc.name_exists(&app_name2, timeout, None).await.unwrap() {
                 // If the name exists, delete it.
-                pc.delete_name(&app_name2, timeout, NONE_CANCEL_TOKEN)
-                    .await
-                    .unwrap();
+                pc.delete_name(&app_name2, timeout, None).await.unwrap();
             }
             // Create a new name.
             let pc_cp = pc.clone();
             let svc_name2_cp = svc_name2.clone();
             tokio::spawn(async move {
                 pc_cp
-                    .create_name(&svc_name2_cp, timeout, NONE_CANCEL_TOKEN)
+                    .create_name(&svc_name2_cp, timeout, None)
                     .await
                     .unwrap()
             })
             .await
             .unwrap();
             // Check if the name exists.
-            let exist = pc
-                .name_exists(&svc_name2, timeout, NONE_CANCEL_TOKEN)
-                .await
-                .unwrap();
+            let exist = pc.name_exists(&svc_name2, timeout, None).await.unwrap();
             assert!(exist);
             // create a property under that name.
             let pc_cp = pc.clone();
@@ -526,7 +508,7 @@ async fn test_property_client() {
                         &property_name_cp,
                         &value_cp,
                         timeout,
-                        NONE_CANCEL_TOKEN,
+                        None,
                     )
                     .await
                     .unwrap()
@@ -536,7 +518,7 @@ async fn test_property_client() {
             let pc_cp = pc.clone();
             let res = tokio::spawn(async move {
                 pc_cp
-                    .get_property(&svc_name2, &property_name, timeout, NONE_CANCEL_TOKEN)
+                    .get_property(&svc_name2, &property_name, timeout, None)
                     .await
                     .unwrap()
             })

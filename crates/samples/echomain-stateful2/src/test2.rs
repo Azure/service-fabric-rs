@@ -10,7 +10,6 @@ use mssf_core::{
         FabricClient,
         svc_mgmt_client::{PartitionKeyType, ResolvedServicePartition, ServiceEndpointRole},
     },
-    sync::NONE_CANCEL_TOKEN,
     types::{ReplicaRole, ServicePartitionInformation, ServicePartitionQueryResult, Uri},
 };
 use mssf_util::resolve::ServicePartitionResolver;
@@ -25,10 +24,7 @@ async fn restart_primary(uri: &Uri, fc: &FabricClient) {
         partition_id_filter: None,
     };
 
-    let ptt = q
-        .get_partition_list(&desc, sm.timeout, NONE_CANCEL_TOKEN)
-        .await
-        .unwrap();
+    let ptt = q.get_partition_list(&desc, sm.timeout, None).await.unwrap();
     let partitions = ptt
         .iter()
         .filter_map(|p| match p {
@@ -46,7 +42,7 @@ async fn restart_primary(uri: &Uri, fc: &FabricClient) {
         replica_id_or_instance_id_filter: None,
     };
     let replicas = q
-        .get_replica_list(&desc, sm.timeout, NONE_CANCEL_TOKEN)
+        .get_replica_list(&desc, sm.timeout, None)
         .await
         .unwrap()
         .iter()
@@ -69,7 +65,7 @@ async fn restart_primary(uri: &Uri, fc: &FabricClient) {
         replica_or_instance_id: primary_replica.replica_id,
     };
     fc.get_service_manager()
-        .restart_replica(&desc, sm.timeout, NONE_CANCEL_TOKEN)
+        .restart_replica(&desc, sm.timeout, None)
         .await
         .unwrap();
 }
@@ -177,7 +173,7 @@ async fn test_resolve_notification() {
             flags: mssf_core::types::ServiceNotificationFilterFlags::NamePrefix,
         };
         fc.get_service_manager()
-            .register_service_notification_filter(&desc, sm.timeout, NONE_CANCEL_TOKEN)
+            .register_service_notification_filter(&desc, sm.timeout, None)
             .await
             .unwrap()
     };
@@ -215,7 +211,7 @@ async fn test_resolve_notification() {
 
     // Unregister the notification filter.
     fc.get_service_manager()
-        .unregister_service_notification_filter(filter_id, sm.timeout, NONE_CANCEL_TOKEN)
+        .unregister_service_notification_filter(filter_id, sm.timeout, None)
         .await
         .unwrap();
     sm.delete_service(&uri).await;

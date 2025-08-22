@@ -7,11 +7,7 @@
 
 use std::time::Duration;
 
-use crate::{
-    WString,
-    client::FabricClient,
-    sync::{NONE_CANCEL_TOKEN, SimpleCancelToken},
-};
+use crate::{WString, client::FabricClient, sync::SimpleCancelToken};
 use mssf_com::FabricTypes::FABRIC_E_SERVICE_DOES_NOT_EXIST;
 
 use crate::{
@@ -41,7 +37,7 @@ async fn test_fabric_client() {
         let qc_cp = qc.clone();
         let list = tokio::spawn(async move {
             // make sure api is Send.
-            qc_cp.get_node_list(&desc, timeout, NONE_CANCEL_TOKEN).await
+            qc_cp.get_node_list(&desc, timeout, None).await
         })
         .await
         .unwrap()
@@ -63,10 +59,7 @@ async fn test_fabric_client() {
             },
             ..Default::default()
         };
-        let list = qc
-            .get_node_list(&desc, timeout, NONE_CANCEL_TOKEN)
-            .await
-            .unwrap();
+        let list = qc.get_node_list(&desc, timeout, None).await.unwrap();
         let v = list.iter().collect::<Vec<_>>();
         for n in v {
             println!("More Node: {n:?}")
@@ -78,7 +71,7 @@ async fn test_fabric_client() {
         let desc = NodeQueryDescription {
             ..Default::default()
         };
-        let token = SimpleCancelToken::new();
+        let token = SimpleCancelToken::new_boxed();
         let list = qc.get_node_list(&desc, timeout, Some(token.clone()));
         token.cancel();
         let err = list.await.expect_err("request should be cancelled");
@@ -94,7 +87,7 @@ async fn test_fabric_client() {
                 &PartitionKeyType::None,
                 None,
                 timeout,
-                NONE_CANCEL_TOKEN,
+                None,
             )
             .await;
         match res {

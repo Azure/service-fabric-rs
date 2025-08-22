@@ -6,7 +6,6 @@
 use std::{
     future::Future,
     pin::Pin,
-    sync::Arc,
     task::{Context, Poll},
 };
 
@@ -14,7 +13,7 @@ use mssf_com::FabricCommon::IFabricAsyncOperationContext;
 
 use crate::{
     ErrorCode,
-    runtime::executor::{CancelToken, EventFuture},
+    runtime::executor::{BoxedCancelToken, EventFuture},
 };
 
 pub use futures_channel::oneshot::{self, Receiver, Sender};
@@ -24,7 +23,7 @@ pub use futures_channel::oneshot::{self, Receiver, Sender};
 // case where SF guarantees that sender will be called.
 pub struct FabricReceiver<T> {
     rx: Receiver<T>,
-    token: Option<Arc<dyn CancelToken + 'static>>,
+    token: Option<BoxedCancelToken>,
     // event for cancelling
     cancel_event: Option<Pin<Box<dyn EventFuture + 'static>>>,
     // saved ctx from SF Begin COM api for cancalling.
@@ -32,7 +31,7 @@ pub struct FabricReceiver<T> {
 }
 
 impl<T> FabricReceiver<T> {
-    fn new(rx: Receiver<T>, token: Option<Arc<dyn CancelToken + 'static>>) -> FabricReceiver<T> {
+    fn new(rx: Receiver<T>, token: Option<BoxedCancelToken>) -> FabricReceiver<T> {
         FabricReceiver {
             rx,
             cancel_event: token.as_ref().map(|t| t.wait()),
@@ -154,11 +153,11 @@ impl<T> Future for FabricReceiver<T> {
 
 pub struct FabricSender<T> {
     tx: Sender<T>,
-    token: Option<Arc<dyn CancelToken + 'static>>,
+    token: Option<BoxedCancelToken>,
 }
 
 impl<T> FabricSender<T> {
-    fn new(tx: Sender<T>, token: Option<Arc<dyn CancelToken + 'static>>) -> FabricSender<T> {
+    fn new(tx: Sender<T>, token: Option<BoxedCancelToken>) -> FabricSender<T> {
         FabricSender { tx, token }
     }
 
@@ -183,14 +182,11 @@ impl<T> FabricSender<T> {
 
 /// Creates a fabric oneshot channel.
 /// Operation can be cancelled by cancelling the token.
-pub fn oneshot_channel<T, C: CancelToken>(
-    token: Option<C>,
-) -> (FabricSender<T>, FabricReceiver<T>) {
-    let arc_token = token.map(|t| Arc::new(t) as Arc<dyn CancelToken + 'static>);
+pub fn oneshot_channel<T>(token: Option<BoxedCancelToken>) -> (FabricSender<T>, FabricReceiver<T>) {
     let (tx, rx) = oneshot::channel::<T>();
     (
-        FabricSender::new(tx, arc_token.clone()),
-        FabricReceiver::new(rx, arc_token),
+        FabricSender::new(tx, token.clone()),
+        FabricReceiver::new(rx, token),
     )
 }
 
@@ -208,38 +204,38 @@ mod test {
     async fn test_channel() {
         // success send
         {
-            let (tx, rx) = oneshot_channel::<bool, _>(Some(SimpleCancelToken::new()));
+            let (tx, rx) = oneshot_channel::<bool>(Some(SimpleCancelToken::new_boxed()));
             tx.send(true);
             assert!(rx.await.unwrap());
         }
         // receiver cancelled after send, still received the result.
         {
-            let token = SimpleCancelToken::new();
-            let (tx, rx) = oneshot_channel::<bool, _>(Some(token.clone()));
+            let token = SimpleCancelToken::new_boxed();
+            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
             tx.send(true);
             token.cancel();
             assert!(rx.await.unwrap());
         }
         // receiver cancelled before send, still received the result.
         {
-            let token = SimpleCancelToken::new();
-            let (tx, rx) = oneshot_channel::<bool, _>(Some(token.clone()));
+            let token = SimpleCancelToken::new_boxed();
+            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
             token.cancel();
             tx.send(true);
             assert!(rx.await.unwrap(),);
         }
         // receiver cancelled and droped, send is no op
         {
-            let token = SimpleCancelToken::new();
-            let (tx, rx) = oneshot_channel::<bool, _>(Some(token.clone()));
+            let token = SimpleCancelToken::new_boxed();
+            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
             token.cancel();
             std::mem::drop(rx);
             tx.send(true);
         }
         // receiver cancelled and sender dropped. receiver get error
         {
-            let token = SimpleCancelToken::new();
-            let (tx, rx) = oneshot_channel::<bool, _>(Some(token.clone()));
+            let token = SimpleCancelToken::new_boxed();
+            let (tx, rx) = oneshot_channel::<bool>(Some(token.clone()));
             token.cancel();
             std::mem::drop(tx);
             assert_eq!(rx.await.unwrap_err(), ErrorCode::E_ABORT.into());

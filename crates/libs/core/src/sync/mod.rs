@@ -15,7 +15,7 @@ use windows_core::implement;
 
 mod token;
 pub mod wait;
-pub use token::{NONE_CANCEL_TOKEN, SimpleCancelToken};
+pub use token::SimpleCancelToken;
 
 // This is intentional private. User should directly use bridge mod.
 mod bridge_context;

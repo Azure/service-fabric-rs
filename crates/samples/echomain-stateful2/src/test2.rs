@@ -215,4 +215,9 @@ async fn test_resolve_notification() {
         .await
         .unwrap();
     sm.delete_service(&uri).await;
+
+    // Invalid memory access Issue 184 happens when this test finishes.
+    // Add this temporary delay for drop for diagnosis.
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    drop(fc);
 }

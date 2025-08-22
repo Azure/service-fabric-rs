@@ -219,4 +219,11 @@ async fn test_resolve_notification() {
         .await
         .unwrap();
     sm.delete_service(&uri).await;
+
+    // Invalid memory access Issue 184 happens when this test finishes.
+    // Delay the process clean up is helping with the issue.
+    // It seems like FabricClient cleanup has some background tasks that need to finish.
+    // This is a bug in FabricClient.
+    drop(fc);
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 }

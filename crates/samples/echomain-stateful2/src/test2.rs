@@ -220,4 +220,5 @@ async fn test_resolve_notification() {
     // Add this temporary delay for drop for diagnosis.
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     drop(fc);
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 }

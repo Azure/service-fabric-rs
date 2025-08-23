@@ -9,7 +9,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, Waker};
 
-use crate::runtime::executor::{CancelToken, EventFuture};
+use crate::runtime::executor::{BoxedCancelToken, CancelToken, EventFuture};
 
 /// A simple cancel token implementation
 #[derive(Clone, Debug)]
@@ -31,6 +31,10 @@ impl SimpleCancelToken {
                 wakers: Mutex::new(Vec::new()),
             }),
         }
+    }
+
+    pub fn new_boxed() -> BoxedCancelToken {
+        Box::new(Self::new())
     }
 
     pub fn cancel(&self) {
@@ -102,9 +106,11 @@ impl CancelToken for SimpleCancelToken {
     fn wait(&self) -> Pin<Box<dyn EventFuture>> {
         Box::pin(self.cancelled())
     }
-}
 
-pub const NONE_CANCEL_TOKEN: Option<SimpleCancelToken> = None;
+    fn clone_box(&self) -> Box<dyn CancelToken> {
+        Box::new(self.clone())
+    }
+}
 
 #[cfg(test)]
 mod tests {

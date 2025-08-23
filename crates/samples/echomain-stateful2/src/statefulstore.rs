@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_core::runtime::executor::CancelToken;
+use mssf_core::runtime::executor::BoxedCancelToken;
 use mssf_core::{Error, WString};
 use mssf_core::{
     runtime::{
@@ -66,7 +66,7 @@ impl AppFabricReplicator {
 
 // This is basic implementation of Replicator
 impl Replicator for AppFabricReplicator {
-    async fn open(&self, _: impl CancelToken) -> mssf_core::Result<WString> {
+    async fn open(&self, _: BoxedCancelToken) -> mssf_core::Result<WString> {
         info!(
             "AppFabricReplicator2::Replicator::Open: {:?}",
             self.ctx.get_trace_read_write_status()
@@ -76,7 +76,7 @@ impl Replicator for AppFabricReplicator {
         Ok(str_res)
     }
 
-    async fn close(&self, _: impl CancelToken) -> mssf_core::Result<()> {
+    async fn close(&self, _: BoxedCancelToken) -> mssf_core::Result<()> {
         info!(
             "AppFabricReplicator2::Replicator::close {:?}",
             self.ctx.get_trace_read_write_status()
@@ -88,7 +88,7 @@ impl Replicator for AppFabricReplicator {
         &self,
         epoch: &Epoch,
         role: &ReplicaRole,
-        _: impl CancelToken,
+        _: BoxedCancelToken,
     ) -> mssf_core::Result<()> {
         info!(
             "AppFabricReplicator2::Replicator::change_role epoch:{epoch:?}, role:{role:?}, {:?}",
@@ -97,7 +97,7 @@ impl Replicator for AppFabricReplicator {
         Ok(())
     }
 
-    async fn update_epoch(&self, epoch: &Epoch, _: impl CancelToken) -> mssf_core::Result<()> {
+    async fn update_epoch(&self, epoch: &Epoch, _: BoxedCancelToken) -> mssf_core::Result<()> {
         info!(
             "AppFabricReplicator2::Replicator::update_epoch: {epoch:?}, {:?}",
             self.ctx.get_trace_read_write_status()
@@ -131,7 +131,7 @@ impl Replicator for AppFabricReplicator {
 
 // This is basic implementation of PrimaryReplicator
 impl PrimaryReplicator for AppFabricReplicator {
-    async fn on_data_loss(&self, _: impl CancelToken) -> mssf_core::Result<u8> {
+    async fn on_data_loss(&self, _: BoxedCancelToken) -> mssf_core::Result<u8> {
         info!(
             "AppFabricReplicator2::PrimaryReplicator::on_data_loss {:?}",
             self.ctx.get_trace_read_write_status()
@@ -154,7 +154,7 @@ impl PrimaryReplicator for AppFabricReplicator {
     async fn wait_for_catch_up_quorum(
         &self,
         catchupmode: ReplicaSetQuorumMode,
-        _: impl CancelToken,
+        _: BoxedCancelToken,
     ) -> mssf_core::Result<()> {
         info!(
             "AppFabricReplicator2::PrimaryReplicator::wait_for_catch_up_quorum mode:{catchupmode:?} {:?}",
@@ -197,7 +197,7 @@ impl PrimaryReplicator for AppFabricReplicator {
     async fn build_replica(
         &self,
         replica: &ReplicaInformation,
-        _: impl CancelToken,
+        _: BoxedCancelToken,
     ) -> mssf_core::Result<()> {
         info!(
             "AppFabricReplicator2::PrimaryReplicator::build_replica: info: {replica:?} {:?}",
@@ -306,7 +306,7 @@ impl StatefulServiceReplica for Replica {
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
-        _: impl CancelToken,
+        _: BoxedCancelToken,
     ) -> mssf_core::Result<impl PrimaryReplicator> {
         self.ctx.init(partition.clone());
         info!(
@@ -323,7 +323,7 @@ impl StatefulServiceReplica for Replica {
     async fn change_role(
         &self,
         newrole: ReplicaRole,
-        _: impl CancelToken,
+        _: BoxedCancelToken,
     ) -> mssf_core::Result<WString> {
         info!(
             "Replica::change_role {newrole:?}, {:?}",
@@ -337,7 +337,7 @@ impl StatefulServiceReplica for Replica {
         let str_res = WString::from(addr);
         Ok(str_res)
     }
-    async fn close(&self, _: impl CancelToken) -> mssf_core::Result<()> {
+    async fn close(&self, _: BoxedCancelToken) -> mssf_core::Result<()> {
         info!(
             "Replica::close: {:?}",
             self.ctx.get_trace_read_write_status()

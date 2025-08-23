@@ -7,7 +7,7 @@
 
 use crate::WString;
 use crate::runtime::StatelessServicePartition;
-use crate::runtime::executor::CancelToken;
+use crate::runtime::executor::BoxedCancelToken;
 
 /// Stateless service factories are registered with the FabricRuntime by service hosts via
 /// Runtime::register_stateless_service_factory().
@@ -36,11 +36,11 @@ pub trait LocalStatelessServiceInstance: Send + Sync + 'static {
     async fn open(
         &self,
         partition: &StatelessServicePartition,
-        cancellation_token: impl CancelToken,
+        cancellation_token: BoxedCancelToken,
     ) -> crate::Result<WString>;
 
     /// Closes this service instance gracefully when the service instance is being shut down.
-    async fn close(&self, cancellation_token: impl CancelToken) -> crate::Result<()>;
+    async fn close(&self, cancellation_token: BoxedCancelToken) -> crate::Result<()>;
 
     /// Terminates this instance ungracefully with this synchronous method call.
     /// Remarks:

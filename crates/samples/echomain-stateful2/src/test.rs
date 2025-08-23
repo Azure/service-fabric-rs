@@ -14,7 +14,6 @@ use mssf_core::{
             ServiceEndpointRole, ServicePartitionKind,
         },
     },
-    sync::NONE_CANCEL_TOKEN,
     types::{
         DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
         DeployedServiceReplicaDetailQueryResultValue, NamedPartitionSchemeDescription,
@@ -60,7 +59,7 @@ impl TestClient {
             partition_id_filter: None,
         };
         let list = qc
-            .get_partition_list(&desc, self.timeout, NONE_CANCEL_TOKEN)
+            .get_partition_list(&desc, self.timeout, None)
             .await
             .unwrap();
         // there is only one partition
@@ -84,7 +83,7 @@ impl TestClient {
         let qc = self.fc.get_query_manager();
         let desc = PartitionLoadInformationQueryDescription { partition_id };
         let partition_load_info = qc
-            .get_partition_load_information(&desc, self.timeout, NONE_CANCEL_TOKEN)
+            .get_partition_load_information(&desc, self.timeout, None)
             .await?;
 
         Ok(partition_load_info)
@@ -106,7 +105,7 @@ impl TestClient {
             replica_id_or_instance_id_filter: None,
         };
         let replicas = qc
-            .get_replica_list(&desc, self.timeout, NONE_CANCEL_TOKEN)
+            .get_replica_list(&desc, self.timeout, None)
             .await?
             .iter()
             .collect::<Vec<_>>();
@@ -149,7 +148,7 @@ impl TestClient {
             replica_id,
         };
 
-        qc.get_deployed_replica_detail(&desc, self.timeout, NONE_CANCEL_TOKEN)
+        qc.get_deployed_replica_detail(&desc, self.timeout, None)
             .await
     }
 
@@ -213,7 +212,7 @@ impl TestClient {
             &PartitionKeyType::None,
             prev,
             self.timeout,
-            NONE_CANCEL_TOKEN,
+            None,
         )
         .await
     }
@@ -231,7 +230,7 @@ impl TestClient {
             replica_or_instance_id: p.replica_id,
         };
         let mgmt = self.fc.get_service_manager();
-        mgmt.restart_replica(&desc, self.timeout, NONE_CANCEL_TOKEN)
+        mgmt.restart_replica(&desc, self.timeout, None)
             .await
             .unwrap();
 
@@ -301,7 +300,7 @@ async fn test_partition_info() {
             flags: ServiceNotificationFilterFlags::NamePrefix,
         };
         // register takes more than 1 sec.
-        mgmt.register_service_notification_filter(&desc, Duration::from_secs(10), NONE_CANCEL_TOKEN)
+        mgmt.register_service_notification_filter(&desc, Duration::from_secs(10), None)
             .await
             .unwrap()
     };
@@ -343,7 +342,7 @@ async fn test_partition_info() {
         }
     }
     // unregisters the notification
-    mgmt.unregister_service_notification_filter(filter_handle, timeout, NONE_CANCEL_TOKEN)
+    mgmt.unregister_service_notification_filter(filter_handle, timeout, None)
         .await
         .unwrap();
 
@@ -473,7 +472,7 @@ impl TestCreateUpdateClient {
         println!("creating service {service_name:?}");
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
-        tokio::spawn(async move { sm.create_service(&desc, timeout, NONE_CANCEL_TOKEN).await })
+        tokio::spawn(async move { sm.create_service(&desc, timeout, None).await })
             .await
             .expect("task panicked")
             .expect("create failed");
@@ -484,13 +483,10 @@ impl TestCreateUpdateClient {
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
         let service_name = service_name.clone();
-        tokio::spawn(async move {
-            sm.delete_service(&service_name, timeout, NONE_CANCEL_TOKEN)
-                .await
-        })
-        .await
-        .expect("task panicked")
-        .expect("delete failed");
+        tokio::spawn(async move { sm.delete_service(&service_name, timeout, None).await })
+            .await
+            .expect("task panicked")
+            .expect("delete failed");
     }
 
     async fn resolve_service(
@@ -503,13 +499,7 @@ impl TestCreateUpdateClient {
         let mut count = 0;
         loop {
             let res = smgr
-                .resolve_service_partition(
-                    &service_name.0,
-                    &key_type,
-                    None,
-                    self.timeout,
-                    NONE_CANCEL_TOKEN,
-                )
+                .resolve_service_partition(&service_name.0, &key_type, None, self.timeout, None)
                 .await;
             match res {
                 Ok(info) => {
@@ -546,13 +536,10 @@ impl TestCreateUpdateClient {
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
         let service_name = service_name.clone();
-        tokio::spawn(async move {
-            sm.update_service(&service_name, &desc, timeout, NONE_CANCEL_TOKEN)
-                .await
-        })
-        .await
-        .expect("task panicked")
-        .expect("delete failed");
+        tokio::spawn(async move { sm.update_service(&service_name, &desc, timeout, None).await })
+            .await
+            .expect("task panicked")
+            .expect("delete failed");
     }
 }
 

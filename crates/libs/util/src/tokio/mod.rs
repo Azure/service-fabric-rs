@@ -11,7 +11,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use mssf_core::runtime::executor::{EventFuture, Executor, Timer};
+use mssf_core::runtime::executor::{BoxedCancelToken, CancelToken, EventFuture, Executor, Timer};
 use tokio::runtime::Handle;
 
 #[cfg(test)]
@@ -114,7 +114,7 @@ pub struct TokioCancelToken {
     token: tokio_util::sync::CancellationToken,
 }
 
-impl mssf_core::runtime::executor::CancelToken for TokioCancelToken {
+impl CancelToken for TokioCancelToken {
     fn is_cancelled(&self) -> bool {
         self.token.is_cancelled()
     }
@@ -127,6 +127,10 @@ impl mssf_core::runtime::executor::CancelToken for TokioCancelToken {
         let fut = self.token.clone().cancelled_owned();
         Box::pin(fut) as Pin<Box<dyn EventFuture>>
     }
+
+    fn clone_box(&self) -> BoxedCancelToken {
+        Box::new(self.clone())
+    }
 }
 
 impl TokioCancelToken {
@@ -134,6 +138,10 @@ impl TokioCancelToken {
         TokioCancelToken {
             token: tokio_util::sync::CancellationToken::new(),
         }
+    }
+
+    pub fn new_boxed() -> BoxedCancelToken {
+        Box::new(Self::new())
     }
 
     pub fn get_ref(&self) -> &tokio_util::sync::CancellationToken {

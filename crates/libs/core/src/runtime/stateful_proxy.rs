@@ -8,7 +8,7 @@
 
 use std::ffi::c_void;
 
-use crate::{Interface, WString, runtime::executor::CancelToken};
+use crate::{Interface, WString, runtime::executor::BoxedCancelToken};
 use mssf_com::FabricRuntime::{
     IFabricPrimaryReplicator, IFabricReplicator, IFabricReplicatorCatchupSpecificQuorum,
     IFabricStatefulServicePartition3, IFabricStatefulServiceReplica,
@@ -46,7 +46,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         &self,
         openmode: OpenMode,
         partition: &StatefulServicePartition,
-        cancellation_token: impl CancelToken,
+        cancellation_token: BoxedCancelToken,
     ) -> crate::Result<impl PrimaryReplicator> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -83,7 +83,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
     async fn change_role(
         &self,
         newrole: ReplicaRole,
-        cancellation_token: impl CancelToken,
+        cancellation_token: BoxedCancelToken,
     ) -> crate::Result<WString> {
         // replica address
         let com1 = &self.com_impl;
@@ -101,7 +101,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         feature = "tracing",
         tracing::instrument(skip_all, level = "debug", ret, err)
     )]
-    async fn close(&self, cancellation_token: impl CancelToken) -> crate::Result<()> {
+    async fn close(&self, cancellation_token: BoxedCancelToken) -> crate::Result<()> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -135,7 +135,7 @@ impl Replicator for ReplicatorProxy {
         feature = "tracing",
         tracing::instrument(skip_all, level = "debug", ret, err)
     )]
-    async fn open(&self, cancellation_token: impl CancelToken) -> crate::Result<WString> {
+    async fn open(&self, cancellation_token: BoxedCancelToken) -> crate::Result<WString> {
         // replicator address
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -151,7 +151,7 @@ impl Replicator for ReplicatorProxy {
         feature = "tracing",
         tracing::instrument(skip_all, level = "debug", ret, err)
     )]
-    async fn close(&self, cancellation_token: impl CancelToken) -> crate::Result<()> {
+    async fn close(&self, cancellation_token: BoxedCancelToken) -> crate::Result<()> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -169,7 +169,7 @@ impl Replicator for ReplicatorProxy {
         &self,
         epoch: &Epoch,
         role: &ReplicaRole,
-        cancellation_token: impl CancelToken,
+        cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -187,7 +187,7 @@ impl Replicator for ReplicatorProxy {
     async fn update_epoch(
         &self,
         epoch: &Epoch,
-        cancellation_token: impl CancelToken,
+        cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -238,17 +238,17 @@ impl PrimaryReplicatorProxy {
 }
 
 impl Replicator for PrimaryReplicatorProxy {
-    async fn open(&self, cancellation_token: impl CancelToken) -> crate::Result<WString> {
+    async fn open(&self, cancellation_token: BoxedCancelToken) -> crate::Result<WString> {
         self.parent.open(cancellation_token).await
     }
-    async fn close(&self, cancellation_token: impl CancelToken) -> crate::Result<()> {
+    async fn close(&self, cancellation_token: BoxedCancelToken) -> crate::Result<()> {
         self.parent.close(cancellation_token).await
     }
     async fn change_role(
         &self,
         epoch: &Epoch,
         role: &ReplicaRole,
-        cancellation_token: impl CancelToken,
+        cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         self.parent
             .change_role(epoch, role, cancellation_token)
@@ -257,7 +257,7 @@ impl Replicator for PrimaryReplicatorProxy {
     async fn update_epoch(
         &self,
         epoch: &Epoch,
-        cancellation_token: impl CancelToken,
+        cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         self.parent.update_epoch(epoch, cancellation_token).await
     }
@@ -277,7 +277,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
         feature = "tracing",
         tracing::instrument(skip_all, level = "debug", ret, err)
     )]
-    async fn on_data_loss(&self, cancellation_token: impl CancelToken) -> crate::Result<u8> {
+    async fn on_data_loss(&self, cancellation_token: BoxedCancelToken) -> crate::Result<u8> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -311,7 +311,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     async fn wait_for_catch_up_quorum(
         &self,
         catchupmode: ReplicaSetQuorumMode,
-        cancellation_token: impl CancelToken,
+        cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
@@ -343,7 +343,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     async fn build_replica(
         &self,
         replica: &ReplicaInformation,
-        cancellation_token: impl CancelToken,
+        cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();

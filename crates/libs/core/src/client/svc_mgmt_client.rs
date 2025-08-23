@@ -5,7 +5,7 @@
 
 use std::{ffi::c_void, time::Duration};
 
-use crate::{PCWSTR, WString, types::Uri};
+use crate::{PCWSTR, WString, runtime::executor::BoxedCancelToken, types::Uri};
 use mssf_com::{
     FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient6},
     FabricTypes::{
@@ -23,10 +23,7 @@ use mssf_com::{
     },
 };
 
-use crate::{
-    runtime::executor::CancelToken,
-    sync::{FabricReceiver, fabric_begin_end_proxy},
-};
+use crate::sync::{FabricReceiver, fabric_begin_end_proxy};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
@@ -57,7 +54,7 @@ impl ServiceManagementClient {
         partition_key: Option<*const ::core::ffi::c_void>,
         previous_result: Option<&IFabricResolvedServicePartitionResult>, // This is different from generated code
         timeout_milliseconds: u32,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> FabricReceiver<crate::WinResult<IFabricResolvedServicePartitionResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -81,7 +78,7 @@ impl ServiceManagementClient {
         &self,
         desc: &FABRIC_RESTART_REPLICA_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -98,7 +95,7 @@ impl ServiceManagementClient {
         &self,
         desc: &FABRIC_REMOVE_REPLICA_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -115,7 +112,7 @@ impl ServiceManagementClient {
         &self,
         desc: &FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> FabricReceiver<crate::WinResult<i64>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -132,7 +129,7 @@ impl ServiceManagementClient {
         &self,
         filterid: i64,
         timeout_milliseconds: u32,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -153,7 +150,7 @@ impl ServiceManagementClient {
         &self,
         desc: &FABRIC_SERVICE_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -171,7 +168,7 @@ impl ServiceManagementClient {
         name: FABRIC_URI,
         desc: &FABRIC_SERVICE_UPDATE_DESCRIPTION,
         timeout_milliseconds: u32,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -188,7 +185,7 @@ impl ServiceManagementClient {
         &self,
         name: FABRIC_URI,
         timeout_milliseconds: u32,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> FabricReceiver<crate::WinResult<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
@@ -224,7 +221,7 @@ impl ServiceManagementClient {
         key_type: &PartitionKeyType,
         prev: Option<&ResolvedServicePartition>,
         timeout: Duration,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<ResolvedServicePartition> {
         let com = {
             let uri = FABRIC_URI(name.as_ptr() as *mut u16);
@@ -255,7 +252,7 @@ impl ServiceManagementClient {
         &self,
         desc: &RestartReplicaDescription,
         timeout: Duration,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<()> {
         {
             let raw: FABRIC_RESTART_REPLICA_DESCRIPTION = desc.into();
@@ -274,7 +271,7 @@ impl ServiceManagementClient {
         &self,
         desc: &RemoveReplicaDescription,
         timeout: Duration,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<()> {
         {
             let raw: FABRIC_REMOVE_REPLICA_DESCRIPTION = desc.into();
@@ -302,7 +299,7 @@ impl ServiceManagementClient {
         &self,
         desc: &ServiceNotificationFilterDescription,
         timeout: Duration,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<FilterIdHandle> {
         let id = {
             let raw: FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION = desc.into();
@@ -323,7 +320,7 @@ impl ServiceManagementClient {
         &self,
         filter_id_handle: FilterIdHandle,
         timeout: Duration,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<()> {
         self.unregister_service_notification_filter_internal(
             filter_id_handle.id,
@@ -338,7 +335,7 @@ impl ServiceManagementClient {
         &self,
         desc: &crate::types::ServiceDescription,
         timeout: Duration,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<()> {
         {
             let desc_raw = desc.build_raw();
@@ -354,7 +351,7 @@ impl ServiceManagementClient {
         name: &Uri,
         desc: &crate::types::ServiceUpdateDescription,
         timeout: Duration,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<()> {
         {
             let desc_raw = desc.build_raw();
@@ -374,7 +371,7 @@ impl ServiceManagementClient {
         &self,
         name: &Uri,
         timeout: Duration,
-        cancellation_token: Option<impl CancelToken>,
+        cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<()> {
         self.delete_service_internal(
             name.as_raw(),

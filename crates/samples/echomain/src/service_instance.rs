@@ -7,7 +7,7 @@ use std::cell::Cell;
 use std::sync::Arc;
 
 use mssf_core::WString;
-use mssf_core::runtime::executor::CancelToken;
+use mssf_core::runtime::executor::BoxedCancelToken;
 use mssf_core::runtime::{StatelessServicePartition, stateless::StatelessServiceInstance};
 use mssf_core::sync::SimpleCancelToken;
 use mssf_core::types::{HealthInformation, ServicePartitionInformation};
@@ -42,7 +42,7 @@ impl StatelessServiceInstance for ServiceInstance {
     async fn open(
         &self,
         partition: &StatelessServicePartition,
-        _: impl CancelToken,
+        _: BoxedCancelToken,
     ) -> mssf_core::Result<WString> {
         info!("open");
         let info = partition.get_partition_info().unwrap();
@@ -67,7 +67,7 @@ impl StatelessServiceInstance for ServiceInstance {
     }
 
     #[tracing::instrument(skip(self))]
-    async fn close(&self, _: impl CancelToken) -> mssf_core::Result<()> {
+    async fn close(&self, _: BoxedCancelToken) -> mssf_core::Result<()> {
         info!("close");
         if let Some(sender) = self.tx_.lock().await.take() {
             info!("Triggering shutdown");
@@ -101,7 +101,7 @@ impl StatelessServiceInstance for ServiceInstance {
         // It is ok to block since we are on a fabric thread.
         self.ctx.rt.block_on(async {
             // never cancel
-            self.close(SimpleCancelToken::new()).await.unwrap();
+            self.close(SimpleCancelToken::new_boxed()).await.unwrap();
         });
     }
 }

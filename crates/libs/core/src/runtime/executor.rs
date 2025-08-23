@@ -42,4 +42,16 @@ pub trait CancelToken: Send + Sync + 'static {
 
     /// Cancel the token.
     fn cancel(&self);
+
+    /// Clone the cancel token.
+    /// Because the dyn requirement, CancelToken cannot be cloned directly.
+    fn clone_box(&self) -> Box<dyn CancelToken>;
+}
+
+pub type BoxedCancelToken = Box<dyn CancelToken>;
+
+impl Clone for BoxedCancelToken {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
 }

@@ -5,7 +5,11 @@
 
 use std::{cell::Cell, future::Future};
 
-use crate::{error::ErrorCode, runtime::executor::Executor, sync::SimpleCancelToken};
+use crate::{
+    error::ErrorCode,
+    runtime::executor::{BoxedCancelToken, Executor},
+    sync::SimpleCancelToken,
+};
 use mssf_com::FabricCommon::{
     IFabricAsyncOperationCallback, IFabricAsyncOperationContext, IFabricAsyncOperationContext_Impl,
 };
@@ -30,14 +34,14 @@ where
     /// This is always false.
     is_completed_synchronously: bool,
     callback: IFabricAsyncOperationCallback,
-    token: SimpleCancelToken,
+    token: BoxedCancelToken,
 }
 
 impl<T> BridgeContext<T>
 where
     T: Send,
 {
-    fn new(callback: IFabricAsyncOperationCallback, token: SimpleCancelToken) -> Self {
+    fn new(callback: IFabricAsyncOperationCallback, token: BoxedCancelToken) -> Self {
         Self {
             content: Cell::new(None),
             is_completed: std::sync::atomic::AtomicBool::new(false),
@@ -52,8 +56,8 @@ where
     /// where Cancel() api cancels the operation.
     pub fn make(
         callback: windows_core::Ref<IFabricAsyncOperationCallback>,
-    ) -> (Self, SimpleCancelToken) {
-        let token = SimpleCancelToken::new();
+    ) -> (Self, BoxedCancelToken) {
+        let token = SimpleCancelToken::new_boxed();
         let ctx = Self::new(callback.unwrap().clone(), token.clone());
         (ctx, token)
     }

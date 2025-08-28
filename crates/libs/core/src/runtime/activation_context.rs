@@ -82,6 +82,16 @@ impl CodePackageActivationContext {
         Ok(ConfigurationPackage::from(c))
     }
 
+    pub fn get_config_package_names(&self) -> Vec<WString> {
+        // cpp code never returns failure.
+        let com = unsafe {
+            self.com_impl
+                .GetConfigurationPackageNames()
+                .expect("cannot get config package names")
+        };
+        crate::strings::WStringList::from(&com).into_vec()
+    }
+
     pub fn get_code_package_info(&self) -> CodePackageInfo {
         CodePackageInfo {
             context_id: WStringWrap::from(unsafe { self.com_impl.get_ContextId() }).into(),
@@ -193,6 +203,16 @@ impl CodePackageActivationContext {
         }
         .unwrap();
         Ok(())
+    }
+
+    pub fn get_data_package_names(&self) -> Vec<WString> {
+        // cpp code never returns failure.
+        let com = unsafe {
+            self.com_impl
+                .GetDataPackageNames()
+                .expect("cannot get data package names")
+        };
+        crate::strings::WStringList::from(&com).into_vec()
     }
 }
 

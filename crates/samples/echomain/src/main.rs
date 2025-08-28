@@ -67,6 +67,18 @@ fn main() -> mssf_core::Result<()> {
         assert_eq!(name.to_string_lossy(), "Code");
     }
 
+    // inspect and check the config package
+    let config_package_names = actctx.get_config_package_names();
+    assert_eq!(config_package_names.len(), 1);
+    for name in config_package_names {
+        info!("config package {name}");
+        assert_eq!(name.to_string_lossy(), "Config");
+    }
+
+    // inspect and check the data package(s). Currently zero, which is completely valid
+    let data_package_names = actctx.get_data_package_names();
+    assert_eq!(data_package_names.len(), 0);
+
     // get listening port
     let endpoint = actctx
         .get_endpoint_resource(&WString::from("ServiceEndpoint1"))

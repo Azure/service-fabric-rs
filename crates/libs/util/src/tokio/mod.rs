@@ -36,11 +36,7 @@ impl TokioExecutor {
     /// Usually regular tokio block_on panics if it is already on the tokio task.
     /// This allows block on tokio task, using spawn_blocking.
     /// Note: This only works on multi-threaded runtime.
-    pub fn block_on_any<F>(&self, future: F) -> F::Output
-    where
-        F: Future + Send + 'static,
-        F::Output: Send,
-    {
+    pub fn block_on_any<F: Future>(&self, future: F) -> F::Output {
         match tokio::runtime::Handle::try_current() {
             Ok(h) => {
                 // Currently on tokio thread.

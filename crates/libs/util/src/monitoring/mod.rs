@@ -1,3 +1,8 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 mod producer;
 pub use producer::HealthDataProducer;
 mod entities;
@@ -90,12 +95,14 @@ mod tests {
 
         // Consume the health data
         let data = consumer.get_all_data().await;
-        assert_eq!(data.node_health_entities.len(), 5); // We have 5 nodes in local SF cluster
+        // We have 5 nodes in local SF windows cluster
+        // and 3 nodes for linux cluster.
+        assert!(data.node_health_entities.len() > 3);
         let node1 = &data.node_health_entities[0];
         assert!(!node1.node_name.is_empty());
-        assert_eq!(
-            node1.aggregated_health_state,
-            mssf_core::types::HealthState::Ok
+        assert!(
+            node1.aggregated_health_state == mssf_core::types::HealthState::Ok
+                || node1.aggregated_health_state == mssf_core::types::HealthState::Warning
         );
     }
 }

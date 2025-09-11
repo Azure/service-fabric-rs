@@ -1,5 +1,9 @@
-use std::time::Duration;
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
 
+use crate::monitoring::{HealthEntity, NodeHealthEntity};
 use ::tokio::sync::mpsc;
 use mssf_core::{
     WString,
@@ -7,8 +11,7 @@ use mssf_core::{
     runtime::executor::BoxedCancelToken,
     types::{HealthEventsFilter, HealthStateFilterFlags, Node, NodeHealthQueryDescription},
 };
-
-use crate::monitoring::{HealthEntity, NodeHealthEntity};
+use std::time::Duration;
 
 /// Queries SF and produces health data.
 /// User is responsible to implement a consumer to receive the data.

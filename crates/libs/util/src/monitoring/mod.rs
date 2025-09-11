@@ -97,7 +97,11 @@ mod tests {
         let data = consumer.get_all_data().await;
         // We have 5 nodes in local SF windows cluster
         // and 3 nodes for linux cluster.
-        assert!(data.node_health_entities.len() > 3);
+        assert!(
+            data.node_health_entities.len() >= 3,
+            "Not enough nodes {:?}",
+            data.node_health_entities
+        );
         let node1 = &data.node_health_entities[0];
         assert!(!node1.node_name.is_empty());
         assert!(

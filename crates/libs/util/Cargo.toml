@@ -24,3 +24,4 @@ mssf-core = { workspace = true, default-features = false }
 [dev-dependencies]
 mssf-com.workspace = true
 trait-variant.workspace = true
+tracing-subscriber.workspace = true

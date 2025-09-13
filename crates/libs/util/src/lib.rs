@@ -11,3 +11,6 @@ pub mod tokio;
 // Requires tokio_util
 #[cfg(feature = "tokio")]
 pub mod resolve;
+
+#[cfg(feature = "tokio")]
+pub mod monitoring;

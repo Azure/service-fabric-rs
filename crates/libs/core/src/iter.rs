@@ -69,6 +69,22 @@ where
     }
 }
 
+/// Convert a raw pointer and length into a Vec of safe type.
+pub(crate) fn vec_from_raw_com<T, V>(len: usize, raw: *const T) -> Vec<V>
+where
+    V: for<'a> std::convert::From<&'a T>,
+{
+    if len == 0 || raw.is_null() {
+        return vec![];
+    }
+    unsafe {
+        std::slice::from_raw_parts(raw, len)
+            .iter()
+            .map(|x| x.into())
+            .collect()
+    }
+}
+
 #[cfg(test)]
 mod test {
 

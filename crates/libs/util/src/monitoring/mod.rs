@@ -16,13 +16,16 @@ mod tests {
     use mssf_core::{WString, client::FabricClient};
     use tokio::sync::mpsc;
 
-    use crate::monitoring::{HealthDataProducer, HealthEntity, NodeHealthEntity};
+    use crate::monitoring::{
+        HealthDataProducer, HealthEntity, NodeHealthEntity, entities::ClusterHealthEntity,
+    };
 
     pub struct MockHealthDataConsumer {
         receiver: mpsc::UnboundedReceiver<HealthEntity>,
     }
 
     pub struct HealthDataCollection {
+        pub cluster_health_entity: Vec<ClusterHealthEntity>,
         pub node_health_entities: Vec<NodeHealthEntity>,
     }
 
@@ -35,11 +38,15 @@ mod tests {
         pub async fn get_all_data(&mut self) -> HealthDataCollection {
             let mut data = HealthDataCollection {
                 node_health_entities: Vec::new(),
+                cluster_health_entity: Vec::new(),
             };
             while let Some(entity) = self.receiver.recv().await {
                 match entity {
                     HealthEntity::Node(node_entity) => {
                         data.node_health_entities.push(node_entity);
+                    }
+                    HealthEntity::Cluster(cluster_entity) => {
+                        data.cluster_health_entity.push(cluster_entity);
                     }
                 }
             }
@@ -95,6 +102,27 @@ mod tests {
 
         // Consume the health data
         let data = consumer.get_all_data().await;
+        // check cluster health entity
+        assert_eq!(
+            data.cluster_health_entity.len(),
+            1,
+            "Should have one cluster health entity"
+        );
+        let cluster_health = &data.cluster_health_entity[0];
+        assert!(
+            cluster_health.health.aggregated_health_state == mssf_core::types::HealthState::Ok
+                || cluster_health.health.aggregated_health_state
+                    == mssf_core::types::HealthState::Warning
+        );
+        assert!(
+            cluster_health.health.node_health_states.is_empty(),
+            "Cluster health should not have nodes, we retrieve them separately."
+        );
+        assert!(
+            cluster_health.health.application_health_states.is_empty(),
+            "Cluster health should not have application health states, we retrieve them separately."
+        );
+
         // We have 5 nodes in local SF windows cluster
         // and 3 nodes for linux cluster.
         assert!(
@@ -103,10 +131,10 @@ mod tests {
             data.node_health_entities
         );
         let node1 = &data.node_health_entities[0];
-        assert!(!node1.node_name.is_empty());
+        assert!(!node1.node.name.is_empty());
         assert!(
-            node1.aggregated_health_state == mssf_core::types::HealthState::Ok
-                || node1.aggregated_health_state == mssf_core::types::HealthState::Warning
+            node1.health.aggregated_health_state == mssf_core::types::HealthState::Ok
+                || node1.health.aggregated_health_state == mssf_core::types::HealthState::Warning
         );
     }
 }

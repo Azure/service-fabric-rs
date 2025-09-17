@@ -105,7 +105,7 @@ impl NodeList {
 
 type NodeListIter<'a> = FabricIter<'a, FABRIC_NODE_QUERY_RESULT_ITEM, Node, NodeList>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node {
     pub name: WString,
     pub ip_address_or_fqdn: WString,

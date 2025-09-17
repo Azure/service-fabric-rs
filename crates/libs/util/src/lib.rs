@@ -14,3 +14,5 @@ pub mod resolve;
 
 #[cfg(feature = "tokio")]
 pub mod monitoring;
+
+pub mod data;

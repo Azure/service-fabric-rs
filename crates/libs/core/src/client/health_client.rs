@@ -9,9 +9,9 @@ use mssf_com::{
     FabricClient::{IFabricHealthClient4, IFabricNodeHealthResult},
     FabricTypes::{
         FABRIC_APPLICATION_HEALTH_REPORT, FABRIC_CLUSTER_HEALTH_POLICY,
-        FABRIC_CLUSTER_HEALTH_REPORT, FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT,
-        FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT, FABRIC_HEALTH_INFORMATION,
-        FABRIC_HEALTH_REPORT, FABRIC_HEALTH_REPORT_KIND_APPLICATION,
+        FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION, FABRIC_CLUSTER_HEALTH_REPORT,
+        FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT, FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT,
+        FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT, FABRIC_HEALTH_REPORT_KIND_APPLICATION,
         FABRIC_HEALTH_REPORT_KIND_CLUSTER, FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION,
         FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE, FABRIC_HEALTH_REPORT_KIND_INVALID,
         FABRIC_HEALTH_REPORT_KIND_NODE, FABRIC_HEALTH_REPORT_KIND_PARTITION,
@@ -24,9 +24,10 @@ use mssf_com::{
 };
 
 use crate::{
+    mem::{BoxPool, GetRawWithBoxPool},
     runtime::executor::BoxedCancelToken,
     sync::{FabricReceiver, fabric_begin_end_proxy},
-    types::{HealthReport, NodeHealthQueryDescription, NodeHealthResult},
+    types::{ClusterHealth, HealthReport, NodeHealthQueryDescription, NodeHealthResult},
 };
 
 /// Provides functionality to perform health related operations, like report and query health.
@@ -218,6 +219,23 @@ impl HealthClient {
             cancellation_token,
         )
     }
+
+    pub fn get_cluster_health_internal(
+        &self,
+        desc: &FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricClusterHealthResult>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetClusterHealth2(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetClusterHealth2(ctx) },
+            cancellation_token,
+        )
+    }
 }
 
 impl HealthClient {
@@ -260,5 +278,26 @@ impl HealthClient {
         }
         .await??;
         Ok(NodeHealthResult::from_com(&com))
+    }
+
+    /// Gets the health of the cluster.
+    pub async fn get_cluster_health(
+        &self,
+        desc: &crate::types::ClusterHealthQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<ClusterHealth> {
+        let com = {
+            // Build the app policy map
+            let mut pool = BoxPool::new();
+            let desc_raw = desc.get_raw_with_pool(&mut pool);
+            self.get_cluster_health_internal(
+                &desc_raw,
+                timeout.as_millis() as u32,
+                cancellation_token,
+            )
+        }
+        .await??;
+        Ok(ClusterHealth::from(&com))
     }
 }

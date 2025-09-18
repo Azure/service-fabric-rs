@@ -3,16 +3,22 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_core::types::HealthState;
+use mssf_core::types::{ClusterHealth, Node, NodeHealthResult};
 
 /// Health entities produced by HealthDataProducer.
 #[derive(Debug, Clone)]
 pub enum HealthEntity {
     Node(NodeHealthEntity),
+    Cluster(ClusterHealthEntity),
 }
 
 #[derive(Debug, Clone)]
 pub struct NodeHealthEntity {
-    pub node_name: String,
-    pub aggregated_health_state: HealthState,
+    pub node: Node,
+    pub health: NodeHealthResult,
+}
+
+#[derive(Debug, Clone)]
+pub struct ClusterHealthEntity {
+    pub health: ClusterHealth,
 }

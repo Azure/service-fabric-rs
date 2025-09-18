@@ -110,3 +110,9 @@ impl From<&str> for Uri {
         Self(WString::from(value))
     }
 }
+
+impl From<FABRIC_URI> for Uri {
+    fn from(value: FABRIC_URI) -> Self {
+        Self::from(WString::from(windows_core::PCWSTR(value.0)))
+    }
+}

@@ -77,11 +77,23 @@ where
     if len == 0 || raw.is_null() {
         return vec![];
     }
-    unsafe {
-        std::slice::from_raw_parts(raw, len)
-            .iter()
-            .map(|x| x.into())
-            .collect()
+    if raw.is_aligned() {
+        unsafe {
+            std::slice::from_raw_parts(raw, len)
+                .iter()
+                .map(|x| x.into())
+                .collect()
+        }
+    } else {
+        // Sometimes SF COM ptr is not aligned, but is verified to be correct during testing.
+        // Ptr not aligned, need to copy one by one
+        let mut v = Vec::with_capacity(len);
+        for i in 0..len {
+            let p = unsafe { raw.add(i) };
+            let r = unsafe { p.as_ref().unwrap() };
+            v.push(r.into());
+        }
+        v
     }
 }
 

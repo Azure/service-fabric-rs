@@ -9,8 +9,9 @@ use mssf_core::{
     client::FabricClient,
     runtime::executor::BoxedCancelToken,
     types::{
-        ApplicationHealthStatesFilter, ClusterHealthQueryDescription, HealthEventsFilter,
-        HealthStateFilterFlags, Node, NodeHealthQueryDescription, NodeHealthStatesFilter,
+        ApplicationHealthStatesFilter, ApplicationQueryDescription, ClusterHealthQueryDescription,
+        HealthEventsFilter, HealthStateFilterFlags, Node, NodeHealthQueryDescription,
+        NodeHealthStatesFilter,
     },
 };
 use std::time::Duration;
@@ -62,6 +63,17 @@ impl HealthDataProducer {
         if let Ok(nodes) = self.get_all_nodes(token.clone()).await {
             for node in nodes {
                 if let Some(entity) = self.produce_node_health_entity(token.clone(), node).await {
+                    self.send_entity(entity)?;
+                }
+            }
+        }
+        // Get application information.
+        if let Ok(apps) = self.get_all_applications(token.clone()).await {
+            for app in apps {
+                if let Some(entity) = self
+                    .produce_application_health_entity(token.clone(), app)
+                    .await
+                {
                     self.send_entity(entity)?;
                 }
             }
@@ -185,5 +197,50 @@ impl HealthDataProducer {
             .iter()
             .collect::<Vec<_>>();
         Ok(nodes)
+    }
+
+    /// This does not include system application.
+    /// We will report system service health separately.
+    async fn get_all_applications(
+        &self,
+        token: BoxedCancelToken,
+    ) -> mssf_core::Result<Vec<mssf_core::types::ApplicationQueryResultItem>> {
+        let desc = ApplicationQueryDescription::default();
+        let apps = self
+            .fc
+            .get_query_manager()
+            .get_application_list(&desc, DEFAULT_TIMEOUT, Some(token.clone()))
+            .await
+            .inspect_err(|err| {
+                tracing::error!("Failed to get application list: {}", err);
+            })?
+            .items;
+        Ok(apps)
+    }
+
+    async fn produce_application_health_entity(
+        &self,
+        token: BoxedCancelToken,
+        app: mssf_core::types::ApplicationQueryResultItem,
+    ) -> Option<HealthEntity> {
+        let desc = mssf_core::types::ApplicationHealthQueryDescription {
+            application_name: app.application_name.clone(),
+            ..Default::default()
+        };
+        let app_health = self
+            .fc
+            .get_health_manager()
+            .get_application_health(&desc, DEFAULT_TIMEOUT, Some(token))
+            .await
+            .inspect_err(|err| {
+                tracing::error!("Failed to get application health: {}", err);
+            })
+            .ok()?;
+        Some(HealthEntity::Application(
+            crate::monitoring::entities::ApplicationHealthEntity {
+                application: app,
+                health: app_health,
+            },
+        ))
     }
 }

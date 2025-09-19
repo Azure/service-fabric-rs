@@ -27,6 +27,7 @@ mod tests {
     pub struct HealthDataCollection {
         pub cluster_health_entity: Vec<ClusterHealthEntity>,
         pub node_health_entities: Vec<NodeHealthEntity>,
+        pub application_health_entities: Vec<crate::monitoring::entities::ApplicationHealthEntity>,
     }
 
     impl MockHealthDataConsumer {
@@ -39,6 +40,7 @@ mod tests {
             let mut data = HealthDataCollection {
                 node_health_entities: Vec::new(),
                 cluster_health_entity: Vec::new(),
+                application_health_entities: Vec::new(),
             };
             while let Some(entity) = self.receiver.recv().await {
                 match entity {
@@ -47,6 +49,9 @@ mod tests {
                     }
                     HealthEntity::Cluster(cluster_entity) => {
                         data.cluster_health_entity.push(cluster_entity);
+                    }
+                    HealthEntity::Application(application_entity) => {
+                        data.application_health_entities.push(application_entity);
                     }
                 }
             }
@@ -136,5 +141,22 @@ mod tests {
             node1.health.aggregated_health_state == mssf_core::types::HealthState::Ok
                 || node1.health.aggregated_health_state == mssf_core::types::HealthState::Warning
         );
+
+        // Get applications
+        // For empty cluster applications is 0
+        if data.application_health_entities.is_empty() {
+            tracing::warn!("No applications found in the cluster");
+        } else {
+            let app1 = &data.application_health_entities[0];
+            assert_eq!(
+                app1.application.health_state,
+                app1.health.aggregated_health_state
+            );
+            assert!(
+                app1.health.aggregated_health_state == mssf_core::types::HealthState::Ok
+                    || app1.health.aggregated_health_state
+                        == mssf_core::types::HealthState::Warning
+            );
+        }
     }
 }

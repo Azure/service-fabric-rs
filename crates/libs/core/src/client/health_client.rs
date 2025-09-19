@@ -236,6 +236,24 @@ impl HealthClient {
             cancellation_token,
         )
     }
+
+    pub fn get_application_health_internal(
+        &self,
+        desc: &mssf_com::FabricTypes::FABRIC_APPLICATION_HEALTH_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricApplicationHealthResult>>
+    {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetApplicationHealth2(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetApplicationHealth2(ctx) },
+            cancellation_token,
+        )
+    }
 }
 
 impl HealthClient {
@@ -299,5 +317,25 @@ impl HealthClient {
         }
         .await??;
         Ok(ClusterHealth::from(&com))
+    }
+
+    /// Gets the health of an application.
+    pub async fn get_application_health(
+        &self,
+        desc: &crate::types::ApplicationHealthQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::ApplicationHealth> {
+        let com = {
+            let mut pool = BoxPool::new();
+            let desc_raw = desc.get_raw_with_pool(&mut pool);
+            self.get_application_health_internal(
+                &desc_raw,
+                timeout.as_millis() as u32,
+                cancellation_token,
+            )
+        }
+        .await??;
+        Ok(crate::types::ApplicationHealth::from(&com))
     }
 }

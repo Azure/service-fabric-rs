@@ -6,11 +6,13 @@ use std::{ffi::c_void, time::Duration};
 
 use mssf_com::{
     FabricClient::{
-        IFabricGetDeployedServiceReplicaDetailResult, IFabricGetNodeListResult2,
-        IFabricGetPartitionListResult2, IFabricGetPartitionLoadInformationResult,
-        IFabricGetReplicaListResult2, IFabricQueryClient10,
+        IFabricGetApplicationListResult2, IFabricGetDeployedServiceReplicaDetailResult,
+        IFabricGetNodeListResult2, IFabricGetPartitionListResult2,
+        IFabricGetPartitionLoadInformationResult, IFabricGetReplicaListResult2,
+        IFabricQueryClient10,
     },
     FabricTypes::{
+        FABRIC_APPLICATION_QUERY_DESCRIPTION,
         FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION,
         FABRIC_NODE_QUERY_DESCRIPTION_EX1, FABRIC_NODE_QUERY_DESCRIPTION_EX2,
         FABRIC_NODE_QUERY_DESCRIPTION_EX3, FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
@@ -56,6 +58,23 @@ impl QueryClient {
                 com1.BeginGetNodeList(query_description, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndGetNodeList2(ctx) },
+            cancellation_token,
+        )
+    }
+
+    pub fn get_application_list_internal(
+        &self,
+        query_description: &FABRIC_APPLICATION_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::WinResult<IFabricGetApplicationListResult2>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetApplicationList(query_description, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetApplicationList2(ctx) },
             cancellation_token,
         )
     }
@@ -179,6 +198,28 @@ impl QueryClient {
         }
         .await??;
         Ok(NodeList::from(com))
+    }
+
+    pub async fn get_application_list(
+        &self,
+        desc: &crate::types::ApplicationQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::ApplicationListResult> {
+        let com = {
+            let (mut base, mut ex1, mut ex2, mut ex3, ex4) = desc.get_raw_parts();
+            base.Reserved = std::ptr::addr_of!(ex1) as *mut c_void;
+            ex1.Reserved = std::ptr::addr_of!(ex2) as *mut c_void;
+            ex2.Reserved = std::ptr::addr_of!(ex3) as *mut c_void;
+            ex3.Reserved = std::ptr::addr_of!(ex4) as *mut c_void;
+            self.get_application_list_internal(
+                &base,
+                timeout.as_millis().try_into().unwrap(),
+                cancellation_token,
+            )
+        }
+        .await??;
+        Ok(crate::types::ApplicationListResult::from(&com))
     }
 
     pub async fn get_partition_list(

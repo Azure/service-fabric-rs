@@ -42,9 +42,18 @@ pub use property::{
 
 mod service;
 pub use service::{
-    NamedRepartitionDescription, ServiceDescription, ServiceRepartitionDescription,
-    ServiceUpdateDescription, StatefulServiceDescription, StatefulServiceUpdateDescription,
-    StatelessServiceDescription, StatelessServiceUpdateDescription,
+    NamedRepartitionDescription, ServiceDescription, ServiceHealthState, ServiceHealthStatesFilter,
+    ServiceRepartitionDescription, ServiceUpdateDescription, StatefulServiceDescription,
+    StatefulServiceUpdateDescription, StatelessServiceDescription,
+    StatelessServiceUpdateDescription,
+};
+
+mod application;
+pub use application::{
+    ApplicationDefinitionKind, ApplicationDefinitionKindFilter, ApplicationHealth,
+    ApplicationHealthQueryDescription, ApplicationListResult, ApplicationQueryDescription,
+    ApplicationQueryResultItem, ApplicationStatus, DeployedApplicationHealthState,
+    DeployedApplicationHealthStatesFilter,
 };
 
 // FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS

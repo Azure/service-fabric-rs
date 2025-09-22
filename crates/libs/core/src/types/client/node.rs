@@ -22,6 +22,7 @@ use mssf_com::{
     },
 };
 
+#[derive(Debug, Default, Clone)]
 pub struct PagingStatus {
     pub continuation_token: WString,
 }

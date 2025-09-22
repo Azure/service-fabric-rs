@@ -254,6 +254,22 @@ impl HealthClient {
             cancellation_token,
         )
     }
+    pub fn get_service_health_internal(
+        &self,
+        desc: &mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricServiceHealthResult>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetServiceHealth2(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetServiceHealth2(ctx) },
+            cancellation_token,
+        )
+    }
 }
 
 impl HealthClient {

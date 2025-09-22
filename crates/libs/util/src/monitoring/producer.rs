@@ -11,7 +11,7 @@ use mssf_core::{
     types::{
         ApplicationHealthStatesFilter, ApplicationQueryDescription, ClusterHealthQueryDescription,
         HealthEventsFilter, HealthStateFilterFlags, Node, NodeHealthQueryDescription,
-        NodeHealthStatesFilter,
+        NodeHealthStatesFilter, Uri,
     },
 };
 use std::time::Duration;
@@ -70,11 +70,36 @@ impl HealthDataProducer {
         // Get application information.
         if let Ok(apps) = self.get_all_applications(token.clone()).await {
             for app in apps {
+                let app_name = app.application_name.clone();
                 if let Some(entity) = self
                     .produce_application_health_entity(token.clone(), app)
                     .await
                 {
                     self.send_entity(entity)?;
+                }
+
+                // Get service information for the application.
+                if let Ok(services) = self.get_all_services_for_app(token.clone(), app_name).await {
+                    for svc in services {
+                        let svc_name = match &svc {
+                            mssf_core::types::ServiceQueryResultItem::Stateful(
+                                stateful_service_query_result_item,
+                            ) => stateful_service_query_result_item.service_name.clone(),
+                            mssf_core::types::ServiceQueryResultItem::Stateless(
+                                stateless_service_query_result_item,
+                            ) => stateless_service_query_result_item.service_name.clone(),
+                        };
+
+                        // Get partition information for the service.
+                        if let Ok(partitions) = self
+                            .get_all_partitions_for_svc(token.clone(), svc_name)
+                            .await
+                        {
+                            for part in partitions {
+                                // TODO: Get replica information for the partition.
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -242,5 +267,51 @@ impl HealthDataProducer {
                 health: app_health,
             },
         ))
+    }
+}
+
+impl HealthDataProducer {
+    async fn get_all_partitions_for_svc(
+        &self,
+        token: BoxedCancelToken,
+        service_name: Uri,
+    ) -> mssf_core::Result<Vec<mssf_core::types::ServicePartitionQueryResult>> {
+        // Logic to get partition information goes here.
+        let desc = mssf_core::types::ServicePartitionQueryDescription {
+            service_name,
+            partition_id_filter: None,
+        };
+        let partitions = self
+            .fc
+            .get_query_manager()
+            .get_partition_list(&desc, DEFAULT_TIMEOUT, Some(token.clone()))
+            .await
+            .inspect_err(|err| {
+                tracing::error!("Failed to get partition list: {}", err);
+            })?
+            .iter()
+            .collect::<Vec<_>>();
+        Ok(partitions)
+    }
+
+    async fn get_all_services_for_app(
+        &self,
+        token: BoxedCancelToken,
+        app_name: Uri,
+    ) -> mssf_core::Result<Vec<mssf_core::types::ServiceQueryResultItem>> {
+        // Logic to get service information goes here.
+        let desc = mssf_core::types::ServiceQueryDescription {
+            application_name: app_name,
+            ..Default::default()
+        };
+        let services = self
+            .fc
+            .get_query_manager()
+            .get_service_list(&desc, DEFAULT_TIMEOUT, Some(token.clone()))
+            .await
+            .inspect_err(|err| {
+                tracing::error!("Failed to get service list: {}", err);
+            })?;
+        Ok(services.items)
     }
 }

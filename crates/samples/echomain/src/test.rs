@@ -30,7 +30,7 @@ static RETRY_DURATION_SHORT: Duration = Duration::from_secs(1);
 // Test client for echo server.
 pub struct EchoTestClient {
     fc: FabricClient,
-    service_uri: WString,
+    service_uri: Uri,
     timeout: Duration,
 }
 
@@ -38,7 +38,7 @@ impl EchoTestClient {
     pub fn new(fc: FabricClient) -> Self {
         Self {
             fc,
-            service_uri: WString::from(ECHO_SVC_URI),
+            service_uri: Uri::from(ECHO_SVC_URI),
             timeout: Duration::from_secs(1),
         }
     }
@@ -148,7 +148,7 @@ async fn test_fabric_client() {
     let ec = EchoTestClient::new(fc.clone());
 
     let timeout = Duration::from_secs(1);
-    let service_uri = WString::from(ECHO_SVC_URI);
+    let service_uri = Uri::from(ECHO_SVC_URI);
 
     // Get partition info
     let (stateless, single) = ec.get_partition().await;

@@ -217,14 +217,14 @@ impl ServiceManagementClient {
     // Resolve service partition
     pub async fn resolve_service_partition(
         &self,
-        name: &WString,
+        name: &Uri,
         key_type: &PartitionKeyType,
         prev: Option<&ResolvedServicePartition>,
         timeout: Duration,
         cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<ResolvedServicePartition> {
         let com = {
-            let uri = FABRIC_URI(name.as_ptr() as *mut u16);
+            let uri = name.as_raw();
             // supply prev as null if not present
             let prev_opt = prev.map(|x| &x.com);
 
@@ -495,7 +495,7 @@ impl From<IFabricResolvedServicePartitionResult> for ResolvedServicePartition {
 
 #[derive(Debug)]
 pub struct ResolvedServicePartitionInfo {
-    pub service_name: WString,
+    pub service_name: Uri,
     pub service_partition_kind: ServicePartitionKind,
     pub partition_key_type: PartitionKeyType,
 }
@@ -504,7 +504,7 @@ impl ResolvedServicePartition {
     // Get the service partition info/metadata
     pub fn get_info(&self) -> ResolvedServicePartitionInfo {
         let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
-        let service_name = WStringWrap::from(PCWSTR::from_raw(raw.ServiceName.0)).into();
+        let service_name = Uri::from(raw.ServiceName);
         let kind_raw = raw.Info.Kind;
         let val = raw.Info.Value;
         let service_partition_kind: ServicePartitionKind = kind_raw.into();

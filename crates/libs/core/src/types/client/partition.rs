@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{GUID, WString};
+use crate::{GUID, types::Uri};
 use mssf_com::{
     FabricClient::{IFabricGetPartitionListResult2, IFabricGetPartitionLoadInformationResult},
     FabricTypes::{
@@ -17,7 +17,7 @@ use mssf_com::{
         FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
         FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM,
         FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM,
-        FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM, FABRIC_URI,
+        FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM,
     },
 };
 
@@ -30,8 +30,9 @@ use super::metrics::{PrimaryLoadMetricReportList, SecondaryLoadMetricReportList}
 
 // Partition related types
 // FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION
+#[derive(Debug, Clone, Default)]
 pub struct ServicePartitionQueryDescription {
-    pub service_name: WString,
+    pub service_name: Uri,
     pub partition_id_filter: Option<GUID>,
     // TODO: continuation token
 }
@@ -43,7 +44,7 @@ impl From<&ServicePartitionQueryDescription> for FABRIC_SERVICE_PARTITION_QUERY_
             None => GUID::zeroed(), // empty
         };
         Self {
-            ServiceName: FABRIC_URI(value.service_name.as_ptr() as *mut u16),
+            ServiceName: value.service_name.as_raw(),
             PartitionIdFilter: filter,
             Reserved: std::ptr::null_mut(),
         }

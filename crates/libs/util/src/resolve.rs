@@ -5,8 +5,9 @@
 
 use std::{pin::Pin, time::Duration};
 
+use mssf_core::ErrorCode;
 use mssf_core::runtime::executor::{BoxedCancelToken, Timer};
-use mssf_core::{ErrorCode, WString};
+use mssf_core::types::Uri;
 
 use mssf_core::client::{
     FabricClient,
@@ -108,7 +109,7 @@ impl ServicePartitionResolver {
     )]
     pub async fn resolve(
         &self,
-        name: &WString,
+        name: &Uri,
         key_type: &PartitionKeyType,
         prev: Option<&ResolvedServicePartition>,
         timeout: Option<Duration>, // Total timeout for the operation

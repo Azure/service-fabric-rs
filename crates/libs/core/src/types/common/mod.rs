@@ -5,6 +5,7 @@
 
 // This mod contains common types shared between FabricRuntime and FabricClient.
 mod partition;
+
 pub use partition::*;
 mod security_credentials;
 pub use security_credentials::*;
@@ -114,5 +115,11 @@ impl From<&str> for Uri {
 impl From<FABRIC_URI> for Uri {
     fn from(value: FABRIC_URI) -> Self {
         Self::from(WString::from(windows_core::PCWSTR(value.0)))
+    }
+}
+
+impl std::fmt::Display for Uri {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }

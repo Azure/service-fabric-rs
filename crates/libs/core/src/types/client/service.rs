@@ -5,30 +5,38 @@
 
 use std::{ffi::c_void, marker::PhantomData};
 
-use mssf_com::FabricTypes::{
-    FABRIC_NAMED_REPARTITION_DESCRIPTION, FABRIC_SERVICE_DESCRIPTION,
-    FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL, FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
-    FABRIC_SERVICE_HEALTH_STATE, FABRIC_SERVICE_PARTITION_KIND,
-    FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
-    FABRIC_SERVICE_UPDATE_DESCRIPTION, FABRIC_STATEFUL_SERVICE_DESCRIPTION,
-    FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX1, FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2,
-    FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3, FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4,
-    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION, FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX1,
-    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX2, FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3,
-    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX4, FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5,
-    FABRIC_STATELESS_SERVICE_DESCRIPTION, FABRIC_STATELESS_SERVICE_DESCRIPTION_EX1,
-    FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2, FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3,
-    FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4, FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION,
-    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX1,
-    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX2,
-    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX3, FABRIC_URI,
+use mssf_com::{
+    FabricClient::IFabricGetServiceListResult2,
+    FabricTypes::{
+        FABRIC_NAMED_REPARTITION_DESCRIPTION, FABRIC_SERVICE_DESCRIPTION,
+        FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL, FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
+        FABRIC_SERVICE_HEALTH_STATE, FABRIC_SERVICE_PARTITION_KIND,
+        FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
+        FABRIC_SERVICE_QUERY_DESCRIPTION, FABRIC_SERVICE_QUERY_DESCRIPTION_EX1,
+        FABRIC_SERVICE_QUERY_DESCRIPTION_EX2, FABRIC_SERVICE_QUERY_DESCRIPTION_EX3,
+        FABRIC_SERVICE_QUERY_RESULT_ITEM, FABRIC_SERVICE_UPDATE_DESCRIPTION,
+        FABRIC_STATEFUL_SERVICE_DESCRIPTION, FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX1,
+        FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2, FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3,
+        FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4, FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX1,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX2,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX4,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5, FABRIC_STATELESS_SERVICE_DESCRIPTION,
+        FABRIC_STATELESS_SERVICE_DESCRIPTION_EX1, FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2,
+        FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3, FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4,
+        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION,
+        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX1,
+        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX2,
+        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX3, FABRIC_URI,
+    },
 };
 use windows_core::{PCWSTR, WString};
 
 use crate::{
     mem::GetRaw,
     types::{
-        HealthState, HealthStateFilterFlags, MoveCost, PartitionSchemeDescription,
+        HealthState, HealthStateFilterFlags, MoveCost, PagingStatus, PartitionSchemeDescription,
         ServicePackageActivationMode, Uri,
     },
 };
@@ -753,6 +761,74 @@ impl GetRaw<mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_STATES_FILTER>
     }
 }
 
+// FABRIC_SERVICE_QUERY_DESCRIPTION
+#[derive(Debug, Default, Clone)]
+pub struct ServiceQueryDescription {
+    pub application_name: Uri,
+    pub service_name_filter: Option<Uri>,
+    pub continuation_token: Option<WString>,
+    pub service_type_name_filter: Option<WString>,
+    pub max_results: Option<i32>,
+}
+
+impl ServiceQueryDescription {
+    pub fn get_raw_parts(
+        &self,
+    ) -> (
+        FABRIC_SERVICE_QUERY_DESCRIPTION,
+        FABRIC_SERVICE_QUERY_DESCRIPTION_EX1,
+        FABRIC_SERVICE_QUERY_DESCRIPTION_EX2,
+        FABRIC_SERVICE_QUERY_DESCRIPTION_EX3,
+    ) {
+        let base = FABRIC_SERVICE_QUERY_DESCRIPTION {
+            ApplicationName: self.application_name.as_raw(),
+            ServiceNameFilter: self
+                .service_name_filter
+                .as_ref()
+                .map_or(Uri::default().as_raw(), |uri| uri.as_raw()),
+            Reserved: std::ptr::null_mut(),
+        };
+        let ex1 = FABRIC_SERVICE_QUERY_DESCRIPTION_EX1 {
+            ContinuationToken: self
+                .continuation_token
+                .as_ref()
+                .map_or(PCWSTR::null(), |s| s.as_pcwstr()),
+            Reserved: std::ptr::null_mut(),
+        };
+        let ex2 = FABRIC_SERVICE_QUERY_DESCRIPTION_EX2 {
+            ServiceTypeNameFilter: self
+                .service_type_name_filter
+                .as_ref()
+                .map_or(PCWSTR::null(), |s| s.as_pcwstr()),
+            Reserved: std::ptr::null_mut(),
+        };
+        let ex3 = FABRIC_SERVICE_QUERY_DESCRIPTION_EX3 {
+            MaxResults: self.max_results.unwrap_or(0), // 0 means no limit
+            Reserved: std::ptr::null_mut(),
+        };
+        (base, ex1, ex2, ex3)
+    }
+}
+
+// IFabricGetServiceListResult
+#[derive(Debug)]
+pub struct ServiceListResult {
+    pub items: Vec<ServiceQueryResultItem>,
+    pub paging_status: Option<PagingStatus>,
+}
+
+impl From<&IFabricGetServiceListResult2> for ServiceListResult {
+    fn from(value: &IFabricGetServiceListResult2) -> Self {
+        let list = unsafe { value.get_ServiceList().as_ref().unwrap() };
+        let items = crate::iter::vec_from_raw_com(list.Count as usize, list.Items);
+        let paging_status_opt = unsafe { value.get_PagingStatus().as_ref() };
+        ServiceListResult {
+            items,
+            paging_status: paging_status_opt.map(|t| PagingStatus::from(t)),
+        }
+    }
+}
+
 // FABRIC_SERVICE_HEALTH_STATE
 #[derive(Debug, Clone)]
 pub struct ServiceHealthState {
@@ -768,3 +844,160 @@ impl From<&FABRIC_SERVICE_HEALTH_STATE> for ServiceHealthState {
         }
     }
 }
+// FABRIC_SERVICE_QUERY_RESULT_ITEM
+#[derive(Debug, Clone)]
+pub enum ServiceQueryResultItem {
+    // FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM
+    Stateful(StatefulServiceQueryResultItem),
+    // FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM
+    Stateless(StatelessServiceQueryResultItem),
+}
+
+impl From<&FABRIC_SERVICE_QUERY_RESULT_ITEM> for ServiceQueryResultItem {
+    fn from(value: &FABRIC_SERVICE_QUERY_RESULT_ITEM) -> Self {
+        match value.Kind {
+            mssf_com::FabricTypes::FABRIC_SERVICE_KIND_STATEFUL => {
+                let item = unsafe {
+                    (value.Value
+                        as *const mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM)
+                        .as_ref()
+                        .unwrap()
+                };
+                ServiceQueryResultItem::Stateful(StatefulServiceQueryResultItem::from(item))
+            }
+            mssf_com::FabricTypes::FABRIC_SERVICE_KIND_STATELESS => {
+                let item = unsafe {
+                    (value.Value
+                        as *const mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM)
+                        .as_ref()
+                        .unwrap()
+                };
+                ServiceQueryResultItem::Stateless(StatelessServiceQueryResultItem::from(item))
+            }
+            // TODO: may need to handle other kinds with newer sdks.
+            _ => panic!("Unknown service query result kind"),
+        }
+    }
+}
+
+// FABRIC_QUERY_SERVICE_STATUS
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum QueryServiceStatus {
+    Unknown,
+    Active,
+    Upgrading,
+    Deleting,
+    Creating,
+    Failed,
+}
+
+impl From<mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS> for QueryServiceStatus {
+    fn from(value: mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS) -> Self {
+        match value {
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_ACTIVE => QueryServiceStatus::Active,
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_UPGRADING => {
+                QueryServiceStatus::Upgrading
+            }
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_DELETING => {
+                QueryServiceStatus::Deleting
+            }
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_CREATING => {
+                QueryServiceStatus::Creating
+            }
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_FAILED => QueryServiceStatus::Failed,
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_UNKNOWN => {
+                QueryServiceStatus::Unknown
+            }
+            _ => QueryServiceStatus::Unknown,
+        }
+    }
+}
+
+// FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM
+#[derive(Debug, Clone)]
+pub struct StatefulServiceQueryResultItem {
+    pub service_name: Uri,
+    pub service_type_name: WString,
+    pub service_manifest_version: WString,
+    pub has_persisted_state: bool,
+    pub health_state: HealthState,
+    pub service_status: QueryServiceStatus,
+    pub is_service_group: bool,
+}
+
+impl From<&mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM>
+    for StatefulServiceQueryResultItem
+{
+    fn from(value: &mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM) -> Self {
+        let ex1 = unsafe {
+            (value.Reserved
+                as *const mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM_EX1)
+                .as_ref()
+                .unwrap()
+        };
+        let ex2 = unsafe {
+            (ex1.Reserved
+                as *const mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM_EX2)
+                .as_ref()
+                .unwrap()
+        };
+
+        Self {
+            service_name: Uri::from(value.ServiceName),
+            service_type_name: WString::from(value.ServiceTypeName),
+            service_manifest_version: WString::from(value.ServiceManifestVersion),
+            has_persisted_state: value.HasPersistedState,
+            health_state: HealthState::from(&value.HealthState),
+            service_status: QueryServiceStatus::from(ex1.ServiceStatus),
+            is_service_group: ex2.IsServiceGroup,
+        }
+    }
+}
+
+// FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM
+#[derive(Debug, Clone)]
+pub struct StatelessServiceQueryResultItem {
+    pub service_name: Uri,
+    pub service_type_name: WString,
+    pub service_manifest_version: WString,
+    pub health_state: HealthState,
+    pub service_status: QueryServiceStatus,
+    pub is_service_group: bool,
+}
+
+impl From<&mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM>
+    for StatelessServiceQueryResultItem
+{
+    fn from(value: &mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM) -> Self {
+        let ex1 = unsafe {
+            (value.Reserved
+                as *const mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM_EX1)
+                .as_ref()
+                .unwrap()
+        };
+        let ex2 = unsafe {
+            (ex1.Reserved
+                as *const mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM_EX2)
+                .as_ref()
+                .unwrap()
+        };
+
+        Self {
+            service_name: Uri::from(value.ServiceName),
+            service_type_name: WString::from(value.ServiceTypeName),
+            service_manifest_version: WString::from(value.ServiceManifestVersion),
+            health_state: HealthState::from(&value.HealthState),
+            service_status: QueryServiceStatus::from(ex1.ServiceStatus),
+            is_service_group: ex2.IsServiceGroup,
+        }
+    }
+}
+
+// FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION
+// pub struct ServiceHealthQueryDescription {
+//     pub service_name: Uri,
+//     pub events_health_state_filter: HealthStateFilter,
+//     pub partitions_health_state_filter: HealthStateFilter,
+//     pub replicas_health_state_filter: HealthStateFilter,
+//     pub deployed_applications_health_state_filter: HealthStateFilter,
+// }

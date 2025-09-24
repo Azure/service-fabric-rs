@@ -130,9 +130,7 @@ impl ServiceReplicaQueryResultItem {
     }
     pub fn get_aggregated_health_state(&self) -> HealthState {
         match self {
-            ServiceReplicaQueryResultItem::Stateful(stateful) => {
-                stateful.aggregated_health_state
-            }
+            ServiceReplicaQueryResultItem::Stateful(stateful) => stateful.aggregated_health_state,
             ServiceReplicaQueryResultItem::Stateless(stateless) => {
                 stateless.aggregated_health_state
             }

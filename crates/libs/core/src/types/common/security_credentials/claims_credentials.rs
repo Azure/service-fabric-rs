@@ -170,8 +170,7 @@ mod test {
                         value_ref.IssuerThumbprints,
                     )
                 };
-                // SAFETY: test code. Should point to a null byte even when None.
-                assert!(unsafe { value_ref.LocalClaims.is_empty() });
+                value_ref.LocalClaims.is_null();
                 assert_eq!(value_ref.ProtectionLevel, FABRIC_PROTECTION_LEVEL_SIGN);
                 // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
                 unsafe {

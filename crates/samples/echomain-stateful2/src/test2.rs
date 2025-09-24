@@ -10,7 +10,7 @@ use mssf_core::{
         FabricClient,
         svc_mgmt_client::{PartitionKeyType, ResolvedServicePartition, ServiceEndpointRole},
     },
-    types::{ReplicaRole, ServicePartitionInformation, ServicePartitionQueryResult, Uri},
+    types::{ReplicaRole, ServicePartitionInformation, ServicePartitionQueryResultItem, Uri},
 };
 use mssf_util::resolve::ServicePartitionResolver;
 
@@ -28,7 +28,7 @@ async fn restart_primary(uri: &Uri, fc: &FabricClient) {
     let partitions = ptt
         .iter()
         .filter_map(|p| match p {
-            ServicePartitionQueryResult::Stateful(s) => Some(s),
+            ServicePartitionQueryResultItem::Stateful(s) => Some(s),
             _ => None,
         })
         .filter_map(|p| match p.partition_information {
@@ -47,7 +47,7 @@ async fn restart_primary(uri: &Uri, fc: &FabricClient) {
         .unwrap()
         .iter()
         .filter_map(|r| match r {
-            mssf_core::types::ServiceReplicaQueryResult::Stateful(s) => Some(s),
+            mssf_core::types::ServiceReplicaQueryResultItem::Stateful(s) => Some(s),
             _ => None,
         })
         .filter_map(|r| match r.replica_role {
@@ -94,7 +94,7 @@ async fn resolve_until_change(
     let mut rsp_final = None;
     for _ in 0..30 {
         let new_rsp = srv
-            .resolve(&uri, &PartitionKeyType::None, rsp_opt.as_ref(), None, None)
+            .resolve(uri, &PartitionKeyType::None, rsp_opt.as_ref(), None, None)
             .await
             .unwrap();
         let p2 = new_rsp

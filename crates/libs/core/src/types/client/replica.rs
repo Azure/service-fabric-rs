@@ -5,7 +5,11 @@
 
 use std::time::SystemTime;
 
-use crate::{GUID, PCWSTR, WString, types::ServicePartitionAccessStatus};
+use crate::{
+    GUID, PCWSTR, WString,
+    mem::GetRaw,
+    types::{ApplicationHealthPolicy, ServicePartitionAccessStatus},
+};
 use mssf_com::{
     FabricClient::{IFabricGetDeployedServiceReplicaDetailResult, IFabricGetReplicaListResult2},
     FabricTypes::{
@@ -33,6 +37,7 @@ use crate::{
 use super::{QueryReplicatorOperationName, QueryServiceOperationName};
 
 // FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION
+#[derive(Debug, Clone, Default)]
 pub struct ServiceReplicaQueryDescription {
     pub partition_id: GUID,
     pub replica_id_or_instance_id_filter: Option<i64>, // TODO: reserved fields
@@ -67,7 +72,7 @@ impl ServiceReplicaList {
 type ServiceReplicaListIter<'a> = FabricIter<
     'a,
     FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
-    ServiceReplicaQueryResult,
+    ServiceReplicaQueryResultItem,
     ServiceReplicaList,
 >;
 
@@ -85,13 +90,13 @@ impl FabricListAccessor<FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceRep
 
 // FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM
 #[derive(Debug, Clone)]
-pub enum ServiceReplicaQueryResult {
+pub enum ServiceReplicaQueryResultItem {
     Invalid,
     Stateful(StatefulServiceReplicaQueryResult),
     Stateless(StatelessServiceInstanceQueryResult),
 }
 
-impl From<&FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceReplicaQueryResult {
+impl From<&FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceReplicaQueryResultItem {
     fn from(value: &FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM) -> Self {
         match value.Kind {
             FABRIC_SERVICE_KIND_STATEFUL => {
@@ -111,6 +116,27 @@ impl From<&FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceReplicaQueryResu
                 Self::Stateless(raw.into())
             }
             _ => Self::Invalid,
+        }
+    }
+}
+
+impl ServiceReplicaQueryResultItem {
+    pub fn get_replica_or_instance_id(&self) -> i64 {
+        match self {
+            ServiceReplicaQueryResultItem::Stateful(stateful) => stateful.replica_id,
+            ServiceReplicaQueryResultItem::Stateless(stateless) => stateless.instance_id,
+            ServiceReplicaQueryResultItem::Invalid => 0,
+        }
+    }
+    pub fn get_aggregated_health_state(&self) -> HealthState {
+        match self {
+            ServiceReplicaQueryResultItem::Stateful(stateful) => {
+                stateful.aggregated_health_state
+            }
+            ServiceReplicaQueryResultItem::Stateless(stateless) => {
+                stateless.aggregated_health_state
+            }
+            ServiceReplicaQueryResultItem::Invalid => HealthState::Invalid,
         }
     }
 }
@@ -355,5 +381,160 @@ impl DeployedServiceReplicaDetailQueryResult {
             _ => DeployedServiceReplicaDetailQueryResultValue::Invalid,
         };
         Self { value }
+    }
+}
+
+// FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION
+#[derive(Debug, Clone, Default)]
+pub struct ReplicaHealthQueryDescription {
+    pub partition_id: GUID,
+    pub replica_id_or_instance_id: i64,
+    pub health_policy: Option<ApplicationHealthPolicy>,
+    pub events_filter: Option<super::HealthEventsFilter>,
+    // pub reserved: *mut core::ffi::c_void,
+}
+
+impl crate::mem::GetRawWithBoxPool<mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION>
+    for ReplicaHealthQueryDescription
+{
+    fn get_raw_with_pool(
+        &self,
+        pool: &mut crate::mem::BoxPool,
+    ) -> mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION {
+        let health_policy = self
+            .health_policy
+            .as_ref()
+            .map(|p| {
+                let b = Box::new(p.get_raw_with_pool(pool));
+                pool.push(b)
+            })
+            .unwrap_or_default();
+
+        let events_filter = self
+            .events_filter
+            .as_ref()
+            .map(|f| {
+                let b = Box::new(f.get_raw());
+                pool.push(b)
+            })
+            .unwrap_or_default();
+
+        mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION {
+            PartitionId: self.partition_id,
+            Reserved: std::ptr::null_mut(),
+            ReplicaOrInstanceId: self.replica_id_or_instance_id,
+            HealthPolicy: health_policy,
+            EventsFilter: events_filter,
+        }
+    }
+}
+
+// IFabricReplicaHealthResult
+#[derive(Debug, Clone)]
+pub struct ReplicaHealthResult {
+    pub replica_health: ReplicaHealth,
+}
+
+impl From<&mssf_com::FabricClient::IFabricReplicaHealthResult> for ReplicaHealthResult {
+    fn from(value: &mssf_com::FabricClient::IFabricReplicaHealthResult) -> Self {
+        let raw = unsafe { value.get_ReplicaHealth().as_ref().unwrap() };
+        Self {
+            replica_health: ReplicaHealth::from(raw),
+        }
+    }
+}
+
+// FABRIC_REPLICA_HEALTH
+#[derive(Debug, Clone)]
+pub enum ReplicaHealth {
+    Stateful(StatefulServiceReplicaHealth),
+    Stateless(StatelessServiceInstanceHealth),
+}
+
+impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH> for ReplicaHealth {
+    fn from(value: &mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH) -> Self {
+        match value.Kind {
+            FABRIC_SERVICE_KIND_STATEFUL => {
+                let raw = unsafe {
+                    (value.Value
+                        as *const mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH)
+                        .as_ref()
+                        .unwrap()
+                };
+                Self::Stateful(raw.into())
+            }
+            FABRIC_SERVICE_KIND_STATELESS => {
+                let raw = unsafe {
+                    (value.Value
+                        as *const mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH)
+                        .as_ref()
+                        .unwrap()
+                };
+                Self::Stateless(raw.into())
+            }
+            _ => panic!("Invalid service kind in ReplicaHealth"),
+        }
+    }
+}
+
+impl ReplicaHealth {
+    pub fn get_aggregated_health_state(&self) -> HealthState {
+        match self {
+            ReplicaHealth::Stateful(stateful) => stateful.aggregated_health_state,
+            ReplicaHealth::Stateless(stateless) => stateless.aggregated_health_state,
+        }
+    }
+}
+
+// FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH
+#[derive(Debug, Clone)]
+pub struct StatefulServiceReplicaHealth {
+    pub partition_id: GUID,
+    pub replica_id: i64,
+    pub aggregated_health_state: HealthState,
+    pub health_events: Vec<super::HealthEvent>,
+    // TODO: add other fields
+    // pub UnhealthyEvaluations
+}
+
+impl From<&mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH>
+    for StatefulServiceReplicaHealth
+{
+    fn from(value: &mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH) -> Self {
+        let health_events = unsafe { value.HealthEvents.as_ref() }.map_or(vec![], |list| {
+            crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
+        });
+
+        Self {
+            partition_id: value.PartitionId,
+            replica_id: value.ReplicaId,
+            aggregated_health_state: (&value.AggregatedHealthState).into(),
+            health_events,
+        }
+    }
+}
+
+// FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH
+#[derive(Debug, Clone)]
+pub struct StatelessServiceInstanceHealth {
+    pub partition_id: GUID,
+    pub instance_id: i64,
+    pub aggregated_health_state: HealthState,
+    pub health_events: Vec<super::HealthEvent>,
+    // TODO: UnhealthyEvaluations
+}
+
+impl From<&mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH>
+    for StatelessServiceInstanceHealth
+{
+    fn from(value: &mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH) -> Self {
+        Self {
+            partition_id: value.PartitionId,
+            instance_id: value.InstanceId,
+            aggregated_health_state: (&value.AggregatedHealthState).into(),
+            health_events: unsafe { value.HealthEvents.as_ref() }.map_or(vec![], |list| {
+                crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
+            }),
+        }
     }
 }

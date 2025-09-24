@@ -111,6 +111,17 @@ impl From<&FABRIC_SERVICE_PARTITION_INFORMATION> for ServicePartitionInformation
     }
 }
 
+impl ServicePartitionInformation {
+    pub fn get_partition_id(&self) -> GUID {
+        match self {
+            ServicePartitionInformation::Invalid => GUID::zeroed(),
+            ServicePartitionInformation::Singleton(info) => info.id,
+            ServicePartitionInformation::Int64Range(info) => info.id,
+            ServicePartitionInformation::Named(info) => info.id,
+        }
+    }
+}
+
 /// FABRIC_SERVICE_PARTITION_ACCESS_STATUS
 /// Remarks:
 /// PartitionAccessStatus is used to check that a read or write operation is allowed.

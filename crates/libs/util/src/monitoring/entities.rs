@@ -11,6 +11,9 @@ pub enum HealthEntity {
     Node(NodeHealthEntity),
     Cluster(ClusterHealthEntity),
     Application(ApplicationHealthEntity),
+    Partition(PartitionHealthEntity),
+    Service(ServiceHealthEntity),
+    Replica(ReplicaHealthEntity),
 }
 
 #[derive(Debug, Clone)]
@@ -28,4 +31,22 @@ pub struct ClusterHealthEntity {
 pub struct ApplicationHealthEntity {
     pub application: ApplicationQueryResultItem,
     pub health: mssf_core::types::ApplicationHealth,
+}
+
+#[derive(Debug, Clone)]
+pub struct PartitionHealthEntity {
+    pub partition: mssf_core::types::ServicePartitionQueryResultItem,
+    pub health: mssf_core::types::PartitionHealthResult,
+}
+
+#[derive(Debug, Clone)]
+pub struct ServiceHealthEntity {
+    pub service: mssf_core::types::ServiceQueryResultItem,
+    pub health: mssf_core::types::ServiceHealthResult,
+}
+
+#[derive(Debug, Clone)]
+pub struct ReplicaHealthEntity {
+    pub replica: mssf_core::types::ServiceReplicaQueryResultItem,
+    pub health: mssf_core::types::ReplicaHealthResult,
 }

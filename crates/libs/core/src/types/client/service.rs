@@ -36,7 +36,8 @@ use windows_core::{PCWSTR, WString};
 use crate::{
     mem::GetRaw,
     types::{
-        HealthState, HealthStateFilterFlags, MoveCost, PagingStatus, PartitionSchemeDescription,
+        ApplicationHealthPolicy, HealthEvent, HealthEventsFilter, HealthState,
+        HealthStateFilterFlags, MoveCost, PagingStatus, PartitionSchemeDescription,
         ServicePackageActivationMode, Uri,
     },
 };
@@ -824,7 +825,7 @@ impl From<&IFabricGetServiceListResult2> for ServiceListResult {
         let paging_status_opt = unsafe { value.get_PagingStatus().as_ref() };
         ServiceListResult {
             items,
-            paging_status: paging_status_opt.map(|t| PagingStatus::from(t)),
+            paging_status: paging_status_opt.map(PagingStatus::from),
         }
     }
 }
@@ -876,6 +877,15 @@ impl From<&FABRIC_SERVICE_QUERY_RESULT_ITEM> for ServiceQueryResultItem {
             }
             // TODO: may need to handle other kinds with newer sdks.
             _ => panic!("Unknown service query result kind"),
+        }
+    }
+}
+
+impl ServiceQueryResultItem {
+    pub fn get_health_state(&self) -> HealthState {
+        match self {
+            ServiceQueryResultItem::Stateful(item) => item.health_state,
+            ServiceQueryResultItem::Stateless(item) => item.health_state,
         }
     }
 }
@@ -994,10 +1004,78 @@ impl From<&mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM>
 }
 
 // FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION
-// pub struct ServiceHealthQueryDescription {
-//     pub service_name: Uri,
-//     pub events_health_state_filter: HealthStateFilter,
-//     pub partitions_health_state_filter: HealthStateFilter,
-//     pub replicas_health_state_filter: HealthStateFilter,
-//     pub deployed_applications_health_state_filter: HealthStateFilter,
-// }
+#[derive(Debug, Clone, Default)]
+pub struct ServiceHealthQueryDescription {
+    pub service_name: Uri,
+    pub health_policy: Option<ApplicationHealthPolicy>,
+    pub events_filter: Option<HealthEventsFilter>,
+    // TODO: implement other filters
+    // pub partitions_filter: Option<PartitionHealthStatesFilter>,
+    // pub health_statistics_filter: Option<HealthStatisticsFilter>,
+}
+
+impl crate::mem::GetRawWithBoxPool<mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION>
+    for ServiceHealthQueryDescription
+{
+    fn get_raw_with_pool(
+        &self,
+        pool: &mut crate::mem::BoxPool,
+    ) -> mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION {
+        let health_policy = self
+            .health_policy
+            .as_ref()
+            .map(|p| {
+                let b = Box::new(p.get_raw_with_pool(pool));
+                pool.push(b)
+            })
+            .unwrap_or_default();
+        let events_filter = self
+            .events_filter
+            .as_ref()
+            .map(|f| {
+                let b = Box::new(f.get_raw());
+                pool.push(b)
+            })
+            .unwrap_or_default();
+        let ex1 = Box::new(
+            mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION_EX1 {
+                HealthStatisticsFilter: std::ptr::null_mut(),
+                Reserved: std::ptr::null_mut(),
+            },
+        );
+        let ex1 = pool.push(ex1);
+        mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION {
+            ServiceName: self.service_name.as_raw(),
+            HealthPolicy: health_policy,
+            EventsFilter: events_filter,
+            PartitionsFilter: std::ptr::null_mut(),
+            Reserved: ex1 as *mut c_void,
+        }
+    }
+}
+
+// IFabricServiceHealthResult
+#[derive(Debug, Clone)]
+pub struct ServiceHealthResult {
+    pub service_name: Uri,
+    pub aggregated_health_state: HealthState,
+    pub health_events: Vec<HealthEvent>,
+    // TODO: implement other fields
+    // pub partitions_health: Vec<PartitionHealth>,
+}
+
+impl From<&mssf_com::FabricClient::IFabricServiceHealthResult> for ServiceHealthResult {
+    fn from(value: &mssf_com::FabricClient::IFabricServiceHealthResult) -> Self {
+        let raw = unsafe { value.get_ServiceHealth().as_ref().unwrap() };
+
+        let health_event_list = unsafe { raw.HealthEvents.as_ref() }.map_or(vec![], |list| {
+            crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
+        });
+
+        Self {
+            service_name: Uri::from(raw.ServiceName),
+            aggregated_health_state: HealthState::from(&raw.AggregatedHealthState),
+            health_events: health_event_list,
+        }
+    }
+}

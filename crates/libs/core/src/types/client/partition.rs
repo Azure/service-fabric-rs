@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{GUID, types::Uri};
+use crate::{GUID, mem::GetRaw, types::Uri};
 use mssf_com::{
     FabricClient::{IFabricGetPartitionListResult2, IFabricGetPartitionLoadInformationResult},
     FabricTypes::{
@@ -58,7 +58,7 @@ pub struct ServicePartitionList {
 type ServicePartitionListIter<'a> = FabricIter<
     'a,
     FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM,
-    ServicePartitionQueryResult,
+    ServicePartitionQueryResultItem,
     ServicePartitionList,
 >;
 
@@ -85,13 +85,14 @@ impl ServicePartitionList {
 }
 
 // FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM
-pub enum ServicePartitionQueryResult {
+#[derive(Debug, Clone)]
+pub enum ServicePartitionQueryResultItem {
     Invalid,
     Stateful(StatefulServicePartitionQueryResult),
     Stateless(StatelessServicePartitionQueryResult),
 }
 
-impl From<&FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartitionQueryResult {
+impl From<&FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartitionQueryResultItem {
     fn from(value: &FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM) -> Self {
         match value.Kind {
             FABRIC_SERVICE_KIND_STATEFUL => {
@@ -111,6 +112,27 @@ impl From<&FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartitionQuery
                 Self::Stateless(raw.into())
             }
             _ => Self::Invalid,
+        }
+    }
+}
+
+impl ServicePartitionQueryResultItem {
+    pub fn get_partition_id(&self) -> GUID {
+        match self {
+            ServicePartitionQueryResultItem::Stateful(stateful) => {
+                stateful.partition_information.get_partition_id()
+            }
+            ServicePartitionQueryResultItem::Stateless(stateless) => {
+                stateless.partition_information.get_partition_id()
+            }
+            ServicePartitionQueryResultItem::Invalid => GUID::zeroed(),
+        }
+    }
+    pub fn get_health_state(&self) -> HealthState {
+        match self {
+            ServicePartitionQueryResultItem::Stateful(stateful) => stateful.health_state,
+            ServicePartitionQueryResultItem::Stateless(stateless) => stateless.health_state,
+            ServicePartitionQueryResultItem::Invalid => HealthState::Invalid,
         }
     }
 }
@@ -236,6 +258,85 @@ impl PartitionLoadInformation {
             partition_id,
             primary_load_metric_reports,
             secondary_load_metric_reports,
+        }
+    }
+}
+
+// FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION
+#[derive(Debug, Clone, Default)]
+pub struct PartitionHealthQueryDescription {
+    pub partition_id: GUID,
+    pub health_policy: Option<super::ApplicationHealthPolicy>,
+    pub events_filter: Option<super::HealthEventsFilter>,
+    // TODO: other fields
+    // pub replicas_filter: Option<super::ReplicaHealthStatesFilter>,
+    // pub health_statistics_filter: Option<super::HealthStatisticsFilter>,
+}
+
+impl crate::mem::GetRawWithBoxPool<mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION>
+    for PartitionHealthQueryDescription
+{
+    fn get_raw_with_pool(
+        &self,
+        pool: &mut crate::mem::BoxPool,
+    ) -> mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION {
+        let health_policy = self
+            .health_policy
+            .as_ref()
+            .map(|p| {
+                let b = Box::new(p.get_raw_with_pool(pool));
+                pool.push(b)
+            })
+            .unwrap_or_default();
+
+        let events_filter = self
+            .events_filter
+            .as_ref()
+            .map(|f| {
+                let b = Box::new(f.get_raw());
+                pool.push(b)
+            })
+            .unwrap_or_default();
+
+        let ex1 = pool.push(Box::new(
+            mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION_EX1 {
+                Reserved: std::ptr::null_mut(),
+                HealthStatisticsFilter: std::ptr::null_mut(),
+            },
+        ));
+
+        mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION {
+            EventsFilter: events_filter,
+            HealthPolicy: health_policy,
+            PartitionId: self.partition_id,
+            ReplicasFilter: std::ptr::null_mut(),
+            Reserved: ex1 as *mut _,
+        }
+    }
+}
+
+// IFabricPartitionHealthResult
+#[derive(Debug, Clone)]
+pub struct PartitionHealthResult {
+    pub partition_id: GUID,
+    pub aggregated_health_state: HealthState,
+    pub health_events: Vec<super::HealthEvent>,
+    // TODO: other fields
+    // pub replicas_health: Vec<super::ReplicaHealthResult>,
+    // pub health_statistics: super::HealthStatistics,
+    // pub unhealthy_evaluations: Vec<super::HealthEvaluation>,
+}
+
+impl From<&mssf_com::FabricClient::IFabricPartitionHealthResult> for PartitionHealthResult {
+    fn from(value: &mssf_com::FabricClient::IFabricPartitionHealthResult) -> Self {
+        let raw = unsafe { value.get_PartitionHealth().as_ref().unwrap() };
+        let health_event_list = unsafe { raw.HealthEvents.as_ref() }.map_or(vec![], |list| {
+            crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
+        });
+        Self {
+            partition_id: raw.PartitionId,
+            aggregated_health_state: (&raw.AggregatedHealthState).into(),
+            health_events: health_event_list,
         }
     }
 }

@@ -203,7 +203,7 @@ impl HealthClient {
 }
 
 impl HealthClient {
-    pub fn get_node_health_internal(
+    fn get_node_health_internal(
         &self,
         desc: &FABRIC_NODE_HEALTH_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
@@ -220,7 +220,7 @@ impl HealthClient {
         )
     }
 
-    pub fn get_cluster_health_internal(
+    fn get_cluster_health_internal(
         &self,
         desc: &FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
@@ -237,7 +237,7 @@ impl HealthClient {
         )
     }
 
-    pub fn get_application_health_internal(
+    fn get_application_health_internal(
         &self,
         desc: &mssf_com::FabricTypes::FABRIC_APPLICATION_HEALTH_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
@@ -254,7 +254,24 @@ impl HealthClient {
             cancellation_token,
         )
     }
-    pub fn get_service_health_internal(
+    fn get_partition_health_internal(
+        &self,
+        desc: &mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricPartitionHealthResult>>
+    {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetPartitionHealth2(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetPartitionHealth2(ctx) },
+            cancellation_token,
+        )
+    }
+    fn get_service_health_internal(
         &self,
         desc: &mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
@@ -267,6 +284,22 @@ impl HealthClient {
                 com1.BeginGetServiceHealth2(desc, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndGetServiceHealth2(ctx) },
+            cancellation_token,
+        )
+    }
+    fn get_replica_health_internal(
+        &self,
+        desc: &mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricReplicaHealthResult>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetReplicaHealth2(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetReplicaHealth2(ctx) },
             cancellation_token,
         )
     }
@@ -353,5 +386,64 @@ impl HealthClient {
         }
         .await??;
         Ok(crate::types::ApplicationHealth::from(&com))
+    }
+
+    pub async fn get_partition_health(
+        &self,
+        desc: &crate::types::PartitionHealthQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::PartitionHealthResult> {
+        let com = {
+            let mut pool = BoxPool::new();
+            let desc_raw = desc.get_raw_with_pool(&mut pool);
+            self.get_partition_health_internal(
+                &desc_raw,
+                timeout.as_millis() as u32,
+                cancellation_token,
+            )
+        }
+        .await??;
+        Ok(crate::types::PartitionHealthResult::from(&com))
+    }
+
+    /// Gets the health of a service.
+    pub async fn get_service_health(
+        &self,
+        desc: &crate::types::ServiceHealthQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::ServiceHealthResult> {
+        let com = {
+            let mut pool = BoxPool::new();
+            let desc_raw = desc.get_raw_with_pool(&mut pool);
+            self.get_service_health_internal(
+                &desc_raw,
+                timeout.as_millis() as u32,
+                cancellation_token,
+            )
+        }
+        .await??;
+        Ok(crate::types::ServiceHealthResult::from(&com))
+    }
+
+    /// Gets the health of a replica.
+    pub async fn get_replica_health(
+        &self,
+        desc: &crate::types::ReplicaHealthQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::ReplicaHealthResult> {
+        let com = {
+            let mut pool = BoxPool::new();
+            let desc_raw = desc.get_raw_with_pool(&mut pool);
+            self.get_replica_health_internal(
+                &desc_raw,
+                timeout.as_millis() as u32,
+                cancellation_token,
+            )
+        }
+        .await??;
+        Ok(crate::types::ReplicaHealthResult::from(&com))
     }
 }

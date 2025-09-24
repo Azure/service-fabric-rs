@@ -17,9 +17,10 @@ use mssf_core::{
     types::{
         QueryServiceReplicaStatus, RemoveReplicaDescription, ServiceNotificationFilterDescription,
         ServiceNotificationFilterFlags, ServicePartitionInformation,
-        ServicePartitionQueryDescription, ServicePartitionQueryResult, ServicePartitionStatus,
-        ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
-        StatelessServiceInstanceQueryResult, StatelessServicePartitionQueryResult, Uri,
+        ServicePartitionQueryDescription, ServicePartitionQueryResultItem, ServicePartitionStatus,
+        ServiceReplicaQueryDescription, ServiceReplicaQueryResultItem,
+        SingletonPartitionInfomation, StatelessServiceInstanceQueryResult,
+        StatelessServicePartitionQueryResult, Uri,
     },
 };
 
@@ -61,7 +62,7 @@ impl EchoTestClient {
         // there is only one partition
         let p = list.iter().next().unwrap();
         let stateless = match p {
-            ServicePartitionQueryResult::Stateless(s) => s,
+            ServicePartitionQueryResultItem::Stateless(s) => s,
             _ => panic!("not stateless"),
         };
         let info = stateless.clone().partition_information;
@@ -85,7 +86,7 @@ impl EchoTestClient {
         let replica_op = replicas.iter().next(); // only one replica
         match replica_op {
             Some(replica) => Ok(match replica {
-                ServiceReplicaQueryResult::Stateless(s) => s,
+                ServiceReplicaQueryResultItem::Stateless(s) => s,
                 _ => panic!("not stateless"),
             }),
             // replica might be restarting

@@ -18,6 +18,7 @@ impl BoxPool {
 
     /// Push a box into the pool, and return a raw pointer to the boxed value.
     /// The pointer is valid as long as the pool is alive.
+    #[must_use]
     pub fn push<T: 'static>(&mut self, b: Box<T>) -> *const T {
         let raw = b.as_ref() as *const T;
         self.inner.push(b);
@@ -26,6 +27,7 @@ impl BoxPool {
 
     /// Push a Vec<T> into the pool, and return its length and a raw pointer to its data.
     /// The pointer is valid as long as the pool is alive.
+    #[must_use]
     pub fn push_vec<T: 'static>(&mut self, v: Vec<T>) -> (usize, *const T) {
         let len = v.len();
         let raw = v.as_ptr();

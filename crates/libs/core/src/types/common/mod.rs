@@ -23,7 +23,7 @@ use mssf_com::FabricTypes::{
 use windows_core::WString;
 
 // FABRIC_HEALTH_STATE
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum HealthState {
     Invalid,
     Ok,
@@ -91,8 +91,9 @@ impl From<FaultType> for FABRIC_FAULT_TYPE {
 pub struct Uri(pub WString);
 impl Uri {
     /// Needs to have the same lifetime as the original WString.
+    /// This is for FFI calls.
     pub fn as_raw(&self) -> FABRIC_URI {
-        FABRIC_URI(self.0.as_ptr() as *mut u16)
+        FABRIC_URI(self.0.as_pcwstr().0 as *mut u16)
     }
 
     pub fn new(s: WString) -> Self {

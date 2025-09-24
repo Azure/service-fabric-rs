@@ -21,8 +21,8 @@ use mssf_core::{
         PartitionLoadInformationQueryDescription, QueryServiceReplicaStatus, ReplicaRole,
         RestartReplicaDescription, ServiceDescription, ServiceNotificationFilterDescription,
         ServiceNotificationFilterFlags, ServicePartitionAccessStatus, ServicePartitionInformation,
-        ServicePartitionQueryDescription, ServicePartitionQueryResult, ServicePartitionStatus,
-        ServiceReplicaQueryDescription, ServiceReplicaQueryResult, ServiceUpdateDescription,
+        ServicePartitionQueryDescription, ServicePartitionQueryResultItem, ServicePartitionStatus,
+        ServiceReplicaQueryDescription, ServiceReplicaQueryResultItem, ServiceUpdateDescription,
         SingletonPartitionInfomation, StatefulServiceDescription,
         StatefulServicePartitionQueryResult, StatefulServiceReplicaQueryResult,
         StatefulServiceUpdateDescription, Uri,
@@ -65,7 +65,7 @@ impl TestClient {
         // there is only one partition
         let p = list.iter().next().unwrap();
         let stateful = match p {
-            ServicePartitionQueryResult::Stateful(s) => s,
+            ServicePartitionQueryResultItem::Stateful(s) => s,
             _ => panic!("not stateless"),
         };
         let info = stateful.clone().partition_information;
@@ -116,7 +116,7 @@ impl TestClient {
         let stateful = replicas
             .iter()
             .map(|replica| match replica.clone() {
-                ServiceReplicaQueryResult::Stateful(s) => s,
+                ServiceReplicaQueryResultItem::Stateful(s) => s,
                 _ => panic!("not stateful"),
             })
             .collect::<Vec<_>>();
@@ -499,7 +499,7 @@ impl TestCreateUpdateClient {
         let mut count = 0;
         loop {
             let res = smgr
-                .resolve_service_partition(&service_name, &key_type, None, self.timeout, None)
+                .resolve_service_partition(service_name, &key_type, None, self.timeout, None)
                 .await;
             match res {
                 Ok(info) => {

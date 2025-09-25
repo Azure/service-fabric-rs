@@ -116,7 +116,7 @@ impl From<FABRIC_APPLICATION_STATUS> for ApplicationStatus {
 }
 
 impl ApplicationQueryDescription {
-    /// Caller is responsible for stiching the reserved parts together
+    /// Caller is responsible for stitching the reserved parts together
     pub fn get_raw_parts(
         &self,
     ) -> (
@@ -189,10 +189,9 @@ pub struct ApplicationQueryResultItem {
     pub application_type_version: WString,
     pub status: ApplicationStatus,
     pub health_state: HealthState,
-    // TODO:
+    // TODO: support other fields
     // pub application_parameters: Option<Vec<(WString, WString)>>,
     pub upgrade_type_version: WString,
-    // TODO:
     // pub upgrade_parameters: WString,
     pub application_definition_kind: ApplicationDefinitionKind,
 }
@@ -227,6 +226,7 @@ pub struct ApplicationHealthQueryDescription {
     pub health_policy: Option<ApplicationHealthPolicy>,
     pub events_filter: Option<HealthEventsFilter>,
     pub services_filter: Option<super::service::ServiceHealthStatesFilter>,
+    // TODO: support other fields
     // pub health_statistics_filter: Option<HealthStatisticsFilter>,
     pub deployed_applications_filter: Option<DeployedApplicationHealthStatesFilter>,
 }

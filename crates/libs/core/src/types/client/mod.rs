@@ -3,6 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::types::Uri;
 use mssf_com::FabricTypes::{
     FABRIC_CLIENT_ROLE, FABRIC_CLIENT_ROLE_ADMIN, FABRIC_CLIENT_ROLE_UNKNOWN,
     FABRIC_CLIENT_ROLE_USER, FABRIC_QUERY_REPLICATOR_OPERATION_NAME,
@@ -17,7 +18,7 @@ use mssf_com::FabricTypes::{
     FABRIC_QUERY_SERVICE_OPERATION_NAME_OPEN, FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
     FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS, FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS_NAME_PREFIX,
     FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS_NONE,
-    FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS_PRIMARY_ONLY, FABRIC_URI,
+    FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS_PRIMARY_ONLY,
 };
 
 // This mod contains fabric client related types
@@ -26,7 +27,6 @@ pub use partition::*;
 mod node;
 pub use node::*;
 mod replica;
-use crate::WString;
 pub use replica::*;
 mod metrics;
 pub use metrics::*;
@@ -42,10 +42,11 @@ pub use property::{
 
 mod service;
 pub use service::{
-    NamedRepartitionDescription, ServiceDescription, ServiceHealthState, ServiceHealthStatesFilter,
-    ServiceRepartitionDescription, ServiceUpdateDescription, StatefulServiceDescription,
-    StatefulServiceUpdateDescription, StatelessServiceDescription,
-    StatelessServiceUpdateDescription,
+    NamedRepartitionDescription, ServiceDescription, ServiceHealthQueryDescription,
+    ServiceHealthResult, ServiceHealthState, ServiceHealthStatesFilter, ServiceListResult,
+    ServiceQueryDescription, ServiceQueryResultItem, ServiceRepartitionDescription,
+    ServiceUpdateDescription, StatefulServiceDescription, StatefulServiceUpdateDescription,
+    StatelessServiceDescription, StatelessServiceUpdateDescription,
 };
 
 mod application;
@@ -75,7 +76,7 @@ impl From<&ServiceNotificationFilterFlags> for FABRIC_SERVICE_NOTIFICATION_FILTE
 // FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION
 #[derive(Debug, Clone)]
 pub struct ServiceNotificationFilterDescription {
-    pub name: WString,
+    pub name: Uri,
     pub flags: ServiceNotificationFilterFlags,
 }
 
@@ -86,7 +87,7 @@ impl From<&ServiceNotificationFilterDescription>
     /// original struct.
     fn from(value: &ServiceNotificationFilterDescription) -> Self {
         Self {
-            Name: FABRIC_URI(value.name.as_ptr() as *mut u16),
+            Name: value.name.as_raw(),
             Flags: (&value.flags).into(),
             Reserved: std::ptr::null_mut(),
         }

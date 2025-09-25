@@ -16,19 +16,21 @@ use mssf_com::{
         FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION,
         FABRIC_NODE_QUERY_DESCRIPTION_EX1, FABRIC_NODE_QUERY_DESCRIPTION_EX2,
         FABRIC_NODE_QUERY_DESCRIPTION_EX3, FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
-        FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION, FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
+        FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION, FABRIC_SERVICE_QUERY_DESCRIPTION,
+        FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
     },
 };
 
 use crate::{
     runtime::executor::BoxedCancelToken,
     sync::{FabricReceiver, fabric_begin_end_proxy},
+    types::ServiceQueryDescription,
 };
 use crate::{
     strings::get_pcwstr_from_opt,
     types::{
         DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
-        NodeList, NodeQueryDescription, PartitionLoadInformation,
+        NodeListResult, NodeQueryDescription, PartitionLoadInformation,
         PartitionLoadInformationQueryDescription, ServicePartitionList,
         ServicePartitionQueryDescription, ServiceReplicaList, ServiceReplicaQueryDescription,
     },
@@ -75,6 +77,24 @@ impl QueryClient {
                 com1.BeginGetApplicationList(query_description, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndGetApplicationList2(ctx) },
+            cancellation_token,
+        )
+    }
+
+    fn get_service_list_internal(
+        &self,
+        desc: &FABRIC_SERVICE_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricGetServiceListResult2>>
+    {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetServiceList(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetServiceList2(ctx) },
             cancellation_token,
         )
     }
@@ -167,7 +187,7 @@ impl QueryClient {
         desc: &NodeQueryDescription,
         timeout: Duration,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> crate::Result<NodeList> {
+    ) -> crate::Result<NodeListResult> {
         // Note that the SF raw structs are scoped to avoid having them across await points.
         // This makes api Send. All FabricClient api should follow this pattern.
         let com = {
@@ -197,7 +217,7 @@ impl QueryClient {
             )
         }
         .await??;
-        Ok(NodeList::from(com))
+        Ok(NodeListResult::from(com))
     }
 
     pub async fn get_application_list(
@@ -220,6 +240,23 @@ impl QueryClient {
         }
         .await??;
         Ok(crate::types::ApplicationListResult::from(&com))
+    }
+    pub async fn get_service_list(
+        &self,
+        desc: &ServiceQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::ServiceListResult> {
+        let com = {
+            let (mut base, mut ex1, mut ex2, ex3) = desc.get_raw_parts();
+            base.Reserved = &ex1 as *const _ as *mut c_void;
+            ex1.Reserved = &ex2 as *const _ as *mut c_void;
+            ex2.Reserved = &ex3 as *const _ as *mut c_void;
+
+            self.get_service_list_internal(&base, timeout.as_millis() as u32, cancellation_token)
+        }
+        .await??;
+        Ok(crate::types::ServiceListResult::from(&com))
     }
 
     pub async fn get_partition_list(

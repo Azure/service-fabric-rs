@@ -10,8 +10,8 @@ use mssf_core::{
     runtime::executor::BoxedCancelToken,
     types::{
         ApplicationHealthStatesFilter, ApplicationQueryDescription, ClusterHealthQueryDescription,
-        HealthEventsFilter, HealthStateFilterFlags, Node, NodeHealthQueryDescription,
-        NodeHealthStatesFilter,
+        HealthEventsFilter, HealthStateFilterFlags, NodeHealthQueryDescription,
+        NodeHealthStatesFilter, NodeQueryResultItem, Uri,
     },
 };
 use std::time::Duration;
@@ -70,11 +70,61 @@ impl HealthDataProducer {
         // Get application information.
         if let Ok(apps) = self.get_all_applications(token.clone()).await {
             for app in apps {
+                let app_name = app.application_name.clone();
                 if let Some(entity) = self
                     .produce_application_health_entity(token.clone(), app)
                     .await
                 {
                     self.send_entity(entity)?;
+                }
+
+                // Get service information for the application.
+                if let Ok(services) = self.get_all_services_for_app(token.clone(), app_name).await {
+                    for svc in services {
+                        let svc_name = svc.get_service_name().clone();
+                        // produce service health entity
+                        if let Some(entity) =
+                            self.produce_service_health_entity(token.clone(), svc).await
+                        {
+                            self.send_entity(entity)?;
+                        }
+
+                        // Get partition information for the service.
+                        if let Ok(partitions) = self
+                            .get_all_partitions_for_svc(token.clone(), svc_name)
+                            .await
+                        {
+                            for partition in partitions {
+                                let partition_id = partition.get_partition_id();
+                                // produce partition health entity
+                                if let Some(entity) = self
+                                    .produce_partition_health_entity(token.clone(), partition)
+                                    .await
+                                {
+                                    self.send_entity(entity)?;
+                                }
+                                // Get replica information for the partition.
+                                if let Ok(replicas) = self
+                                    .get_all_replicas_for_partition(token.clone(), partition_id)
+                                    .await
+                                {
+                                    for replica in replicas {
+                                        // produce replica health entity
+                                        if let Some(entity) = self
+                                            .produce_replica_health_entity(
+                                                token.clone(),
+                                                partition_id,
+                                                replica,
+                                            )
+                                            .await
+                                        {
+                                            self.send_entity(entity)?;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -123,7 +173,9 @@ impl HealthDataProducer {
     pub fn get_iteration(&self) -> u64 {
         self.iteration.load(std::sync::atomic::Ordering::Relaxed)
     }
+}
 
+impl HealthDataProducer {
     async fn produce_cluster_health_entity(&self, token: BoxedCancelToken) -> Option<HealthEntity> {
         // Ignore nodes and app health because we retrieve them separately.
         // Technically we can get everything in one call, but the payload might be too large,
@@ -156,7 +208,7 @@ impl HealthDataProducer {
     async fn produce_node_health_entity(
         &self,
         token: BoxedCancelToken,
-        node: Node,
+        node: NodeQueryResultItem,
     ) -> Option<HealthEntity> {
         // Logic to get node health goes here.
 
@@ -183,7 +235,119 @@ impl HealthDataProducer {
         }))
     }
 
-    async fn get_all_nodes(&self, token: BoxedCancelToken) -> mssf_core::Result<Vec<Node>> {
+    async fn produce_application_health_entity(
+        &self,
+        token: BoxedCancelToken,
+        app: mssf_core::types::ApplicationQueryResultItem,
+    ) -> Option<HealthEntity> {
+        let desc = mssf_core::types::ApplicationHealthQueryDescription {
+            application_name: app.application_name.clone(),
+            ..Default::default()
+        };
+        let app_health = self
+            .fc
+            .get_health_manager()
+            .get_application_health(&desc, DEFAULT_TIMEOUT, Some(token))
+            .await
+            .inspect_err(|err| {
+                tracing::error!("Failed to get application health: {}", err);
+            })
+            .ok()?;
+        Some(HealthEntity::Application(
+            crate::monitoring::entities::ApplicationHealthEntity {
+                application: app,
+                health: app_health,
+            },
+        ))
+    }
+
+    async fn produce_service_health_entity(
+        &self,
+        token: BoxedCancelToken,
+        svc: mssf_core::types::ServiceQueryResultItem,
+    ) -> Option<HealthEntity> {
+        let svc_name = svc.get_service_name().clone();
+        let desc = mssf_core::types::ServiceHealthQueryDescription {
+            service_name: svc_name,
+            ..Default::default()
+        };
+        let svc_health = self
+            .fc
+            .get_health_manager()
+            .get_service_health(&desc, DEFAULT_TIMEOUT, Some(token))
+            .await
+            .inspect_err(|err| {
+                tracing::error!("Failed to get service health: {}", err);
+            })
+            .ok()?;
+        Some(HealthEntity::Service(
+            crate::monitoring::entities::ServiceHealthEntity {
+                health: svc_health,
+                service: svc,
+            },
+        ))
+    }
+    async fn produce_partition_health_entity(
+        &self,
+        token: BoxedCancelToken,
+        part: mssf_core::types::ServicePartitionQueryResultItem,
+    ) -> Option<HealthEntity> {
+        let partition_id = part.get_partition_id();
+        let desc = mssf_core::types::PartitionHealthQueryDescription {
+            partition_id,
+            ..Default::default()
+        };
+        let part_health = self
+            .fc
+            .get_health_manager()
+            .get_partition_health(&desc, DEFAULT_TIMEOUT, Some(token))
+            .await
+            .inspect_err(|err| {
+                tracing::error!("Failed to get partition health: {}", err);
+            })
+            .ok()?;
+        Some(HealthEntity::Partition(
+            crate::monitoring::entities::PartitionHealthEntity {
+                health: part_health,
+                partition: part,
+            },
+        ))
+    }
+    async fn produce_replica_health_entity(
+        &self,
+        token: BoxedCancelToken,
+        partition_id: mssf_core::GUID,
+        replica: mssf_core::types::ServiceReplicaQueryResultItem,
+    ) -> Option<HealthEntity> {
+        let desc = mssf_core::types::ReplicaHealthQueryDescription {
+            partition_id,
+            replica_id_or_instance_id: replica.get_replica_or_instance_id(),
+            ..Default::default()
+        };
+        let replica_health = self
+            .fc
+            .get_health_manager()
+            .get_replica_health(&desc, DEFAULT_TIMEOUT, Some(token))
+            .await
+            .inspect_err(|err| {
+                tracing::error!("Failed to get replica health: {}", err);
+            })
+            .ok()?;
+        Some(HealthEntity::Replica(
+            crate::monitoring::entities::ReplicaHealthEntity {
+                health: replica_health,
+                replica,
+            },
+        ))
+    }
+}
+
+// Get lists of entities
+impl HealthDataProducer {
+    async fn get_all_nodes(
+        &self,
+        token: BoxedCancelToken,
+    ) -> mssf_core::Result<Vec<NodeQueryResultItem>> {
         // Logic to get node information goes here.
         let desc = &Default::default();
         let nodes = self
@@ -217,30 +381,71 @@ impl HealthDataProducer {
             .items;
         Ok(apps)
     }
-
-    async fn produce_application_health_entity(
+    async fn get_all_services_for_app(
         &self,
         token: BoxedCancelToken,
-        app: mssf_core::types::ApplicationQueryResultItem,
-    ) -> Option<HealthEntity> {
-        let desc = mssf_core::types::ApplicationHealthQueryDescription {
-            application_name: app.application_name.clone(),
+        app_name: Uri,
+    ) -> mssf_core::Result<Vec<mssf_core::types::ServiceQueryResultItem>> {
+        let app_name_cp = app_name.clone();
+        // Logic to get service information goes here.
+        let desc = mssf_core::types::ServiceQueryDescription {
+            application_name: app_name_cp,
             ..Default::default()
         };
-        let app_health = self
+        let services = self
             .fc
-            .get_health_manager()
-            .get_application_health(&desc, DEFAULT_TIMEOUT, Some(token))
+            .get_query_manager()
+            .get_service_list(&desc, DEFAULT_TIMEOUT, Some(token.clone()))
             .await
             .inspect_err(|err| {
-                tracing::error!("Failed to get application health: {}", err);
-            })
-            .ok()?;
-        Some(HealthEntity::Application(
-            crate::monitoring::entities::ApplicationHealthEntity {
-                application: app,
-                health: app_health,
-            },
-        ))
+                tracing::error!("Failed to get service list for app {app_name}: {err}");
+            })?;
+        Ok(services.items)
+    }
+
+    async fn get_all_partitions_for_svc(
+        &self,
+        token: BoxedCancelToken,
+        service_name: Uri,
+    ) -> mssf_core::Result<Vec<mssf_core::types::ServicePartitionQueryResultItem>> {
+        // Logic to get partition information goes here.
+        let desc = mssf_core::types::ServicePartitionQueryDescription {
+            service_name,
+            partition_id_filter: None,
+        };
+        let partitions = self
+            .fc
+            .get_query_manager()
+            .get_partition_list(&desc, DEFAULT_TIMEOUT, Some(token.clone()))
+            .await
+            .inspect_err(|err| {
+                tracing::error!("Failed to get partition list: {}", err);
+            })?
+            .iter()
+            .collect::<Vec<_>>();
+        Ok(partitions)
+    }
+
+    async fn get_all_replicas_for_partition(
+        &self,
+        token: BoxedCancelToken,
+        partition_id: mssf_core::GUID,
+    ) -> mssf_core::Result<Vec<mssf_core::types::ServiceReplicaQueryResultItem>> {
+        // Logic to get replica information goes here.
+        let desc = mssf_core::types::ServiceReplicaQueryDescription {
+            partition_id,
+            ..Default::default()
+        };
+        let replicas = self
+            .fc
+            .get_query_manager()
+            .get_replica_list(&desc, DEFAULT_TIMEOUT, Some(token.clone()))
+            .await
+            .inspect_err(|err| {
+                tracing::error!("Failed to get replica list: {}", err);
+            })?
+            .iter()
+            .collect::<Vec<_>>();
+        Ok(replicas)
     }
 }

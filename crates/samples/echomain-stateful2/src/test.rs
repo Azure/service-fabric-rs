@@ -21,8 +21,8 @@ use mssf_core::{
         PartitionLoadInformationQueryDescription, QueryServiceReplicaStatus, ReplicaRole,
         RestartReplicaDescription, ServiceDescription, ServiceNotificationFilterDescription,
         ServiceNotificationFilterFlags, ServicePartitionAccessStatus, ServicePartitionInformation,
-        ServicePartitionQueryDescription, ServicePartitionQueryResult, ServicePartitionStatus,
-        ServiceReplicaQueryDescription, ServiceReplicaQueryResult, ServiceUpdateDescription,
+        ServicePartitionQueryDescription, ServicePartitionQueryResultItem, ServicePartitionStatus,
+        ServiceReplicaQueryDescription, ServiceReplicaQueryResultItem, ServiceUpdateDescription,
         SingletonPartitionInfomation, StatefulServiceDescription,
         StatefulServicePartitionQueryResult, StatefulServiceReplicaQueryResult,
         StatefulServiceUpdateDescription, Uri,
@@ -34,7 +34,7 @@ static SVC_URI: &str = "fabric:/StatefulEchoApp/StatefulEchoAppService";
 /// Test client for the stateful service
 pub struct TestClient {
     fc: FabricClient,
-    service_uri: WString,
+    service_uri: Uri,
     timeout: Duration,
 }
 
@@ -42,7 +42,7 @@ impl TestClient {
     fn new(fc: FabricClient) -> Self {
         Self {
             fc,
-            service_uri: WString::from(SVC_URI),
+            service_uri: Uri::from(SVC_URI),
             timeout: Duration::from_secs(1),
         }
     }
@@ -65,7 +65,7 @@ impl TestClient {
         // there is only one partition
         let p = list.iter().next().unwrap();
         let stateful = match p {
-            ServicePartitionQueryResult::Stateful(s) => s,
+            ServicePartitionQueryResultItem::Stateful(s) => s,
             _ => panic!("not stateless"),
         };
         let info = stateful.clone().partition_information;
@@ -116,7 +116,7 @@ impl TestClient {
         let stateful = replicas
             .iter()
             .map(|replica| match replica.clone() {
-                ServiceReplicaQueryResult::Stateful(s) => s,
+                ServiceReplicaQueryResultItem::Stateful(s) => s,
                 _ => panic!("not stateful"),
             })
             .collect::<Vec<_>>();
@@ -296,7 +296,7 @@ async fn test_partition_info() {
     // register service notification filter
     let filter_handle = {
         let desc = ServiceNotificationFilterDescription {
-            name: WString::from(SVC_URI),
+            name: Uri::from(SVC_URI),
             flags: ServiceNotificationFilterFlags::NamePrefix,
         };
         // register takes more than 1 sec.
@@ -499,7 +499,7 @@ impl TestCreateUpdateClient {
         let mut count = 0;
         loop {
             let res = smgr
-                .resolve_service_partition(&service_name.0, &key_type, None, self.timeout, None)
+                .resolve_service_partition(service_name, &key_type, None, self.timeout, None)
                 .await;
             match res {
                 Ok(info) => {

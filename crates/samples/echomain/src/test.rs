@@ -17,9 +17,10 @@ use mssf_core::{
     types::{
         QueryServiceReplicaStatus, RemoveReplicaDescription, ServiceNotificationFilterDescription,
         ServiceNotificationFilterFlags, ServicePartitionInformation,
-        ServicePartitionQueryDescription, ServicePartitionQueryResult, ServicePartitionStatus,
-        ServiceReplicaQueryDescription, ServiceReplicaQueryResult, SingletonPartitionInfomation,
-        StatelessServiceInstanceQueryResult, StatelessServicePartitionQueryResult, Uri,
+        ServicePartitionQueryDescription, ServicePartitionQueryResultItem, ServicePartitionStatus,
+        ServiceReplicaQueryDescription, ServiceReplicaQueryResultItem,
+        SingletonPartitionInfomation, StatelessServiceInstanceQueryResult,
+        StatelessServicePartitionQueryResult, Uri,
     },
 };
 
@@ -30,7 +31,7 @@ static RETRY_DURATION_SHORT: Duration = Duration::from_secs(1);
 // Test client for echo server.
 pub struct EchoTestClient {
     fc: FabricClient,
-    service_uri: WString,
+    service_uri: Uri,
     timeout: Duration,
 }
 
@@ -38,7 +39,7 @@ impl EchoTestClient {
     pub fn new(fc: FabricClient) -> Self {
         Self {
             fc,
-            service_uri: WString::from(ECHO_SVC_URI),
+            service_uri: Uri::from(ECHO_SVC_URI),
             timeout: Duration::from_secs(1),
         }
     }
@@ -61,7 +62,7 @@ impl EchoTestClient {
         // there is only one partition
         let p = list.iter().next().unwrap();
         let stateless = match p {
-            ServicePartitionQueryResult::Stateless(s) => s,
+            ServicePartitionQueryResultItem::Stateless(s) => s,
             _ => panic!("not stateless"),
         };
         let info = stateless.clone().partition_information;
@@ -85,7 +86,7 @@ impl EchoTestClient {
         let replica_op = replicas.iter().next(); // only one replica
         match replica_op {
             Some(replica) => Ok(match replica {
-                ServiceReplicaQueryResult::Stateless(s) => s,
+                ServiceReplicaQueryResultItem::Stateless(s) => s,
                 _ => panic!("not stateless"),
             }),
             // replica might be restarting
@@ -148,7 +149,7 @@ async fn test_fabric_client() {
     let ec = EchoTestClient::new(fc.clone());
 
     let timeout = Duration::from_secs(1);
-    let service_uri = WString::from(ECHO_SVC_URI);
+    let service_uri = Uri::from(ECHO_SVC_URI);
 
     // Get partition info
     let (stateless, single) = ec.get_partition().await;

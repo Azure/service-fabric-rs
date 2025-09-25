@@ -28,6 +28,9 @@ mod tests {
         pub cluster_health_entity: Vec<ClusterHealthEntity>,
         pub node_health_entities: Vec<NodeHealthEntity>,
         pub application_health_entities: Vec<crate::monitoring::entities::ApplicationHealthEntity>,
+        pub partition_health_entities: Vec<crate::monitoring::entities::PartitionHealthEntity>,
+        pub service_health_entities: Vec<crate::monitoring::entities::ServiceHealthEntity>,
+        pub replica_health_entities: Vec<crate::monitoring::entities::ReplicaHealthEntity>,
     }
 
     impl MockHealthDataConsumer {
@@ -41,6 +44,9 @@ mod tests {
                 node_health_entities: Vec::new(),
                 cluster_health_entity: Vec::new(),
                 application_health_entities: Vec::new(),
+                partition_health_entities: Vec::new(),
+                service_health_entities: Vec::new(),
+                replica_health_entities: Vec::new(),
             };
             while let Some(entity) = self.receiver.recv().await {
                 match entity {
@@ -52,6 +58,15 @@ mod tests {
                     }
                     HealthEntity::Application(application_entity) => {
                         data.application_health_entities.push(application_entity);
+                    }
+                    HealthEntity::Partition(partition_entity) => {
+                        data.partition_health_entities.push(partition_entity);
+                    }
+                    HealthEntity::Service(service_entity) => {
+                        data.service_health_entities.push(service_entity);
+                    }
+                    HealthEntity::Replica(replica_entity) => {
+                        data.replica_health_entities.push(replica_entity);
                     }
                 }
             }
@@ -155,6 +170,49 @@ mod tests {
             assert!(
                 app1.health.aggregated_health_state == mssf_core::types::HealthState::Ok
                     || app1.health.aggregated_health_state
+                        == mssf_core::types::HealthState::Warning
+            );
+        }
+        if data.partition_health_entities.is_empty() {
+            tracing::warn!("No partitions found in the cluster");
+        } else {
+            let partition1 = &data.partition_health_entities[0];
+            assert_eq!(
+                partition1.partition.get_health_state(),
+                partition1.health.aggregated_health_state
+            );
+            assert!(
+                partition1.health.aggregated_health_state == mssf_core::types::HealthState::Ok
+                    || partition1.health.aggregated_health_state
+                        == mssf_core::types::HealthState::Warning
+            );
+        }
+        if data.service_health_entities.is_empty() {
+            tracing::warn!("No services found in the cluster");
+        } else {
+            let service1 = &data.service_health_entities[0];
+            assert_eq!(
+                service1.service.get_health_state(),
+                service1.health.aggregated_health_state
+            );
+            assert!(
+                service1.health.aggregated_health_state == mssf_core::types::HealthState::Ok
+                    || service1.health.aggregated_health_state
+                        == mssf_core::types::HealthState::Warning
+            );
+        }
+        if data.replica_health_entities.is_empty() {
+            tracing::warn!("No replicas found in the cluster");
+        } else {
+            let replica1 = &data.replica_health_entities[0];
+            assert_eq!(
+                replica1.replica.get_aggregated_health_state(),
+                replica1.health.replica_health.get_aggregated_health_state()
+            );
+            assert!(
+                replica1.health.replica_health.get_aggregated_health_state()
+                    == mssf_core::types::HealthState::Ok
+                    || replica1.health.replica_health.get_aggregated_health_state()
                         == mssf_core::types::HealthState::Warning
             );
         }

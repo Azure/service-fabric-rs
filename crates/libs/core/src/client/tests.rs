@@ -7,7 +7,7 @@
 
 use std::time::Duration;
 
-use crate::{WString, client::FabricClient, sync::SimpleCancelToken};
+use crate::{WString, client::FabricClient, sync::SimpleCancelToken, types::Uri};
 use mssf_com::FabricTypes::FABRIC_E_SERVICE_DOES_NOT_EXIST;
 
 use crate::{
@@ -83,7 +83,7 @@ async fn test_fabric_client() {
     {
         let res = smgr
             .resolve_service_partition(
-                &WString::from("fabric:/EchoApp/EchoAppService"),
+                &Uri::from("fabric:/EchoApp/EchoAppService"),
                 &PartitionKeyType::None,
                 None,
                 timeout,

@@ -145,9 +145,7 @@ mod test {
                     )
                 };
 
-                // SAFETY: test code, must be empty
-                assert!(unsafe { value_ref.RemoteSpn.is_empty() });
-
+                value_ref.RemoteSpn.is_null();
                 assert_eq!(value_ref.ProtectionLevel, FABRIC_PROTECTION_LEVEL_NONE);
                 assert!(value_ref.Reserved.is_null());
 

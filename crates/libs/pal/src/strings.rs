@@ -142,12 +142,16 @@ impl WString {
     pub fn as_ptr(&self) -> *const u16 {
         match self.0.as_ref() {
             Some(v) => v.as_ptr(),
-            None => EMPTY.as_ptr(),
+            None => EMPTY.as_ptr(), // This is not null pointer.
         }
     }
 
+    /// Returns the `PCWSTR` representation of this `WString` for FFI calls.
     pub fn as_pcwstr(&self) -> PCWSTR {
-        PCWSTR::from_raw(self.as_ptr())
+        match self.0.as_ref() {
+            Some(v) => PCWSTR::from_raw(v.as_ptr()),
+            None => PCWSTR::null(),
+        }
     }
 
     /// From slice without the null terminator.

@@ -8,9 +8,12 @@
 #[cfg(feature = "tokio")]
 pub mod tokio;
 
-// Requires tokio_util
+// Requires tokio select
 #[cfg(feature = "tokio")]
 pub mod resolve;
+
+#[cfg(feature = "tokio")]
+pub mod retry;
 
 #[cfg(feature = "tokio")]
 pub mod monitoring;

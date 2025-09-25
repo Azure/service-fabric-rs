@@ -888,6 +888,13 @@ impl ServiceQueryResultItem {
             ServiceQueryResultItem::Stateless(item) => item.health_state,
         }
     }
+
+    pub fn get_service_name(&self) -> &Uri {
+        match self {
+            ServiceQueryResultItem::Stateful(item) => &item.service_name,
+            ServiceQueryResultItem::Stateless(item) => &item.service_name,
+        }
+    }
 }
 
 // FABRIC_QUERY_SERVICE_STATUS

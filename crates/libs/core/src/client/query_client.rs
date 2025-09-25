@@ -30,7 +30,7 @@ use crate::{
     strings::get_pcwstr_from_opt,
     types::{
         DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
-        NodeList, NodeQueryDescription, PartitionLoadInformation,
+        NodeListResult, NodeQueryDescription, PartitionLoadInformation,
         PartitionLoadInformationQueryDescription, ServicePartitionList,
         ServicePartitionQueryDescription, ServiceReplicaList, ServiceReplicaQueryDescription,
     },
@@ -187,7 +187,7 @@ impl QueryClient {
         desc: &NodeQueryDescription,
         timeout: Duration,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> crate::Result<NodeList> {
+    ) -> crate::Result<NodeListResult> {
         // Note that the SF raw structs are scoped to avoid having them across await points.
         // This makes api Send. All FabricClient api should follow this pattern.
         let com = {
@@ -217,7 +217,7 @@ impl QueryClient {
             )
         }
         .await??;
-        Ok(NodeList::from(com))
+        Ok(NodeListResult::from(com))
     }
 
     pub async fn get_application_list(

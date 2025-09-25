@@ -70,11 +70,11 @@ pub struct NodeQueryDescription {
 }
 
 #[derive(Debug)]
-pub struct NodeList {
+pub struct NodeListResult {
     com: IFabricGetNodeListResult2,
 }
 
-impl FabricListAccessor<FABRIC_NODE_QUERY_RESULT_ITEM> for NodeList {
+impl FabricListAccessor<FABRIC_NODE_QUERY_RESULT_ITEM> for NodeListResult {
     fn get_count(&self) -> u32 {
         let list = unsafe { self.com.get_NodeList().as_ref().unwrap() };
         list.Count
@@ -86,13 +86,13 @@ impl FabricListAccessor<FABRIC_NODE_QUERY_RESULT_ITEM> for NodeList {
     }
 }
 
-impl From<IFabricGetNodeListResult2> for NodeList {
+impl From<IFabricGetNodeListResult2> for NodeListResult {
     fn from(com: IFabricGetNodeListResult2) -> Self {
         Self { com }
     }
 }
 
-impl NodeList {
+impl NodeListResult {
     pub fn iter(&self) -> NodeListIter<'_> {
         NodeListIter::new(self, self)
     }
@@ -104,10 +104,11 @@ impl NodeList {
     }
 }
 
-type NodeListIter<'a> = FabricIter<'a, FABRIC_NODE_QUERY_RESULT_ITEM, Node, NodeList>;
+type NodeListIter<'a> =
+    FabricIter<'a, FABRIC_NODE_QUERY_RESULT_ITEM, NodeQueryResultItem, NodeListResult>;
 
 #[derive(Debug, Clone)]
-pub struct Node {
+pub struct NodeQueryResultItem {
     pub name: WString,
     pub ip_address_or_fqdn: WString,
     pub node_type: WString,
@@ -122,7 +123,7 @@ pub struct Node {
     pub node_instance_id: u64,
 }
 
-impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for Node {
+impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for NodeQueryResultItem {
     fn from(value: &FABRIC_NODE_QUERY_RESULT_ITEM) -> Self {
         let raw = value;
         // TODO: get node id. integrate with another PR
@@ -136,7 +137,7 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for Node {
                 .as_ref()
                 .unwrap()
         };
-        Node {
+        NodeQueryResultItem {
             name: WStringWrap::from(raw.NodeName).into(),
             ip_address_or_fqdn: WStringWrap::from(raw.IpAddressOrFQDN).into(),
             node_type: WStringWrap::from(raw.NodeType).into(),

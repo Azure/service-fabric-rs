@@ -173,7 +173,8 @@ async fn test_resolve_notification() {
     };
 
     // Resolve the service until all replicas are ready.
-    let srv = ServicePartitionResolver::builder(fc.clone()).build();
+    let retryer = mssf_util::retry::OperationRetryer::builder().build();
+    let srv = ServicePartitionResolver::new(fc.clone(), retryer);
     let mut prev = None;
     let rsp = loop {
         let rsp = srv

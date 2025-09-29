@@ -2,6 +2,9 @@ name: generate
 
 on: [push, pull_request]
 
+env:
+  RUST_VERSION: "1.90.0"
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -19,7 +22,7 @@ jobs:
     - name: Install rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: 1.88.0
+        toolchain: ${{ env.RUST_VERSION }}
         components: rustfmt, clippy
 
     - name: cmake configure
@@ -38,10 +41,5 @@ jobs:
     - name: build rust code
       run: cmake --build build --config ${{ matrix.BUILD_TYPE }}
 
-    - name: Install rust nightly
-      uses: dtolnay/rust-toolchain@nightly
-
-    # TODO: move back to stable once package-workspace is stabilized
-    # https://doc.rust-lang.org/cargo/reference/unstable.html#package-workspace
     - name: check crate packaging
-      run: cargo +nightly -Z package-workspace package -p mssf-pal -p mssf-com -p mssf-core --allow-dirty 
+      run: cargo package -p mssf-pal -p mssf-com -p mssf-core -p mssf-util --allow-dirty

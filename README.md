@@ -24,7 +24,7 @@ to open the project in devcontainer. The devcontainer setting is [devcontainer.j
 DevContainer brings up 2 containers: `onebox` container has a SF onebox running, and `repo` container has the repo code, and inside repo container, the SF onebox container ports are forwarded to localhost, so u can use sfctl in repo container as if onebox runs inside the same container.
 
 ## Getting Started - Ubuntu
-<em>Note: Service Fabric currently only supports Ubuntu 20.04 LTS.</em>
+<em>Note: Service Fabric currently only supports Ubuntu 22.04 LTS.</em>
 
 * Install Service Fabric Runtime for Linux (Ubuntu). See [Prepare your development environment on Linux](https://learn.microsoft.com/en-us/azure/service-fabric/service-fabric-get-started-linux?tabs=sdksetupubuntu%2Clocalclusteroneboxcontainer)
 * Following the documentation, proceed to **Manual installation** and skip **Step 6. Add Azul JDK Key**..

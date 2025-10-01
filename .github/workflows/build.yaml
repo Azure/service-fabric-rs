@@ -64,72 +64,6 @@ jobs:
     - name: Run cargo test
       run: cargo test --all -- --nocapture
 
-  build-u20:
-    runs-on: ubuntu-latest
-    container:
-      image: ubuntu:20.04
-      options: --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0
-    steps:
-    - uses: actions/checkout@v5
-
-    - name: Install sudo
-      run: |
-        apt-get update
-        apt-get install -y sudo
-
-    - name: apt-get
-      run: |
-        sudo apt-get update 
-        sudo apt-get install apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils clang unzip -y
-
-    - name: install sf
-      run: |
-        wget -q https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb;
-        sudo dpkg -i packages-microsoft-prod.deb;
-        curl -fsSL https://packages.microsoft.com/keys/msopentech.asc | sudo apt-key add - ;
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - ;
-        sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" ;
-        sudo apt-get update;
-        echo "servicefabric servicefabric/accepted-eula-ga select true" | sudo debconf-set-selections ;
-        echo "servicefabricsdkcommon servicefabricsdkcommon/accepted-eula-ga select true" | sudo debconf-set-selections ;
-        sudo apt-get install servicefabricsdkcommon -y;
-        echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/microsoft/servicefabric/bin/Fabric/Fabric.Code" >> $GITHUB_ENV
-
-    - uses: lukka/get-cmake@latest
-      with:
-        cmakeVersion: "3.21.2"
-
-    - name: Install rust stable
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: ${{ env.RUST_VERSION }}
-        components: rustfmt, clippy
-    
-    - name: Run cargo check
-      run: cargo check
-
-    - name: Run cargo fmt
-      run: cargo fmt --all -- --check
-    
-    - name: Run cargo clippy
-      run: cargo clippy -- -D warnings
-
-    - name: run cmake
-      run: > 
-        cmake . -DCMAKE_BUILD_TYPE=Debug -B build
-    - name: run build
-      run: cmake --build build --config Debug
-
-    - name: install sfctl
-      run: |
-        sudo apt-get install python3-pip -y
-        python3 -m pip install --upgrade pip
-        pip3 install -I sfctl==11.1.0
-        echo "~/.local/bin" >> $GITHUB_PATH
-    
-    - name: test sfctl
-      run: sfctl --version
-
   # Do not run test because SF onebox is not supported on azl3 yet.
   build-azl3:
     runs-on: ubuntu-latest
@@ -173,7 +107,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        devcontainer-type: ["u20", "u22"]
+        devcontainer-type: ["u22"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

@@ -107,7 +107,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        devcontainer-type: ["u22"]
+        devcontainer-type: ["u22", "azl3"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

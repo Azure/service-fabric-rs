@@ -3,7 +3,11 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{GUID, mem::GetRaw, types::Uri};
+use crate::{
+    GUID,
+    mem::GetRaw,
+    types::{LoadMetricReport, PagingStatus, Uri},
+};
 use mssf_com::{
     FabricClient::{IFabricGetPartitionListResult2, IFabricGetPartitionLoadInformationResult},
     FabricTypes::{
@@ -21,12 +25,7 @@ use mssf_com::{
     },
 };
 
-use crate::{
-    iter::{FabricIter, FabricListAccessor},
-    types::{HealthState, ServicePartitionInformation},
-};
-
-use super::metrics::{PrimaryLoadMetricReportList, SecondaryLoadMetricReportList};
+use crate::types::{HealthState, ServicePartitionInformation};
 
 // Partition related types
 // FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION
@@ -52,35 +51,20 @@ impl From<&ServicePartitionQueryDescription> for FABRIC_SERVICE_PARTITION_QUERY_
 }
 
 pub struct ServicePartitionList {
-    com: IFabricGetPartitionListResult2,
+    pub service_partitions: Vec<ServicePartitionQueryResultItem>,
+    pub paging_status: Option<PagingStatus>,
 }
 
-type ServicePartitionListIter<'a> = FabricIter<
-    'a,
-    FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM,
-    ServicePartitionQueryResultItem,
-    ServicePartitionList,
->;
-
-impl FabricListAccessor<FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartitionList {
-    fn get_count(&self) -> u32 {
-        let raw = unsafe { self.com.get_PartitionList().as_ref() };
-        raw.unwrap().Count
-    }
-
-    fn get_first_item(&self) -> *const FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM {
-        let raw = unsafe { self.com.get_PartitionList().as_ref() };
-        raw.unwrap().Items
-    }
-}
-
-impl ServicePartitionList {
-    pub fn new(com: IFabricGetPartitionListResult2) -> Self {
-        Self { com }
-    }
-
-    pub fn iter(&self) -> ServicePartitionListIter<'_> {
-        ServicePartitionListIter::new(self, self)
+impl From<&IFabricGetPartitionListResult2> for ServicePartitionList {
+    fn from(com: &IFabricGetPartitionListResult2) -> Self {
+        let service_partitions = unsafe { com.get_PartitionList().as_ref() }
+            .map(|list| crate::iter::vec_from_raw_com(list.Count as usize, list.Items))
+            .unwrap_or_default();
+        let paging_status = unsafe { com.get_PagingStatus().as_ref() }.map(|s| s.into());
+        Self {
+            service_partitions,
+            paging_status,
+        }
     }
 }
 
@@ -236,24 +220,29 @@ impl From<&PartitionLoadInformationQueryDescription>
 /// Therefore, we created PrimaryLoadMetricReportList and SecondaryLoadMetricReportList to represent the
 /// load metric reports for primary and secondary respectively, instead of using a same wrapper type for
 ///  FABRIC_LOAD_METRIC_REPORT_LIST.
-pub struct PartitionLoadInformation {
+pub struct GetPartitionLoadInformationResult {
     pub partition_id: GUID,
-    pub primary_load_metric_reports: PrimaryLoadMetricReportList,
-    pub secondary_load_metric_reports: SecondaryLoadMetricReportList,
+    pub primary_load_metric_reports: Vec<LoadMetricReport>,
+    pub secondary_load_metric_reports: Vec<LoadMetricReport>,
     // TODO: implement Reserved
 }
 
-impl PartitionLoadInformation {
-    pub fn new(com: IFabricGetPartitionLoadInformationResult) -> Self {
-        let partition_id = unsafe {
-            com.get_PartitionLoadInformation()
+impl From<&IFabricGetPartitionLoadInformationResult> for GetPartitionLoadInformationResult {
+    fn from(com: &IFabricGetPartitionLoadInformationResult) -> Self {
+        let raw = unsafe { com.get_PartitionLoadInformation().as_ref().unwrap() };
+        let partition_id = raw.PartitionId;
+        let primary_load_metric_reports = unsafe {
+            raw.PrimaryLoadMetricReports
                 .as_ref()
-                .unwrap()
-                .PartitionId
+                .map(|list| crate::iter::vec_from_raw_com(list.Count as usize, list.Items))
+                .unwrap_or_default()
         };
-        let primary_load_metric_reports = PrimaryLoadMetricReportList::new(com.clone());
-        let secondary_load_metric_reports = SecondaryLoadMetricReportList::new(com.clone());
-
+        let secondary_load_metric_reports = unsafe {
+            raw.SecondaryLoadMetricReports
+                .as_ref()
+                .map(|list| crate::iter::vec_from_raw_com(list.Count as usize, list.Items))
+                .unwrap_or_default()
+        };
         Self {
             partition_id,
             primary_load_metric_reports,

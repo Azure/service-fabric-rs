@@ -21,19 +21,16 @@ use mssf_com::{
     },
 };
 
+use crate::types::{
+    DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
+    GetPartitionLoadInformationResult, NodeListResult, NodeQueryDescription,
+    PartitionLoadInformationQueryDescription, ServicePartitionList,
+    ServicePartitionQueryDescription, ServiceReplicaList, ServiceReplicaQueryDescription,
+};
 use crate::{
     runtime::executor::BoxedCancelToken,
     sync::{FabricReceiver, fabric_begin_end_proxy},
     types::ServiceQueryDescription,
-};
-use crate::{
-    strings::get_pcwstr_from_opt,
-    types::{
-        DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
-        NodeListResult, NodeQueryDescription, PartitionLoadInformation,
-        PartitionLoadInformationQueryDescription, ServicePartitionList,
-        ServicePartitionQueryDescription, ServiceReplicaList, ServiceReplicaQueryDescription,
-    },
 };
 
 #[derive(Debug, Clone)]
@@ -202,12 +199,12 @@ impl QueryClient {
             };
 
             let ex1 = FABRIC_NODE_QUERY_DESCRIPTION_EX1 {
-                ContinuationToken: get_pcwstr_from_opt(&desc.paged_query.continuation_token),
+                ContinuationToken: desc.paged_query.continuation_token.as_ref().into(),
                 Reserved: std::ptr::addr_of!(ex2) as *mut c_void,
             };
 
             let arg = FABRIC_NODE_QUERY_DESCRIPTION {
-                NodeNameFilter: get_pcwstr_from_opt(&desc.node_name_filter),
+                NodeNameFilter: desc.node_name_filter.as_ref().into(),
                 Reserved: std::ptr::addr_of!(ex1) as *mut c_void,
             };
             self.get_node_list_internal(
@@ -217,7 +214,7 @@ impl QueryClient {
             )
         }
         .await??;
-        Ok(NodeListResult::from(com))
+        Ok(NodeListResult::from(&com))
     }
 
     pub async fn get_application_list(
@@ -271,7 +268,7 @@ impl QueryClient {
             self.get_partition_list_internal(&raw, mili, cancellation_token)
         }
         .await??;
-        Ok(ServicePartitionList::new(com))
+        Ok(ServicePartitionList::from(&com))
     }
 
     pub async fn get_replica_list(
@@ -286,7 +283,7 @@ impl QueryClient {
             self.get_replica_list_internal(&raw, mili, cancellation_token)
         }
         .await??;
-        Ok(ServiceReplicaList::new(com))
+        Ok(ServiceReplicaList::from(&com))
     }
 
     pub async fn get_partition_load_information(
@@ -294,14 +291,14 @@ impl QueryClient {
         desc: &PartitionLoadInformationQueryDescription,
         timeout: Duration,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> crate::Result<PartitionLoadInformation> {
+    ) -> crate::Result<GetPartitionLoadInformationResult> {
         let com = {
             let raw: FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION = desc.into();
             let timeout_ms = timeout.as_micros() as u32;
             self.get_partition_load_information_internal(&raw, timeout_ms, cancellation_token)
         }
         .await??;
-        Ok(PartitionLoadInformation::new(com))
+        Ok(GetPartitionLoadInformationResult::from(&com))
     }
 
     pub async fn get_deployed_replica_detail(

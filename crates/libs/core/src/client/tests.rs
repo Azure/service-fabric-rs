@@ -42,12 +42,9 @@ async fn test_fabric_client() {
         .await
         .unwrap()
         .unwrap();
-        paging_status = list.get_paging_status();
-        let v = list.iter().collect::<Vec<_>>();
-        assert_ne!(v.len(), 0);
-        for n in v {
-            println!("Node: {n:?}")
-        }
+        println!("Nodes: {list:?}");
+        paging_status = list.paging_status;
+        assert_ne!(list.nodes.len(), 0);
     }
     // get more nodes using paging
     {
@@ -60,10 +57,7 @@ async fn test_fabric_client() {
             ..Default::default()
         };
         let list = qc.get_node_list(&desc, timeout, None).await.unwrap();
-        let v = list.iter().collect::<Vec<_>>();
-        for n in v {
-            println!("More Node: {n:?}")
-        }
+        println!("Nodes: {list:?}");
     }
 
     // get node but cancel

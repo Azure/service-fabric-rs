@@ -3,11 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::WString;
-use crate::{
-    iter::{FabricIter, FabricListAccessor},
-    strings::WStringWrap,
-};
+use crate::{WString, types::Uri};
 use bitflags::bitflags;
 use mssf_com::{
     FabricClient::IFabricGetNodeListResult2,
@@ -30,7 +26,7 @@ pub struct PagingStatus {
 impl From<&FABRIC_PAGING_STATUS> for PagingStatus {
     fn from(value: &FABRIC_PAGING_STATUS) -> Self {
         Self {
-            continuation_token: WStringWrap::from(value.ContinuationToken).into(),
+            continuation_token: WString::from(value.ContinuationToken),
         }
     }
 }
@@ -71,41 +67,22 @@ pub struct NodeQueryDescription {
 
 #[derive(Debug)]
 pub struct NodeListResult {
-    com: IFabricGetNodeListResult2,
+    pub paging_status: Option<PagingStatus>,
+    pub nodes: Vec<NodeQueryResultItem>,
 }
 
-impl FabricListAccessor<FABRIC_NODE_QUERY_RESULT_ITEM> for NodeListResult {
-    fn get_count(&self) -> u32 {
-        let list = unsafe { self.com.get_NodeList().as_ref().unwrap() };
-        list.Count
-    }
-
-    fn get_first_item(&self) -> *const FABRIC_NODE_QUERY_RESULT_ITEM {
-        let list = unsafe { self.com.get_NodeList().as_ref().unwrap() };
-        list.Items
-    }
-}
-
-impl From<IFabricGetNodeListResult2> for NodeListResult {
-    fn from(com: IFabricGetNodeListResult2) -> Self {
-        Self { com }
+impl From<&IFabricGetNodeListResult2> for NodeListResult {
+    fn from(com: &IFabricGetNodeListResult2) -> Self {
+        let paging_status = unsafe { com.get_PagingStatus().as_ref() }.map(|s| s.into());
+        let nodes = unsafe { com.get_NodeList().as_ref() }
+            .map(|list| crate::iter::vec_from_raw_com(list.Count as usize, list.Items))
+            .unwrap_or_default();
+        Self {
+            paging_status,
+            nodes,
+        }
     }
 }
-
-impl NodeListResult {
-    pub fn iter(&self) -> NodeListIter<'_> {
-        NodeListIter::new(self, self)
-    }
-
-    pub fn get_paging_status(&self) -> Option<PagingStatus> {
-        // If there is no more entries there is no paging status returned.
-        let raw = unsafe { self.com.get_PagingStatus().as_ref() }?;
-        Some(raw.into())
-    }
-}
-
-type NodeListIter<'a> =
-    FabricIter<'a, FABRIC_NODE_QUERY_RESULT_ITEM, NodeQueryResultItem, NodeListResult>;
 
 #[derive(Debug, Clone)]
 pub struct NodeQueryResultItem {
@@ -119,7 +96,7 @@ pub struct NodeQueryResultItem {
     // pub AggregatedHealthState
     pub is_seed_node: bool,
     pub upgrade_domain: WString,
-    pub fault_domain: WString,
+    pub fault_domain: Uri,
     pub node_instance_id: u64,
 }
 
@@ -138,15 +115,15 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for NodeQueryResultItem {
                 .unwrap()
         };
         NodeQueryResultItem {
-            name: WStringWrap::from(raw.NodeName).into(),
-            ip_address_or_fqdn: WStringWrap::from(raw.IpAddressOrFQDN).into(),
-            node_type: WStringWrap::from(raw.NodeType).into(),
-            code_version: WStringWrap::from(raw.CodeVersion).into(),
-            config_version: WStringWrap::from(raw.ConfigVersion).into(),
+            name: WString::from(raw.NodeName),
+            ip_address_or_fqdn: WString::from(raw.IpAddressOrFQDN),
+            node_type: WString::from(raw.NodeType),
+            code_version: WString::from(raw.CodeVersion),
+            config_version: WString::from(raw.ConfigVersion),
             node_up_time_in_seconds: raw.NodeUpTimeInSeconds,
             is_seed_node: raw.IsSeedNode,
-            upgrade_domain: WStringWrap::from(raw.UpgradeDomain).into(),
-            fault_domain: WStringWrap::from(crate::PCWSTR(raw.FaultDomain.0)).into(),
+            upgrade_domain: WString::from(raw.UpgradeDomain),
+            fault_domain: Uri::from(raw.FaultDomain),
             node_instance_id: raw2.NodeInstanceId,
         }
     }

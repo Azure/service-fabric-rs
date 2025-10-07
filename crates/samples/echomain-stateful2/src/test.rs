@@ -16,8 +16,8 @@ use mssf_core::{
     },
     types::{
         DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
-        DeployedServiceReplicaDetailQueryResultValue, NamedPartitionSchemeDescription,
-        NamedRepartitionDescription, PartitionLoadInformation,
+        DeployedServiceReplicaDetailQueryResultValue, GetPartitionLoadInformationResult,
+        NamedPartitionSchemeDescription, NamedRepartitionDescription,
         PartitionLoadInformationQueryDescription, QueryServiceReplicaStatus, ReplicaRole,
         RestartReplicaDescription, ServiceDescription, ServiceNotificationFilterDescription,
         ServiceNotificationFilterFlags, ServicePartitionAccessStatus, ServicePartitionInformation,
@@ -63,7 +63,7 @@ impl TestClient {
             .await
             .unwrap();
         // there is only one partition
-        let p = list.iter().next().unwrap();
+        let p = list.service_partitions.first().unwrap().clone();
         let stateful = match p {
             ServicePartitionQueryResultItem::Stateful(s) => s,
             _ => panic!("not stateless"),
@@ -79,7 +79,7 @@ impl TestClient {
     async fn get_partition_loads(
         &self,
         partition_id: GUID,
-    ) -> mssf_core::Result<PartitionLoadInformation> {
+    ) -> mssf_core::Result<GetPartitionLoadInformationResult> {
         let qc = self.fc.get_query_manager();
         let desc = PartitionLoadInformationQueryDescription { partition_id };
         let partition_load_info = qc
@@ -107,8 +107,7 @@ impl TestClient {
         let replicas = qc
             .get_replica_list(&desc, self.timeout, None)
             .await?
-            .iter()
-            .collect::<Vec<_>>();
+            .service_replicas;
         if replicas.len() < 3 {
             // replica are not ready.
             return Err(ErrorCode::E_FAIL.into());

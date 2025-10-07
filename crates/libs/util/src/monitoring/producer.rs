@@ -358,8 +358,7 @@ impl HealthDataProducer {
             .inspect_err(|err| {
                 tracing::error!("Failed to get node list: {}", err);
             })?
-            .iter()
-            .collect::<Vec<_>>();
+            .nodes;
         Ok(nodes)
     }
 
@@ -421,8 +420,7 @@ impl HealthDataProducer {
             .inspect_err(|err| {
                 tracing::error!("Failed to get partition list: {}", err);
             })?
-            .iter()
-            .collect::<Vec<_>>();
+            .service_partitions;
         Ok(partitions)
     }
 
@@ -444,8 +442,7 @@ impl HealthDataProducer {
             .inspect_err(|err| {
                 tracing::error!("Failed to get replica list: {}", err);
             })?
-            .iter()
-            .collect::<Vec<_>>();
+            .service_replicas;
         Ok(replicas)
     }
 }

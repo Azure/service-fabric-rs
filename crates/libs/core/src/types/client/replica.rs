@@ -8,7 +8,7 @@ use std::time::SystemTime;
 use crate::{
     GUID, PCWSTR, WString,
     mem::GetRaw,
-    types::{ApplicationHealthPolicy, ServicePartitionAccessStatus},
+    types::{ApplicationHealthPolicy, PagingStatus, ServicePartitionAccessStatus},
 };
 use mssf_com::{
     FabricClient::{IFabricGetDeployedServiceReplicaDetailResult, IFabricGetReplicaListResult2},
@@ -28,11 +28,7 @@ use mssf_com::{
     },
 };
 
-use crate::{
-    iter::{FabricIter, FabricListAccessor},
-    strings::WStringWrap,
-    types::{HealthState, ReplicaRole},
-};
+use crate::types::{HealthState, ReplicaRole};
 
 use super::{QueryReplicatorOperationName, QueryServiceOperationName};
 
@@ -56,35 +52,20 @@ impl From<&ServiceReplicaQueryDescription> for FABRIC_SERVICE_REPLICA_QUERY_DESC
 
 // IFabricGetReplicaListResult2
 pub struct ServiceReplicaList {
-    com: IFabricGetReplicaListResult2,
+    pub service_replicas: Vec<ServiceReplicaQueryResultItem>,
+    pub paging_status: Option<PagingStatus>,
 }
 
-impl ServiceReplicaList {
-    pub fn new(com: IFabricGetReplicaListResult2) -> Self {
-        Self { com }
-    }
-
-    pub fn iter(&self) -> ServiceReplicaListIter<'_> {
-        ServiceReplicaListIter::new(self, self)
-    }
-}
-
-type ServiceReplicaListIter<'a> = FabricIter<
-    'a,
-    FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
-    ServiceReplicaQueryResultItem,
-    ServiceReplicaList,
->;
-
-impl FabricListAccessor<FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceReplicaList {
-    fn get_count(&self) -> u32 {
-        let raw = unsafe { self.com.get_ReplicaList().as_ref() };
-        raw.unwrap().Count
-    }
-
-    fn get_first_item(&self) -> *const FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM {
-        let raw = unsafe { self.com.get_ReplicaList().as_ref() };
-        raw.unwrap().Items
+impl From<&IFabricGetReplicaListResult2> for ServiceReplicaList {
+    fn from(com: &IFabricGetReplicaListResult2) -> Self {
+        let service_replicas = unsafe { com.get_ReplicaList().as_ref() }
+            .map(|list| crate::iter::vec_from_raw_com(list.Count as usize, list.Items))
+            .unwrap_or_default();
+        let paging_status = unsafe { com.get_PagingStatus().as_ref() }.map(|s| s.into());
+        Self {
+            service_replicas,
+            paging_status,
+        }
     }
 }
 
@@ -161,8 +142,8 @@ impl From<&FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM>
             replica_role: (&value.ReplicaRole).into(),
             replica_status: (&value.ReplicaStatus).into(),
             aggregated_health_state: (&value.AggregatedHealthState).into(),
-            replica_address: WStringWrap::from(value.ReplicaAddress).into(),
-            node_name: WStringWrap::from(value.NodeName).into(),
+            replica_address: WString::from(value.ReplicaAddress),
+            node_name: WString::from(value.NodeName),
             last_in_build_duration_in_seconds: value.LastInBuildDurationInSeconds,
         }
     }
@@ -213,8 +194,8 @@ impl From<&FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM>
             instance_id: value.InstanceId,
             replica_status: (&value.ReplicaStatus).into(),
             aggregated_health_state: (&value.AggregatedHealthState).into(),
-            replica_address: WStringWrap::from(value.ReplicaAddress).into(),
-            node_name: WStringWrap::from(value.NodeName).into(),
+            replica_address: WString::from(value.ReplicaAddress),
+            node_name: WString::from(value.NodeName),
             last_in_build_duration_in_seconds: value.LastInBuildDurationInSeconds,
         }
     }

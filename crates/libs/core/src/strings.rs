@@ -3,12 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use std::marker::PhantomData;
-
-use crate::{
-    PCWSTR, WString,
-    iter::{FabricIter, FabricListAccessor},
-};
+use crate::{PCWSTR, WString};
 use mssf_com::FabricCommon::{
     IFabricStringListResult, IFabricStringResult, IFabricStringResult_Impl,
 };
@@ -89,14 +84,6 @@ impl From<WStringWrap> for IFabricStringResult {
     }
 }
 
-// note that wstring must be valid for pcwstr lifetime
-pub fn get_pcwstr_from_opt(opt: &Option<WString>) -> PCWSTR {
-    match opt {
-        Some(x) => PCWSTR(x.as_ptr()),
-        None => PCWSTR::null(),
-    }
-}
-
 // IFabricStringListResult
 
 pub struct WStringList {
@@ -118,35 +105,10 @@ impl From<&IFabricStringListResult> for WStringList {
                 .GetStrings(std::ptr::addr_of_mut!(itemcount))
                 .expect("cannot get strings")
         };
-        let l = FabricStringListAccessor {
-            itemcount,
-            first_str,
-            phantom: PhantomData,
-        };
-        let itr = FabricStringListAccessorIter::new(&l, &l);
-        let data = itr.collect::<Vec<_>>();
+        let data = crate::iter::vec_from_raw_com(itemcount as usize, first_str);
         Self { data }
     }
 }
-
-pub(crate) struct FabricStringListAccessor<'a> {
-    pub(crate) itemcount: u32,
-    pub(crate) first_str: *mut PCWSTR,
-    pub(crate) phantom: PhantomData<&'a IFabricStringListResult>,
-}
-
-impl FabricListAccessor<PCWSTR> for FabricStringListAccessor<'_> {
-    fn get_count(&self) -> u32 {
-        self.itemcount
-    }
-
-    fn get_first_item(&self) -> *const PCWSTR {
-        self.first_str
-    }
-}
-
-pub(crate) type FabricStringListAccessorIter<'a> =
-    FabricIter<'a, PCWSTR, WString, FabricStringListAccessor<'a>>;
 
 #[cfg(test)]
 mod test {

@@ -16,7 +16,7 @@ use mssf_com::{
 };
 use windows_core::WString;
 
-use crate::{strings::FabricStringListAccessorIter, types::Uri};
+use crate::types::Uri;
 
 pub struct NameEnumerationResult {
     com: IFabricNameEnumerationResult,
@@ -39,13 +39,7 @@ impl NameEnumerationResult {
     pub fn get_names(&self) -> crate::Result<Vec<Uri>> {
         let mut count = 0;
         let first_ptr = unsafe { self.com.GetNames(&mut count)? };
-        let l = crate::strings::FabricStringListAccessor {
-            itemcount: count,
-            first_str: first_ptr as *mut _,
-            phantom: std::marker::PhantomData,
-        };
-        let itr = FabricStringListAccessorIter::new(&l, &l);
-        let data = itr.map(Uri::new).collect::<Vec<_>>();
+        let data = crate::iter::vec_from_raw_com(count as usize, first_ptr);
         Ok(data)
     }
 }

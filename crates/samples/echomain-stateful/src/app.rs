@@ -25,7 +25,7 @@ use mssf_com::FabricTypes::{
     FABRIC_REPLICA_SET_QUORUM_MODE, FABRIC_URI,
 };
 use mssf_core::WString;
-use mssf_core::{strings::WStringWrap, sync::wait::AsyncContext};
+use mssf_core::sync::wait::AsyncContext;
 use tokio::sync::oneshot::{self, Sender};
 use tracing::info;
 use windows_core::implement;
@@ -80,7 +80,7 @@ impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory_Impl {
         }
         info!(
             "servicetypename: {}, servicename: {:?}, initdata: {}, partitionid: {:?}, instanceid {}",
-            mssf_core::strings::WStringWrap::from(*servicetypename).into_wstring(),
+            mssf_core::WString::from(*servicetypename),
             servicename,
             init_data,
             partitionid,
@@ -128,7 +128,8 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::EndOpen");
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
         info!("AppFabricReplicator::EndOpen {}", addr);
-        let str_res: IFabricStringResult = WStringWrap::from(WString::from(addr)).into();
+        let str_res: IFabricStringResult =
+            mssf_core::strings::StringResult::new(addr.into()).into();
         Ok(str_res)
     }
 
@@ -430,7 +431,8 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
         info!("AppInstance::EndChangeRole");
         let addr = echo::get_addr(self.port_, self.hostname_.clone());
         info!("AppInstance::EndChangeRole {}", addr);
-        let str_res: IFabricStringResult = WStringWrap::from(WString::from(addr)).into();
+        let str_res: IFabricStringResult =
+            mssf_core::strings::StringResult::new(addr.into()).into();
         Ok(str_res)
     }
 }

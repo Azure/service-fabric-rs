@@ -19,10 +19,10 @@ pub trait StatefulServiceFactory {
     /// Called by Service Fabric to create a stateful service replica for a particular service.
     fn create_replica(
         &self,
-        servicetypename: &crate::WString,
-        servicename: &crate::WString,
+        servicetypename: crate::WString,
+        servicename: crate::types::Uri,
         initializationdata: &[u8],
-        partitionid: &crate::GUID,
+        partitionid: crate::GUID,
         replicaid: i64,
     ) -> crate::Result<impl StatefulServiceReplica>;
 }

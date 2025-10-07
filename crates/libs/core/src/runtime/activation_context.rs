@@ -13,8 +13,7 @@ use mssf_com::{
 
 use crate::{
     Error, PCWSTR, WString,
-    strings::WStringWrap,
-    types::{EndpointResourceDescription, HealthInformation, HealthReportSendOption},
+    types::{EndpointResourceDescription, HealthInformation, HealthReportSendOption, Uri},
 };
 
 use super::{
@@ -45,7 +44,7 @@ pub struct CodePackageInfo {
     pub work_directory: WString,
     pub log_directory: WString,
     pub temp_directory: WString,
-    pub application_name: WString,
+    pub application_name: Uri,
     pub application_type_name: WString,
     pub service_listen_address: WString,
     pub service_publish_address: WString,
@@ -94,32 +93,22 @@ impl CodePackageActivationContext {
 
     pub fn get_code_package_info(&self) -> CodePackageInfo {
         CodePackageInfo {
-            context_id: WStringWrap::from(unsafe { self.com_impl.get_ContextId() }).into(),
-            code_package_name: WStringWrap::from(unsafe { self.com_impl.get_CodePackageName() })
-                .into(),
-            code_package_version: WStringWrap::from(unsafe {
-                self.com_impl.get_CodePackageVersion()
-            })
-            .into(),
-            work_directory: WStringWrap::from(unsafe { self.com_impl.get_WorkDirectory() }).into(),
-            log_directory: WStringWrap::from(unsafe { self.com_impl.get_LogDirectory() }).into(),
-            temp_directory: WStringWrap::from(unsafe { self.com_impl.get_TempDirectory() }).into(),
-            application_name: WStringWrap::from(PCWSTR(unsafe {
-                self.com_impl.get_ApplicationName().0
-            }))
-            .into(),
-            application_type_name: WStringWrap::from(unsafe {
+            context_id: WString::from(unsafe { self.com_impl.get_ContextId() }),
+            code_package_name: WString::from(unsafe { self.com_impl.get_CodePackageName() }),
+            code_package_version: WString::from(unsafe { self.com_impl.get_CodePackageVersion() }),
+            work_directory: WString::from(unsafe { self.com_impl.get_WorkDirectory() }),
+            log_directory: WString::from(unsafe { self.com_impl.get_LogDirectory() }),
+            temp_directory: WString::from(unsafe { self.com_impl.get_TempDirectory() }),
+            application_name: Uri::from(unsafe { self.com_impl.get_ApplicationName() }),
+            application_type_name: WString::from(unsafe {
                 self.com_impl.get_ApplicationTypeName()
-            })
-            .into(),
-            service_listen_address: WStringWrap::from(unsafe {
+            }),
+            service_listen_address: WString::from(unsafe {
                 self.com_impl.get_ServiceListenAddress()
-            })
-            .into(),
-            service_publish_address: WStringWrap::from(unsafe {
+            }),
+            service_publish_address: WString::from(unsafe {
                 self.com_impl.get_ServicePublishAddress()
-            })
-            .into(),
+            }),
         }
     }
 

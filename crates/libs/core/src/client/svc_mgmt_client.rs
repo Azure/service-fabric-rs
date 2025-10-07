@@ -27,7 +27,6 @@ use crate::sync::{FabricReceiver, fabric_begin_end_proxy};
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
-    strings::WStringWrap,
     types::{
         RemoveReplicaDescription, RestartReplicaDescription, ServiceNotificationFilterDescription,
     },
@@ -412,7 +411,7 @@ impl PartitionKeyType {
             ServicePartitionKind::Named => {
                 let x = data as *mut u16;
                 assert!(!x.is_null());
-                let s = WStringWrap::from(PCWSTR::from_raw(x)).into();
+                let s = WString::from(PCWSTR::from_raw(x));
                 PartitionKeyType::String(s)
             }
         }
@@ -624,7 +623,7 @@ impl From<&FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpoint {
     fn from(value: &FABRIC_RESOLVED_SERVICE_ENDPOINT) -> Self {
         let raw = value;
         Self {
-            address: WStringWrap::from(raw.Address).into(),
+            address: WString::from(raw.Address),
             role: raw.Role.into(),
         }
     }

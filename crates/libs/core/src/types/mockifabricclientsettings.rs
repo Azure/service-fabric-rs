@@ -26,9 +26,7 @@ pub(crate) mod test_constants {
 }
 
 pub(crate) mod test_utilities {
-    use windows_core::PCWSTR;
-
-    use crate::strings::WStringWrap;
+    use windows_core::{PCWSTR, WString};
 
     /// # SAFETY
     /// * This is test code, intended to be used with Miri to validate that all reads SF might do of a pointer / length pair are defined behavior
@@ -59,9 +57,7 @@ pub(crate) mod test_utilities {
                 );
                 // SAFETY: caller promises it's within lifetime. non-null and alignment is checked above
                 let actual_value = unsafe { actual_value_ptr.as_ref() }.unwrap();
-                let actual_val_str = WStringWrap::from(*actual_value)
-                    .into_wstring()
-                    .to_string_lossy();
+                let actual_val_str = WString::from(*actual_value).to_string_lossy();
                 assert_eq!(
                     *expected_value,
                     actual_val_str.as_str(),

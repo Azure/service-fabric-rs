@@ -10,8 +10,6 @@ use std::time::SystemTime;
 use crate::WString;
 use mssf_com::FabricTypes::FABRIC_LOAD_METRIC_REPORT;
 
-use crate::strings::WStringWrap;
-
 /// Wrapper for FABRIC_LOAD_METRIC_REPORT
 #[derive(Debug, Clone)]
 pub struct LoadMetricReport {
@@ -23,7 +21,7 @@ pub struct LoadMetricReport {
 impl From<&FABRIC_LOAD_METRIC_REPORT> for LoadMetricReport {
     fn from(value: &FABRIC_LOAD_METRIC_REPORT) -> Self {
         Self {
-            name: WStringWrap::from(value.Name).into(),
+            name: WString::from(value.Name),
             value: value.Value,
             last_reported_utc: SystemTime::UNIX_EPOCH, // TODO: convert Win32 FILETIME to SystemTime in Unix or Win32 depending on the platform
         }

@@ -13,8 +13,7 @@ use mssf_com::{
 
 use crate::{
     iter::{FabricIter, FabricListAccessor},
-    strings::WStringWrap,
-    types::ServicePartitionInformation,
+    types::{ServicePartitionInformation, Uri},
 };
 
 use super::svc_mgmt_client::ResolvedServiceEndpoint;
@@ -30,7 +29,7 @@ pub trait ServiceNotificationEventHandler: 'static {
 /// If endpoint list is empty, the service is removed.
 #[derive(Debug, Clone)]
 pub struct ServiceNotification {
-    pub service_name: crate::WString,
+    pub service_name: Uri,
     pub partition_info: Option<ServicePartitionInformation>,
     pub partition_id: crate::GUID,
     pub endpoints: ServiceEndpointList,
@@ -42,7 +41,7 @@ impl From<IFabricServiceNotification> for ServiceNotification {
         // SF guarantees this is not null.
         let raw = unsafe { com.get_Notification().as_ref().unwrap() };
         Self {
-            service_name: WStringWrap::from(crate::PCWSTR(raw.ServiceName.0)).into(),
+            service_name: Uri::from(raw.ServiceName),
             partition_info: unsafe {
                 // It is possible for partition info to be null,
                 // that is why we make the field as an option.

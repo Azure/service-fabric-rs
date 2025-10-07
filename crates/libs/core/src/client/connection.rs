@@ -8,7 +8,7 @@ use mssf_com::FabricClient::{
     IFabricGatewayInformationResult,
 };
 
-use crate::{strings::WStringWrap, types::NodeId};
+use crate::{WString, types::NodeId};
 
 /// Internal trait that rust code implements that can be bridged into IFabricClientConnectionEventHandler.
 /// Not exposed to user.
@@ -31,10 +31,10 @@ impl From<&IFabricGatewayInformationResult> for GatewayInformationResult {
     fn from(com: &IFabricGatewayInformationResult) -> Self {
         let info = unsafe { com.get_GatewayInformation().as_ref().unwrap() };
         Self {
-            node_address: WStringWrap::from(info.NodeAddress).into(),
+            node_address: WString::from(info.NodeAddress),
             node_id: info.NodeId.into(),
             node_instance_id: info.NodeInstanceId,
-            node_name: WStringWrap::from(info.NodeName).into(),
+            node_name: WString::from(info.NodeName),
         }
     }
 }

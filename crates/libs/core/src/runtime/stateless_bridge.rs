@@ -8,7 +8,9 @@
 
 use std::sync::Arc;
 
-use crate::{runtime::StatelessServicePartition, strings::WStringWrap, sync::BridgeContext};
+use crate::{
+    runtime::StatelessServicePartition, strings::StringResult, sync::BridgeContext, types::Uri,
+};
 use mssf_com::{
     FabricCommon::IFabricStringResult,
     FabricRuntime::{
@@ -18,7 +20,7 @@ use mssf_com::{
     },
     FabricTypes::FABRIC_URI,
 };
-use windows_core::implement;
+use windows_core::{WString, implement};
 
 use super::{
     executor::Executor,
@@ -64,8 +66,8 @@ where
         partitionid: &crate::GUID,
         instanceid: i64,
     ) -> crate::WinResult<IFabricStatelessServiceInstance> {
-        let h_servicename = WStringWrap::from(crate::PCWSTR(servicename.0)).into();
-        let h_servicetypename = WStringWrap::from(*servicetypename).into();
+        let h_servicename = Uri::from(servicename);
+        let h_servicetypename = WString::from(*servicetypename);
         let data = unsafe {
             if !initializationdata.is_null() {
                 std::slice::from_raw_parts(initializationdata, initializationdatalength as usize)
@@ -75,10 +77,10 @@ where
         };
 
         let instance = self.inner.create_instance(
-            &h_servicetypename,
-            &h_servicename,
+            h_servicetypename,
+            h_servicename,
             data,
-            partitionid,
+            *partitionid,
             instanceid,
         )?;
         let rt = self.rt.clone();
@@ -138,7 +140,7 @@ where
             inner
                 .open(&partition_bridge, token)
                 .await
-                .map(|s| IFabricStringResult::from(WStringWrap::from(s)))
+                .map(|s| IFabricStringResult::from(StringResult::new(s)))
                 .map_err(crate::WinError::from)
         })
     }

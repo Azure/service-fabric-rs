@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{PCWSTR, WString};
+use crate::WString;
 use mssf_com::FabricCommon::{
     IFabricStringListResult, IFabricStringResult, IFabricStringResult_Impl,
 };
@@ -23,6 +23,11 @@ impl StringResult {
     pub fn new(data: WString) -> StringResult {
         StringResult { data }
     }
+
+    /// Get the inner WString
+    pub fn into_inner(self) -> WString {
+        self.data
+    }
 }
 
 impl IFabricStringResult_Impl for StringResult_Impl {
@@ -32,60 +37,16 @@ impl IFabricStringResult_Impl for StringResult_Impl {
     }
 }
 
-// TODO: deprecate
-// If nullptr returns empty string.
-// requires the PCWSTR points to a valid buffer with null terminatior
-fn safe_pwstr_to_wstring(raw: PCWSTR) -> WString {
-    WString::from(&raw)
-}
-
-// TODO: deprecate
-// Convert helper for WString and PCWSTR and IFabricStringResult
-pub struct WStringWrap {
-    h: WString,
-}
-
-impl WStringWrap {
-    pub fn into_wstring(self) -> WString {
-        self.h
-    }
-}
-
-impl From<WString> for WStringWrap {
-    fn from(value: WString) -> Self {
-        Self { h: value }
-    }
-}
-
-impl From<PCWSTR> for WStringWrap {
-    fn from(value: PCWSTR) -> Self {
-        let h = safe_pwstr_to_wstring(value);
-        Self { h }
-    }
-}
-
-impl From<WStringWrap> for WString {
-    fn from(val: WStringWrap) -> Self {
-        val.h
-    }
-}
-
-impl From<&IFabricStringResult> for WStringWrap {
+impl From<&IFabricStringResult> for StringResult {
     fn from(value: &IFabricStringResult) -> Self {
         let content = unsafe { value.get_String() };
-        let h = safe_pwstr_to_wstring(content);
-        Self { h }
-    }
-}
-
-impl From<WStringWrap> for IFabricStringResult {
-    fn from(value: WStringWrap) -> Self {
-        StringResult::new(value.h).into()
+        Self {
+            data: WString::from(content),
+        }
     }
 }
 
 // IFabricStringListResult
-
 pub struct WStringList {
     data: Vec<WString>,
 }
@@ -112,7 +73,6 @@ impl From<&IFabricStringListResult> for WStringList {
 
 #[cfg(test)]
 mod test {
-    use crate::strings::WStringWrap;
 
     use super::StringResult;
     use crate::WString;
@@ -135,7 +95,7 @@ mod test {
         assert_eq!(slice.len(), 12);
 
         // check StringResult conversion is right
-        let haddr2: WString = WStringWrap::from(&com_addr).into();
+        let haddr2: WString = StringResult::from(&com_addr).into_inner();
         assert_eq!(haddr, haddr2);
     }
 }

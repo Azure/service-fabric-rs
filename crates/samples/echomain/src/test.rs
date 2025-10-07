@@ -60,7 +60,7 @@ impl EchoTestClient {
             .await
             .unwrap();
         // there is only one partition
-        let p = list.iter().next().unwrap();
+        let p = list.service_partitions.into_iter().next().unwrap();
         let stateless = match p {
             ServicePartitionQueryResultItem::Stateless(s) => s,
             _ => panic!("not stateless"),
@@ -83,7 +83,7 @@ impl EchoTestClient {
             replica_id_or_instance_id_filter: None,
         };
         let replicas = qc.get_replica_list(&desc, self.timeout, None).await?;
-        let replica_op = replicas.iter().next(); // only one replica
+        let replica_op = replicas.service_replicas.into_iter().next(); // only one replica
         match replica_op {
             Some(replica) => Ok(match replica {
                 ServiceReplicaQueryResultItem::Stateless(s) => s,

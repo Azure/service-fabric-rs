@@ -26,7 +26,8 @@ async fn restart_primary(uri: &Uri, fc: &FabricClient) {
 
     let ptt = q.get_partition_list(&desc, sm.timeout, None).await.unwrap();
     let partitions = ptt
-        .iter()
+        .service_partitions
+        .into_iter()
         .filter_map(|p| match p {
             ServicePartitionQueryResultItem::Stateful(s) => Some(s),
             _ => None,
@@ -45,7 +46,8 @@ async fn restart_primary(uri: &Uri, fc: &FabricClient) {
         .get_replica_list(&desc, sm.timeout, None)
         .await
         .unwrap()
-        .iter()
+        .service_replicas
+        .into_iter()
         .filter_map(|r| match r {
             mssf_core::types::ServiceReplicaQueryResultItem::Stateful(s) => Some(s),
             _ => None,

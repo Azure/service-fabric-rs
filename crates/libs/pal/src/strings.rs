@@ -206,6 +206,16 @@ impl From<PCWSTR> for WString {
     }
 }
 
+/// FFI conversion.
+impl From<Option<&WString>> for PCWSTR {
+    fn from(value: Option<&WString>) -> Self {
+        match value {
+            Some(s) => s.as_pcwstr(),
+            None => PCWSTR::null(),
+        }
+    }
+}
+
 impl core::fmt::Display for WString {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         // convert u16 to char gracefully and write to formatter.

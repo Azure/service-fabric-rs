@@ -8,14 +8,9 @@
 use std::time::SystemTime;
 
 use crate::WString;
-use mssf_com::{
-    FabricClient::IFabricGetPartitionLoadInformationResult, FabricTypes::FABRIC_LOAD_METRIC_REPORT,
-};
+use mssf_com::FabricTypes::FABRIC_LOAD_METRIC_REPORT;
 
-use crate::{
-    iter::{FabricIter, FabricListAccessor},
-    strings::WStringWrap,
-};
+use crate::strings::WStringWrap;
 
 /// Wrapper for FABRIC_LOAD_METRIC_REPORT
 #[derive(Debug, Clone)]
@@ -34,94 +29,3 @@ impl From<&FABRIC_LOAD_METRIC_REPORT> for LoadMetricReport {
         }
     }
 }
-
-/// Wrapper of the load metric report list from the primary replica of the partition
-pub struct PrimaryLoadMetricReportList {
-    com: IFabricGetPartitionLoadInformationResult,
-}
-
-impl FabricListAccessor<FABRIC_LOAD_METRIC_REPORT> for PrimaryLoadMetricReportList {
-    fn get_count(&self) -> u32 {
-        unsafe {
-            self.com
-                .get_PartitionLoadInformation()
-                .as_ref()
-                .unwrap()
-                .PrimaryLoadMetricReports
-                .as_ref()
-                .unwrap()
-                .Count
-        }
-    }
-
-    fn get_first_item(&self) -> *const FABRIC_LOAD_METRIC_REPORT {
-        unsafe {
-            self.com
-                .get_PartitionLoadInformation()
-                .as_ref()
-                .unwrap()
-                .PrimaryLoadMetricReports
-                .as_ref()
-                .unwrap()
-                .Items
-        }
-    }
-}
-
-impl PrimaryLoadMetricReportList {
-    pub fn new(com: IFabricGetPartitionLoadInformationResult) -> Self {
-        Self { com }
-    }
-
-    pub fn iter(&self) -> PrimaryLoadMetricReportListIter<'_> {
-        PrimaryLoadMetricReportListIter::new(self, self)
-    }
-}
-
-/// Wrapper of the load metric report list from the secondary replicas of the partition
-pub struct SecondaryLoadMetricReportList {
-    com: IFabricGetPartitionLoadInformationResult,
-}
-
-impl FabricListAccessor<FABRIC_LOAD_METRIC_REPORT> for SecondaryLoadMetricReportList {
-    fn get_count(&self) -> u32 {
-        unsafe {
-            self.com
-                .get_PartitionLoadInformation()
-                .as_ref()
-                .unwrap()
-                .SecondaryLoadMetricReports
-                .as_ref()
-                .unwrap()
-                .Count
-        }
-    }
-
-    fn get_first_item(&self) -> *const FABRIC_LOAD_METRIC_REPORT {
-        unsafe {
-            self.com
-                .get_PartitionLoadInformation()
-                .as_ref()
-                .unwrap()
-                .SecondaryLoadMetricReports
-                .as_ref()
-                .unwrap()
-                .Items
-        }
-    }
-}
-
-impl SecondaryLoadMetricReportList {
-    pub fn new(com: IFabricGetPartitionLoadInformationResult) -> Self {
-        Self { com }
-    }
-
-    pub fn iter(&self) -> SecondaryLoadMetricReportListIter<'_> {
-        SecondaryLoadMetricReportListIter::new(self, self)
-    }
-}
-
-type PrimaryLoadMetricReportListIter<'a> =
-    FabricIter<'a, FABRIC_LOAD_METRIC_REPORT, LoadMetricReport, PrimaryLoadMetricReportList>;
-type SecondaryLoadMetricReportListIter<'a> =
-    FabricIter<'a, FABRIC_LOAD_METRIC_REPORT, LoadMetricReport, SecondaryLoadMetricReportList>;

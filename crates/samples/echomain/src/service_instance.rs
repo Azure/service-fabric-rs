@@ -41,7 +41,7 @@ impl StatelessServiceInstance for ServiceInstance {
     #[tracing::instrument(skip(self, partition))]
     async fn open(
         &self,
-        partition: &StatelessServicePartition,
+        partition: StatelessServicePartition,
         _: BoxedCancelToken,
     ) -> mssf_core::Result<WString> {
         info!("open");
@@ -62,7 +62,7 @@ impl StatelessServiceInstance for ServiceInstance {
         self.task_.lock().await.set(Some(t));
         self.tx_.lock().await.set(Some(tx));
         // send health report
-        send_instance_health_report(partition);
+        send_instance_health_report(&partition);
         Ok(WString::from(self.ctx.get_addr()))
     }
 

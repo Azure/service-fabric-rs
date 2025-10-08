@@ -35,7 +35,7 @@ pub trait LocalStatelessServiceInstance: Send + Sync + 'static {
     /// clients that resolve the service via resolve_service_partition(uri).
     async fn open(
         &self,
-        partition: &StatelessServicePartition,
+        partition: StatelessServicePartition,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<WString>;
 

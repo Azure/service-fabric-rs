@@ -196,7 +196,7 @@ where
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner
-                .change_role(&epoch2, &role2, token)
+                .change_role(epoch2, role2, token)
                 .await
                 .map_err(crate::WinError::from)
         })
@@ -227,7 +227,7 @@ where
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner
-                .update_epoch(&epoch2, token)
+                .update_epoch(epoch2, token)
                 .await
                 .map_err(crate::WinError::from)
         })
@@ -474,7 +474,7 @@ where
         let cc = ReplicaSetConfig::from(unsafe { currentconfiguration.as_ref().unwrap() });
         let pc = ReplicaSetConfig::from(unsafe { previousconfiguration.as_ref().unwrap() });
         self.inner
-            .update_catch_up_replica_set_configuration(&cc, &pc)
+            .update_catch_up_replica_set_configuration(cc, pc)
             .map_err(crate::WinError::from)
     }
 
@@ -520,7 +520,7 @@ where
     ) -> crate::WinResult<()> {
         let c = ReplicaSetConfig::from(unsafe { currentconfiguration.as_ref() }.unwrap());
         self.inner
-            .update_current_replica_set_configuration(&c)
+            .update_current_replica_set_configuration(c)
             .map_err(crate::WinError::from)
     }
 
@@ -544,7 +544,7 @@ where
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner
-                .build_replica(&r, token)
+                .build_replica(r, token)
                 .await
                 .map_err(crate::WinError::from)
         })
@@ -634,7 +634,7 @@ where
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner
-                .open(openmode2, &partition, token)
+                .open(openmode2, partition, token)
                 .await
                 .map(|s| {
                     let bridge: IFabricPrimaryReplicator =

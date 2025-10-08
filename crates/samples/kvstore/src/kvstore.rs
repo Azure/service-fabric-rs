@@ -182,7 +182,7 @@ impl StatefulServiceReplica for Replica {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: &StatefulServicePartition,
+        partition: StatefulServicePartition,
         cancellation_token: BoxedCancelToken,
     ) -> mssf_core::Result<impl PrimaryReplicator> {
         // should be primary replicator

@@ -76,15 +76,15 @@ impl Replicator for EmptyReplicator {
     #[tracing::instrument(fields(read_status = ?self.read_status(), write_status = ?self.write_status()), err, ret)]
     async fn change_role(
         &self,
-        epoch: &Epoch,
-        role: &ReplicaRole,
+        epoch: Epoch,
+        role: ReplicaRole,
         _: BoxedCancelToken,
     ) -> mssf_core::Result<()> {
         Ok(())
     }
 
     #[tracing::instrument(fields(read_status = ?self.read_status(), write_status = ?self.write_status()), err, ret)]
-    async fn update_epoch(&self, epoch: &Epoch, _: BoxedCancelToken) -> mssf_core::Result<()> {
+    async fn update_epoch(&self, epoch: Epoch, _: BoxedCancelToken) -> mssf_core::Result<()> {
         Ok(())
     }
 
@@ -113,8 +113,8 @@ impl PrimaryReplicator for EmptyReplicator {
     #[tracing::instrument(err, ret)]
     fn update_catch_up_replica_set_configuration(
         &self,
-        currentconfiguration: &ReplicaSetConfig,
-        previousconfiguration: &ReplicaSetConfig,
+        currentconfiguration: ReplicaSetConfig,
+        previousconfiguration: ReplicaSetConfig,
     ) -> mssf_core::Result<()> {
         Ok(())
     }
@@ -151,7 +151,7 @@ impl PrimaryReplicator for EmptyReplicator {
     #[tracing::instrument(err, ret)]
     fn update_current_replica_set_configuration(
         &self,
-        currentconfiguration: &ReplicaSetConfig,
+        currentconfiguration: ReplicaSetConfig,
     ) -> mssf_core::Result<()> {
         Ok(())
     }
@@ -159,7 +159,7 @@ impl PrimaryReplicator for EmptyReplicator {
     #[tracing::instrument(err, ret)]
     async fn build_replica(
         &self,
-        replica: &ReplicaInformation,
+        replica: ReplicaInformation,
         _: BoxedCancelToken,
     ) -> mssf_core::Result<()> {
         Ok(())

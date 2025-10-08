@@ -42,7 +42,7 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: &StatefulServicePartition,
+        partition: StatefulServicePartition,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<impl PrimaryReplicator>;
 
@@ -85,8 +85,8 @@ pub trait LocalReplicator: Send + Sync + 'static {
     /// Replicator change_role is called before Replica change_role.
     async fn change_role(
         &self,
-        epoch: &Epoch,
-        role: &ReplicaRole,
+        epoch: Epoch,
+        role: ReplicaRole,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()>;
 
@@ -100,7 +100,7 @@ pub trait LocalReplicator: Send + Sync + 'static {
     /// Called only on active/idle secondary replicas. Primary replica gets new epoch via change_role call.
     async fn update_epoch(
         &self,
-        epoch: &Epoch,
+        epoch: Epoch,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()>;
 
@@ -167,8 +167,8 @@ pub trait LocalPrimaryReplicator: Replicator {
     /// must_catchup -> Set to true only for one replica in the current configuration.
     fn update_catch_up_replica_set_configuration(
         &self,
-        currentconfiguration: &ReplicaSetConfig,
-        previousconfiguration: &ReplicaSetConfig,
+        currentconfiguration: ReplicaSetConfig,
+        previousconfiguration: ReplicaSetConfig,
     ) -> crate::Result<()>;
 
     /// Informs the replicator about the current replica set configuration, and there
@@ -177,7 +177,7 @@ pub trait LocalPrimaryReplicator: Replicator {
     /// Replicas here are not marked as must_catchup.
     fn update_current_replica_set_configuration(
         &self,
-        currentconfiguration: &ReplicaSetConfig,
+        currentconfiguration: ReplicaSetConfig,
     ) -> crate::Result<()>;
 
     /// Called on primary to wait for replicas to catch up, before
@@ -232,7 +232,7 @@ pub trait LocalPrimaryReplicator: Replicator {
     /// by calling update_x_configuration().
     async fn build_replica(
         &self,
-        replica: &ReplicaInformation,
+        replica: ReplicaInformation,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()>;
 

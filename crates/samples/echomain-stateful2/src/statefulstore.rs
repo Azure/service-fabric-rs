@@ -137,7 +137,7 @@ impl StatefulServiceReplica for Replica {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: &StatefulServicePartition,
+        partition: StatefulServicePartition,
         _: BoxedCancelToken,
     ) -> mssf_core::Result<impl PrimaryReplicator> {
         self.ctx.init(partition.clone());
@@ -145,11 +145,11 @@ impl StatefulServiceReplica for Replica {
             "Replica::open {openmode:?}, {:?}",
             self.ctx.get_trace_read_write_status()
         );
-        self.svc.start_loop_in_background(partition);
+        self.svc.start_loop_in_background(&partition);
         // Use empty replicator
         Ok(EmptyReplicator::new(
             WString::from("Stateful2"),
-            Some(partition.clone()),
+            Some(partition),
         ))
     }
     async fn change_role(

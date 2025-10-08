@@ -44,7 +44,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: &StatefulServicePartition,
+        partition: StatefulServicePartition,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<impl PrimaryReplicator> {
         let com1 = &self.com_impl;
@@ -166,14 +166,17 @@ impl Replicator for ReplicatorProxy {
     )]
     async fn change_role(
         &self,
-        epoch: &Epoch,
-        role: &ReplicaRole,
+        epoch: Epoch,
+        role: ReplicaRole,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
+        let fabric_epoch: mssf_com::FabricTypes::FABRIC_EPOCH = (&epoch).into();
         let rx = fabric_begin_end_proxy(
-            move |callback| unsafe { com1.BeginChangeRole(&epoch.into(), role.into(), callback) },
+            move |callback| unsafe {
+                com1.BeginChangeRole(&fabric_epoch, (&role).into(), callback)
+            },
             move |ctx| unsafe { com2.EndChangeRole(ctx) },
             Some(cancellation_token),
         );
@@ -185,13 +188,14 @@ impl Replicator for ReplicatorProxy {
     )]
     async fn update_epoch(
         &self,
-        epoch: &Epoch,
+        epoch: Epoch,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
+        let fabric_epoch: mssf_com::FabricTypes::FABRIC_EPOCH = (&epoch).into();
         let rx = fabric_begin_end_proxy(
-            move |callback| unsafe { com1.BeginUpdateEpoch(&epoch.into(), callback) },
+            move |callback| unsafe { com1.BeginUpdateEpoch(&fabric_epoch, callback) },
             move |ctx| unsafe { com2.EndUpdateEpoch(ctx) },
             Some(cancellation_token),
         );
@@ -245,8 +249,8 @@ impl Replicator for PrimaryReplicatorProxy {
     }
     async fn change_role(
         &self,
-        epoch: &Epoch,
-        role: &ReplicaRole,
+        epoch: Epoch,
+        role: ReplicaRole,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         self.parent
@@ -255,7 +259,7 @@ impl Replicator for PrimaryReplicatorProxy {
     }
     async fn update_epoch(
         &self,
-        epoch: &Epoch,
+        epoch: Epoch,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         self.parent.update_epoch(epoch, cancellation_token).await
@@ -292,8 +296,8 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     )]
     fn update_catch_up_replica_set_configuration(
         &self,
-        currentconfiguration: &ReplicaSetConfig,
-        previousconfiguration: &ReplicaSetConfig,
+        currentconfiguration: ReplicaSetConfig,
+        previousconfiguration: ReplicaSetConfig,
     ) -> crate::Result<()> {
         let cc_view = currentconfiguration.get_view();
         let pc_view = previousconfiguration.get_view();
@@ -327,7 +331,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     )]
     fn update_current_replica_set_configuration(
         &self,
-        currentconfiguration: &ReplicaSetConfig,
+        currentconfiguration: ReplicaSetConfig,
     ) -> crate::Result<()> {
         unsafe {
             self.com_impl
@@ -341,7 +345,7 @@ impl PrimaryReplicator for PrimaryReplicatorProxy {
     )]
     async fn build_replica(
         &self,
-        replica: &ReplicaInformation,
+        replica: ReplicaInformation,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<()> {
         let com1 = &self.com_impl;

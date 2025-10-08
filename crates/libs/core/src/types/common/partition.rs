@@ -24,8 +24,6 @@ use mssf_com::FabricTypes::{
 };
 use windows_core::PCWSTR;
 
-use crate::strings::WStringWrap;
-
 // FABRIC_SERVICE_PARTITION_INFORMATION
 #[derive(Debug, Clone)]
 pub enum ServicePartitionInformation {
@@ -73,7 +71,7 @@ impl From<&FABRIC_NAMED_PARTITION_INFORMATION> for NamedPartitionInfomation {
     fn from(value: &FABRIC_NAMED_PARTITION_INFORMATION) -> Self {
         Self {
             id: value.Id,
-            name: WStringWrap::from(value.Name).into(),
+            name: WString::from(value.Name),
         }
     }
 }

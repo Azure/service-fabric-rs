@@ -50,10 +50,10 @@ fn get_addr(port: u32, hostname: WString) -> String {
 impl StatefulServiceFactory for Factory {
     fn create_replica(
         &self,
-        servicetypename: &WString,
-        servicename: &WString,
+        servicetypename: WString,
+        servicename: mssf_core::types::Uri,
         initializationdata: &[u8],
-        partitionid: &GUID,
+        partitionid: GUID,
         replicaid: i64,
     ) -> Result<impl StatefulServiceReplica, Error> {
         info!(
@@ -76,7 +76,7 @@ impl StatefulServiceFactory for Factory {
         let handler: IFabricStoreEventHandler = DummyStoreEventHandler {}.into();
         let kv = create_com_key_value_store_replica(
             &WString::from("mystorename"),
-            *partitionid,
+            partitionid,
             replicaid,
             &settings,
             LocalStoreKind::Ese,

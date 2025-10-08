@@ -8,7 +8,7 @@
 
 use std::ffi::c_void;
 
-use crate::{Interface, WString, runtime::executor::BoxedCancelToken};
+use crate::{Interface, WString, runtime::executor::BoxedCancelToken, strings::StringResult};
 use mssf_com::FabricRuntime::{
     IFabricPrimaryReplicator, IFabricReplicator, IFabricReplicatorCatchupSpecificQuorum,
     IFabricStatefulServicePartition3, IFabricStatefulServiceReplica,
@@ -16,7 +16,6 @@ use mssf_com::FabricRuntime::{
 
 use crate::{
     error::ErrorCode,
-    strings::WStringWrap,
     sync::fabric_begin_end_proxy,
     types::{
         FaultType, HealthInformation, LoadMetric, LoadMetricListRef, MoveCost, ReplicaRole,
@@ -94,7 +93,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
             Some(cancellation_token),
         );
         let addr = rx.await??;
-        Ok(WStringWrap::from(&addr).into())
+        Ok(StringResult::from(&addr).into_inner())
     }
 
     #[cfg_attr(
@@ -145,7 +144,7 @@ impl Replicator for ReplicatorProxy {
             Some(cancellation_token),
         );
         let addr = rx.await??;
-        Ok(WStringWrap::from(&addr).into())
+        Ok(StringResult::from(&addr).into_inner())
     }
     #[cfg_attr(
         feature = "tracing",

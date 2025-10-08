@@ -1,7 +1,7 @@
 use crate::PCWSTR;
 use mssf_com::FabricTypes::{FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT_SEND_OPTIONS};
 
-use crate::{WString, strings::WStringWrap, types::HealthState};
+use crate::{WString, types::HealthState};
 
 pub type SequenceNumber = i64;
 
@@ -40,11 +40,11 @@ pub struct HealthInformation {
 impl From<&FABRIC_HEALTH_INFORMATION> for HealthInformation {
     fn from(value: &FABRIC_HEALTH_INFORMATION) -> Self {
         Self {
-            source_id: WStringWrap::from(value.SourceId).into(),
-            property: WStringWrap::from(value.Property).into(),
+            source_id: WString::from(value.SourceId),
+            property: WString::from(value.Property),
             time_to_live_seconds: value.TimeToLiveSeconds,
             state: HealthState::from(&value.State),
-            description: WStringWrap::from(value.Description).into(),
+            description: WString::from(value.Description),
             sequence_number: value.SequenceNumber,
             remove_when_expired: value.RemoveWhenExpired,
         }

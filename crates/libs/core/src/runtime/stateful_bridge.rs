@@ -10,7 +10,9 @@
 
 use std::sync::Arc;
 
-use crate::{Interface, runtime::stateful_proxy::StatefulServicePartition};
+use crate::{
+    Interface, runtime::stateful_proxy::StatefulServicePartition, strings::StringResult, types::Uri,
+};
 use windows_core::implement;
 
 use mssf_com::{
@@ -30,7 +32,7 @@ use mssf_com::{
 };
 
 use crate::{
-    strings::WStringWrap,
+    WString,
     sync::BridgeContext,
     types::{Epoch, OpenMode, ReplicaInformation, ReplicaRole, ReplicaSetConfig},
 };
@@ -82,9 +84,8 @@ where
         partitionid: &crate::GUID,
         replicaid: i64,
     ) -> crate::WinResult<IFabricStatefulServiceReplica> {
-        let p_servicename = crate::PCWSTR::from_raw(servicename.0);
-        let h_servicename = WStringWrap::from(p_servicename).into();
-        let h_servicetypename = WStringWrap::from(*servicetypename).into();
+        let h_servicename = Uri::from(servicename);
+        let h_servicetypename = WString::from(*servicetypename);
         let data = unsafe {
             if !initializationdata.is_null() {
                 std::slice::from_raw_parts(initializationdata, initializationdatalength as usize)
@@ -94,10 +95,10 @@ where
         };
 
         let replica = self.inner.create_replica(
-            &h_servicetypename,
-            &h_servicename,
+            h_servicetypename,
+            h_servicename,
             data,
-            partitionid,
+            *partitionid,
             replicaid,
         )?;
         let rt = self.rt.clone();
@@ -161,7 +162,7 @@ where
             inner
                 .open(token)
                 .await
-                .map(|s| IFabricStringResult::from(WStringWrap::from(s)))
+                .map(|s| IFabricStringResult::from(StringResult::new(s)))
                 .map_err(crate::WinError::from)
         })
     }
@@ -671,7 +672,7 @@ where
             inner
                 .change_role(newrole2, token)
                 .await
-                .map(|s| IFabricStringResult::from(WStringWrap::from(s)))
+                .map(|s| IFabricStringResult::from(StringResult::new(s)))
                 .map_err(crate::WinError::from)
         })
     }

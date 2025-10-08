@@ -92,7 +92,6 @@ mod test {
     };
     use std::sync::{Arc, Mutex};
 
-    use crate::strings::WStringWrap;
     use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
     use crate::types::mockifabricclientsettings::test_constants::*;
     use crate::types::mockifabricclientsettings::test_utilities::check_array_parameter;
@@ -232,9 +231,7 @@ mod test {
                     )
                 };
 
-                let local_claim = WStringWrap::from(value_ref.LocalClaims)
-                    .into_wstring()
-                    .to_string_lossy();
+                let local_claim = WString::from(value_ref.LocalClaims).to_string_lossy();
                 assert_eq!(&local_claim, TEST_CLAIMS);
 
                 assert_eq!(

@@ -71,7 +71,6 @@ mod test {
     };
     use std::sync::{Arc, Mutex};
 
-    use crate::strings::WStringWrap;
     use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
     use crate::types::mockifabricclientsettings::test_utilities::check_array_parameter;
 
@@ -185,9 +184,7 @@ mod test {
                     )
                 };
 
-                let remote_spn = WStringWrap::from(value_ref.RemoteSpn)
-                    .into_wstring()
-                    .to_string_lossy();
+                let remote_spn = WString::from(value_ref.RemoteSpn).to_string_lossy();
                 assert_eq!(&remote_spn, TEST_REMOTE_SPN_1);
 
                 assert_eq!(

@@ -16,10 +16,10 @@ pub trait StatelessServiceFactory {
     /// Creates a stateless service instance for a particular service. This method is called by Service Fabric.
     fn create_instance(
         &self,
-        servicetypename: &WString,
-        servicename: &WString,
+        servicetypename: WString,
+        servicename: crate::types::Uri,
         initializationdata: &[u8],
-        partitionid: &crate::GUID,
+        partitionid: crate::GUID,
         instanceid: i64,
     ) -> crate::Result<impl StatelessServiceInstance>;
 }

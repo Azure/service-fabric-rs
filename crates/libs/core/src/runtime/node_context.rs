@@ -6,11 +6,12 @@
 use std::time::Duration;
 
 use crate::runtime::executor::BoxedCancelToken;
+use crate::strings::StringResult;
 use crate::{Interface, WString};
 use mssf_com::FabricRuntime::{IFabricNodeContextResult, IFabricNodeContextResult2};
 
 use crate::sync::fabric_begin_end_proxy;
-use crate::{strings::WStringWrap, types::NodeId};
+use crate::types::NodeId;
 
 pub fn get_com_node_context(
     timeout_milliseconds: u32,
@@ -58,7 +59,7 @@ impl NodeContext {
     pub fn get_directory(&self, logical_directory_name: &WString) -> crate::Result<WString> {
         let com2 = self.com.cast::<IFabricNodeContextResult2>()?;
         let dir = unsafe { com2.GetDirectory(logical_directory_name.as_pcwstr()) }?;
-        Ok(WStringWrap::from(&dir).into())
+        Ok(StringResult::from(&dir).into_inner())
     }
 }
 
@@ -69,9 +70,9 @@ impl From<&IFabricNodeContextResult> for NodeContext {
         let raw_ref = unsafe { raw.as_ref() }.unwrap();
         Self {
             com: value.clone(),
-            node_name: WStringWrap::from(raw_ref.NodeName).into(),
-            node_type: WStringWrap::from(raw_ref.NodeType).into(),
-            ip_address_or_fqdn: WStringWrap::from(raw_ref.IPAddressOrFQDN).into(),
+            node_name: WString::from(raw_ref.NodeName),
+            node_type: WString::from(raw_ref.NodeType),
+            ip_address_or_fqdn: WString::from(raw_ref.IPAddressOrFQDN),
             node_instance_id: raw_ref.NodeInstanceId,
             node_id: raw_ref.NodeId.into(),
         }

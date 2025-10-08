@@ -8,6 +8,7 @@ use std::sync::Arc;
 use mssf_core::{
     WString,
     runtime::stateless::{StatelessServiceFactory, StatelessServiceInstance},
+    types::Uri,
 };
 use tracing::info;
 
@@ -28,10 +29,10 @@ impl StatelessServiceFactory for ServiceFactory {
     #[tracing::instrument(skip(self))]
     fn create_instance(
         &self,
-        servicetypename: &WString,
-        servicename: &WString,
+        servicetypename: WString,
+        servicename: Uri,
         initializationdata: &[u8],
-        partitionid: &mssf_core::GUID,
+        partitionid: mssf_core::GUID,
         instanceid: i64,
     ) -> mssf_core::Result<impl StatelessServiceInstance> {
         info!("create_instance");

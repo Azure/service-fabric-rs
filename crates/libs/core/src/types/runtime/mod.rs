@@ -11,7 +11,7 @@ pub mod store;
 
 use mssf_com::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION;
 
-use crate::{WString, strings::WStringWrap};
+use crate::WString;
 
 #[derive(Debug)]
 pub struct EndpointResourceDescription {
@@ -25,11 +25,11 @@ pub struct EndpointResourceDescription {
 impl From<&FABRIC_ENDPOINT_RESOURCE_DESCRIPTION> for EndpointResourceDescription {
     fn from(e: &FABRIC_ENDPOINT_RESOURCE_DESCRIPTION) -> Self {
         EndpointResourceDescription {
-            name: WStringWrap::from(e.Name).into(),
-            protocol: WStringWrap::from(e.Protocol).into(),
-            r#type: WStringWrap::from(e.Type).into(),
+            name: WString::from(e.Name),
+            protocol: WString::from(e.Protocol),
+            r#type: WString::from(e.Type),
             port: e.Port,
-            certificate_name: WStringWrap::from(e.CertificateName).into(),
+            certificate_name: WString::from(e.CertificateName),
         }
     }
 }

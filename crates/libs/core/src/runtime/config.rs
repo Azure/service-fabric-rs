@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::{WString, error::ErrorCode};
+use crate::{WString, error::ErrorCode, strings::StringResult};
 use mssf_com::{
     FabricRuntime::IFabricConfigurationPackage,
     FabricTypes::{
@@ -13,10 +13,7 @@ use mssf_com::{
     },
 };
 
-use crate::{
-    iter::{FabricIter, FabricListAccessor},
-    strings::WStringWrap,
-};
+use crate::iter::{FabricIter, FabricListAccessor};
 
 #[derive(Debug, Clone)]
 pub struct ConfigurationPackage {
@@ -79,10 +76,10 @@ impl ConfigurationPackage {
         let raw = unsafe { self.com.get_Description().as_ref().unwrap() };
 
         ConfigurationPackageDesc {
-            name: WStringWrap::from(raw.Name).into(),
-            service_manifest_name: WStringWrap::from(raw.ServiceManifestName).into(),
-            service_manifest_version: WStringWrap::from(raw.ServiceManifestVersion).into(),
-            version: WStringWrap::from(raw.Version).into(),
+            name: WString::from(raw.Name),
+            service_manifest_name: WString::from(raw.ServiceManifestName),
+            service_manifest_version: WString::from(raw.ServiceManifestVersion),
+            version: WString::from(raw.Version),
         }
     }
 
@@ -96,7 +93,7 @@ impl ConfigurationPackage {
 
     pub fn get_path(&self) -> WString {
         let raw = unsafe { self.com.get_Path() };
-        WStringWrap::from(raw).into()
+        WString::from(raw)
     }
 
     pub fn get_section(&self, section_name: &WString) -> crate::Result<ConfigurationSection> {
@@ -125,12 +122,12 @@ impl ConfigurationPackage {
                 std::ptr::addr_of_mut!(is_encrypted),
             )
         }?;
-        Ok((WStringWrap::from(raw).into(), is_encrypted != 0))
+        Ok((WString::from(raw), is_encrypted != 0))
     }
 
     pub fn decrypt_value(&self, encryptedvalue: &WString) -> crate::Result<WString> {
         let s = unsafe { self.com.DecryptValue(encryptedvalue.as_pcwstr()) }?;
-        Ok(WStringWrap::from(&s).into())
+        Ok(StringResult::from(&s).into_inner())
     }
 }
 
@@ -149,7 +146,7 @@ impl From<&FABRIC_CONFIGURATION_SECTION> for ConfigurationSection {
     fn from(value: &FABRIC_CONFIGURATION_SECTION) -> Self {
         Self {
             owner: None,
-            name: WStringWrap::from(value.Name).into(),
+            name: WString::from(value.Name),
             parameters: ConfigurationParameterList {
                 list: value.Parameters, // TODO: ownership/lifetime escaped here.
             },
@@ -203,11 +200,11 @@ impl From<&FABRIC_CONFIGURATION_PARAMETER> for ConfigurationParameter {
                 .unwrap()
         };
         Self {
-            name: WStringWrap::from(value.Name).into(),
+            name: WString::from(value.Name),
             is_encrypted: value.IsEncrypted,
             must_overrride: value.MustOverride,
-            value: WStringWrap::from(value.Value).into(),
-            r#type: WStringWrap::from(raw1.Type).into(),
+            value: WString::from(value.Value),
+            r#type: WString::from(raw1.Type),
         }
     }
 }

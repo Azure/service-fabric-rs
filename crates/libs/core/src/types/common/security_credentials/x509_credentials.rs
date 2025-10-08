@@ -159,7 +159,6 @@ mod test {
     };
     use std::sync::{Arc, Mutex};
 
-    use crate::strings::WStringWrap;
     use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
     use crate::types::mockifabricclientsettings::test_constants::*;
     use crate::types::mockifabricclientsettings::test_utilities::check_array_parameter;
@@ -244,17 +243,14 @@ mod test {
                 assert_eq!(value_ref.FindType, FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME);
                 let find_val_ptr = value_ref.FindValue as *const u16;
                 assert!(!find_val_ptr.is_null() && find_val_ptr.is_aligned());
-                let val_str = WStringWrap::from(PCWSTR::from_raw(find_val_ptr))
-                    .into_wstring()
-                    .to_string_lossy();
+                let val_str = WString::from(PCWSTR::from_raw(find_val_ptr)).to_string_lossy();
                 assert_eq!(val_str.as_str(), TEST_SERVER_NAME_1);
                 assert_eq!(
                     value_ref.StoreLocation,
                     FABRIC_X509_STORE_LOCATION_CURRENTUSER
                 );
                 assert_eq!(
-                    WStringWrap::from(value_ref.StoreName)
-                        .into_wstring()
+                    WString::from(value_ref.StoreName)
                         .to_string_lossy()
                         .as_str(),
                     TEST_STORE_2
@@ -302,17 +298,14 @@ mod test {
                 assert_eq!(value_ref.FindType, FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT);
                 let find_val_ptr = value_ref.FindValue as *const u16;
                 assert!(!find_val_ptr.is_null() && find_val_ptr.is_aligned());
-                let val_str = WStringWrap::from(PCWSTR::from_raw(find_val_ptr))
-                    .into_wstring()
-                    .to_string_lossy();
+                let val_str = WString::from(PCWSTR::from_raw(find_val_ptr)).to_string_lossy();
                 assert_eq!(val_str.as_str(), TEST_THUMBPRINT_1);
                 assert_eq!(
                     value_ref.StoreLocation,
                     FABRIC_X509_STORE_LOCATION_LOCALMACHINE
                 );
                 assert_eq!(
-                    WStringWrap::from(value_ref.StoreName)
-                        .into_wstring()
+                    WString::from(value_ref.StoreName)
                         .to_string_lossy()
                         .as_str(),
                     TEST_STORE_1

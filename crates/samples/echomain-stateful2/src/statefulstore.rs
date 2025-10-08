@@ -50,10 +50,10 @@ fn get_addr(port: u32, hostname: WString) -> String {
 impl StatefulServiceFactory for Factory {
     fn create_replica(
         &self,
-        servicetypename: &mssf_core::WString,
-        servicename: &mssf_core::WString,
+        servicetypename: mssf_core::WString,
+        servicename: mssf_core::types::Uri,
         initializationdata: &[u8],
-        partitionid: &mssf_core::GUID,
+        partitionid: mssf_core::GUID,
         replicaid: i64,
     ) -> Result<impl StatefulServiceReplica + 'static, Error> {
         info!(

@@ -17,7 +17,7 @@ use mssf_com::FabricTypes::{
     FABRIC_REPLICA_STATUS_INVALID, FABRIC_REPLICA_STATUS_UP,
 };
 
-use crate::{strings::WStringWrap, types::ReplicaRole};
+use crate::types::ReplicaRole;
 
 #[derive(Debug)]
 pub enum OpenMode {
@@ -228,7 +228,7 @@ impl From<&FABRIC_REPLICA_INFORMATION> for ReplicaInformation {
             id: r.Id,
             role: (&r.Role).into(),
             status: r.Status.into(),
-            replicator_address: WStringWrap::from(r.ReplicatorAddress).into(),
+            replicator_address: WString::from(r.ReplicatorAddress),
             current_progress: r.CurrentProgress,
             catch_up_capability: r.CatchUpCapability,
             must_catch_up: must_catchup,

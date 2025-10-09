@@ -399,9 +399,8 @@ impl PartitionKeyType {
     fn from_raw_svc_part(svc: ServicePartitionKind, data: *const c_void) -> PartitionKeyType {
         match svc {
             ServicePartitionKind::Int64Range => {
-                let x = data as *mut i64;
-                assert!(!x.is_null());
-                PartitionKeyType::Int64(unsafe { *x })
+                let x = unsafe { (data as *mut i64).as_ref().unwrap() };
+                PartitionKeyType::Int64(*x)
             }
             ServicePartitionKind::Invalid => PartitionKeyType::Invalid,
             ServicePartitionKind::Singleton => PartitionKeyType::None,

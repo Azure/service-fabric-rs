@@ -10,7 +10,7 @@ use mssf_core::{
     client::{
         FabricClient, GatewayInformationResult, PropertyManagementClient, ServiceNotification,
         svc_mgmt_client::{
-            PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartitionInfo,
+            PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartition,
             ServiceEndpointRole, ServicePartitionKind,
         },
     },
@@ -94,7 +94,7 @@ impl EchoTestClient {
         }
     }
 
-    pub async fn resolve(&self) -> (ResolvedServicePartitionInfo, ResolvedServiceEndpoint) {
+    pub async fn resolve(&self) -> (ResolvedServicePartition, ResolvedServiceEndpoint) {
         let mgmt = self.fc.get_service_manager();
         let resolved_partition = mgmt
             .resolve_service_partition(
@@ -106,14 +106,10 @@ impl EchoTestClient {
             )
             .await
             .expect("resolve failed");
-        let info = resolved_partition.get_info();
-        let endpoints = resolved_partition
-            .get_endpoint_list()
-            .iter()
-            .collect::<Vec<_>>();
         // only has 1 instance
-        assert_eq!(endpoints.len(), 1);
-        (info, endpoints.first().unwrap().clone())
+        assert_eq!(resolved_partition.endpoints.len(), 1);
+        let first = resolved_partition.endpoints.first().unwrap().clone();
+        (resolved_partition, first)
     }
 }
 

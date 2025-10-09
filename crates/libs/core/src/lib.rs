@@ -28,7 +28,7 @@ pub mod conf;
 pub mod debug;
 mod error;
 pub use error::{Error, ErrorCode, Result};
-mod iter;
+pub mod iter;
 pub mod mem;
 pub mod runtime;
 pub mod strings;

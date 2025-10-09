@@ -8,6 +8,8 @@
 // Raw lists needs to be wrapped in FabricListAccessor, and raw item needs to
 // implement From<T> trait to convert to rust safe struct, then the FabricIter
 // enables the mechanism to convert item one by one while iterating.
+// Currently this is not used in core apis, because core apis converts directly into Vec<T>
+// for simplicity. This is useful for user with high performance requirement.
 
 use std::marker::PhantomData;
 

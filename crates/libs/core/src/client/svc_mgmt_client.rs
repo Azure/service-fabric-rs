@@ -25,11 +25,8 @@ use mssf_com::{
 
 use crate::sync::{FabricReceiver, fabric_begin_end_proxy};
 
-use crate::{
-    iter::{FabricIter, FabricListAccessor},
-    types::{
-        RemoveReplicaDescription, RestartReplicaDescription, ServiceNotificationFilterDescription,
-    },
+use crate::types::{
+    RemoveReplicaDescription, RestartReplicaDescription, ServiceNotificationFilterDescription,
 };
 
 // Service Management Client
@@ -390,7 +387,7 @@ pub struct FilterIdHandle {
 }
 
 // see ComFabricClient.cpp for conversion details in cpp
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum PartitionKeyType {
     Int64(i64),
     Invalid,
@@ -484,42 +481,32 @@ impl From<FABRIC_SERVICE_PARTITION_KIND> for ServicePartitionKind {
 #[derive(Debug, Clone)]
 pub struct ResolvedServicePartition {
     com: IFabricResolvedServicePartitionResult,
+    pub service_name: Uri,
+    pub service_partition_kind: ServicePartitionKind,
+    pub partition_key_type: PartitionKeyType,
+    pub endpoints: Vec<ResolvedServiceEndpoint>,
 }
 
 impl From<IFabricResolvedServicePartitionResult> for ResolvedServicePartition {
     fn from(com: IFabricResolvedServicePartitionResult) -> Self {
-        Self { com }
-    }
-}
-
-#[derive(Debug)]
-pub struct ResolvedServicePartitionInfo {
-    pub service_name: Uri,
-    pub service_partition_kind: ServicePartitionKind,
-    pub partition_key_type: PartitionKeyType,
-}
-
-impl ResolvedServicePartition {
-    // Get the service partition info/metadata
-    pub fn get_info(&self) -> ResolvedServicePartitionInfo {
-        let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
+        let raw = unsafe { com.get_Partition().as_ref().unwrap() };
         let service_name = Uri::from(raw.ServiceName);
         let kind_raw = raw.Info.Kind;
         let val = raw.Info.Value;
         let service_partition_kind: ServicePartitionKind = kind_raw.into();
         let partition_key_type = PartitionKeyType::from_raw_svc_part(service_partition_kind, val);
-        ResolvedServicePartitionInfo {
+        let endpoints = crate::iter::vec_from_raw_com(raw.EndpointCount as usize, raw.Endpoints);
+        Self {
+            com,
             service_name,
             service_partition_kind,
             partition_key_type,
+            endpoints,
         }
     }
+}
 
-    // Get the list of endpoints
-    pub fn get_endpoint_list(&self) -> ResolvedServiceEndpointList {
-        ResolvedServiceEndpointList::from(self.com.clone())
-    }
-
+impl ResolvedServicePartition {
     // If compared with different partition error is returned.
     // to enable the user to identify which RSP is more
     // up-to-date. A returned value of 0 indicates that the two RSPs have the same version. 1 indicates that the other RSP has an older version.
@@ -577,47 +564,11 @@ impl From<FABRIC_SERVICE_ENDPOINT_ROLE> for ServiceEndpointRole {
     }
 }
 
-pub struct ResolvedServiceEndpointList {
-    com: IFabricResolvedServicePartitionResult,
-}
-
-impl From<IFabricResolvedServicePartitionResult> for ResolvedServiceEndpointList {
-    fn from(com: IFabricResolvedServicePartitionResult) -> Self {
-        Self { com }
-    }
-}
-
-impl ResolvedServiceEndpointList {
-    // Get iterator for the list
-    pub fn iter(&self) -> ResolvedServiceEndpointListIter<'_> {
-        ResolvedServiceEndpointListIter::new(self, self)
-    }
-}
-
-impl FabricListAccessor<FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpointList {
-    fn get_count(&self) -> u32 {
-        let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
-        raw.EndpointCount
-    }
-
-    fn get_first_item(&self) -> *const FABRIC_RESOLVED_SERVICE_ENDPOINT {
-        let raw = unsafe { self.com.get_Partition().as_ref().unwrap() };
-        raw.Endpoints
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct ResolvedServiceEndpoint {
     pub address: WString,
     pub role: ServiceEndpointRole,
 }
-
-type ResolvedServiceEndpointListIter<'a> = FabricIter<
-    'a,
-    FABRIC_RESOLVED_SERVICE_ENDPOINT,
-    ResolvedServiceEndpoint,
-    ResolvedServiceEndpointList,
->;
 
 impl From<&FABRIC_RESOLVED_SERVICE_ENDPOINT> for ResolvedServiceEndpoint {
     fn from(value: &FABRIC_RESOLVED_SERVICE_ENDPOINT) -> Self {

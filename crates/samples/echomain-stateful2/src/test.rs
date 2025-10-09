@@ -172,11 +172,13 @@ impl TestClient {
         ResolvedServiceEndpoint,
         ResolvedServiceEndpoint,
     )> {
-        let info = partition.get_info();
-        assert_eq!(info.partition_key_type, PartitionKeyType::None);
-        assert_eq!(info.service_name, self.service_uri);
-        assert_eq!(info.service_partition_kind, ServicePartitionKind::Singleton);
-        let endpoints = partition.get_endpoint_list().iter().collect::<Vec<_>>();
+        assert_eq!(partition.partition_key_type, PartitionKeyType::None);
+        assert_eq!(partition.service_name, self.service_uri);
+        assert_eq!(
+            partition.service_partition_kind,
+            ServicePartitionKind::Singleton
+        );
+        let endpoints = partition.endpoints;
         if endpoints.len() < 3 {
             // not available yet.
             return Err(ErrorCode::E_FAIL.into());
@@ -502,7 +504,7 @@ impl TestCreateUpdateClient {
                 .await;
             match res {
                 Ok(info) => {
-                    return info.get_endpoint_list().iter().collect::<Vec<_>>();
+                    return info.endpoints;
                 }
                 Err(e) => {
                     if count > 30 {

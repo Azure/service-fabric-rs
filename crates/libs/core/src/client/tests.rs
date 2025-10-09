@@ -86,11 +86,9 @@ async fn test_fabric_client() {
             .await;
         match res {
             Ok(ptt) => {
-                let info = ptt.get_info();
-                println!("Info: {info:?}");
-                let list = ptt.get_endpoint_list();
-                let v = list.iter().collect::<Vec<_>>();
-                println!("Endpoints: {v:?}");
+                println!("Info: {ptt:?}");
+                let endpoints = ptt.endpoints;
+                println!("Endpoints: {endpoints:?}");
             }
             Err(e) => {
                 // If the app is not provisioned we validate the error.

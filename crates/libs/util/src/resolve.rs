@@ -57,7 +57,7 @@ impl ServicePartitionResolver {
 
                     // Check rsp is valid and save in the cache.
                     // Sometimes endpoint is empty (may due to service removed), so we need to retry.
-                    if rsp.get_endpoint_list().iter().count() > 0 {
+                    if !rsp.endpoints.is_empty() {
                         Ok(rsp)
                     } else {
                         Err(ErrorCode::FABRIC_E_SERVICE_OFFLINE.into())

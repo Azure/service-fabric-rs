@@ -92,7 +92,7 @@ impl NamedPropertyMetadata {
             value_size: ptr.ValueSize,
             sequence_number: ptr.SequenceNumber,
             last_modified_utc: ptr.LastModifiedUtc,
-            name: Uri::new(windows_core::PCWSTR(ptr.Name.0).into()),
+            name: Uri::from(ptr.Name),
         }
     }
 }

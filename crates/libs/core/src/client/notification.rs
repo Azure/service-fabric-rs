@@ -3,18 +3,12 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::{
-    FabricClient::{
-        IFabricServiceEndpointsVersion, IFabricServiceNotification,
-        IFabricServiceNotificationEventHandler, IFabricServiceNotificationEventHandler_Impl,
-    },
-    FabricTypes::FABRIC_RESOLVED_SERVICE_ENDPOINT,
+use mssf_com::FabricClient::{
+    IFabricServiceEndpointsVersion, IFabricServiceNotification,
+    IFabricServiceNotificationEventHandler, IFabricServiceNotificationEventHandler_Impl,
 };
 
-use crate::{
-    iter::{FabricIter, FabricListAccessor},
-    types::{ServicePartitionInformation, Uri},
-};
+use crate::types::{ServicePartitionInformation, Uri};
 
 use super::svc_mgmt_client::ResolvedServiceEndpoint;
 
@@ -32,14 +26,18 @@ pub struct ServiceNotification {
     pub service_name: Uri,
     pub partition_info: Option<ServicePartitionInformation>,
     pub partition_id: crate::GUID,
-    pub endpoints: ServiceEndpointList,
-    com: IFabricServiceNotification,
+    pub endpoints: Vec<ResolvedServiceEndpoint>,
+    pub version: Option<ServiceEndpointsVersion>,
 }
 
 impl From<IFabricServiceNotification> for ServiceNotification {
     fn from(com: IFabricServiceNotification) -> Self {
         // SF guarantees this is not null.
         let raw = unsafe { com.get_Notification().as_ref().unwrap() };
+        let endpoints = crate::iter::vec_from_raw_com(raw.EndpointCount as usize, raw.Endpoints);
+        let version = unsafe { com.GetVersion() }
+            .ok()
+            .map(ServiceEndpointsVersion::from);
         Self {
             service_name: Uri::from(raw.ServiceName),
             partition_info: unsafe {
@@ -51,48 +49,14 @@ impl From<IFabricServiceNotification> for ServiceNotification {
                     .map(ServicePartitionInformation::from)
             },
             partition_id: raw.PartitionId,
-            endpoints: ServiceEndpointList { com: com.clone() },
-            com,
+            endpoints,
+            version,
         }
     }
 }
 
-impl ServiceNotification {
-    pub fn get_version(&self) -> crate::Result<ServiceEndpointsVersion> {
-        let version = unsafe { self.com.GetVersion() }?;
-        Ok(ServiceEndpointsVersion::from(version))
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct ServiceEndpointList {
-    com: IFabricServiceNotification,
-}
-
-impl ServiceEndpointList {
-    // Get iterator for the list
-    pub fn iter(&self) -> ServiceEndpointListIter<'_> {
-        ServiceEndpointListIter::new(self, self)
-    }
-}
-
-/// mssf_core iterator infrastructure implementation
-impl FabricListAccessor<FABRIC_RESOLVED_SERVICE_ENDPOINT> for ServiceEndpointList {
-    fn get_count(&self) -> u32 {
-        let raw = unsafe { self.com.get_Notification().as_ref().unwrap() };
-        raw.EndpointCount
-    }
-
-    fn get_first_item(&self) -> *const FABRIC_RESOLVED_SERVICE_ENDPOINT {
-        let raw = unsafe { self.com.get_Notification().as_ref().unwrap() };
-        raw.Endpoints
-    }
-}
-
-type ServiceEndpointListIter<'a> =
-    FabricIter<'a, FABRIC_RESOLVED_SERVICE_ENDPOINT, ResolvedServiceEndpoint, ServiceEndpointList>;
-
 /// IFabricServiceEndpointsVersion wrapper.
+#[derive(Debug, Clone)]
 pub struct ServiceEndpointsVersion {
     com: IFabricServiceEndpointsVersion,
 }

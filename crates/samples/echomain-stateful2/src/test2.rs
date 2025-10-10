@@ -84,7 +84,7 @@ async fn resolve_until_change(
     // notification should eventually arrive.
     let prev_original = prev.clone();
     let p1 = prev_original
-        .get_endpoint_list()
+        .endpoints
         .iter()
         .filter(|ep| ep.role == ServiceEndpointRole::StatefulPrimary)
         .collect::<Vec<_>>();
@@ -100,7 +100,7 @@ async fn resolve_until_change(
             .await
             .unwrap();
         let p2 = new_rsp
-            .get_endpoint_list()
+            .endpoints
             .iter()
             .filter(|ep| ep.role == ServiceEndpointRole::StatefulPrimary)
             .collect::<Vec<_>>();
@@ -128,9 +128,7 @@ async fn resolve_until_change(
     let new_addr = rsp_final
         .as_ref()
         .unwrap()
-        .get_endpoint_list()
-        .iter()
-        .collect::<Vec<_>>()
+        .endpoints
         .first()
         .unwrap()
         .address
@@ -183,7 +181,7 @@ async fn test_resolve_notification() {
             .resolve(&uri, &PartitionKeyType::None, prev.as_ref(), None, None)
             .await
             .unwrap();
-        if rsp.get_endpoint_list().iter().count() >= 3 {
+        if rsp.endpoints.len() >= 3 {
             break rsp;
         } else {
             prev = Some(rsp);

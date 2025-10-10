@@ -8,12 +8,9 @@ use mssf_com::{
     FabricRuntime::IFabricConfigurationPackage,
     FabricTypes::{
         FABRIC_CONFIGURATION_PARAMETER, FABRIC_CONFIGURATION_PARAMETER_EX1,
-        FABRIC_CONFIGURATION_PARAMETER_LIST, FABRIC_CONFIGURATION_SECTION,
-        FABRIC_CONFIGURATION_SECTION_LIST,
+        FABRIC_CONFIGURATION_SECTION,
     },
 };
-
-use crate::iter::{FabricIter, FabricListAccessor};
 
 #[derive(Debug, Clone)]
 pub struct ConfigurationPackage {
@@ -28,35 +25,7 @@ pub struct ConfigurationPackageDesc {
 }
 
 pub struct ConfigurationSettings {
-    pub sections: ConfigurationSectionList,
-}
-
-// FABRIC_CONFIGURATION_SECTION_LIST
-pub struct ConfigurationSectionList {
-    com: IFabricConfigurationPackage,
-}
-
-type ConfigurationSectionListIter<'a> =
-    FabricIter<'a, FABRIC_CONFIGURATION_SECTION, ConfigurationSection, ConfigurationSectionList>;
-
-impl ConfigurationSectionList {
-    fn get_section_list_ref(&self) -> &FABRIC_CONFIGURATION_SECTION_LIST {
-        let raw = unsafe { self.com.get_Settings().as_ref().unwrap() };
-        unsafe { raw.Sections.as_ref().unwrap() }
-    }
-    pub fn iter(&self) -> ConfigurationSectionListIter<'_> {
-        ConfigurationSectionListIter::new(self, self)
-    }
-}
-
-impl FabricListAccessor<FABRIC_CONFIGURATION_SECTION> for ConfigurationSectionList {
-    fn get_count(&self) -> u32 {
-        self.get_section_list_ref().Count
-    }
-
-    fn get_first_item(&self) -> *const FABRIC_CONFIGURATION_SECTION {
-        self.get_section_list_ref().Items
-    }
+    pub sections: Vec<ConfigurationSection>,
 }
 
 impl From<IFabricConfigurationPackage> for ConfigurationPackage {
@@ -84,11 +53,14 @@ impl ConfigurationPackage {
     }
 
     pub fn get_settings(&self) -> ConfigurationSettings {
-        ConfigurationSettings {
-            sections: ConfigurationSectionList {
-                com: self.com.clone(),
-            },
-        }
+        let sections = unsafe { self.com.get_Settings().as_ref() }
+            .map(|list| {
+                unsafe { list.Sections.as_ref() }
+                    .map(|l| crate::iter::vec_from_raw_com(l.Count as usize, l.Items))
+                    .unwrap_or_default()
+            })
+            .unwrap_or_default();
+        ConfigurationSettings { sections }
     }
 
     pub fn get_path(&self) -> WString {
@@ -100,11 +72,7 @@ impl ConfigurationPackage {
         let raw = unsafe { self.com.GetSection(section_name.as_pcwstr()) }?;
         let raw_ref = unsafe { raw.as_ref() };
         match raw_ref {
-            Some(c) => {
-                let mut res = ConfigurationSection::from(c);
-                res.owner = Some(self.com.clone());
-                Ok(res)
-            }
+            Some(c) => Ok(ConfigurationSection::from(c)),
             None => Err(ErrorCode::E_POINTER.into()),
         }
     }
@@ -131,55 +99,20 @@ impl ConfigurationPackage {
     }
 }
 
-// Note: parameter has ptr to raw memory into
-// Com obj, but this relationship is not tracked by lifetime,
-// So when using config section and parameter list,
-// make sure the com obj is still in scope.
-// TODO: find a way to make lifetime work.
 pub struct ConfigurationSection {
-    owner: Option<IFabricConfigurationPackage>,
     pub name: WString,
-    pub parameters: ConfigurationParameterList, // Note: the list has no lifetime tracking
+    pub parameters: Vec<ConfigurationParameter>,
 }
 
 impl From<&FABRIC_CONFIGURATION_SECTION> for ConfigurationSection {
     fn from(value: &FABRIC_CONFIGURATION_SECTION) -> Self {
+        let parameters = unsafe { value.Parameters.as_ref() }
+            .map(|list| crate::iter::vec_from_raw_com(list.Count as usize, list.Items))
+            .unwrap_or_default();
         Self {
-            owner: None,
             name: WString::from(value.Name),
-            parameters: ConfigurationParameterList {
-                list: value.Parameters, // TODO: ownership/lifetime escaped here.
-            },
+            parameters,
         }
-    }
-}
-
-// FABRIC_CONFIGURATION_PARAMETER_LIST
-// TODO: the owner is not accessible.
-type ConfigurationParameterListIter<'a> = FabricIter<
-    'a,
-    FABRIC_CONFIGURATION_PARAMETER,
-    ConfigurationParameter,
-    ConfigurationParameterList,
->;
-
-pub struct ConfigurationParameterList {
-    list: *const FABRIC_CONFIGURATION_PARAMETER_LIST,
-}
-
-impl ConfigurationParameterList {
-    pub fn iter(&self) -> ConfigurationParameterListIter<'_> {
-        ConfigurationParameterListIter::new(self, self)
-    }
-}
-
-impl FabricListAccessor<FABRIC_CONFIGURATION_PARAMETER> for ConfigurationParameterList {
-    fn get_count(&self) -> u32 {
-        unsafe { self.list.as_ref().unwrap().Count }
-    }
-
-    fn get_first_item(&self) -> *const FABRIC_CONFIGURATION_PARAMETER {
-        unsafe { self.list.as_ref().unwrap().Items }
     }
 }
 

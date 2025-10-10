@@ -17,7 +17,7 @@ package.license = "MIT"
 [workspace.dependencies]
 bitflags = "2"
 config = { version = "0.15", default-features = false }
-ctrlc = { version = "3.4", features = [
+ctrlc = { version = "3.5", features = [
     "termination",
 ], default-features = false }
 futures-channel = { version = "0.3", features = [], default-features = false }
@@ -41,9 +41,9 @@ tracing-subscriber = { version = "0.3", default-features = false, features = [
     "fmt",
 ] }
 trait-variant = "0.1"
-windows = { version = "0.61", default-features = false }
-windows-bindgen = "0.62"
-windows-core = "0.61"
+windows = { version = "0.62", default-features = false }
+windows-bindgen = "0.65"
+windows-core = "0.62"
 
 # crates in this repo
 mssf-com = { version = "0.4", path = "./crates/libs/com", default-features = false }

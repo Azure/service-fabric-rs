@@ -135,8 +135,9 @@ jobs:
         if: always()
         run: |
           echo "Collecting core dumps"
+          sudo chmod -R 777 /tmp/coredumps
           if [ -d "/tmp/coredumps" ] && [ "$(ls -A /tmp/coredumps 2>/dev/null)" ]; then
-            tar -czf coredumps.tar.gz -C /tmp coredumps || echo "No core dumps to archive"
+            tar -czf coredumps.tar.gz -C /tmp coredumps || { echo "Fail to archive core dumps"; exit 1; }
             echo "Core dumps collected"
           else
             echo "No core dumps found"
@@ -146,6 +147,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coredumps-${{ matrix.devcontainer-type }}
+          name: coredumps-${{ matrix.devcontainer-type }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
           path: coredumps.tar.gz
           if-no-files-found: ignore

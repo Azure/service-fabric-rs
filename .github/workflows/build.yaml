@@ -64,7 +64,6 @@ jobs:
     - name: Run cargo test
       run: cargo test --all -- --nocapture
 
-  # Do not run test because SF onebox is not supported on azl3 yet.
   build-azl3:
     runs-on: ubuntu-latest
     container:
@@ -113,6 +112,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Configure core dumps
+        run: |
+          mkdir -p /tmp/coredumps
+          sudo chmod 777 /tmp/coredumps
+          ulimit -c unlimited
+          echo "/tmp/coredumps/core.%e.%p.%h.%t" | sudo tee /proc/sys/kernel/core_pattern
+
       - name: Run in Dev Container
         uses: devcontainers/ci@v0.3
         with:
@@ -124,3 +130,21 @@ jobs:
             bash ./scripts/prepare_test_apps.sh
             echo "Running tests"
             cargo test --all -- --nocapture
+
+      - name: Collect core dumps
+        run: |
+          echo "Collecting core dumps"
+          if [ -d "/tmp/coredumps" ] && [ "$(ls -A /tmp/coredumps 2>/dev/null)" ]; then
+            tar -czf coredumps.tar.gz -C /tmp coredumps || echo "No core dumps to archive"
+            echo "Core dumps collected"
+          else
+            echo "No core dumps found"
+          fi
+        continue-on-error: true
+
+      - name: Upload core dumps artifact if exists
+        uses: actions/upload-artifact@v3
+        with:
+          name: coredumps-${{ matrix.devcontainer-type }}
+          path: coredumps.tar.gz
+          if-no-files-found: ignore

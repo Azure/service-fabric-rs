@@ -18,6 +18,7 @@ services:
     volumes:
       - ../../:/workspaces/repo # repo dir
       - ~/.ssh:/root/.ssh:ro # git creds
+      - /tmp/coredumps:/tmp/coredumps # core dumps
     depends_on:
       - onebox
     

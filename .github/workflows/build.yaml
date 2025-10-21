@@ -143,7 +143,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload core dumps artifact if exists
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coredumps-${{ matrix.devcontainer-type }}
           path: coredumps.tar.gz

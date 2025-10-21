@@ -132,6 +132,7 @@ jobs:
             cargo test --all -- --nocapture
 
       - name: Collect core dumps
+        if: always()
         run: |
           echo "Collecting core dumps"
           if [ -d "/tmp/coredumps" ] && [ "$(ls -A /tmp/coredumps 2>/dev/null)" ]; then
@@ -140,9 +141,9 @@ jobs:
           else
             echo "No core dumps found"
           fi
-        continue-on-error: true
 
       - name: Upload core dumps artifact if exists
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coredumps-${{ matrix.devcontainer-type }}

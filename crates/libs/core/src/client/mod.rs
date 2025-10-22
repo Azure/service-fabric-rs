@@ -174,7 +174,7 @@ impl FabricClientBuilder {
     ///
     pub fn with_on_service_notification<T>(self, f: T) -> Self
     where
-        T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,
+        T: Fn(ServiceNotification) -> crate::Result<()> + 'static,
     {
         let handler = LambdaServiceNotificationHandler::new(f);
         self.with_service_notification_handler(handler)

@@ -15,7 +15,7 @@ use super::svc_mgmt_client::ResolvedServiceEndpoint;
 /// Rust trait to turn rust code into IFabricServiceNotificationEventHandler.
 /// Not exposed to user
 pub trait ServiceNotificationEventHandler: 'static {
-    fn on_notification(&self, notification: &ServiceNotification) -> crate::Result<()>;
+    fn on_notification(&self, notification: ServiceNotification) -> crate::Result<()>;
 }
 
 /// Content of the service notification callback.
@@ -30,8 +30,8 @@ pub struct ServiceNotification {
     pub version: Option<ServiceEndpointsVersion>,
 }
 
-impl From<IFabricServiceNotification> for ServiceNotification {
-    fn from(com: IFabricServiceNotification) -> Self {
+impl From<&IFabricServiceNotification> for ServiceNotification {
+    fn from(com: &IFabricServiceNotification) -> Self {
         // SF guarantees this is not null.
         let raw = unsafe { com.get_Notification().as_ref().unwrap() };
         let endpoints = crate::iter::vec_from_raw_com(raw.EndpointCount as usize, raw.Endpoints);
@@ -140,9 +140,9 @@ where
         notification: windows_core::Ref<IFabricServiceNotification>,
     ) -> crate::WinResult<()> {
         let com = notification.unwrap();
-        let msg = ServiceNotification::from(com.clone());
+        let msg = ServiceNotification::from(com);
         self.inner
-            .on_notification(&msg)
+            .on_notification(msg)
             .map_err(crate::WinError::from)
     }
 }
@@ -153,14 +153,14 @@ where
 /// This isn't strictly required by the implementation as written. But it leaves open the door to non-lambda implementations in future.
 pub struct LambdaServiceNotificationHandler<T>
 where
-    T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,
+    T: Fn(ServiceNotification) -> crate::Result<()> + 'static,
 {
     f: T,
 }
 
 impl<T> LambdaServiceNotificationHandler<T>
 where
-    T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,
+    T: Fn(ServiceNotification) -> crate::Result<()> + 'static,
 {
     pub fn new(f: T) -> Self {
         Self { f }
@@ -169,9 +169,9 @@ where
 
 impl<T> ServiceNotificationEventHandler for LambdaServiceNotificationHandler<T>
 where
-    T: Fn(&ServiceNotification) -> crate::Result<()> + 'static,
+    T: Fn(ServiceNotification) -> crate::Result<()> + 'static,
 {
-    fn on_notification(&self, notification: &ServiceNotification) -> crate::Result<()> {
+    fn on_notification(&self, notification: ServiceNotification) -> crate::Result<()> {
         (self.f)(notification)
     }
 }

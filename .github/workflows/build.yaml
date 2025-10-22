@@ -114,10 +114,10 @@ jobs:
 
       - name: Configure core dumps
         run: |
-          mkdir -p /tmp/coredumps
-          sudo chmod 777 /tmp/coredumps
+          mkdir -p /tmp/artifacts/coredumps
+          sudo chmod 777 /tmp/artifacts/coredumps
           ulimit -c unlimited
-          echo "/tmp/coredumps/core.%e.%p.%h.%t" | sudo tee /proc/sys/kernel/core_pattern
+          echo "/tmp/artifacts/coredumps/core.%e.%p.%h.%t" | sudo tee /proc/sys/kernel/core_pattern
 
       - name: Run in Dev Container
         uses: devcontainers/ci@v0.3
@@ -134,18 +134,17 @@ jobs:
       - name: Copy known executable on failure for debugging
         if: failure()
         run: |
-          sudo chmod -R 777 /tmp/coredumps
-          mkdir -p /tmp/coredumps/executables
+          mkdir -p /tmp/artifacts/executables
           sudo chown $USER:$USER target/debug/deps/samples_echomain_stateful2-*
-          sudo cp target/debug/deps/samples_echomain_stateful2-* /tmp/coredumps/executables/ || { echo "Fail to copy known executable"; exit 1; }
+          sudo cp target/debug/deps/samples_echomain_stateful2-* /tmp/artifacts/executables/ || { echo "Fail to copy known executable"; exit 1; }
 
       - name: Collect core dumps
         if: always()
         run: |
           echo "Collecting core dumps"
-          sudo chmod -R 777 /tmp/coredumps
-          if [ -d "/tmp/coredumps" ] && [ "$(ls -A /tmp/coredumps 2>/dev/null)" ]; then
-            tar -czf coredumps.tar.gz -C /tmp coredumps || { echo "Fail to archive core dumps"; exit 1; }
+          sudo chmod -R 777 /tmp/artifacts
+          if [ -d "/tmp/artifacts/coredumps" ] && [ "$(ls -A /tmp/artifacts/coredumps 2>/dev/null)" ]; then
+            tar -czf artifacts.tar.gz -C /tmp artifacts || { echo "Fail to archive core dumps"; exit 1; }
             echo "Core dumps collected"
           else
             echo "No core dumps found"
@@ -155,6 +154,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coredumps-${{ matrix.devcontainer-type }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
-          path: coredumps.tar.gz
+          name: artifacts-${{ matrix.devcontainer-type }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
+          path: artifacts.tar.gz
           if-no-files-found: ignore

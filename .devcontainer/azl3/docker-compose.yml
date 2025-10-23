@@ -10,6 +10,8 @@ services:
     ports:
       - "19080:19080"
       - "19000:19000"
+    volumes:
+      - /tmp/artifacts/coredumps/onebox:/tmp/artifacts/coredumps # core dumps
   repo:
     build:
       context: ..
@@ -18,7 +20,7 @@ services:
     volumes:
       - ../../:/workspaces/repo # repo dir
       - ~/.ssh:/root/.ssh:ro # git creds
-      - /tmp/artifacts/coredumps:/tmp/artifacts/coredumps # core dumps
+      - /tmp/artifacts/coredumps/repo:/tmp/artifacts/coredumps # core dumps
     depends_on:
       - onebox
     

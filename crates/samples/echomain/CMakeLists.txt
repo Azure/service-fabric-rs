@@ -13,22 +13,21 @@ endif(WIN32)
 
 include(PackageSF)
 add_sf_app_pkg(
-    NAME echomain
+    TARGET build_rust_sample_echomain
     MANIFEST_DIR ${_pkg_src}/manifests
     OUTDIR ${CMAKE_BINARY_DIR}/sf_apps/echomain
-    DEPENDS build_rust_sample_echomain
 )
 add_sf_svc_pkg(
-    APP_NAME echomain
+    TARGET build_rust_sample_echomain
     SVC_PKG_NAME EchoAppServicePackage
 )
 add_sf_code_pkg(
-    APP_NAME echomain
+    TARGET build_rust_sample_echomain
     SVC_PKG_NAME EchoAppServicePackage
     ARTIFACTS ${_pkg_exe}
 )
 add_sf_config_pkg(
-    APP_NAME echomain
+    TARGET build_rust_sample_echomain
     SVC_PKG_NAME EchoAppServicePackage
     CONFIG_PKG_NAME Config
 )

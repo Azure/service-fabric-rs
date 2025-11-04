@@ -16,10 +16,9 @@ endif(WIN32)
 
 include(PackageSF)
 add_sf_app_pkg_simple(
-    NAME echomain_stateful
+    TARGET build_rust_sample_echomain_stateful
     MANIFEST_DIR ${_pkg_src}/manifests
     OUTDIR ${CMAKE_BINARY_DIR}/sf_apps/echomain_stateful
     SVC_PKG_NAME EchoAppStatefulServicePackage
     CODE_ARTIFACTS ${_pkg_exe}
-    DEPENDS build_rust_sample_echomain_stateful
 )

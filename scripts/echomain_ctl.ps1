@@ -8,7 +8,7 @@ param(
 )
 $ErrorActionPreference = "Stop";
 
-$path = "build\echoapp_root"
+$path = "build\sf_apps\echomain"
 
 if($Action -eq "Connect"){
     Connect-ServiceFabricCluster

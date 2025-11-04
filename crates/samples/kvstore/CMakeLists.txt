@@ -10,12 +10,12 @@ set(_pkg_root ${CMAKE_BINARY_DIR}/kvstore_root)
 set(_pkg_src  ${CMAKE_SOURCE_DIR}/crates/samples/kvstore)
 
 set(_pkg_exe  ${CMAKE_SOURCE_DIR}/target/debug/kvstore.exe)
-add_custom_command(TARGET build_rust_sample_kvstore POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root}
-    COMMAND ${CMAKE_COMMAND} 
-    -E copy_if_different ${_pkg_src}/manifests/KvStoreServicePackage/ServiceManifest.xml ${_pkg_root}/KvStoreServicePackage/ServiceManifest.xml
-    COMMAND ${CMAKE_COMMAND} 
-    -E copy_if_different ${_pkg_src}/manifests/ApplicationManifest.xml ${_pkg_root}/ApplicationManifest.xml
-    COMMAND ${CMAKE_COMMAND} 
-    -E copy_if_different ${_pkg_exe} ${_pkg_root}/KvStoreServicePackage/Code/kvstore.exe
+include(PackageSF)
+add_sf_app_pkg_simple(
+    NAME kvstore
+    MANIFEST_DIR ${_pkg_src}/manifests
+    OUTDIR ${CMAKE_BINARY_DIR}/sf_apps/kvstore
+    SVC_PKG_NAME KvStoreServicePackage
+    CODE_ARTIFACTS ${_pkg_exe}
+    DEPENDS build_rust_sample_kvstore
 )

@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.14)
 
 project(service-fabric-rs LANGUAGES)
 
+# add cmake modules
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 if(WIN32)
 message(STATUS "fetching fabric_metadata")
 include(FetchContent)

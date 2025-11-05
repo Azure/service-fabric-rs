@@ -7,7 +7,7 @@
   <CodePackage Name="Code" Version="1.0">
     <EntryPoint>
         <ExeHost>
-            <Program>sample_echomain_stateful</Program>
+            <Program>sample_echomain_stateful.exe</Program>
             <Arguments>-WaitForDebugger</Arguments>
             <!-- <RunFrequency IntervalInSeconds="2" /> -->
             <ConsoleRedirection FileRetentionCount="5" FileMaxSizeInKb="2048"/>

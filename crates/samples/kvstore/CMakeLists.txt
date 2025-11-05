@@ -6,15 +6,10 @@ add_custom_target(build_rust_sample_kvstore ALL
     DEPENDS build_fabric_rust_pal
 )
 
-set(_pkg_root ${CMAKE_BINARY_DIR}/kvstore_root)
-set(_pkg_src  ${CMAKE_SOURCE_DIR}/crates/samples/kvstore)
-
-set(_pkg_exe  ${CMAKE_SOURCE_DIR}/target/debug/kvstore.exe)
 include(PackageSF)
-add_sf_app_pkg_simple(
+add_sf_pkg(
     TARGET build_rust_sample_kvstore
-    MANIFEST_DIR ${_pkg_src}/manifests
-    OUTDIR ${CMAKE_BINARY_DIR}/sf_apps/kvstore
-    SVC_PKG_NAME KvStoreServicePackage
-    CODE_ARTIFACTS ${_pkg_exe}
+    EXECUTABLE ${CMAKE_SOURCE_DIR}/target/debug/kvstore
+    MANIFEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/manifests
+    OUT_DIR ${CMAKE_BINARY_DIR}/sf_apps/kvstore
 )

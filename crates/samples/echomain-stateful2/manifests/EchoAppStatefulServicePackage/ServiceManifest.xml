@@ -11,7 +11,7 @@
   <CodePackage Name="Code" Version="1.0">
     <EntryPoint>
         <ExeHost>
-            <Program>samples_echomain_stateful2</Program>
+            <Program>samples_echomain_stateful2.exe</Program>
             <!-- <Arguments>-WaitForDebugger</Arguments> -->
             <!-- <RunFrequency IntervalInSeconds="2" /> -->
             <ConsoleRedirection FileRetentionCount="5" FileMaxSizeInKb="2048"/>

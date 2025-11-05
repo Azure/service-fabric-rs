@@ -8,13 +8,13 @@ param(
 )
 $ErrorActionPreference = "Stop";
 
-$path = "build\sf_apps\echomain"
+$path = "build\sf_apps\samples_echomain"
 
 if($Action -eq "Connect"){
     Connect-ServiceFabricCluster
 }elseif ($Action -eq "Add") {
     Connect-ServiceFabricCluster
-    Test-ServiceFabricApplicationPackage -ApplicationPackagePath build\echoapp_root
+    Test-ServiceFabricApplicationPackage -ApplicationPackagePath ${path}
 
     Copy-ServiceFabricApplicationPackage -ApplicationPackagePath $path -ApplicationPackagePathInImageStore MyApplicationV1 -TimeoutSec 1800
     

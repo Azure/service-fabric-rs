@@ -8,7 +8,7 @@ param(
 )
 $ErrorActionPreference = "Stop";
 
-$path = "build\sf_apps\echomain_stateful"
+$path = "build\sf_apps\samples_echomain_stateful"
 Write-Host "path: $path"
 if($Action -eq "Connect"){
     Connect-ServiceFabricCluster

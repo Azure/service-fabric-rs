@@ -1,255 +1,50 @@
-function(add_sf_app_pkg)
-    cmake_parse_arguments(
-        SF_APP_PKG # prefix of output variables
-        "" # list of names of the boolean arguments (only defined ones will be true)
-        "MANIFEST_DIR;OUTDIR;TARGET" # list of names of mono-valued arguments
-        #"SRCS;DEPS" # list of names of multi-valued arguments (output variables are lists)
-        ""
-        ${ARGN} # arguments of the function to parse, here we take the all original ones
-    )
-
-    if(NOT SF_APP_PKG_TARGET)
-        message(FATAL_ERROR "Target param not found")
-    endif(NOT SF_APP_PKG_TARGET)
-
-    if(NOT SF_APP_PKG_OUTDIR)
-        message(FATAL_ERROR "OutDir param not found")
-    endif(NOT SF_APP_PKG_OUTDIR)
-
-    if(NOT SF_APP_PKG_MANIFEST_DIR)
-        message(FATAL_ERROR "ManifestDir param not found")
-    endif(NOT SF_APP_PKG_MANIFEST_DIR)
-
-    # check that manifest dir exists
-    if(NOT EXISTS ${SF_APP_PKG_MANIFEST_DIR})
-        message(FATAL_ERROR "ManifestDir ${SF_APP_PKG_MANIFEST_DIR} does not exist")
-    endif(NOT EXISTS ${SF_APP_PKG_MANIFEST_DIR})
-
-    add_custom_command(
-        TARGET ${SF_APP_PKG_TARGET} POST_BUILD
-        # create the package dir
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${SF_APP_PKG_OUTDIR}
-        # copy the app manifest file
-        COMMAND ${CMAKE_COMMAND} -E copy ${SF_APP_PKG_MANIFEST_DIR}/ApplicationManifest.xml ${SF_APP_PKG_OUTDIR}
-    )
-
-    set_target_properties(${SF_APP_PKG_TARGET} PROPERTIES
-        SF_MANIFEST_DIR "${SF_APP_PKG_MANIFEST_DIR}"
-        SF_OUTPUT_DIR "${SF_APP_PKG_OUTDIR}"
-    )
-endfunction(add_sf_app_pkg)
-
-function(add_sf_svc_pkg)
-    cmake_parse_arguments(
-        SF_SVC_PKG # prefix of output variables
-        "" # list of names of the boolean arguments (only defined ones will be true)
-        "TARGET;SVC_PKG_NAME" # list of names of mono-valued arguments
-        #"SRCS;DEPS" # list of names of multi-valued arguments (output variables are lists)
-        ""
-        ${ARGN} # arguments of the function to parse, here we take the all original ones
-    )
-
-    if(NOT SF_SVC_PKG_TARGET)
-        message(FATAL_ERROR "Target param not found")
-    endif(NOT SF_SVC_PKG_TARGET)
-    get_target_property(manifest_dir ${SF_SVC_PKG_TARGET} SF_MANIFEST_DIR)
-    get_target_property(output_dir ${SF_SVC_PKG_TARGET} SF_OUTPUT_DIR)
-
-    if(NOT SF_SVC_PKG_SVC_PKG_NAME)
-        message(FATAL_ERROR "SvcPkgName param not found")
-    endif(NOT SF_SVC_PKG_SVC_PKG_NAME)
-    set(_svc_manifest_file ${manifest_dir}/${SF_SVC_PKG_SVC_PKG_NAME}/ServiceManifest.xml)
-    set(_svc_manifest_out_file ${output_dir}/${SF_SVC_PKG_SVC_PKG_NAME}/ServiceManifest.xml)
-    add_custom_command(
-        TARGET ${SF_SVC_PKG_TARGET} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${_svc_manifest_file} ${_svc_manifest_out_file}
-        DEPENDS ${_svc_manifest_file}
-    )
-endfunction(add_sf_svc_pkg)
-
-function(add_sf_code_pkg)
+function(add_sf_pkg)
     cmake_parse_arguments(
         SF_CODE_PKG # prefix of output variables
         "" # list of names of the boolean arguments (only defined ones will be true)
-        "TARGET;SVC_PKG_NAME;CODE_PKG_NAME" # list of names of mono-valued arguments
-        "ARTIFACTS" # multi-valued arguements
-        ${ARGN} # arguments of the function to parse, here we take the all original ones
-    )
-    if(NOT SF_CODE_PKG_TARGET)
-        message(FATAL_ERROR "Target param not found")
-    endif(NOT SF_CODE_PKG_TARGET)
-    if(NOT SF_CODE_PKG_SVC_PKG_NAME)
-        message(FATAL_ERROR "SvcPkgName param not found")
-    endif(NOT SF_CODE_PKG_SVC_PKG_NAME)
-    if(NOT SF_CODE_PKG_CODE_PKG_NAME)
-        set(SF_CODE_PKG_CODE_PKG_NAME "Code")
-    endif(NOT SF_CODE_PKG_CODE_PKG_NAME)
-    if(NOT SF_CODE_PKG_ARTIFACTS)
-        message(FATAL_ERROR "Artifacts param not found")
-    endif(NOT SF_CODE_PKG_ARTIFACTS)
-    _add_sf_sub_folder(
-        TARGET ${SF_CODE_PKG_TARGET}
-        SVC_PKG_NAME ${SF_CODE_PKG_SVC_PKG_NAME}
-        FOLDER_NAME ${SF_CODE_PKG_CODE_PKG_NAME}
-        FOLDER_CONTENTS ${SF_CODE_PKG_ARTIFACTS}
-    )
-endfunction(add_sf_code_pkg)
-
-function(add_sf_config_pkg)
-    cmake_parse_arguments(
-        SF_CONFIG_PKG # prefix of output variables
-        "" # list of names of the boolean arguments (only defined ones will be true)
-        "TARGET;SVC_PKG_NAME;CONFIG_PKG_NAME" # list of names of mono-valued arguments
+        "TARGET;EXECUTABLE;MANIFEST_DIR;OUT_DIR" # list of names of mono-valued arguments
         "" # multi-valued arguements
         ${ARGN} # arguments of the function to parse, here we take the all original ones
     )
 
-    if(NOT SF_CONFIG_PKG_TARGET)
-        message(FATAL_ERROR "Target param not found")
-    endif(NOT SF_CONFIG_PKG_TARGET)
-    if(NOT SF_CONFIG_PKG_SVC_PKG_NAME)
-        message(FATAL_ERROR "SvcPkgName param not found")
-    endif(NOT SF_CONFIG_PKG_SVC_PKG_NAME)
-    get_target_property(manifest_dir ${SF_CONFIG_PKG_TARGET} SF_MANIFEST_DIR)
-
-    if(NOT SF_CONFIG_PKG_CONFIG_PKG_NAME)
-        set(SF_CONFIG_PKG_CONFIG_PKG_NAME "Config")
-    endif(NOT SF_CONFIG_PKG_CONFIG_PKG_NAME)
-    set(_config_src_dir ${manifest_dir}/${SF_CONFIG_PKG_SVC_PKG_NAME}/${SF_CONFIG_PKG_CONFIG_PKG_NAME})
-    _add_sf_sub_folder(
-        TARGET ${SF_CONFIG_PKG_TARGET}
-        SVC_PKG_NAME ${SF_CONFIG_PKG_SVC_PKG_NAME}
-        FOLDER_NAME ${SF_CONFIG_PKG_CONFIG_PKG_NAME}
-        FOLDER_CONTENTS ${_config_src_dir}/Settings.xml
-    )
-endfunction(add_sf_config_pkg)
-
-function(add_sf_data_pkg)
-    cmake_parse_arguments(
-        SF_DATA_PKG # prefix of output variables
-        "" # list of names of the boolean arguments (only defined ones will be true)
-        "TARGET;SVC_PKG_NAME;DATA_PKG_NAME" # list of names of mono-valued arguments
-        "ARTIFACTS" # multi-valued arguements
-        ${ARGN} # arguments of the function to parse, here we take the all original ones
-    )
-    if(NOT SF_DATA_PKG_TARGET)
-        message(FATAL_ERROR "Target param not found")
-    endif(NOT SF_DATA_PKG_TARGET)
-    if(NOT SF_DATA_PKG_SVC_PKG_NAME)
-        message(FATAL_ERROR "SvcPkgName param not found")
-    endif(NOT SF_DATA_PKG_SVC_PKG_NAME)
-    if(NOT SF_DATA_PKG_DATA_PKG_NAME)
-        set(SF_DATA_PKG_DATA_PKG_NAME "Data")
-    endif(NOT SF_DATA_PKG_DATA_PKG_NAME)
-    if(NOT SF_DATA_PKG_ARTIFACTS)
-        message(FATAL_ERROR "Artifacts param not found")
-    endif(NOT SF_DATA_PKG_ARTIFACTS)
-    _add_sf_sub_folder(
-        TARGET ${SF_DATA_PKG_TARGET}
-        SVC_PKG_NAME ${SF_DATA_PKG_SVC_PKG_NAME}
-        FOLDER_NAME ${SF_DATA_PKG_DATA_PKG_NAME}
-        FOLDER_CONTENTS ${SF_DATA_PKG_ARTIFACTS}
-    )
-endfunction(add_sf_data_pkg)
-
-# Simple package with 1 service
-function(add_sf_app_pkg_simple)
-    cmake_parse_arguments(
-        SF_APP_PKG_SIMPLE # prefix of output variables
-        "" # list of names of the boolean arguments (only defined ones will be true)
-        "TARGET;MANIFEST_DIR;OUTDIR;SVC_PKG_NAME;CODE_PKG_NAME;CONFIG_PKG_NAME;DATA_PKG_NAME;DEPENDS" # list of names of mono-valued arguments
-        "CODE_ARTIFACTS;DATA_ARTIFACTS" # multi-valued arguements
-        ${ARGN} # arguments of the function to parse, here we take the all original ones
-    )
-
-    if(NOT SF_APP_PKG_SIMPLE_TARGET)
-        message(FATAL_ERROR "Target param not found")
-    endif(NOT SF_APP_PKG_SIMPLE_TARGET)
-
-    if(NOT SF_APP_PKG_SIMPLE_OUTDIR)
-        message(FATAL_ERROR "OutDir param not found")
-    endif(NOT SF_APP_PKG_SIMPLE_OUTDIR)
-    if(NOT SF_APP_PKG_SIMPLE_MANIFEST_DIR)
-        message(FATAL_ERROR "ManifestDir param not found")
-    endif(NOT SF_APP_PKG_SIMPLE_MANIFEST_DIR)
-    if(NOT SF_APP_PKG_SIMPLE_SVC_PKG_NAME)
-        message(FATAL_ERROR "SvcPkgName param not found")
-    endif(NOT SF_APP_PKG_SIMPLE_SVC_PKG_NAME)
-    if(NOT SF_APP_PKG_SIMPLE_CODE_PKG_NAME)
-        set(SF_APP_PKG_SIMPLE_CODE_PKG_NAME "Code")
-    endif(NOT SF_APP_PKG_SIMPLE_CODE_PKG_NAME)
-    # create the app package
-    add_sf_app_pkg(
-        TARGET ${SF_APP_PKG_SIMPLE_TARGET}
-        MANIFEST_DIR ${SF_APP_PKG_SIMPLE_MANIFEST_DIR}
-        OUTDIR ${SF_APP_PKG_SIMPLE_OUTDIR}
-        DEPENDS ${SF_APP_PKG_SIMPLE_DEPENDS}
-    )
-    # create the service package
-    add_sf_svc_pkg(
-        TARGET ${SF_APP_PKG_SIMPLE_TARGET}
-        SVC_PKG_NAME ${SF_APP_PKG_SIMPLE_SVC_PKG_NAME}
-    )
-    # create the code package
-    add_sf_code_pkg(
-        TARGET ${SF_APP_PKG_SIMPLE_TARGET}
-        SVC_PKG_NAME ${SF_APP_PKG_SIMPLE_SVC_PKG_NAME}
-        CODE_PKG_NAME ${SF_APP_PKG_SIMPLE_CODE_PKG_NAME}
-        ARTIFACTS ${SF_APP_PKG_SIMPLE_CODE_ARTIFACTS}
-    )
-    # create the config package
-    if (SF_APP_PKG_SIMPLE_CONFIG_PKG_NAME)
-        add_sf_config_pkg(
-            TARGET ${SF_APP_PKG_SIMPLE_TARGET}
-            SVC_PKG_NAME ${SF_APP_PKG_SIMPLE_SVC_PKG_NAME}
-            CONFIG_PKG_NAME ${SF_APP_PKG_SIMPLE_CONFIG_PKG_NAME}
-        )
+    if(NOT SF_CODE_PKG_TARGET)
+        message(FATAL_ERROR "add_sf_pkg: TARGET argument is required.")
     endif()
-    # create the data package if artifacts are provided
-    if(SF_APP_PKG_SIMPLE_DATA_PKG_NAME AND SF_APP_PKG_SIMPLE_DATA_ARTIFACTS)
-        add_sf_data_pkg(
-            TARGET ${SF_APP_PKG_SIMPLE_TARGET}
-            SVC_PKG_NAME ${SF_APP_PKG_SIMPLE_SVC_PKG_NAME}
-            DATA_PKG_NAME ${SF_APP_PKG_SIMPLE_DATA_PKG_NAME}
-            ARTIFACTS ${SF_APP_PKG_SIMPLE_DATA_ARTIFACTS}
-        )
+    if(NOT SF_CODE_PKG_EXECUTABLE)
+        message(FATAL_ERROR "add_sf_pkg: EXECUTABLE argument is required.")
     endif()
-endfunction(add_sf_app_pkg_simple)
+    if(NOT SF_CODE_PKG_MANIFEST_DIR)
+        message(FATAL_ERROR "add_sf_pkg: MANIFEST_DIR argument is required.")
+    endif()
+    if(NOT SF_CODE_PKG_OUT_DIR)
+        message(FATAL_ERROR "add_sf_pkg: OUT_DIR argument is required.")
+    endif()
+    # find the service package name inside the app manifest.
+    file(READ "${SF_CODE_PKG_MANIFEST_DIR}/ApplicationManifest.xml" MANIFEST_CONTENT)
+    string(REGEX MATCH "ServiceManifestName=\"([^\"]+)\"" SERVICE_MANIFEST_NAME_MATCH "${MANIFEST_CONTENT}")
+    if(NOT SERVICE_MANIFEST_NAME_MATCH)
+        message(FATAL_ERROR "add_sf_pkg: Cannot find ServiceManifestName in ApplicationManifest.xml")
+    endif()
+    string(REGEX REPLACE "ServiceManifestName=\"([^\"]+)\"" "\\1" SERVICE_MANIFEST_NAME "${SERVICE_MANIFEST_NAME_MATCH}")
 
-# add a sub folder to the service package
-function(_add_sf_sub_folder)
-    cmake_parse_arguments(
-        SF_FOLDER_ARG # prefix of output variables
-        "" # list of names of the boolean arguments (only defined ones will be true)
-        "TARGET;SVC_PKG_NAME;FOLDER_NAME" # list of names of mono-valued arguments
-        "FOLDER_CONTENTS" # multi-valued arguements. Folder contents are optional
-        ${ARGN} # arguments of the function to parse, here we take the all original ones
-    )
-    if(NOT SF_FOLDER_ARG_TARGET)
-        message(FATAL_ERROR "Target param not found")
-    endif(NOT SF_FOLDER_ARG_TARGET)
-    get_target_property(manifest_dir ${SF_FOLDER_ARG_TARGET} SF_MANIFEST_DIR)
-    get_target_property(output_dir ${SF_FOLDER_ARG_TARGET} SF_OUTPUT_DIR)
-    if(NOT SF_FOLDER_ARG_SVC_PKG_NAME)
-        message(FATAL_ERROR "SvcPkgName param not found")
-    endif(NOT SF_FOLDER_ARG_SVC_PKG_NAME)
-    if(NOT SF_FOLDER_ARG_FOLDER_NAME)
-        message(FATAL_ERROR "FolderName param not found")
-    endif(NOT SF_FOLDER_ARG_FOLDER_NAME)
-    set(_folder_out_dir ${output_dir}/${SF_FOLDER_ARG_SVC_PKG_NAME}/${SF_FOLDER_ARG_FOLDER_NAME})
-    add_custom_command(
-        TARGET ${SF_FOLDER_ARG_TARGET} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${_folder_out_dir}
-    )
-    if(SF_FOLDER_ARG_FOLDER_CONTENTS)
-        foreach(_item IN LISTS SF_FOLDER_ARG_FOLDER_CONTENTS)
-            # get the file name with extension and without path
-            cmake_path(GET _item FILENAME _file_name)
-            add_custom_command(
-                TARGET ${SF_FOLDER_ARG_TARGET} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy 
-                    ${_item} ${_folder_out_dir}/${_file_name}
-            )
-        endforeach()
+    # find the code directory inside the output directory.
+    # it should be like: <OUT_DIR>/ServicePackageName/Code
+    set(SF_CODE_PKG_CODE_DIR "${SF_CODE_PKG_OUT_DIR}/${SERVICE_MANIFEST_NAME}/Code")
+
+    # add .exe extension for the executable if not exists.
+    get_filename_component(EXE_NAME "${SF_CODE_PKG_EXECUTABLE}" NAME)
+    if(NOT EXE_NAME MATCHES "\\.exe$")
+        set(SF_CODE_PKG_EXECUTABLE "${SF_CODE_PKG_EXECUTABLE}.exe")
     endif()
-endfunction(_add_sf_sub_folder)
+
+    add_custom_command(TARGET ${SF_CODE_PKG_TARGET} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${SF_CODE_PKG_OUT_DIR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${SF_CODE_PKG_CODE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${SF_CODE_PKG_MANIFEST_DIR}
+            ${SF_CODE_PKG_OUT_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${SF_CODE_PKG_EXECUTABLE}
+            ${SF_CODE_PKG_CODE_DIR}
+    )
+endfunction(add_sf_pkg)

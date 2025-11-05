@@ -18,6 +18,10 @@ done
 sfctl cluster health
 
 sleep 10 # wait for cluster to be up
+
+# exit on error
+set -e
+
 echo "Uploading applications"
 sfctl application upload --path build/sf_apps/samples_echomain
 sfctl application provision --application-type-build-path samples_echomain

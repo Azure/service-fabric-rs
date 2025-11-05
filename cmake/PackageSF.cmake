@@ -47,7 +47,7 @@ function(add_sf_pkg)
             ${SF_CODE_PKG_MANIFEST_DIR}
             ${SF_CODE_PKG_OUT_DIR}
         COMMAND ${CMAKE_COMMAND} -E copy
-            ${SF_CODE_PKG_EXECUTABLE_RENAMED}
+            ${SF_CODE_PKG_EXECUTABLE}
             ${SF_CODE_PKG_CODE_DIR}/${SF_CODE_PKG_EXE_NO_PATH}
     )
 endfunction(add_sf_pkg)

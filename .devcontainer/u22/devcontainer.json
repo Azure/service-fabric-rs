@@ -5,8 +5,13 @@
 	"dockerComposeFile": [
 		"docker-compose.yml"
 	],
-	"workspaceFolder": "/workspaces/repo",
+	"workspaceFolder": "/home/vscode/repo",
 	"service": "repo-u22",
+	"remoteUser": "vscode",
+	"containerEnv": {
+		"USER_UID": "1000",
+		"USER_GID": "1000"
+	},
 	"customizations": {
 		"vscode": {
 			"extensions": [

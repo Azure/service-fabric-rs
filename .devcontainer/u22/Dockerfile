@@ -46,16 +46,38 @@ WORKDIR /opt/microsoft/servicefabric/ClusterDeployer
 ENTRYPOINT ["/opt/microsoft/servicefabric/ClusterDeployer/ClusterDeployer.sh"]
 
 FROM base as repo
+
+# Arguments for user creation
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=1000
+ARG RUST_VERSION=1.90.0
+
+RUN apt-get update \
+    && apt-get install -y sudo
+
+# Create a non-root user
+RUN groupadd --gid ${USER_GID} ${USERNAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -s /bin/bash \
+    && echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME}
+
+# Switch to vscode user for installing rust
+USER ${USERNAME}
+
+RUN sudo apt-get install -y git socat
+
 # install rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > ./rustup.sh
-RUN chmod u+x ./rustup.sh && ./rustup.sh -y
+WORKDIR /home/${USERNAME}
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
+RUN chmod u+x rustup.sh && ./rustup.sh -y --default-toolchain ${RUST_VERSION}
 
 # more tools for dev
-RUN apt-get install git socat -y
 RUN pip install cmake --upgrade
 
 # Forward onebox ports to host
 COPY ./port_forward.sh /usr/local/bin/port_forward.sh
-RUN chmod +x /usr/local/bin/port_forward.sh
+RUN sudo chmod +x /usr/local/bin/port_forward.sh
+
 ENTRYPOINT ["/usr/local/bin/port_forward.sh"]
-WORKDIR /workspace/repo
+WORKDIR /home/${USERNAME}/repo

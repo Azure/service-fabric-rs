@@ -38,7 +38,7 @@ function(add_sf_pkg)
     else()
         set(SF_CODE_PKG_EXECUTABLE_RENAMED "${SF_CODE_PKG_EXECUTABLE}")
     endif()
-    get_filename_component(SF_CODE_PKG_EXE_NO_PATH "${SF_CODE_PKG_EXECUTABLE_RENAMED}" NAME_WE)
+    get_filename_component(SF_CODE_PKG_EXE_NO_PATH "${SF_CODE_PKG_EXECUTABLE_RENAMED}" NAME)
 
     add_custom_command(TARGET ${SF_CODE_PKG_TARGET} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${SF_CODE_PKG_OUT_DIR}
@@ -47,7 +47,7 @@ function(add_sf_pkg)
             ${SF_CODE_PKG_MANIFEST_DIR}
             ${SF_CODE_PKG_OUT_DIR}
         COMMAND ${CMAKE_COMMAND} -E copy
-            ${SF_CODE_PKG_EXECUTABLE}
+            ${SF_CODE_PKG_EXECUTABLE_RENAMED}
             ${SF_CODE_PKG_CODE_DIR}/${SF_CODE_PKG_EXE_NO_PATH}
     )
 endfunction(add_sf_pkg)

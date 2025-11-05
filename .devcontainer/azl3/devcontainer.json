@@ -5,9 +5,14 @@
 	"dockerComposeFile": [
 		"docker-compose.yml"
 	],
-	"workspaceFolder": "/workspaces/repo",
+	"workspaceFolder": "/home/vscode/repo",
 	"service": "repo",
-	"postCreateCommand": "git config --global --add safe.directory /workspaces/repo",
+	"remoteUser": "vscode",
+	"containerEnv": {
+		"USER_UID": "1000",
+		"USER_GID": "1000"
+	},
+	"postCreateCommand": "git config --global --add safe.directory /home/vscode/repo",
 	"customizations": {
 		"vscode": {
 			"extensions": [

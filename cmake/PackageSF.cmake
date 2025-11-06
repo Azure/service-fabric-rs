@@ -30,16 +30,9 @@ function(add_sf_pkg)
     # find the code directory inside the output directory.
     # it should be like: <OUT_DIR>/ServicePackageName/Code
     set(SF_CODE_PKG_CODE_DIR "${SF_CODE_PKG_OUT_DIR}/${SERVICE_MANIFEST_NAME}/Code")
-
-    # add .exe extension for the executable if not exists on windows.
-    get_filename_component(EXE_NAME "${SF_CODE_PKG_EXECUTABLE}" NAME)
-    if(WIN32 AND NOT EXE_NAME MATCHES "\\.exe$")
-        set(SF_CODE_PKG_EXECUTABLE_RENAMED "${SF_CODE_PKG_EXECUTABLE}.exe")
-        set(SF_CODE_PKG_EXECUTABLE "${SF_CODE_PKG_EXECUTABLE_RENAMED}")
-    else()
-        set(SF_CODE_PKG_EXECUTABLE_RENAMED "${SF_CODE_PKG_EXECUTABLE}")
-    endif()
-    get_filename_component(SF_CODE_PKG_EXE_RENAMED_NO_PATH "${SF_CODE_PKG_EXECUTABLE_RENAMED}" NAME)
+    # specified executable always does not have extension.
+    # we always add .exe extension when copying to the code directory.
+    get_filename_component(SF_CODE_PKG_EXEUTABLE_NO_PATH "${SF_CODE_PKG_EXECUTABLE}" NAME)
 
     add_custom_command(TARGET ${SF_CODE_PKG_TARGET} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${SF_CODE_PKG_OUT_DIR}
@@ -49,6 +42,6 @@ function(add_sf_pkg)
             ${SF_CODE_PKG_OUT_DIR}
         COMMAND ${CMAKE_COMMAND} -E copy
             ${SF_CODE_PKG_EXECUTABLE}
-            ${SF_CODE_PKG_CODE_DIR}/${SF_CODE_PKG_EXE_RENAMED_NO_PATH}
+            ${SF_CODE_PKG_CODE_DIR}/${SF_CODE_PKG_EXEUTABLE_NO_PATH}.exe
     )
 endfunction(add_sf_pkg)

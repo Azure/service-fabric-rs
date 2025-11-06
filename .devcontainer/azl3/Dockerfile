@@ -5,7 +5,7 @@ RUN tdnf update -y && tdnf upgrade -y
 # install tools for sf
 RUN tdnf install --noplugins --skipsignature -y \
     tar unzip ca-certificates gcc glibc-devel binutils \
-    make curl wget awk net-tools python3-pip git socat cmake
+    make curl wget awk net-tools python3-pip git socat cmake sudo
 
 # install sf
 RUN mkdir -p /var/opt/microsoft/servicefabric/ && echo "Accepted" | tee /var/opt/microsoft/servicefabric/accepted-eula-ga
@@ -39,9 +39,6 @@ ARG USER_UID=1000
 ARG USER_GID=1000
 ARG RUST_VERSION=1.90.0
 
-RUN tdnf update \
-    && tdnf install -y sudo
-
 # Create a non-root user
 RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -s /bin/bash \
@@ -55,6 +52,7 @@ USER ${USERNAME}
 WORKDIR /home/${USERNAME}
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
 RUN chmod u+x rustup.sh && ./rustup.sh -y --default-toolchain ${RUST_VERSION}
+RUN rm rustup.sh
 
 # Forward onebox ports to host
 COPY ./port_forward.sh /usr/local/bin/port_forward.sh

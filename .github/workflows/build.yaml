@@ -119,6 +119,9 @@ jobs:
           ulimit -c unlimited
           echo "/tmp/artifacts/coredumps/core.%e.%p.%h.%t" | sudo tee /proc/sys/kernel/core_pattern
 
+      - name: Show disk space
+        run: df -h
+
       - name: Run in Dev Container
         uses: devcontainers/ci@v0.3
         with:
@@ -130,6 +133,9 @@ jobs:
             bash ./scripts/prepare_test_apps.sh
             echo "Running tests"
             cargo test --all -- --nocapture
+
+      - name: Show disk space after run
+        run: df -h
 
       - name: Copy known executable on failure for debugging
         if: failure()

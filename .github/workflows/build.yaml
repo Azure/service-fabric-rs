@@ -177,7 +177,7 @@ jobs:
 
       - name: Upload core dumps artifact if exists
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: artifacts-${{ matrix.devcontainer-type }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
           path: artifacts.tar.gz

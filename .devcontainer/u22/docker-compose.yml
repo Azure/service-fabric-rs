@@ -17,9 +17,13 @@ services:
       context: ..
       dockerfile: u22/Dockerfile
       target: repo
+      args:
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+        USERNAME: ${USERNAME:-vscode}
     volumes:
-      - ../../:/workspaces/repo # repo dir
-      - ~/.ssh:/root/.ssh:ro # git creds
+      - ../../:/home/vscode/repo # repo dir
+      - ~/.ssh:/home/vscode/.ssh:ro # git creds
       - /tmp/artifacts/coredumps/repo:/tmp/artifacts/coredumps # core dumps
     depends_on:
       - onebox

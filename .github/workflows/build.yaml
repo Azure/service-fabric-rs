@@ -109,8 +109,29 @@ jobs:
         devcontainer-type: ["u22", "azl3"]
     runs-on: ubuntu-latest
     steps:
+      - name: Show disk space
+        run: df -h
+
       - name: Checkout code
         uses: actions/checkout@v5
+
+      - name: Configure Docker to use /mnt directory
+        run: |
+          # Create Docker data directory in /mnt
+          sudo mkdir -p /mnt/docker
+          
+          # Stop Docker service
+          sudo systemctl stop docker
+          
+          # Create or update Docker daemon configuration
+          sudo mkdir -p /etc/docker
+          echo '{"data-root": "/mnt/docker"}' | sudo tee /etc/docker/daemon.json
+          
+          # Start Docker service
+          sudo systemctl start docker
+          
+          # Verify Docker is running and using the new data root
+          docker info | grep "Docker Root Dir"
 
       - name: Configure core dumps
         run: |
@@ -130,6 +151,9 @@ jobs:
             bash ./scripts/prepare_test_apps.sh
             echo "Running tests"
             cargo test --all -- --nocapture
+
+      - name: Show disk space after run
+        run: df -h
 
       - name: Copy known executable on failure for debugging
         if: failure()

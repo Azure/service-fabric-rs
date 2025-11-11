@@ -5,22 +5,10 @@ add_custom_target(build_rust_sample_echomain_stateful2 ALL
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     DEPENDS build_fabric_rust_pal
 )
-
-set(_pkg_root_stateful ${CMAKE_BINARY_DIR}/echoapp_root_stateful2)
-set(_pkg_src  ${CMAKE_SOURCE_DIR}/crates/samples/echomain-stateful2)
-
-if(WIN32)
-    set(_pkg_exe  ${CMAKE_SOURCE_DIR}/target/debug/samples_echomain_stateful2.exe)
-else()
-    set(_pkg_exe  ${CMAKE_SOURCE_DIR}/target/debug/samples_echomain_stateful2)
-endif(WIN32)
-
-add_custom_command(TARGET build_rust_sample_echomain_stateful2 POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${_pkg_root_stateful}
-    COMMAND ${CMAKE_COMMAND} 
-        -E copy_if_different ${_pkg_src}/manifests/ServiceManifest.xml ${_pkg_root_stateful}/EchoAppStatefulServicePackage/ServiceManifest.xml
-    COMMAND ${CMAKE_COMMAND} 
-        -E copy_if_different ${_pkg_src}/manifests/ApplicationManifest.xml ${_pkg_root_stateful}
-    COMMAND ${CMAKE_COMMAND} 
-        -E copy_if_different ${_pkg_exe} ${_pkg_root_stateful}/EchoAppStatefulServicePackage/Code/echomainstateful2.exe # note the rename
+include(PackageSF)
+add_sf_pkg(
+    TARGET build_rust_sample_echomain_stateful2
+    EXECUTABLE ${CMAKE_SOURCE_DIR}/target/debug/samples_echomain_stateful2
+    MANIFEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/manifests
+    OUT_DIR ${CMAKE_BINARY_DIR}/sf_apps/samples_echomain_stateful2
 )

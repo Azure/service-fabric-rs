@@ -8,7 +8,7 @@ param(
 )
 $ErrorActionPreference = "Stop";
 
-$path = "build\kvstore_root"
+$path = "build\sf_apps\kvstore"
 
 $imageStorePath = "MyKvStoreApplicationV1"
 $appTypeName = "KvStore"

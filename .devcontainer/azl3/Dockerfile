@@ -37,7 +37,7 @@ FROM base as repo
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
-ARG RUST_VERSION=1.90.0
+ARG RUST_VERSION=1.91.1
 
 # Create a non-root user
 RUN groupadd --gid ${USER_GID} ${USERNAME} \

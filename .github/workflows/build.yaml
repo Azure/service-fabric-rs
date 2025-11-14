@@ -135,8 +135,9 @@ jobs:
 
       - name: Configure core dumps
         run: |
-          mkdir -p /tmp/artifacts/coredumps
-          sudo chmod 777 /tmp/artifacts/coredumps
+          mkdir -p /tmp/artifacts/coredumps/repo
+          mkdir -p /tmp/artifacts/coredumps/onebox
+          sudo chmod -R 777 /tmp/artifacts/coredumps
           ulimit -c unlimited
           echo "/tmp/artifacts/coredumps/core.%e.%p.%h.%t" | sudo tee /proc/sys/kernel/core_pattern
 
@@ -153,6 +154,7 @@ jobs:
             cargo test --all -- --nocapture
 
       - name: Show disk space after run
+        if: always()
         run: df -h
 
       - name: Copy known executable on failure for debugging
@@ -167,7 +169,7 @@ jobs:
         run: |
           echo "Collecting core dumps"
           sudo chmod -R 777 /tmp/artifacts
-          ls -R /tmp/artifacts/coredumps
+          ls -Ra /tmp/artifacts/coredumps
           if [ -d "/tmp/artifacts/coredumps" ] && [ "$(find /tmp/artifacts/coredumps -type f -print -quit)" ]; then
             tar -czf artifacts.tar.gz -C /tmp artifacts || { echo "Fail to archive core dumps"; exit 1; }
             echo "Core dumps collected"

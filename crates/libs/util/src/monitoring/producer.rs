@@ -79,7 +79,10 @@ impl HealthDataProducer {
                 }
 
                 // Get service information for the application.
-                if let Ok(services) = self.get_all_services_for_app(token.clone(), app_name).await {
+                if let Ok(services) = self
+                    .get_all_services_for_app(token.clone(), app_name.clone())
+                    .await
+                {
                     for svc in services {
                         let svc_name = svc.get_service_name().clone();
                         // produce service health entity
@@ -91,14 +94,19 @@ impl HealthDataProducer {
 
                         // Get partition information for the service.
                         if let Ok(partitions) = self
-                            .get_all_partitions_for_svc(token.clone(), svc_name)
+                            .get_all_partitions_for_svc(token.clone(), svc_name.clone())
                             .await
                         {
                             for partition in partitions {
                                 let partition_id = partition.get_partition_id();
                                 // produce partition health entity
                                 if let Some(entity) = self
-                                    .produce_partition_health_entity(token.clone(), partition)
+                                    .produce_partition_health_entity(
+                                        token.clone(),
+                                        partition,
+                                        svc_name.clone(),
+                                        app_name.clone(),
+                                    )
                                     .await
                                 {
                                     self.send_entity(entity)?;
@@ -115,6 +123,8 @@ impl HealthDataProducer {
                                                 token.clone(),
                                                 partition_id,
                                                 replica,
+                                                svc_name.clone(),
+                                                app_name.clone(),
                                             )
                                             .await
                                         {
@@ -287,10 +297,13 @@ impl HealthDataProducer {
             },
         ))
     }
+
     async fn produce_partition_health_entity(
         &self,
         token: BoxedCancelToken,
         part: mssf_core::types::ServicePartitionQueryResultItem,
+        service_name: Uri,
+        application_name: Uri,
     ) -> Option<HealthEntity> {
         let partition_id = part.get_partition_id();
         let desc = mssf_core::types::PartitionHealthQueryDescription {
@@ -310,14 +323,19 @@ impl HealthDataProducer {
             crate::monitoring::entities::PartitionHealthEntity {
                 health: part_health,
                 partition: part,
+                service_name,
+                application_name,
             },
         ))
     }
+
     async fn produce_replica_health_entity(
         &self,
         token: BoxedCancelToken,
         partition_id: mssf_core::GUID,
         replica: mssf_core::types::ServiceReplicaQueryResultItem,
+        service_name: Uri,
+        application_name: Uri,
     ) -> Option<HealthEntity> {
         let desc = mssf_core::types::ReplicaHealthQueryDescription {
             partition_id,
@@ -337,6 +355,8 @@ impl HealthDataProducer {
             crate::monitoring::entities::ReplicaHealthEntity {
                 health: replica_health,
                 replica,
+                service_name,
+                application_name,
             },
         ))
     }

@@ -3,6 +3,12 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use mssf_core::types::{
+    ApplicationHealth, ApplicationQueryResultItem, ClusterHealth, NodeHealthResult,
+    NodeQueryResultItem, PartitionHealthResult, ReplicaHealthResult, ServiceHealthResult,
+    ServicePartitionQueryResultItem, ServiceQueryResultItem, ServiceReplicaQueryResultItem, Uri,
+};
+
 /// Health entities produced by HealthDataProducer.
 #[derive(Debug, Clone)]
 pub enum HealthEntity {
@@ -18,35 +24,39 @@ pub enum HealthEntity {
 /// User is supposed to inject the cluster name in consumer side.
 #[derive(Debug, Clone)]
 pub struct ClusterHealthEntity {
-    pub health: mssf_core::types::ClusterHealth,
+    pub health: ClusterHealth,
 }
 
 #[derive(Debug, Clone)]
 pub struct NodeHealthEntity {
-    pub node: mssf_core::types::NodeQueryResultItem,
-    pub health: mssf_core::types::NodeHealthResult,
+    pub node: NodeQueryResultItem,
+    pub health: NodeHealthResult,
 }
 
 #[derive(Debug, Clone)]
 pub struct ApplicationHealthEntity {
-    pub application: mssf_core::types::ApplicationQueryResultItem,
-    pub health: mssf_core::types::ApplicationHealth,
+    pub application: ApplicationQueryResultItem,
+    pub health: ApplicationHealth,
 }
 
 #[derive(Debug, Clone)]
 pub struct ServiceHealthEntity {
-    pub service: mssf_core::types::ServiceQueryResultItem,
-    pub health: mssf_core::types::ServiceHealthResult,
+    pub service: ServiceQueryResultItem,
+    pub health: ServiceHealthResult,
 }
 
 #[derive(Debug, Clone)]
 pub struct PartitionHealthEntity {
-    pub partition: mssf_core::types::ServicePartitionQueryResultItem,
-    pub health: mssf_core::types::PartitionHealthResult,
+    pub partition: ServicePartitionQueryResultItem,
+    pub health: PartitionHealthResult,
+    pub service_name: Uri,
+    pub application_name: Uri,
 }
 
 #[derive(Debug, Clone)]
 pub struct ReplicaHealthEntity {
-    pub replica: mssf_core::types::ServiceReplicaQueryResultItem,
-    pub health: mssf_core::types::ReplicaHealthResult,
+    pub replica: ServiceReplicaQueryResultItem,
+    pub health: ReplicaHealthResult,
+    pub service_name: Uri,
+    pub application_name: Uri,
 }

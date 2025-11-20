@@ -79,7 +79,10 @@ impl HealthDataProducer {
                 }
 
                 // Get service information for the application.
-                if let Ok(services) = self.get_all_services_for_app(token.clone(), app_name.clone()).await {
+                if let Ok(services) = self
+                    .get_all_services_for_app(token.clone(), app_name.clone())
+                    .await
+                {
                     for svc in services {
                         let svc_name = svc.get_service_name().clone();
                         // produce service health entity
@@ -294,7 +297,7 @@ impl HealthDataProducer {
             },
         ))
     }
-    
+
     async fn produce_partition_health_entity(
         &self,
         token: BoxedCancelToken,
@@ -325,7 +328,7 @@ impl HealthDataProducer {
             },
         ))
     }
-    
+
     async fn produce_replica_health_entity(
         &self,
         token: BoxedCancelToken,
@@ -482,11 +485,11 @@ mod tests {
                 .with_connection_strings(vec![WString::from("localhost:19000")])
                 .build()
                 .expect("Failed to create FabricClient");
-            
+
             let (sender, receiver) = mpsc::unbounded_channel();
             let producer = HealthDataProducer::new(fc, Duration::from_secs(1), sender);
             let token = mssf_core::sync::SimpleCancelToken::new_boxed();
-            
+
             Self {
                 producer,
                 _receiver: receiver,
@@ -496,7 +499,11 @@ mod tests {
 
         /// Get first available app, service, partition, and replica from cluster
         async fn get_test_entities(&self) -> Option<TestEntities> {
-            let apps = self.producer.get_all_applications(self.token.clone()).await.ok()?;
+            let apps = self
+                .producer
+                .get_all_applications(self.token.clone())
+                .await
+                .ok()?;
             if apps.is_empty() {
                 tracing::warn!("No applications in cluster");
                 return None;
@@ -504,8 +511,12 @@ mod tests {
 
             let app = &apps[0];
             let app_name = app.application_name.clone();
-            
-            let services = self.producer.get_all_services_for_app(self.token.clone(), app_name.clone()).await.ok()?;
+
+            let services = self
+                .producer
+                .get_all_services_for_app(self.token.clone(), app_name.clone())
+                .await
+                .ok()?;
             if services.is_empty() {
                 tracing::warn!("No services in application");
                 return None;
@@ -514,7 +525,11 @@ mod tests {
             let service = &services[0];
             let service_name = service.get_service_name().clone();
 
-            let partitions = self.producer.get_all_partitions_for_svc(self.token.clone(), service_name.clone()).await.ok()?;
+            let partitions = self
+                .producer
+                .get_all_partitions_for_svc(self.token.clone(), service_name.clone())
+                .await
+                .ok()?;
             if partitions.is_empty() {
                 tracing::warn!("No partitions in service");
                 return None;
@@ -522,8 +537,12 @@ mod tests {
 
             let partition = partitions[0].clone();
             let partition_id = partition.get_partition_id();
-            
-            let replicas = self.producer.get_all_replicas_for_partition(self.token.clone(), partition_id).await.ok()?;
+
+            let replicas = self
+                .producer
+                .get_all_replicas_for_partition(self.token.clone(), partition_id)
+                .await
+                .ok()?;
             let replica = replicas.first().cloned();
 
             Some(TestEntities {
@@ -555,21 +574,30 @@ mod tests {
             tracing::warn!("Skipping test - no test entities available");
             return;
         };
-        
+
         // Call the method under test
-        let entity = fixture.producer.produce_partition_health_entity(
-            fixture.token.clone(),
-            entities.partition,
-            entities.service_name.clone(),
-            entities.app_name.clone(),
-        ).await;
+        let entity = fixture
+            .producer
+            .produce_partition_health_entity(
+                fixture.token.clone(),
+                entities.partition,
+                entities.service_name.clone(),
+                entities.app_name.clone(),
+            )
+            .await;
 
         assert!(entity.is_some(), "Should produce a partition health entity");
-        
+
         if let Some(HealthEntity::Partition(partition_entity)) = entity {
             // Verify the service_name and application_name are properly set
-            assert_eq!(partition_entity.service_name, entities.service_name.to_string());
-            assert_eq!(partition_entity.application_name, entities.app_name.to_string());
+            assert_eq!(
+                partition_entity.service_name,
+                entities.service_name.to_string()
+            );
+            assert_eq!(
+                partition_entity.application_name,
+                entities.app_name.to_string()
+            );
             assert!(!partition_entity.service_name.is_empty());
             assert!(!partition_entity.application_name.is_empty());
         } else {
@@ -592,22 +620,31 @@ mod tests {
             tracing::warn!("Skipping test - no replicas in partition");
             return;
         };
-        
+
         // Call the method under test
-        let entity = fixture.producer.produce_replica_health_entity(
-            fixture.token.clone(),
-            entities.partition_id,
-            replica,
-            entities.service_name.clone(),
-            entities.app_name.clone(),
-        ).await;
+        let entity = fixture
+            .producer
+            .produce_replica_health_entity(
+                fixture.token.clone(),
+                entities.partition_id,
+                replica,
+                entities.service_name.clone(),
+                entities.app_name.clone(),
+            )
+            .await;
 
         assert!(entity.is_some(), "Should produce a replica health entity");
-        
+
         if let Some(HealthEntity::Replica(replica_entity)) = entity {
             // Verify the service_name and application_name are properly set
-            assert_eq!(replica_entity.service_name, entities.service_name.to_string());
-            assert_eq!(replica_entity.application_name, entities.app_name.to_string());
+            assert_eq!(
+                replica_entity.service_name,
+                entities.service_name.to_string()
+            );
+            assert_eq!(
+                replica_entity.application_name,
+                entities.app_name.to_string()
+            );
             assert!(!replica_entity.service_name.is_empty());
             assert!(!replica_entity.application_name.is_empty());
         } else {
@@ -629,22 +666,25 @@ mod tests {
                         id: mssf_core::GUID::zeroed(), // Invalid GUID likely doesn't exist
                         low_key: 0,
                         high_key: 0,
-                    }
+                    },
                 ),
                 target_replica_set_size: 1,
                 min_replica_set_size: 1,
                 health_state: mssf_core::types::HealthState::Ok,
                 partition_status: mssf_core::types::ServicePartitionStatus::Ready,
                 last_quorum_loss_duration_in_seconds: 0,
-            }
+            },
         );
 
-        let entity = fixture.producer.produce_partition_health_entity(
-            fixture.token,
-            fake_partition,
-            Uri::from("fabric:/FakeApp/FakeService"),
-            Uri::from("fabric:/FakeApp"),
-        ).await;
+        let entity = fixture
+            .producer
+            .produce_partition_health_entity(
+                fixture.token,
+                fake_partition,
+                Uri::from("fabric:/FakeApp/FakeService"),
+                Uri::from("fabric:/FakeApp"),
+            )
+            .await;
 
         // Should return None because health query will fail
         assert!(entity.is_none(), "Should return None for invalid partition");
@@ -666,16 +706,19 @@ mod tests {
                 replica_address: WString::from(""),
                 node_name: WString::from("FakeNode"),
                 last_in_build_duration_in_seconds: 0,
-            }
+            },
         );
 
-        let entity = fixture.producer.produce_replica_health_entity(
-            fixture.token,
-            mssf_core::GUID::zeroed(),
-            fake_replica,
-            Uri::from("fabric:/FakeApp/FakeService"),
-            Uri::from("fabric:/FakeApp"),
-        ).await;
+        let entity = fixture
+            .producer
+            .produce_replica_health_entity(
+                fixture.token,
+                mssf_core::GUID::zeroed(),
+                fake_replica,
+                Uri::from("fabric:/FakeApp/FakeService"),
+                Uri::from("fabric:/FakeApp"),
+            )
+            .await;
 
         // Should return None because health query will fail
         assert!(entity.is_none(), "Should return None for invalid replica");
@@ -685,16 +728,20 @@ mod tests {
     #[tokio::test]
     async fn test_iteration_counter() {
         let fixture = TestFixture::new();
-        
+
         assert_eq!(fixture.producer.get_iteration(), 0);
-        
+
         // Manually increment to test the atomic counter
-        fixture.producer.iteration.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        fixture
+            .producer
+            .iteration
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         assert_eq!(fixture.producer.get_iteration(), 1);
-        
-        fixture.producer.iteration.fetch_add(5, std::sync::atomic::Ordering::Relaxed);
+
+        fixture
+            .producer
+            .iteration
+            .fetch_add(5, std::sync::atomic::Ordering::Relaxed);
         assert_eq!(fixture.producer.get_iteration(), 6);
     }
 }
-
-

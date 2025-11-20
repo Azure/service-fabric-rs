@@ -43,10 +43,14 @@ pub struct ServiceHealthEntity {
 pub struct PartitionHealthEntity {
     pub partition: mssf_core::types::ServicePartitionQueryResultItem,
     pub health: mssf_core::types::PartitionHealthResult,
+    pub service_name: String,
+    pub application_name: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct ReplicaHealthEntity {
     pub replica: mssf_core::types::ServiceReplicaQueryResultItem,
     pub health: mssf_core::types::ReplicaHealthResult,
+    pub service_name: String,
+    pub application_name: String,
 }

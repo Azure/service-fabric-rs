@@ -28,13 +28,13 @@ use windows_core::PCWSTR;
 #[derive(Debug, Clone)]
 pub enum ServicePartitionInformation {
     Invalid,
-    Singleton(SingletonPartitionInfomation),
+    Singleton(SingletonPartitionInformation),
     Int64Range(Int64PartitionInfomation),
     Named(NamedPartitionInfomation),
 }
 
 #[derive(Debug, Clone)]
-pub struct SingletonPartitionInfomation {
+pub struct SingletonPartitionInformation {
     pub id: GUID,
 }
 
@@ -51,7 +51,7 @@ pub struct NamedPartitionInfomation {
     pub name: WString,
 }
 
-impl From<&FABRIC_SINGLETON_PARTITION_INFORMATION> for SingletonPartitionInfomation {
+impl From<&FABRIC_SINGLETON_PARTITION_INFORMATION> for SingletonPartitionInformation {
     fn from(value: &FABRIC_SINGLETON_PARTITION_INFORMATION) -> Self {
         Self { id: value.Id }
     }

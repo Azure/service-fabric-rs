@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use std::{future::Future, pin::Pin};
+use std::{fmt::Debug, future::Future, pin::Pin};
 
 // Executor is used by rs to post jobs to execute in the background
 // Sync is needed due to we use the executor across await boundary.
@@ -53,5 +53,13 @@ pub type BoxedCancelToken = Box<dyn CancelToken>;
 impl Clone for BoxedCancelToken {
     fn clone(&self) -> Self {
         self.clone_box()
+    }
+}
+
+impl Debug for dyn CancelToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CancelToken")
+            .field("cancelled", &self.is_cancelled())
+            .finish()
     }
 }

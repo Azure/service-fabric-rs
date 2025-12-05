@@ -6,13 +6,13 @@
 #![deny(non_snake_case)] // this file is safe rust
 
 use crate::WString;
-use crate::runtime::StatelessServicePartition;
 use crate::runtime::executor::BoxedCancelToken;
+use crate::types::ServicePartitionInformation;
 
 /// Stateless service factories are registered with the FabricRuntime by service hosts via
 /// Runtime::register_stateless_service_factory().
 ///
-pub trait StatelessServiceFactory {
+pub trait IStatelessServiceFactory: Send + Sync + 'static {
     /// Creates a stateless service instance for a particular service. This method is called by Service Fabric.
     fn create_instance(
         &self,
@@ -21,12 +21,12 @@ pub trait StatelessServiceFactory {
         initializationdata: &[u8],
         partitionid: crate::GUID,
         instanceid: i64,
-    ) -> crate::Result<impl StatelessServiceInstance>;
+    ) -> crate::Result<Box<dyn IStatelessServiceInstance>>;
 }
 
 /// Defines behavior that governs the lifecycle of a stateless service instance, such as startup, initialization, and shutdown.
-#[trait_variant::make(StatelessServiceInstance: Send)]
-pub trait LocalStatelessServiceInstance: Send + Sync + 'static {
+#[async_trait::async_trait]
+pub trait IStatelessServiceInstance: Send + Sync + 'static {
     /// Opens an initialized service instance so that it can be contacted by clients.
     /// Remarks:
     /// Opening an instance stateless service indicates that the service is now resolvable
@@ -35,7 +35,7 @@ pub trait LocalStatelessServiceInstance: Send + Sync + 'static {
     /// clients that resolve the service via resolve_service_partition(uri).
     async fn open(
         &self,
-        partition: StatelessServicePartition,
+        partition: Box<dyn IStatelessServicePartition>,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<WString>;
 
@@ -48,4 +48,36 @@ pub trait LocalStatelessServiceInstance: Send + Sync + 'static {
     /// use of ReportFault(FaultType) to report a Permanent fault. When the service instance receives this method,
     /// it should immediately release and clean up all references and return.
     fn abort(&self);
+}
+
+/// Abstrction for IFStatelessServicePartition interface
+pub trait IStatelessServicePartition: Send + Sync + 'static {
+    fn get_partition_info(&self) -> crate::Result<ServicePartitionInformation>;
+    /// Reports load for the current replica in the partition.
+    /// Remarks:
+    /// The reported metrics should correspond to those that are provided in the ServiceLoadMetricDescription
+    /// as a part of the ServiceDescription that is used to create the service. Load metrics that are not
+    /// present in the description are ignored. Reporting custom metrics allows Service Fabric to balance
+    /// services that are based on additional custom information.
+    fn report_load(&self, metrics: &[crate::types::LoadMetric]) -> crate::Result<()>;
+    /// Enables the replica to report a fault to the runtime and indicates that it has encountered
+    /// an error from which it cannot recover and must either be restarted or removed.
+    fn report_fault(&self, fault_type: crate::types::FaultType) -> crate::Result<()>;
+    /// Reports the move cost for a replica.
+    /// Remarks:
+    /// Services can report move cost of a replica using this method.
+    /// While the Service Fabric Resource Balances searches for the best balance in the cluster,
+    /// it examines both load information and move cost of each replica.
+    /// Resource balances will prefer to move replicas with lower cost in order to achieve balance.
+    fn report_move_cost(&self, move_cost: crate::types::MoveCost) -> crate::Result<()>;
+    /// Reports current partition health.
+    fn report_partition_health(
+        &self,
+        health_info: &crate::types::HealthInformation,
+    ) -> crate::Result<()>;
+    /// Reports health on the current stateless service instance of the partition.
+    fn report_instance_health(
+        &self,
+        health_info: &crate::types::HealthInformation,
+    ) -> crate::Result<()>;
 }

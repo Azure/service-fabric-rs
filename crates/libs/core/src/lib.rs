@@ -44,3 +44,6 @@ pub use windows_core::{GUID, HRESULT, Interface, PCWSTR, Ref, WString};
 /// Windows error type.
 pub use windows_core::Error as WinError;
 pub use windows_core::Result as WinResult;
+
+/// Re-export async_trait for use in defining async traits in mssf-core
+pub use async_trait::async_trait;

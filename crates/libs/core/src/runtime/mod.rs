@@ -26,7 +26,10 @@ pub mod stateful_bridge;
 
 pub mod stateful_proxy;
 
-pub mod stateless;
+mod stateless_traits;
+pub use stateless_traits::{
+    IStatelessServiceFactory, IStatelessServiceInstance, IStatelessServicePartition,
+};
 
 pub mod stateless_bridge;
 mod stateless_proxy;

@@ -6,8 +6,8 @@ use mssf_com::FabricRuntime::{
 
 use super::{
     create_com_runtime, executor::Executor, stateful::StatefulServiceFactory,
-    stateful_bridge::StatefulServiceFactoryBridge, stateless::StatelessServiceFactory,
-    stateless_bridge::StatelessServiceFactoryBridge,
+    stateful_bridge::StatefulServiceFactoryBridge, stateless_bridge::StatelessServiceFactoryBridge,
+    stateless_traits::IStatelessServiceFactory,
 };
 pub struct Runtime<E>
 where
@@ -32,7 +32,7 @@ where
         factory: F,
     ) -> crate::Result<()>
     where
-        F: StatelessServiceFactory + 'static,
+        F: IStatelessServiceFactory + 'static,
     {
         let rt_cp = self.rt.clone();
         let bridge: IFabricStatelessServiceFactory =

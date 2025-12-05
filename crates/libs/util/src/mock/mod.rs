@@ -3,21 +3,11 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-//! mssf utilities and extensions
+// Experimental. APIs may change without notice.
+// Mock utilities for testing.
 
-#[cfg(feature = "tokio")]
-pub mod tokio;
+mod runtime;
+pub use runtime::{CreateServiceArg, StatelessServiceInstanceDriver};
 
-// Requires tokio select
-#[cfg(feature = "tokio")]
-pub mod resolve;
-
-#[cfg(feature = "tokio")]
-pub mod retry;
-
-#[cfg(feature = "tokio")]
-pub mod monitoring;
-
-pub mod data;
-
-pub mod mock;
+mod stateless;
+pub use stateless::StatelessServicePartitionMock;

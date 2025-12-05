@@ -4,17 +4,17 @@
 // ------------------------------------------------------------
 
 use mssf_core::WString;
-use tokio::runtime::Handle;
+use mssf_util::tokio::TokioExecutor;
 
 /// Shared by the entire SF app.
 pub struct AppContext {
     pub port: u32,
     pub hostname: WString,
-    pub rt: Handle,
+    pub rt: TokioExecutor,
 }
 
 impl AppContext {
-    pub fn new(port: u32, hostname: WString, rt: Handle) -> Self {
+    pub fn new(port: u32, hostname: WString, rt: TokioExecutor) -> Self {
         Self { port, hostname, rt }
     }
 

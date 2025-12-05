@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
 use mssf_core::{
     ErrorCode, GUID, WString,
@@ -19,7 +19,7 @@ use mssf_core::{
         ServiceNotificationFilterFlags, ServicePartitionInformation,
         ServicePartitionQueryDescription, ServicePartitionQueryResultItem, ServicePartitionStatus,
         ServiceReplicaQueryDescription, ServiceReplicaQueryResultItem,
-        SingletonPartitionInfomation, StatelessServiceInstanceQueryResult,
+        SingletonPartitionInformation, StatelessServiceInstanceQueryResult,
         StatelessServicePartitionQueryResult, Uri,
     },
 };
@@ -48,7 +48,7 @@ impl EchoTestClient {
         &self,
     ) -> (
         StatelessServicePartitionQueryResult,
-        SingletonPartitionInfomation,
+        SingletonPartitionInformation,
     ) {
         let qc = self.fc.get_query_manager();
         let desc = ServicePartitionQueryDescription {
@@ -524,4 +524,53 @@ async fn test_property_client() {
             assert_eq!(res.get_value_as_wstring().unwrap(), value);
         }
     }
+}
+
+#[tokio::test(flavor = "multi_thread")] // need multi thread for runtime for abort blocking.
+#[test_log::test]
+async fn test_mock() {
+    // TODO: refactor to use system assigned port
+    let app_ctx = Arc::new(crate::app::AppContext::new(
+        12357,
+        "localhost".into(),
+        mssf_util::tokio::TokioExecutor::new(tokio::runtime::Handle::current()),
+    ));
+    let factory = Box::new(crate::service_factory::ServiceFactory::new(app_ctx.clone()));
+    let mut driver = mssf_util::mock::StatelessServiceInstanceDriver::new(factory);
+
+    let create_arg = mssf_util::mock::CreateServiceArg {
+        init_data: vec![],
+        partition_id: GUID::new().unwrap(),
+        instance_id: 1,
+        service_name: Uri::from("fabric:/EchoApp/EchoAppService"),
+        service_type_name: WString::from("EchoAppServiceType"),
+    };
+
+    async fn test_echo_server(app_ctx: &crate::app::AppContext) -> () {
+        use tokio::io::AsyncReadExt;
+        use tokio::io::AsyncWriteExt;
+        // Connect to echo server to verify it's running.
+        let addr = app_ctx.get_addr();
+        let mut stream = tokio::net::TcpStream::connect(addr).await.unwrap();
+        let msg = b"hello echo server";
+        stream.write_all(msg).await.unwrap();
+        let mut buf = vec![0u8; msg.len()];
+        stream.read_exact(&mut buf).await.unwrap();
+        assert_eq!(&buf, msg);
+    }
+
+    driver.create_service_instance(&create_arg).await.unwrap();
+
+    // wait a bit for service to start
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    test_echo_server(&app_ctx).await;
+
+    driver.delete_service_instance().await.unwrap();
+
+    // open again and test abort.
+    driver.create_service_instance(&create_arg).await.unwrap();
+    // wait a bit for service to start
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    test_echo_server(&app_ctx).await;
+    driver.delete_service_instance_force();
 }

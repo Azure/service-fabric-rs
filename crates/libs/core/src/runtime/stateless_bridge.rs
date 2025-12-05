@@ -22,16 +22,16 @@ use mssf_com::{
 };
 use windows_core::{WString, implement};
 
-use super::{
+use crate::runtime::{
     executor::Executor,
-    stateless::{StatelessServiceFactory, StatelessServiceInstance},
+    {IStatelessServiceFactory, IStatelessServiceInstance},
 };
 
 #[implement(IFabricStatelessServiceFactory)]
 pub struct StatelessServiceFactoryBridge<E, F>
 where
     E: Executor + 'static,
-    F: StatelessServiceFactory + 'static,
+    F: IStatelessServiceFactory + 'static,
 {
     inner: F,
     rt: E,
@@ -40,7 +40,7 @@ where
 impl<E, F> StatelessServiceFactoryBridge<E, F>
 where
     E: Executor,
-    F: StatelessServiceFactory,
+    F: IStatelessServiceFactory,
 {
     pub fn create(factory: F, rt: E) -> StatelessServiceFactoryBridge<E, F> {
         StatelessServiceFactoryBridge::<E, F> { inner: factory, rt }
@@ -50,7 +50,7 @@ where
 impl<E, F> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge_Impl<E, F>
 where
     E: Executor,
-    F: StatelessServiceFactory,
+    F: IStatelessServiceFactory,
 {
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     #[cfg_attr(
@@ -93,24 +93,22 @@ where
 // bridge from safe service instance to com
 #[implement(IFabricStatelessServiceInstance)]
 
-struct IFabricStatelessServiceInstanceBridge<E, S>
+pub(crate) struct IFabricStatelessServiceInstanceBridge<E>
 where
     E: Executor,
-    S: StatelessServiceInstance + 'static,
 {
-    inner: Arc<S>,
+    inner: Arc<Box<dyn IStatelessServiceInstance>>,
     rt: E,
 }
 
-impl<E, S> IFabricStatelessServiceInstanceBridge<E, S>
+impl<E> IFabricStatelessServiceInstanceBridge<E>
 where
     E: Executor,
-    S: StatelessServiceInstance,
 {
-    pub fn create(instance: S, rt: E) -> IFabricStatelessServiceInstanceBridge<E, S>
-    where
-        S: StatelessServiceInstance,
-    {
+    pub fn create(
+        instance: Box<dyn IStatelessServiceInstance>,
+        rt: E,
+    ) -> IFabricStatelessServiceInstanceBridge<E> {
         IFabricStatelessServiceInstanceBridge {
             inner: Arc::new(instance),
             rt,
@@ -118,10 +116,9 @@ where
     }
 }
 
-impl<E, S> IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge_Impl<E, S>
+impl<E> IFabricStatelessServiceInstance_Impl for IFabricStatelessServiceInstanceBridge_Impl<E>
 where
     E: Executor,
-    S: StatelessServiceInstance + 'static,
 {
     #[cfg_attr(
         feature = "tracing",
@@ -138,7 +135,7 @@ where
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner
-                .open(partition_bridge, token)
+                .open(Box::new(partition_bridge), token)
                 .await
                 .map(|s| IFabricStringResult::from(StringResult::new(s)))
                 .map_err(crate::WinError::from)

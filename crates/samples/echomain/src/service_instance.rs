@@ -7,8 +7,9 @@ use std::cell::Cell;
 use std::sync::Arc;
 
 use mssf_core::WString;
+use mssf_core::runtime::IStatelessServiceInstance;
+use mssf_core::runtime::IStatelessServicePartition;
 use mssf_core::runtime::executor::BoxedCancelToken;
-use mssf_core::runtime::{StatelessServicePartition, stateless::StatelessServiceInstance};
 use mssf_core::sync::SimpleCancelToken;
 use mssf_core::types::{HealthInformation, ServicePartitionInformation};
 use tokio::sync::Mutex;
@@ -37,12 +38,13 @@ impl ServiceInstance {
     }
 }
 
-impl StatelessServiceInstance for ServiceInstance {
-    #[tracing::instrument(skip(self, partition))]
+#[mssf_core::async_trait]
+impl IStatelessServiceInstance for ServiceInstance {
+    #[tracing::instrument(skip(self, partition, _token))]
     async fn open(
         &self,
-        partition: StatelessServicePartition,
-        _: BoxedCancelToken,
+        partition: Box<dyn IStatelessServicePartition>,
+        _token: BoxedCancelToken,
     ) -> mssf_core::Result<WString> {
         info!("open");
         let info = partition.get_partition_info().unwrap();
@@ -58,16 +60,17 @@ impl StatelessServiceInstance for ServiceInstance {
         let t = self
             .ctx
             .rt
+            .get_ref()
             .spawn(async move { echo::start_echo(rx, addr).await });
         self.task_.lock().await.set(Some(t));
         self.tx_.lock().await.set(Some(tx));
         // send health report
-        send_instance_health_report(&partition);
+        send_instance_health_report(partition.as_ref());
         Ok(WString::from(self.ctx.get_addr()))
     }
 
-    #[tracing::instrument(skip(self))]
-    async fn close(&self, _: BoxedCancelToken) -> mssf_core::Result<()> {
+    #[tracing::instrument(skip(self, _token))]
+    async fn close(&self, _token: BoxedCancelToken) -> mssf_core::Result<()> {
         info!("close");
         if let Some(sender) = self.tx_.lock().await.take() {
             info!("Triggering shutdown");
@@ -99,7 +102,7 @@ impl StatelessServiceInstance for ServiceInstance {
     fn abort(&self) {
         info!("abort");
         // It is ok to block since we are on a fabric thread.
-        self.ctx.rt.block_on(async {
+        self.ctx.rt.block_on_any(async {
             // never cancel
             self.close(SimpleCancelToken::new_boxed()).await.unwrap();
         });
@@ -107,7 +110,7 @@ impl StatelessServiceInstance for ServiceInstance {
 }
 
 /// Send health ok to SF to validate health reporting code
-fn send_instance_health_report(p: &StatelessServicePartition) {
+fn send_instance_health_report(p: &dyn IStatelessServicePartition) {
     let healthinfo = HealthInformation {
         source_id: WString::from("echoapp"),
         property: WString::from("echo-opened"),

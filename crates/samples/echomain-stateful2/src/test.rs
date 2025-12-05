@@ -23,7 +23,7 @@ use mssf_core::{
         ServiceNotificationFilterFlags, ServicePartitionAccessStatus, ServicePartitionInformation,
         ServicePartitionQueryDescription, ServicePartitionQueryResultItem, ServicePartitionStatus,
         ServiceReplicaQueryDescription, ServiceReplicaQueryResultItem, ServiceUpdateDescription,
-        SingletonPartitionInfomation, StatefulServiceDescription,
+        SingletonPartitionInformation, StatefulServiceDescription,
         StatefulServicePartitionQueryResult, StatefulServiceReplicaQueryResult,
         StatefulServiceUpdateDescription, Uri,
     },
@@ -51,7 +51,7 @@ impl TestClient {
         &self,
     ) -> mssf_core::Result<(
         StatefulServicePartitionQueryResult,
-        SingletonPartitionInfomation,
+        SingletonPartitionInformation,
     )> {
         let qc = self.fc.get_query_manager();
         let desc = ServicePartitionQueryDescription {

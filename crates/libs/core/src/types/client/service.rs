@@ -28,7 +28,7 @@ use mssf_com::{
         FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION,
         FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX1,
         FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX2,
-        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX3, FABRIC_URI,
+        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX3,
     },
 };
 use windows_core::{PCWSTR, WString};
@@ -222,15 +222,15 @@ impl StatefulServiceDescription {
 
 pub struct StatelessServiceDescription {
     // common
-    application_name: WString,
-    service_name: WString,
-    service_type_name: WString,
-    initialization_data: Option<Vec<u8>>,
-    partition_scheme_description: PartitionSchemeDescription,
+    pub application_name: Uri,
+    pub service_name: Uri,
+    pub service_type_name: WString,
+    pub initialization_data: Option<Vec<u8>>,
+    pub partition_scheme_description: PartitionSchemeDescription,
     // stateless
-    instance_count: i32,
+    pub instance_count: i32,
     // common
-    placement_contraints: WString,
+    pub placement_contraints: WString,
     _correlations: Vec<WString>, // TODO: FABRIC_SERVICE_CORRELATION_DESCRIPTION
     _metrics: Vec<WString>,      // TODO: FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION
     // ex1
@@ -245,8 +245,8 @@ pub struct StatelessServiceDescription {
 }
 impl StatelessServiceDescription {
     pub fn new(
-        application_name: WString,
-        service_name: WString,
+        application_name: Uri,
+        service_name: Uri,
         service_type_name: WString,
         partition_scheme_description: PartitionSchemeDescription,
     ) -> Self {
@@ -339,8 +339,8 @@ impl StatelessServiceDescription {
             .unwrap_or((std::ptr::null_mut(), 0));
 
         let internal = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION {
-            ApplicationName: FABRIC_URI(self.application_name.as_ptr() as *mut u16),
-            ServiceName: FABRIC_URI(self.service_name.as_ptr() as *mut u16),
+            ApplicationName: self.application_name.as_raw(),
+            ServiceName: self.service_name.as_raw(),
             ServiceTypeName: self.service_type_name.as_pcwstr(),
             InitializationDataSize: init_data_len,
             InitializationData: init_data,

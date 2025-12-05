@@ -15,6 +15,7 @@ package.repository = "https://github.com/Azure/service-fabric-rs"
 package.license = "MIT"
 
 [workspace.dependencies]
+async-trait = "0.1"
 bitflags = "2"
 config = { version = "0.15", default-features = false }
 ctrlc = { version = "3.5", features = [
@@ -40,6 +41,7 @@ tracing = { version = "0.1", features = ["log"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = [
     "fmt",
 ] }
+test-log = "0.2"
 trait-variant = "0.1"
 windows = { version = "0.62", default-features = false }
 windows-bindgen = "0.65"

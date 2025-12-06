@@ -7,9 +7,8 @@
 
 use std::io::Error;
 
-use mssf_core::WString;
-use mssf_core::runtime::stateful_proxy::StatefulServicePartition;
 use mssf_core::types::LoadMetric;
+use mssf_core::{WString, runtime::IStatefulServicePartition};
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 use tracing::{error, info};
@@ -23,7 +22,10 @@ pub fn get_addr(port: u32, hostname: WString) -> String {
 }
 
 /// Report load for the app via SF partition api periodically
-pub async fn report_load_loop(partition: StatefulServicePartition, token: CancellationToken) {
+pub async fn report_load_loop(
+    partition: Box<dyn IStatefulServicePartition>,
+    token: CancellationToken,
+) {
     let mut value = 0;
     let metric_name = WString::from("MyLoad");
     loop {
@@ -51,15 +53,15 @@ pub async fn report_load_loop(partition: StatefulServicePartition, token: Cancel
 }
 
 // main loop entrypoint for the app logic
-pub async fn start_echo(
+pub async fn start_load_report(
     token: CancellationToken,
     port: u32,
     hostname: WString,
-    partition: StatefulServicePartition,
+    partition: Box<dyn IStatefulServicePartition>,
 ) -> Result<(), Error> {
     let addr = get_addr(port, hostname);
-    info!("start_echo: Listening on: {}", addr);
-    // launch report load loop and listner separately
+    info!("start_load_report without listener: {}", addr);
+    // launch report load loop separately
     let h2 = tokio::spawn(async move { report_load_loop(partition, token).await });
 
     if let Err(e) = h2.await {

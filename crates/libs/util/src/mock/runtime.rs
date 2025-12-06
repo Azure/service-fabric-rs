@@ -26,7 +26,7 @@ impl StatelessServiceInstanceDriver {
     }
 }
 
-pub struct CreateServiceArg {
+pub struct CreateStatelessServiceArg {
     pub init_data: Vec<u8>,
     pub partition_id: GUID,
     pub instance_id: i64, // Currently partition id and instance id should be globally unique
@@ -39,7 +39,7 @@ pub struct CreateServiceArg {
 impl StatelessServiceInstanceDriver {
     pub async fn create_service_instance(
         &mut self,
-        desc: &CreateServiceArg,
+        desc: &CreateStatelessServiceArg,
     ) -> mssf_core::Result<()> {
         let service_instance = self
             .service_factory

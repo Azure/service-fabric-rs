@@ -20,7 +20,11 @@ pub mod package_change;
 
 pub mod runtime_wrapper;
 
-pub mod stateful;
+mod stateful_traits;
+pub use stateful_traits::{
+    IPrimaryReplicator, IReplicator, IStatefulServiceFactory, IStatefulServicePartition,
+    IStatefulServiceReplica,
+};
 
 pub mod stateful_bridge;
 

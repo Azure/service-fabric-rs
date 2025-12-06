@@ -28,29 +28,29 @@ use crate::runtime::{
 };
 
 #[implement(IFabricStatelessServiceFactory)]
-pub struct StatelessServiceFactoryBridge<E, F>
+pub struct StatelessServiceFactoryBridge<E>
 where
     E: Executor + 'static,
-    F: IStatelessServiceFactory + 'static,
 {
-    inner: F,
+    inner: Box<dyn IStatelessServiceFactory>,
     rt: E,
 }
 
-impl<E, F> StatelessServiceFactoryBridge<E, F>
+impl<E> StatelessServiceFactoryBridge<E>
 where
     E: Executor,
-    F: IStatelessServiceFactory,
 {
-    pub fn create(factory: F, rt: E) -> StatelessServiceFactoryBridge<E, F> {
-        StatelessServiceFactoryBridge::<E, F> { inner: factory, rt }
+    pub fn create(
+        factory: Box<dyn IStatelessServiceFactory>,
+        rt: E,
+    ) -> StatelessServiceFactoryBridge<E> {
+        StatelessServiceFactoryBridge { inner: factory, rt }
     }
 }
 
-impl<E, F> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge_Impl<E, F>
+impl<E> IFabricStatelessServiceFactory_Impl for StatelessServiceFactoryBridge_Impl<E>
 where
     E: Executor,
-    F: IStatelessServiceFactory,
 {
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     #[cfg_attr(

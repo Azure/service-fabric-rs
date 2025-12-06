@@ -96,7 +96,7 @@ fn main() -> mssf_core::Result<()> {
 
     let runtime = mssf_core::runtime::Runtime::create(e.clone()).unwrap();
     let app_ctx = AppContext::new(port, hostname, e.clone());
-    let factory = service_factory::ServiceFactory::new(Arc::new(app_ctx));
+    let factory = Box::new(service_factory::ServiceFactory::new(Arc::new(app_ctx)));
     runtime
         .register_stateless_service_factory(&WString::from("EchoAppService"), factory)
         .unwrap();

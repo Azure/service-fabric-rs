@@ -3,13 +3,11 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use mssf_core::runtime::IStatefulServicePartition;
 use mssf_core::runtime::executor::BoxedCancelToken;
 use mssf_core::{Error, WString};
 use mssf_core::{
-    runtime::{
-        stateful::{PrimaryReplicator, StatefulServiceFactory, StatefulServiceReplica},
-        stateful_proxy::StatefulServicePartition,
-    },
+    runtime::{IPrimaryReplicator, IStatefulServiceFactory, IStatefulServiceReplica},
     types::{OpenMode, ReplicaRole},
 };
 use mssf_util::data::EmptyReplicator;
@@ -47,7 +45,8 @@ fn get_addr(port: u32, hostname: WString) -> String {
     addr
 }
 
-impl StatefulServiceFactory for Factory {
+#[mssf_core::async_trait]
+impl IStatefulServiceFactory for Factory {
     fn create_replica(
         &self,
         servicetypename: mssf_core::WString,
@@ -55,7 +54,7 @@ impl StatefulServiceFactory for Factory {
         initializationdata: &[u8],
         partitionid: mssf_core::GUID,
         replicaid: i64,
-    ) -> Result<impl StatefulServiceReplica + 'static, Error> {
+    ) -> Result<Box<dyn IStatefulServiceReplica>, Error> {
         info!(
             "Factory::create_replica type {}, service {}, init data size {}, partition {:?}, replica {}",
             servicetypename,
@@ -70,7 +69,11 @@ impl StatefulServiceFactory for Factory {
             self.replication_port,
             self.hostname.clone(),
         );
-        let replica = Replica::new(self.replication_port, self.hostname.clone(), svc);
+        let replica = Box::new(Replica::new(
+            self.replication_port,
+            self.hostname.clone(),
+            svc,
+        ));
         Ok(replica)
     }
 }
@@ -110,18 +113,18 @@ impl Service {
         }
     }
 
-    pub fn start_loop_in_background(&self, partition: &StatefulServicePartition) {
+    pub fn start_loop_in_background(&self, partition: &dyn IStatefulServicePartition) {
         info!("Service::start_loop_in_background");
         self.stop();
         let token = CancellationToken::new();
         self.cancel.lock().unwrap().set(Some(token.clone()));
         let port_copy = self.tcp_port;
         let hostname_copy = self.hostname_.clone();
-        let partition_cp = partition.clone();
+        let partition_cp = partition.clone_box();
         // start the echo server in background
         self.rt.get_ref().spawn(async move {
             info!("Service: start echo");
-            echo::start_echo(token, port_copy, hostname_copy, partition_cp).await
+            echo::start_load_report(token, port_copy, hostname_copy, partition_cp).await
         });
     }
 
@@ -133,55 +136,42 @@ impl Service {
     }
 }
 
-impl StatefulServiceReplica for Replica {
+#[mssf_core::async_trait]
+impl IStatefulServiceReplica for Replica {
+    #[tracing::instrument(skip(self,_token), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()), err, ret)]
     async fn open(
         &self,
-        openmode: OpenMode,
-        partition: StatefulServicePartition,
-        _: BoxedCancelToken,
-    ) -> mssf_core::Result<impl PrimaryReplicator> {
-        self.ctx.init(partition.clone());
-        info!(
-            "Replica::open {openmode:?}, {:?}",
-            self.ctx.get_trace_read_write_status()
-        );
-        self.svc.start_loop_in_background(&partition);
+        _openmode: OpenMode,
+        partition: Box<dyn IStatefulServicePartition>,
+        _token: BoxedCancelToken,
+    ) -> mssf_core::Result<Box<dyn IPrimaryReplicator>> {
+        self.ctx.init(partition.clone_box());
+        self.svc.start_loop_in_background(partition.as_ref());
         // Use empty replicator
-        Ok(EmptyReplicator::new(
+        Ok(Box::new(EmptyReplicator::new(
             WString::from("Stateful2"),
             Some(partition),
-        ))
+        )))
     }
+    #[tracing::instrument(skip(self,_token), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()), err, ret)]
     async fn change_role(
         &self,
-        newrole: ReplicaRole,
-        _: BoxedCancelToken,
+        _newrole: ReplicaRole,
+        _token: BoxedCancelToken,
     ) -> mssf_core::Result<WString> {
-        info!(
-            "Replica::change_role {newrole:?}, {:?}",
-            self.ctx.get_trace_read_write_status()
-        );
-        if newrole == ReplicaRole::Primary {
-            info!("primary {:?}", self.svc.tcp_port);
-        }
         // return the address
         let addr = get_addr(self.port_, self.hostname_.clone());
         let str_res = WString::from(addr);
         Ok(str_res)
     }
-    async fn close(&self, _: BoxedCancelToken) -> mssf_core::Result<()> {
-        info!(
-            "Replica::close: {:?}",
-            self.ctx.get_trace_read_write_status()
-        );
+    #[tracing::instrument(skip(self,_token), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()), err, ret)]
+    async fn close(&self, _token: BoxedCancelToken) -> mssf_core::Result<()> {
         self.svc.stop();
         Ok(())
     }
+    #[tracing::instrument(skip(self), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()))]
     fn abort(&self) {
-        info!(
-            "Replica::abort: {:?}",
-            self.ctx.get_trace_read_write_status()
-        );
+        info!("abort",);
         self.svc.stop();
     }
 }
@@ -189,7 +179,7 @@ impl StatefulServiceReplica for Replica {
 /// Stores info shared between replica and replicator
 #[derive(Clone)]
 pub struct ReplicaCtx {
-    pub partition: Arc<Mutex<Option<StatefulServicePartition>>>,
+    pub partition: Arc<Mutex<Option<Box<dyn IStatefulServicePartition>>>>,
 }
 
 impl ReplicaCtx {
@@ -198,26 +188,28 @@ impl ReplicaCtx {
             partition: Arc::new(Mutex::new(None)),
         }
     }
-    fn init(&self, partition: StatefulServicePartition) {
+    fn init(&self, partition: Box<dyn IStatefulServicePartition>) {
         let prev = self.partition.lock().unwrap().replace(partition);
         assert!(prev.is_none())
     }
 
-    fn get_partition(&self) -> StatefulServicePartition {
+    fn get_partition(&self) -> Option<Box<dyn IStatefulServicePartition>> {
         self.partition
             .lock()
             .unwrap()
             .as_ref()
-            .expect("option null")
-            .clone()
+            .map(|p| p.clone_box())
     }
 
-    fn get_trace_read_write_status(&self) -> String {
+    /// Get read status for tracing.
+    fn read_status(&self) -> Option<mssf_core::types::ServicePartitionAccessStatus> {
         let p = self.get_partition();
-        format!(
-            "read: {:?}, write {:?}",
-            p.get_read_status(),
-            p.get_write_status()
-        )
+        p.and_then(|p| p.get_read_status().ok())
+    }
+
+    /// Get write status for tracing.
+    fn write_status(&self) -> Option<mssf_core::types::ServicePartitionAccessStatus> {
+        let p = self.get_partition();
+        p.and_then(|p| p.get_write_status().ok())
     }
 }

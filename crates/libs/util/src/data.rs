@@ -6,12 +6,12 @@
 //! mssf data utilities and extensions
 //!
 
+use std::sync::Arc;
+
 use mssf_core::{
     WString,
     runtime::{
-        executor::BoxedCancelToken,
-        stateful::{PrimaryReplicator, Replicator},
-        stateful_proxy::StatefulServicePartition,
+        IPrimaryReplicator, IReplicator, IStatefulServicePartition, executor::BoxedCancelToken,
     },
     types::{
         Epoch, ReplicaInformation, ReplicaRole, ReplicaSetConfig, ReplicaSetQuorumMode,
@@ -25,7 +25,7 @@ use mssf_core::{
 #[derive(Clone)]
 pub struct EmptyReplicator {
     name: WString,
-    partition: Option<StatefulServicePartition>,
+    partition: Option<Arc<Box<dyn IStatefulServicePartition>>>,
 }
 
 impl EmptyReplicator {
@@ -55,36 +55,43 @@ impl std::fmt::Debug for EmptyReplicator {
 
 impl EmptyReplicator {
     /// Create a new empty replicator with a name for tracing purpose.
-    pub fn new(name: WString, partition: Option<StatefulServicePartition>) -> EmptyReplicator {
-        EmptyReplicator { name, partition }
+    pub fn new(
+        name: WString,
+        partition: Option<Box<dyn IStatefulServicePartition>>,
+    ) -> EmptyReplicator {
+        EmptyReplicator {
+            name,
+            partition: partition.map(Arc::new),
+        }
     }
 }
 
 // This is basic implementation of Replicator
-impl Replicator for EmptyReplicator {
-    #[tracing::instrument(err, ret)]
-    async fn open(&self, _: BoxedCancelToken) -> mssf_core::Result<WString> {
+#[mssf_core::async_trait]
+impl IReplicator for EmptyReplicator {
+    #[tracing::instrument(skip(_token), err, ret)]
+    async fn open(&self, _token: BoxedCancelToken) -> mssf_core::Result<WString> {
         // Empty replicator does not listen on any address
         Ok(WString::from("NoProtocol://localhost:0"))
     }
 
-    #[tracing::instrument(err, ret)]
-    async fn close(&self, _: BoxedCancelToken) -> mssf_core::Result<()> {
+    #[tracing::instrument(skip(_token), err, ret)]
+    async fn close(&self, _token: BoxedCancelToken) -> mssf_core::Result<()> {
         Ok(())
     }
 
-    #[tracing::instrument(fields(read_status = ?self.read_status(), write_status = ?self.write_status()), err, ret)]
+    #[tracing::instrument(skip(_token), fields(read_status = ?self.read_status(), write_status = ?self.write_status()), err, ret)]
     async fn change_role(
         &self,
-        epoch: Epoch,
-        role: ReplicaRole,
-        _: BoxedCancelToken,
+        _epoch: Epoch,
+        _role: ReplicaRole,
+        _token: BoxedCancelToken,
     ) -> mssf_core::Result<()> {
         Ok(())
     }
 
-    #[tracing::instrument(fields(read_status = ?self.read_status(), write_status = ?self.write_status()), err, ret)]
-    async fn update_epoch(&self, epoch: Epoch, _: BoxedCancelToken) -> mssf_core::Result<()> {
+    #[tracing::instrument(skip(_token), fields(read_status = ?self.read_status(), write_status = ?self.write_status()), err, ret)]
+    async fn update_epoch(&self, _epoch: Epoch, _token: BoxedCancelToken) -> mssf_core::Result<()> {
         Ok(())
     }
 
@@ -98,15 +105,17 @@ impl Replicator for EmptyReplicator {
         Ok(1)
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument()]
     fn abort(&self) {
         tracing::info!("abort");
     }
 }
 
 // This is basic implementation of PrimaryReplicator
-impl PrimaryReplicator for EmptyReplicator {
-    async fn on_data_loss(&self, _: BoxedCancelToken) -> mssf_core::Result<u8> {
+#[mssf_core::async_trait]
+impl IPrimaryReplicator for EmptyReplicator {
+    #[tracing::instrument(skip(_token), err, ret)]
+    async fn on_data_loss(&self, _token: BoxedCancelToken) -> mssf_core::Result<u8> {
         Ok(0)
     }
 
@@ -119,11 +128,11 @@ impl PrimaryReplicator for EmptyReplicator {
         Ok(())
     }
 
-    #[tracing::instrument(fields(read_status = ?self.read_status(), write_status = ?self.write_status()), err, ret)]
+    #[tracing::instrument(skip(_token), fields(read_status = ?self.read_status(), write_status = ?self.write_status()), err, ret)]
     async fn wait_for_catch_up_quorum(
         &self,
-        catchupmode: ReplicaSetQuorumMode,
-        _: BoxedCancelToken,
+        _catchupmode: ReplicaSetQuorumMode,
+        _token: BoxedCancelToken,
     ) -> mssf_core::Result<()> {
         // Before demoting a primary to active secondary in graceful failover (MovePrimary api FabricClient trigger),
         // (R:G, W:P) means read status granted, write status reconfiguration pending.
@@ -156,11 +165,11 @@ impl PrimaryReplicator for EmptyReplicator {
         Ok(())
     }
 
-    #[tracing::instrument(err, ret)]
+    #[tracing::instrument(skip(_token), err, ret)]
     async fn build_replica(
         &self,
-        replica: ReplicaInformation,
-        _: BoxedCancelToken,
+        _replica: ReplicaInformation,
+        _token: BoxedCancelToken,
     ) -> mssf_core::Result<()> {
         Ok(())
     }

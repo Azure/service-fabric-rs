@@ -538,7 +538,7 @@ async fn test_mock() {
     let factory = Box::new(crate::service_factory::ServiceFactory::new(app_ctx.clone()));
     let mut driver = mssf_util::mock::StatelessServiceInstanceDriver::new(factory);
 
-    let create_arg = mssf_util::mock::CreateServiceArg {
+    let create_arg = mssf_util::mock::CreateStatelessServiceArg {
         init_data: vec![],
         partition_id: GUID::new().unwrap(),
         instance_id: 1,

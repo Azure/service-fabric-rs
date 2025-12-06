@@ -14,3 +14,6 @@ tokio-util.workspace = true
 trait-variant.workspace = true
 mssf-core = { workspace = true, default-features = true }
 mssf-util = { workspace = true, default-features = true }
+
+[dev-dependencies]
+test-log.workspace = true

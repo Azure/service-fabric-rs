@@ -10,12 +10,10 @@ use crate::types::ReplicaRole;
 
 use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuorumMode};
 
-use super::stateful_proxy::StatefulServicePartition;
-
 /// Represents a stateful service factory that is responsible for creating replicas
 /// of a specific type of stateful service. Stateful service factories are registered with
 /// the FabricRuntime by service hosts via register_stateful_service_factory().
-pub trait StatefulServiceFactory {
+pub trait IStatefulServiceFactory: Send + Sync + 'static {
     /// Called by Service Fabric to create a stateful service replica for a particular service.
     fn create_replica(
         &self,
@@ -24,15 +22,15 @@ pub trait StatefulServiceFactory {
         initializationdata: &[u8],
         partitionid: crate::GUID,
         replicaid: i64,
-    ) -> crate::Result<impl StatefulServiceReplica>;
+    ) -> crate::Result<Box<dyn IStatefulServiceReplica>>;
 }
 
 /// Defines behavior that governs the lifecycle of a replica, such as startup, initialization, role changes, and shutdown.
 /// Remarks:
 /// Stateful service types must implement this interface. The logic of a stateful service type includes behavior that is
 /// invoked on primary replicas and behavior that is invoked on secondary replicas.
-#[trait_variant::make(StatefulServiceReplica: Send)]
-pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
+#[async_trait::async_trait]
+pub trait IStatefulServiceReplica: Send + Sync + 'static {
     /// Opens an initialized service replica so that additional actions can be taken.
     /// Returns PrimaryReplicator that is used by the stateful service.
     /// Note:
@@ -42,9 +40,9 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: StatefulServicePartition,
+        partition: Box<dyn IStatefulServicePartition>,
         cancellation_token: BoxedCancelToken,
-    ) -> crate::Result<impl PrimaryReplicator>;
+    ) -> crate::Result<Box<dyn IPrimaryReplicator>>;
 
     /// Changes the role of the service replica to one of the ReplicaRole.
     /// Returns the service’s new connection address that is to be associated with the replica via Service Fabric Naming.
@@ -70,8 +68,8 @@ pub trait LocalStatefulServiceReplica: Send + Sync + 'static {
 }
 
 /// TODO: replicator has no public documentation
-#[trait_variant::make(Replicator: Send)]
-pub trait LocalReplicator: Send + Sync + 'static {
+#[async_trait::async_trait]
+pub trait IReplicator: Send + Sync + 'static {
     /// Opens replicator, and returns the replicator address that is visible to primary
     /// in ReplicaInformation.
     /// Remarks:
@@ -137,8 +135,8 @@ pub trait LocalReplicator: Send + Sync + 'static {
 /// TODO: primary replicator has no public documentation, this is gathered unofficially and
 /// is subject to change/correction.
 /// IFabricPrimaryReplicator com interface wrapper.
-#[trait_variant::make(PrimaryReplicator: Send)]
-pub trait LocalPrimaryReplicator: Replicator {
+#[async_trait::async_trait]
+pub trait IPrimaryReplicator: IReplicator {
     // SF calls this to indicate that possible data loss has occurred (write quorum loss),
     // returns is isStateChanged. If true, SF will re-create other secondaries.
     // The default SF impl might be a pass through to the state provider.
@@ -244,4 +242,81 @@ pub trait LocalPrimaryReplicator: Replicator {
     /// is called instead with ReplicaSetConfig not containng the to be removed replica.
     /// SF does not call remove_replica on the replica where build_replica is still running.
     fn remove_replica(&self, replicaid: i64) -> crate::Result<()>;
+}
+
+impl std::fmt::Debug for dyn IPrimaryReplicator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("IPrimaryReplicator").finish()
+    }
+}
+
+pub trait IStatefulServicePartition: Send + Sync + 'static {
+    /// Creates a FabricReplicator with the specified settings and returns it to the replica.
+    /// Not supported currently.
+    fn create_replicator(&self) -> crate::Result<Box<dyn IPrimaryReplicator>>;
+
+    /// Provides access to the ServicePartitionInformation of the service, which contains the partition type and ID.
+    fn get_partition_information(&self)
+    -> crate::Result<crate::types::ServicePartitionInformation>;
+
+    /// Used to check the readiness of the replica in regard to read operations.
+    /// The ReadStatus should be checked before the replica is servicing a customer request that is a read operation.
+    fn get_read_status(&self) -> crate::Result<crate::types::ServicePartitionAccessStatus>;
+
+    /// Used to check the readiness of the partition in regard to write operations.
+    /// The WriteStatus should be checked before the replica services a customer request that is a write operation.
+    fn get_write_status(&self) -> crate::Result<crate::types::ServicePartitionAccessStatus>;
+
+    /// Reports load for the current replica in the partition.
+    /// Remarks:
+    /// The reported metrics should correspond to those that are provided in the ServiceLoadMetricDescription
+    /// as a part of the ServiceDescription that is used to create the service. Load metrics that are not
+    /// present in the description are ignored. Reporting custom metrics allows Service Fabric to balance
+    /// services that are based on additional custom information.
+    fn report_load(&self, metrics: &[crate::types::LoadMetric]) -> crate::Result<()>;
+
+    /// Enables the replica to report a fault to the runtime and indicates that it has encountered
+    /// an error from which it cannot recover and must either be restarted or removed.
+    fn report_fault(&self, fault_type: crate::types::FaultType) -> crate::Result<()>;
+
+    /// Reports the move cost for a replica.
+    /// Remarks:
+    /// Services can report move cost of a replica using this method.
+    /// While the Service Fabric Resource Balances searches for the best balance in the cluster,
+    /// it examines both load information and move cost of each replica.
+    /// Resource balances will prefer to move replicas with lower cost in order to achieve balance.
+    fn report_move_cost(&self, move_cost: crate::types::MoveCost) -> crate::Result<()>;
+
+    // Remarks:
+    // The health information describes the report details, like the source ID, the property,
+    // the health state and other relevant details. The partition uses an internal health client
+    // to send the reports to the health store. The client optimizes messages to Health Manager
+    // by batching reports per a configured duration (Default: 30 seconds). If the report has high priority,
+    // you can specify send options to send it immediately.
+
+    /// Reports current partition health.
+    fn report_partition_health(
+        &self,
+        healthinfo: &crate::types::HealthInformation,
+    ) -> crate::Result<()>;
+
+    /// Reports health on the current stateful service replica of the partition.
+    fn report_replica_health(
+        &self,
+        healthinfo: &crate::types::HealthInformation,
+    ) -> crate::Result<()>;
+
+    /// Returns the com object for proxy interop. This is only used when using Proxy.
+    fn try_get_com(
+        &self,
+    ) -> crate::Result<&mssf_com::FabricRuntime::IFabricStatefulServicePartition>;
+
+    /// Clones the partition object.
+    fn clone_box(&self) -> Box<dyn IStatefulServicePartition>;
+}
+
+impl std::fmt::Debug for dyn IStatefulServicePartition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("IStatefulServicePartition").finish()
+    }
 }

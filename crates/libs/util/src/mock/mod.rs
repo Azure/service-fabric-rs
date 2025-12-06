@@ -7,7 +7,12 @@
 // Mock utilities for testing.
 
 mod runtime;
-pub use runtime::{CreateServiceArg, StatelessServiceInstanceDriver};
+pub use runtime::{CreateStatelessServiceArg, StatelessServiceInstanceDriver};
 
 mod stateless;
 pub use stateless::StatelessServicePartitionMock;
+
+mod stateful;
+pub use stateful::{
+    CreateStatefulServicePartitionArg, StatefulServicePartitionDriver, StatefulServicePartitionMock,
+};

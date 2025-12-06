@@ -8,7 +8,11 @@
 
 use std::ffi::c_void;
 
-use crate::{Interface, WString, runtime::executor::BoxedCancelToken, strings::StringResult};
+use crate::{
+    Interface, WString,
+    runtime::{IStatefulServicePartition, executor::BoxedCancelToken},
+    strings::StringResult,
+};
 use mssf_com::FabricRuntime::{
     IFabricPrimaryReplicator, IFabricReplicator, IFabricReplicatorCatchupSpecificQuorum,
     IFabricStatefulServicePartition3, IFabricStatefulServiceReplica,
@@ -23,7 +27,7 @@ use crate::{
     },
 };
 
-use super::stateful::{PrimaryReplicator, Replicator, StatefulServiceReplica};
+use super::{IPrimaryReplicator, IReplicator, IStatefulServiceReplica};
 use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuorumMode};
 
 pub struct StatefulServiceReplicaProxy {
@@ -36,7 +40,8 @@ impl StatefulServiceReplicaProxy {
     }
 }
 
-impl StatefulServiceReplica for StatefulServiceReplicaProxy {
+#[async_trait::async_trait]
+impl IStatefulServiceReplica for StatefulServiceReplicaProxy {
     #[cfg_attr(
         feature = "tracing",
         tracing::instrument(skip_all, level = "debug", err) // TODO: trace ret
@@ -44,14 +49,18 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: StatefulServicePartition,
+        partition: Box<dyn super::IStatefulServicePartition>,
         cancellation_token: BoxedCancelToken,
-    ) -> crate::Result<impl PrimaryReplicator> {
+    ) -> crate::Result<Box<dyn IPrimaryReplicator>> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
             move |callback| unsafe {
-                com1.BeginOpen(openmode.into(), partition.get_com(), callback)
+                com1.BeginOpen(
+                    openmode.into(),
+                    partition.try_get_com().expect("must support com"),
+                    callback,
+                )
             },
             move |ctx| unsafe { com2.EndOpen(ctx) },
             Some(cancellation_token),
@@ -71,7 +80,7 @@ impl StatefulServiceReplica for StatefulServiceReplicaProxy {
         let p_rplctr: IFabricPrimaryReplicator = rplctr.clone().cast().unwrap(); // must work
         // Replicator must impl primary replicator as well.
 
-        let res = PrimaryReplicatorProxy::new(p_rplctr);
+        let res = Box::new(PrimaryReplicatorProxy::new(p_rplctr));
         Ok(res)
     }
 
@@ -129,7 +138,8 @@ impl ReplicatorProxy {
     }
 }
 
-impl Replicator for ReplicatorProxy {
+#[async_trait::async_trait]
+impl IReplicator for ReplicatorProxy {
     #[cfg_attr(
         feature = "tracing",
         tracing::instrument(skip_all, level = "debug", ret, err)
@@ -240,7 +250,8 @@ impl PrimaryReplicatorProxy {
     }
 }
 
-impl Replicator for PrimaryReplicatorProxy {
+#[async_trait::async_trait]
+impl IReplicator for PrimaryReplicatorProxy {
     async fn open(&self, cancellation_token: BoxedCancelToken) -> crate::Result<WString> {
         self.parent.open(cancellation_token).await
     }
@@ -275,7 +286,8 @@ impl Replicator for PrimaryReplicatorProxy {
     }
 }
 
-impl PrimaryReplicator for PrimaryReplicatorProxy {
+#[async_trait::async_trait]
+impl IPrimaryReplicator for PrimaryReplicatorProxy {
     #[cfg_attr(
         feature = "tracing",
         tracing::instrument(skip_all, level = "debug", ret, err)
@@ -376,85 +388,62 @@ pub struct StatefulServicePartition {
     com_impl: IFabricStatefulServicePartition3,
 }
 
-impl StatefulServicePartition {
-    pub fn get_com(&self) -> &IFabricStatefulServicePartition3 {
-        &self.com_impl
-    }
-
-    /// Provides access to the ServicePartitionInformation of the service, which contains the partition type and ID.
-    pub fn get_partition_information(&self) -> crate::Result<ServicePartitionInformation> {
+impl super::IStatefulServicePartition for StatefulServicePartition {
+    fn get_partition_information(&self) -> crate::Result<ServicePartitionInformation> {
         unsafe { self.com_impl.GetPartitionInfo()?.as_ref() }
             .ok_or(ErrorCode::E_POINTER.into())
             .map(ServicePartitionInformation::from)
     }
 
-    /// Used to check the readiness of the replica in regard to read operations.
-    /// The ReadStatus should be checked before the replica is servicing a customer request that is a read operation.
-    pub fn get_read_status(&self) -> crate::Result<ServicePartitionAccessStatus> {
+    fn get_read_status(&self) -> crate::Result<ServicePartitionAccessStatus> {
         unsafe { self.com_impl.GetReadStatus() }
             .map(ServicePartitionAccessStatus::from)
             .map_err(crate::Error::from)
     }
 
-    /// Used to check the readiness of the partition in regard to write operations.
-    /// The WriteStatus should be checked before the replica services a customer request that is a write operation.
-    pub fn get_write_status(&self) -> crate::Result<ServicePartitionAccessStatus> {
+    fn get_write_status(&self) -> crate::Result<ServicePartitionAccessStatus> {
         unsafe { self.com_impl.GetWriteStatus() }
             .map(ServicePartitionAccessStatus::from)
             .map_err(crate::Error::from)
     }
 
     /// TODO: not implemented
-    /// Creates a FabricReplicator with the specified settings and returns it to the replica.
-    pub fn create_replicator(&self) -> crate::Result<()> {
+    fn create_replicator(&self) -> crate::Result<Box<dyn IPrimaryReplicator>> {
         Err(ErrorCode::E_NOTIMPL.into())
     }
 
-    /// Reports load for the current replica in the partition.
-    /// Remarks:
-    /// The reported metrics should correspond to those that are provided in the ServiceLoadMetricDescription
-    /// as a part of the ServiceDescription that is used to create the service. Load metrics that are not
-    /// present in the description are ignored. Reporting custom metrics allows Service Fabric to balance
-    /// services that are based on additional custom information.
-    pub fn report_load(&self, metrics: &[LoadMetric]) -> crate::Result<()> {
+    fn report_load(&self, metrics: &[LoadMetric]) -> crate::Result<()> {
         let metrics_ref = LoadMetricListRef::from_slice(metrics);
         let raw = metrics_ref.as_raw_slice();
         unsafe { self.com_impl.ReportLoad(raw) }.map_err(crate::Error::from)
     }
 
-    /// Enables the replica to report a fault to the runtime and indicates that it has encountered
-    /// an error from which it cannot recover and must either be restarted or removed.
-    pub fn report_fault(&self, fault_type: FaultType) -> crate::Result<()> {
+    fn report_fault(&self, fault_type: FaultType) -> crate::Result<()> {
         unsafe { self.com_impl.ReportFault(fault_type.into()) }.map_err(crate::Error::from)
     }
 
-    /// Reports the move cost for a replica.
-    /// Remarks:
-    /// Services can report move cost of a replica using this method.
-    /// While the Service Fabric Resource Balances searches for the best balance in the cluster,
-    /// it examines both load information and move cost of each replica.
-    /// Resource balances will prefer to move replicas with lower cost in order to achieve balance.
-    pub fn report_move_cost(&self, move_cost: MoveCost) -> crate::Result<()> {
+    fn report_move_cost(&self, move_cost: MoveCost) -> crate::Result<()> {
         unsafe { self.com_impl.ReportMoveCost(move_cost.into()) }.map_err(crate::Error::from)
     }
 
-    // Remarks:
-    // The health information describes the report details, like the source ID, the property,
-    // the health state and other relevant details. The partition uses an internal health client
-    // to send the reports to the health store. The client optimizes messages to Health Manager
-    // by batching reports per a configured duration (Default: 30 seconds). If the report has high priority,
-    // you can specify send options to send it immediately.
-
-    /// Reports current partition health.
-    pub fn report_partition_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
+    fn report_partition_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
         let healthinfo_ref = &healthinfo.into();
         unsafe { self.com_impl.ReportPartitionHealth(healthinfo_ref) }.map_err(crate::Error::from)
     }
 
-    /// Reports health on the current stateful service replica of the partition.
-    pub fn report_replica_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
+    fn report_replica_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
         let healthinfo_ref = &healthinfo.into();
         unsafe { self.com_impl.ReportReplicaHealth(healthinfo_ref) }.map_err(crate::Error::from)
+    }
+
+    fn try_get_com(
+        &self,
+    ) -> crate::Result<&mssf_com::FabricRuntime::IFabricStatefulServicePartition> {
+        Ok(&self.com_impl)
+    }
+
+    fn clone_box(&self) -> Box<dyn IStatefulServicePartition> {
+        Box::new(self.clone())
     }
 }
 

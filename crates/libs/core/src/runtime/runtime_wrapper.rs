@@ -5,8 +5,8 @@ use mssf_com::FabricRuntime::{
 };
 
 use super::{
-    create_com_runtime, executor::Executor, stateful::StatefulServiceFactory,
-    stateful_bridge::StatefulServiceFactoryBridge, stateless_bridge::StatelessServiceFactoryBridge,
+    create_com_runtime, executor::Executor, stateful_bridge::StatefulServiceFactoryBridge,
+    stateful_traits::IStatefulServiceFactory, stateless_bridge::StatelessServiceFactoryBridge,
     stateless_traits::IStatelessServiceFactory,
 };
 pub struct Runtime<E>
@@ -26,14 +26,11 @@ where
         Ok(Runtime { com_impl: com, rt })
     }
 
-    pub fn register_stateless_service_factory<F>(
+    pub fn register_stateless_service_factory(
         &self,
         servicetypename: &WString,
-        factory: F,
-    ) -> crate::Result<()>
-    where
-        F: IStatelessServiceFactory + 'static,
-    {
+        factory: Box<dyn IStatelessServiceFactory>,
+    ) -> crate::Result<()> {
         let rt_cp = self.rt.clone();
         let bridge: IFabricStatelessServiceFactory =
             StatelessServiceFactoryBridge::create(factory, rt_cp).into();
@@ -47,7 +44,7 @@ where
     pub fn register_stateful_service_factory(
         &self,
         servicetypename: &WString,
-        factory: impl StatefulServiceFactory + 'static,
+        factory: Box<dyn IStatefulServiceFactory>,
     ) -> crate::Result<()> {
         let rt_cp = self.rt.clone();
         let bridge: IFabricStatefulServiceFactory =

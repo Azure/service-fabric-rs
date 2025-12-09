@@ -9,9 +9,10 @@ use mssf_com::{
 use mssf_core::{
     Error, GUID, WString,
     runtime::{
+        IPrimaryReplicator, IStatefulServiceFactory, IStatefulServicePartition,
+        IStatefulServiceReplica,
         executor::BoxedCancelToken,
-        stateful::{PrimaryReplicator, StatefulServiceFactory, StatefulServiceReplica},
-        stateful_proxy::{StatefulServicePartition, StatefulServiceReplicaProxy},
+        stateful_proxy::StatefulServiceReplicaProxy,
         store::{DummyStoreEventHandler, create_com_key_value_store_replica},
         store_proxy::KVStoreProxy,
     },
@@ -47,7 +48,7 @@ fn get_addr(port: u32, hostname: WString) -> String {
     addr
 }
 
-impl StatefulServiceFactory for Factory {
+impl IStatefulServiceFactory for Factory {
     fn create_replica(
         &self,
         servicetypename: WString,
@@ -55,7 +56,7 @@ impl StatefulServiceFactory for Factory {
         initializationdata: &[u8],
         partitionid: GUID,
         replicaid: i64,
-    ) -> Result<impl StatefulServiceReplica, Error> {
+    ) -> Result<Box<dyn IStatefulServiceReplica>, Error> {
         info!(
             "Factory::create_replica type {}, service {}, init data size {}",
             servicetypename,
@@ -88,7 +89,7 @@ impl StatefulServiceFactory for Factory {
 
         let svc = Service::new(kv, self.rt.clone());
 
-        let replica = Replica::new(proxy, svc);
+        let replica = Box::new(Replica::new(proxy, svc));
         Ok(replica)
     }
 }
@@ -178,13 +179,14 @@ impl Service {
     }
 }
 
-impl StatefulServiceReplica for Replica {
+#[mssf_core::async_trait]
+impl IStatefulServiceReplica for Replica {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: StatefulServicePartition,
+        partition: Box<dyn IStatefulServicePartition>,
         cancellation_token: BoxedCancelToken,
-    ) -> mssf_core::Result<impl PrimaryReplicator> {
+    ) -> mssf_core::Result<Box<dyn IPrimaryReplicator>> {
         // should be primary replicator
         info!("Replica::open {:?}", openmode);
         self.kv.open(openmode, partition, cancellation_token).await

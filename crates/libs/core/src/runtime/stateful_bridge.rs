@@ -38,37 +38,37 @@ use crate::{
 };
 
 use super::{
+    IPrimaryReplicator, IReplicator, IStatefulServiceFactory, IStatefulServiceReplica,
     executor::Executor,
-    stateful::{PrimaryReplicator, Replicator, StatefulServiceFactory, StatefulServiceReplica},
 };
 // bridges from rs into com
 
 // region: StatefulServiceFactoryBridge
 
 #[implement(IFabricStatefulServiceFactory)]
-pub struct StatefulServiceFactoryBridge<E, F>
+pub struct StatefulServiceFactoryBridge<E>
 where
     E: Executor + 'static,
-    F: StatefulServiceFactory + 'static,
 {
-    inner: F,
+    inner: Box<dyn IStatefulServiceFactory>,
     rt: E,
 }
 
-impl<E, F> StatefulServiceFactoryBridge<E, F>
+impl<E> StatefulServiceFactoryBridge<E>
 where
     E: Executor,
-    F: StatefulServiceFactory,
 {
-    pub fn create(factory: F, rt: E) -> StatefulServiceFactoryBridge<E, F> {
-        StatefulServiceFactoryBridge::<E, F> { inner: factory, rt }
+    pub fn create(
+        factory: Box<dyn IStatefulServiceFactory>,
+        rt: E,
+    ) -> StatefulServiceFactoryBridge<E> {
+        StatefulServiceFactoryBridge { inner: factory, rt }
     }
 }
 
-impl<E, F> IFabricStatefulServiceFactory_Impl for StatefulServiceFactoryBridge_Impl<E, F>
+impl<E> IFabricStatefulServiceFactory_Impl for StatefulServiceFactoryBridge_Impl<E>
 where
     E: Executor,
-    F: StatefulServiceFactory,
 {
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
     #[cfg_attr(
@@ -114,28 +114,29 @@ where
 /// bridge from safe service instance to com
 #[implement(IFabricReplicator)]
 
-pub struct IFabricReplicatorBridge<E, R>
+pub struct IFabricReplicatorBridge<E>
 where
     E: Executor,
-    R: Replicator,
 {
-    inner: Arc<R>,
+    inner: Arc<Box<dyn IReplicator>>,
     rt: E,
 }
 
-impl<E, R> IFabricReplicatorBridge<E, R>
+impl<E> IFabricReplicatorBridge<E>
 where
     E: Executor,
-    R: Replicator,
 {
-    pub fn create(rplctr: R, rt: E) -> IFabricReplicatorBridge<E, R> {
+    pub fn create(rplctr: Box<dyn IReplicator>, rt: E) -> IFabricReplicatorBridge<E> {
         IFabricReplicatorBridge {
             inner: Arc::new(rplctr),
             rt,
         }
     }
 
-    fn create_from_primary_replicator(replicator: Arc<R>, rt: E) -> IFabricReplicatorBridge<E, R> {
+    fn create_from_primary_replicator(
+        replicator: Arc<Box<dyn IReplicator>>,
+        rt: E,
+    ) -> IFabricReplicatorBridge<E> {
         IFabricReplicatorBridge {
             inner: replicator,
             rt,
@@ -143,10 +144,9 @@ where
     }
 }
 
-impl<E, R> IFabricReplicator_Impl for IFabricReplicatorBridge_Impl<E, R>
+impl<E> IFabricReplicator_Impl for IFabricReplicatorBridge_Impl<E>
 where
     E: Executor,
-    R: Replicator,
 {
     #[cfg_attr(
         feature = "tracing",
@@ -308,35 +308,33 @@ where
 // Nearly all replicators in cpp and csharp all enables CatchupSpecificQuorum, and not enabling it
 // is a rare case.
 #[implement(IFabricPrimaryReplicator, IFabricReplicatorCatchupSpecificQuorum)]
-pub struct IFabricPrimaryReplicatorBridge<E, P>
+pub struct IFabricPrimaryReplicatorBridge<E>
 where
     E: Executor,
-    P: PrimaryReplicator,
 {
-    inner: Arc<P>,
+    inner: Arc<Box<dyn IPrimaryReplicator>>,
     rt: E,
     rplctr: IFabricReplicator,
 }
 
-impl<E, P> IFabricPrimaryReplicatorBridge<E, P>
+impl<E> IFabricPrimaryReplicatorBridge<E>
 where
     E: Executor,
-    P: PrimaryReplicator,
 {
-    pub fn create(rplctr: P, rt: E) -> IFabricPrimaryReplicatorBridge<E, P> {
+    pub fn create(rplctr: Box<dyn IPrimaryReplicator>, rt: E) -> IFabricPrimaryReplicatorBridge<E> {
         let inner = Arc::new(rplctr);
 
         // hack to construct a replicator bridge.
-        // let raw: *const Box<dyn PrimaryReplicator> = Arc::into_raw(inner.clone());
-        // let raw: *const Box<dyn Replicator> = raw.cast();
+        let raw: *const Box<dyn IPrimaryReplicator> = Arc::into_raw(inner.clone());
+        let raw: *const Box<dyn IReplicator> = raw.cast();
 
-        // let rpl_cast = unsafe { Arc::from_raw(raw) };
         // SAFETY: This is safe because the pointer orignally came from an Arc
         // with the same size and alignment since we've checked (via Any) that
         // the object within is the type being casted to.
+        let rpl_cast = unsafe { Arc::from_raw(raw) };
 
         let replicator_bridge =
-            IFabricReplicatorBridge::create_from_primary_replicator(inner.clone(), rt.clone());
+            IFabricReplicatorBridge::create_from_primary_replicator(rpl_cast, rt.clone());
 
         IFabricPrimaryReplicatorBridge {
             inner,
@@ -347,10 +345,9 @@ where
 }
 
 // TODO: this impl has duplicate code with replicator bridge
-impl<E, P> IFabricReplicator_Impl for IFabricPrimaryReplicatorBridge_Impl<E, P>
+impl<E> IFabricReplicator_Impl for IFabricPrimaryReplicatorBridge_Impl<E>
 where
     E: Executor,
-    P: PrimaryReplicator,
 {
     fn BeginOpen(
         &self,
@@ -426,10 +423,9 @@ where
     }
 }
 
-impl<E, P> IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorBridge_Impl<E, P>
+impl<E> IFabricPrimaryReplicator_Impl for IFabricPrimaryReplicatorBridge_Impl<E>
 where
     E: Executor,
-    P: PrimaryReplicator,
 {
     #[cfg_attr(
         feature = "tracing",
@@ -572,10 +568,8 @@ where
     }
 }
 
-impl<E, P> IFabricReplicatorCatchupSpecificQuorum_Impl for IFabricPrimaryReplicatorBridge_Impl<E, P>
-where
-    E: Executor,
-    P: PrimaryReplicator,
+impl<E> IFabricReplicatorCatchupSpecificQuorum_Impl for IFabricPrimaryReplicatorBridge_Impl<E> where
+    E: Executor
 {
 }
 // endregion: IFabricPrimaryReplicatorBridge
@@ -586,21 +580,22 @@ where
 // Bridge from safe service instance to com
 #[implement(IFabricStatefulServiceReplica)]
 
-pub struct IFabricStatefulServiceReplicaBridge<E, R>
+pub struct IFabricStatefulServiceReplicaBridge<E>
 where
     E: Executor,
-    R: StatefulServiceReplica + 'static,
 {
-    inner: Arc<R>,
+    inner: Arc<Box<dyn IStatefulServiceReplica>>,
     rt: E,
 }
 
-impl<E, R> IFabricStatefulServiceReplicaBridge<E, R>
+impl<E> IFabricStatefulServiceReplicaBridge<E>
 where
     E: Executor,
-    R: StatefulServiceReplica,
 {
-    pub fn create(rplctr: R, rt: E) -> IFabricStatefulServiceReplicaBridge<E, R> {
+    pub fn create(
+        rplctr: Box<dyn IStatefulServiceReplica>,
+        rt: E,
+    ) -> IFabricStatefulServiceReplicaBridge<E> {
         IFabricStatefulServiceReplicaBridge {
             inner: Arc::new(rplctr),
             rt,
@@ -608,10 +603,9 @@ where
     }
 }
 
-impl<E, R> IFabricStatefulServiceReplica_Impl for IFabricStatefulServiceReplicaBridge_Impl<E, R>
+impl<E> IFabricStatefulServiceReplica_Impl for IFabricStatefulServiceReplicaBridge_Impl<E>
 where
     E: Executor,
-    R: StatefulServiceReplica,
 {
     #[cfg_attr(
         feature = "tracing",
@@ -630,7 +624,7 @@ where
             .unwrap()
             .cast::<IFabricStatefulServicePartition3>()
             .expect("cannot query interface");
-        let partition = StatefulServicePartition::from(&com_partition);
+        let partition = Box::new(StatefulServicePartition::from(&com_partition));
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner

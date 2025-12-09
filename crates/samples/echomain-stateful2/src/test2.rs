@@ -12,7 +12,7 @@ use mssf_core::{
     },
     types::{ReplicaRole, ServicePartitionInformation, ServicePartitionQueryResultItem, Uri},
 };
-use mssf_util::resolve::ServicePartitionResolver;
+use mssf_util::{resolve::ServicePartitionResolver, tokio::TokioExecutor};
 
 async fn restart_primary(uri: &Uri, fc: &FabricClient) {
     let sm = TestCreateUpdateClient::new(fc.clone());
@@ -217,4 +217,23 @@ async fn test_resolve_notification() {
     // This is a bug in FabricClient.
     drop(fc);
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test_log::test]
+async fn test_replica_mock() {
+    use crate::Factory;
+    let rt = TokioExecutor::new(tokio::runtime::Handle::current());
+    let factory = Box::new(Factory::create(12312, "localhost".into(), rt));
+
+    let mut driver = mssf_util::mock::StatefulServicePartitionDriver::new(factory);
+    let args = mssf_util::mock::CreateStatefulServicePartitionArg {
+        partition_id: 1.into(),
+        replica_count: 3,
+        service_type_name: crate::SERVICE_TYPE_NAME.into(),
+        service_name: "fabric:/StatefulEchoApp/DummyTest".into(),
+        init_data: vec![],
+    };
+    driver.create_service_partition(&args).await.unwrap();
+    driver.delete_service_partition().await.unwrap();
 }

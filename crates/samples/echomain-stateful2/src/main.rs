@@ -18,6 +18,8 @@ mod test;
 #[cfg(test)]
 mod test2;
 
+const SERVICE_TYPE_NAME: &str = "StatefulEchoAppService";
+
 fn main() -> mssf_core::Result<()> {
     tracing_subscriber::fmt().init();
     info!("main start");
@@ -31,9 +33,9 @@ fn main() -> mssf_core::Result<()> {
         .unwrap();
     let hostname = get_hostname().expect("cannot get hostname");
 
-    let factory = Factory::create(endpoint.port, hostname, e.clone());
+    let factory = Box::new(Factory::create(endpoint.port, hostname, e.clone()));
     runtime
-        .register_stateful_service_factory(&WString::from("StatefulEchoAppService"), factory)
+        .register_stateful_service_factory(&WString::from(SERVICE_TYPE_NAME), factory)
         .unwrap();
 
     e.block_until_ctrlc();

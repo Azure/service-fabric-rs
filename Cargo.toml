@@ -22,7 +22,7 @@ ctrlc = { version = "3.5", features = [
     "termination",
 ], default-features = false }
 futures-channel = { version = "0.3", features = [], default-features = false }
-libloading = "0.8"
+libloading = "0.9"
 lazy_static = "1.5"
 serde = "1"
 serde_derive = "1"
@@ -49,6 +49,6 @@ windows-core = "0.62"
 
 # crates in this repo
 mssf-com = { version = "0.5", path = "./crates/libs/com", default-features = false }
-mssf-core = { version = "0.5", path = "./crates/libs/core", default-features = false }
+mssf-core = { version = "0.6", path = "./crates/libs/core", default-features = false }
 mssf-pal = { version = "0.5", path = "./crates/libs/pal", default-features = true }
-mssf-util = { version = "0.5", path = "./crates/libs/util", default-features = true }
+mssf-util = { version = "0.6", path = "./crates/libs/util", default-features = true }

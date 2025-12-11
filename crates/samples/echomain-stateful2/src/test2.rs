@@ -226,7 +226,8 @@ async fn test_replica_mock() {
     let rt = TokioExecutor::new(tokio::runtime::Handle::current());
     let factory = Box::new(Factory::create(12312, "localhost".into(), rt));
 
-    let mut driver = mssf_util::mock::StatefulServicePartitionDriver::new(factory);
+    let mut driver = mssf_util::mock::StatefulServicePartitionDriver::new();
+    driver.register_service_factory(factory);
     let args = mssf_util::mock::CreateStatefulServicePartitionArg {
         partition_id: 1.into(),
         replica_count: 3,
@@ -235,5 +236,25 @@ async fn test_replica_mock() {
         init_data: vec![],
     };
     driver.create_service_partition(&args).await.unwrap();
+
+    let primary_id = driver.get_primary_replica_id();
+    let replica_count = driver.list_replica_ids().len();
+    assert_eq!(replica_count, args.replica_count);
+
+    // restart secondaries one by one
+    let secondary_ids = driver
+        .list_replica_ids()
+        .into_iter()
+        .filter(|id| *id != primary_id)
+        .collect::<Vec<_>>();
+    for sid in &secondary_ids {
+        tracing::info!("Restarting secondary with id {}", sid);
+        driver.restart_secondary_graceful(*sid).await.unwrap();
+    }
+    // primary should not change
+    assert_eq!(driver.get_primary_replica_id(), primary_id);
+    assert_eq!(driver.list_replica_ids().len(), replica_count);
+
+    tracing::info!("Deleting the service partition");
     driver.delete_service_partition().await.unwrap();
 }

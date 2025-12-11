@@ -126,7 +126,7 @@ impl From<FABRIC_REPLICA_STATUS> for ReplicaStatus {
 }
 
 // Safe wrapping for FABRIC_REPLICA_SET_CONFIGURATION
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ReplicaSetConfig {
     pub replicas: Vec<ReplicaInformation>,
     pub write_quorum: u32,

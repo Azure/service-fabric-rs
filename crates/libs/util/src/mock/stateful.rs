@@ -107,6 +107,7 @@ impl IStatefulServicePartition for StatefulServicePartitionMock {
     }
 }
 
+#[derive(Clone)]
 pub struct CreateStatefulServicePartitionArg {
     pub partition_id: GUID,
     pub replica_count: usize,
@@ -117,9 +118,11 @@ pub struct CreateStatefulServicePartitionArg {
 
 /// Test driver for a single stateful service replica.
 pub struct StatefulServicePartitionDriver {
-    service_factory: Box<dyn mssf_core::runtime::IStatefulServiceFactory>,
+    /// This keeps track of which factory to use next.
+    factory_index: i64,
+    service_factory: Vec<Box<dyn mssf_core::runtime::IStatefulServiceFactory>>,
     replica_index: i64,
-    epoch_index: Epoch,
+    epoch_index: Epoch, // Used to generate new epoch.
     partition_state: PartitionState,
 }
 
@@ -127,21 +130,31 @@ struct PartitionState {
     pub replica_states: HashMap<i64, StatefulServiceReplicaState>,
     pub primary_index: i64,
     pub epoch: Epoch,
+    pub static_info: Option<CreateStatefulServicePartitionArg>, // Filled when created.
+    pub current_configuration: mssf_core::types::ReplicaSetConfig,
 }
 
 struct StatefulServiceReplicaState {
     pub replica: Box<dyn mssf_core::runtime::IStatefulServiceReplica>,
     pub replicator: Box<dyn mssf_core::runtime::IPrimaryReplicator>,
     pub partition: StatefulServicePartitionMock,
+    pub factory_index: i64, // The index of the factory that created the replica
     pub _replica_address: WString,
     pub _replicator_address: WString,
 }
 
+impl Default for StatefulServicePartitionDriver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StatefulServicePartitionDriver {
-    pub fn new(service_factory: Box<dyn mssf_core::runtime::IStatefulServiceFactory>) -> Self {
+    pub fn new() -> Self {
         Self {
-            service_factory,
-            replica_index: 1,
+            service_factory: Vec::new(),
+            factory_index: 0,
+            replica_index: 1, // replica id starting from 1
             epoch_index: Epoch {
                 data_loss_number: 0,
                 configuration_number: 1,
@@ -153,8 +166,36 @@ impl StatefulServicePartitionDriver {
                     data_loss_number: 0,
                     configuration_number: 1,
                 },
+                static_info: None,
+                current_configuration: mssf_core::types::ReplicaSetConfig {
+                    replicas: vec![],
+                    write_quorum: 0,
+                },
             },
         }
+    }
+
+    /// Register a service factory to be used to create replicas.
+    /// One should register multiple factories to simulate multi node scenarios.
+    /// Replicas are created in round robin fashion from the registered factories.
+    pub fn register_service_factory(
+        &mut self,
+        factory: Box<dyn mssf_core::runtime::IStatefulServiceFactory>,
+    ) {
+        self.service_factory.push(factory);
+    }
+
+    /// Get the next service factory in round robin fashion.
+    /// This ensures that multiple factories can be tested, to simulate
+    /// multi node scenarios.
+    /// Returns the current index and the factory.
+    fn get_round_robin_factory(
+        &mut self,
+    ) -> (i64, &dyn mssf_core::runtime::IStatefulServiceFactory) {
+        assert!(!self.service_factory.is_empty());
+        let idx = self.factory_index as usize % self.service_factory.len();
+        self.factory_index += 1;
+        (idx as i64, &*self.service_factory[idx])
     }
 
     fn next_replica_index(&mut self) -> i64 {
@@ -169,6 +210,71 @@ impl StatefulServicePartitionDriver {
         idx
     }
 
+    fn get_primary_state(&self) -> mssf_core::Result<&StatefulServiceReplicaState> {
+        let state = self
+            .partition_state
+            .replica_states
+            .get(&self.partition_state.primary_index)
+            .ok_or_else(|| {
+                mssf_core::Error::from(mssf_core::ErrorCode::FABRIC_E_REPLICA_DOES_NOT_EXIST)
+            })?;
+        Ok(state)
+    }
+
+    /// Check the invariants of the partition state.
+    /// Panics if any invariant is violated.
+    fn check_partition_state(&self) {
+        if self.partition_state.replica_states.is_empty() {
+            assert!(self.partition_state.static_info.is_none());
+            assert_eq!(self.partition_state.current_configuration.replicas.len(), 0);
+            assert_eq!(self.partition_state.current_configuration.write_quorum, 0);
+            return;
+        }
+        // check primary exists
+        self.get_primary_state().unwrap();
+        // check quorum size matches
+        let expected_quorum = (self.partition_state.replica_states.len() as u32) / 2 + 1;
+        assert_eq!(
+            self.partition_state.current_configuration.write_quorum,
+            expected_quorum
+        );
+    }
+}
+
+// Public Accessors
+impl StatefulServicePartitionDriver {
+    /// Get the current primary replica id.
+    pub fn get_primary_replica_id(&self) -> i64 {
+        self.partition_state.primary_index
+    }
+    /// Get a replica by id.
+    pub fn get_replica(
+        &self,
+        replica_id: i64,
+    ) -> Option<&dyn mssf_core::runtime::IStatefulServiceReplica> {
+        let state = self.partition_state.replica_states.get(&replica_id);
+        state.map(|s| s.replica.as_ref())
+    }
+    /// Get a replicator by replica id.
+    pub fn get_replicator(
+        &self,
+        replica_id: i64,
+    ) -> Option<&dyn mssf_core::runtime::IPrimaryReplicator> {
+        let state = self.partition_state.replica_states.get(&replica_id);
+        state.map(|s| s.replicator.as_ref())
+    }
+    /// List all replica ids.
+    pub fn list_replica_ids(&self) -> Vec<i64> {
+        self.partition_state
+            .replica_states
+            .keys()
+            .cloned()
+            .collect()
+    }
+}
+
+// Workflow implementations.
+impl StatefulServicePartitionDriver {
     /// Create a stateful service partition with the specified number of replicas.
     /// The first replica is the primary.
     /// Runs the replica build steps.
@@ -188,8 +294,8 @@ impl StatefulServicePartitionDriver {
 
         for _ in 0..desc.replica_count {
             let id = self.next_replica_index();
-            let replica = self
-                .service_factory
+            let (factory_index, factory) = self.get_round_robin_factory();
+            let replica = factory
                 .create_replica(
                     desc.service_type_name.clone(),
                     desc.service_name.clone(),
@@ -200,12 +306,12 @@ impl StatefulServicePartitionDriver {
                 .inspect_err(|e| {
                     tracing::error!("Failed to create stateful service replica: {:?}", e)
                 })?;
-            let prev = replicas.insert(id, replica);
+            let prev = replicas.insert(id, (factory_index, replica));
             assert!(prev.is_none(), "Service replica already exists");
         }
 
         // open all replicas
-        for (id, replica) in &replicas {
+        for (id, (_, replica)) in &replicas {
             let cancellation_token = mssf_core::sync::SimpleCancelToken::new_boxed();
             // TODO: support other partition schemes.
             let partition =
@@ -260,7 +366,7 @@ impl StatefulServicePartitionDriver {
         }
 
         // assign roles to replicas. First one is primary.
-        for (id, replica) in &replicas {
+        for (id, (_, replica)) in &replicas {
             let cancellation_token = mssf_core::sync::SimpleCancelToken::new_boxed();
             let replica_addr = if *id == self.partition_state.primary_index {
                 replica
@@ -281,15 +387,15 @@ impl StatefulServicePartitionDriver {
         let primary = replicators
             .get(&self.partition_state.primary_index)
             .unwrap();
-        for id in replicas.keys() {
+        for (id, (_, replica)) in &replicas {
             if *id == self.partition_state.primary_index {
                 let replica_info = mssf_core::types::ReplicaInformation {
                     replicator_address: replicator_addresses.get(id).unwrap().clone(),
                     id: *id,
                     role: mssf_core::types::ReplicaRole::Primary,
                     status: mssf_core::types::ReplicaStatus::Up,
-                    current_progress: 0,
-                    catch_up_capability: 0,
+                    current_progress: -1, // -1 for invalid. observed in sf logs.
+                    catch_up_capability: -1,
                     must_catch_up: false,
                 };
                 replica_infos.insert(*id, replica_info);
@@ -301,61 +407,61 @@ impl StatefulServicePartitionDriver {
                 id: *id,
                 role: mssf_core::types::ReplicaRole::IdleSecondary,
                 status: mssf_core::types::ReplicaStatus::Up,
-                current_progress: 0,
-                catch_up_capability: 0,
+                current_progress: -1,
+                catch_up_capability: -1,
                 must_catch_up: false,
             };
             replica_infos.insert(*id, replica_info.clone());
             primary
                 .build_replica(replica_info, cancellation_token)
                 .await?;
-        }
-
-        // update catch up replica set config
-        let currentconfiguration = mssf_core::types::ReplicaSetConfig {
-            replicas: replica_infos.values().cloned().collect(),
-            write_quorum: (replicas.len() / 2 + 1) as u32,
-        };
-        let priv_config = mssf_core::types::ReplicaSetConfig {
-            replicas: vec![],
-            write_quorum: 0,
-        };
-        primary.update_catch_up_replica_set_configuration(currentconfiguration, priv_config)?;
-
-        // wait for catch up
-        primary
-            .wait_for_catch_up_quorum(
-                mssf_core::types::ReplicaSetQuorumMode::All,
-                SimpleCancelToken::new_boxed(),
-            )
-            .await?;
-
-        // Change secondaries to active secondaries.
-        for (id, replica) in &replicas {
-            if *id == 1 {
-                continue;
-            }
-            let cancellation_token = SimpleCancelToken::new_boxed();
+            // change role to active secondary after successful build.
             replica
                 .change_role(
                     mssf_core::types::ReplicaRole::ActiveSecondary,
-                    cancellation_token,
+                    SimpleCancelToken::new_boxed(),
                 )
                 .await?;
             // update the replica info
             replica_infos.get_mut(id).unwrap().role =
                 mssf_core::types::ReplicaRole::ActiveSecondary;
         }
-        // update current configuration
-        {
-            let currentconfiguration = mssf_core::types::ReplicaSetConfig {
-                replicas: replica_infos.values().cloned().collect(),
-                write_quorum: (replicas.len() / 2 + 1) as u32,
-            };
-            primary.update_current_replica_set_configuration(currentconfiguration)?;
+
+        // Run update catchup workflow for each secondary replica. Exclude primary.
+        let mut new_config = mssf_core::types::ReplicaSetConfig {
+            replicas: vec![],
+            write_quorum: 1, // for primary
+        };
+        let mut ready_replicas = 1;
+        for id in replicas.keys() {
+            if *id == self.partition_state.primary_index {
+                continue;
+            }
+            let prev_config = new_config.clone();
+            // construct new config
+            let replica_info = replica_infos.get(id).unwrap().clone();
+            new_config.replicas.push(replica_info);
+            ready_replicas += 1;
+            new_config.write_quorum = ready_replicas / 2 + 1_u32;
+
+            primary.update_catch_up_replica_set_configuration(new_config.clone(), prev_config)?;
+
+            // wait for catch up
+            primary
+                .wait_for_catch_up_quorum(
+                    mssf_core::types::ReplicaSetQuorumMode::Write,
+                    SimpleCancelToken::new_boxed(),
+                )
+                .await?;
+            // update current configuration
+            primary.update_current_replica_set_configuration(new_config.clone())?;
+            self.partition_state.current_configuration = new_config.clone();
         }
 
         // Update read write status.
+        // TODO: This might not be accurate.
+        // Maybe for primary it is always granted.
+        // Since the quorum size is increasing and no replica down during build process.
         for (id, partition) in &partitions {
             if *id == self.partition_state.primary_index {
                 partition.set_read_status(mssf_core::types::ServicePartitionAccessStatus::Granted);
@@ -369,20 +475,25 @@ impl StatefulServicePartitionDriver {
         }
 
         // Save the state.
-        for (id, replica) in replicas {
+        for (id, (factory_index, replica)) in replicas {
             let state = StatefulServiceReplicaState {
                 replica,
                 replicator: replicators.remove(&id).unwrap(),
                 _replica_address: replica_addresses.remove(&id).unwrap(),
                 _replicator_address: replicator_addresses.remove(&id).unwrap(),
                 partition: partitions.remove(&id).unwrap(),
+                factory_index,
             };
             self.partition_state.replica_states.insert(id, state);
         }
         self.partition_state.epoch = epoch;
+        self.partition_state.static_info = Some(desc.clone());
+
+        self.check_partition_state();
         Ok(())
     }
 
+    /// Delete the service partition.
     pub async fn delete_service_partition(&mut self) -> mssf_core::Result<()> {
         // Not sure if the sequence is correct.
 
@@ -446,7 +557,205 @@ impl StatefulServicePartitionDriver {
 
         // clear the state
         self.partition_state.replica_states.clear();
+        self.partition_state.static_info = None;
+        self.partition_state.current_configuration = mssf_core::types::ReplicaSetConfig {
+            replicas: vec![],
+            write_quorum: 0,
+        };
+        self.check_partition_state();
+        Ok(())
+    }
 
+    /// Restart a secondary replica gracefully.
+    pub async fn restart_secondary_graceful(&mut self, replica_id: i64) -> mssf_core::Result<()> {
+        // check if replica exists
+        {
+            self.partition_state
+                .replica_states
+                .get_mut(&replica_id)
+                .ok_or_else(|| {
+                    mssf_core::Error::from(mssf_core::ErrorCode::FABRIC_E_REPLICA_DOES_NOT_EXIST)
+                })?;
+            // check if it is not primary
+            if replica_id == self.partition_state.primary_index {
+                tracing::error!(
+                    "Replica {} is primary, cannot restart as secondary",
+                    replica_id
+                );
+                return Err(mssf_core::Error::from(
+                    mssf_core::ErrorCode::FABRIC_E_INVALID_OPERATION,
+                ));
+            }
+        }
+
+        // Update primary to remove the replica from the configuration.
+        {
+            let primary = self.get_primary_state().unwrap();
+            let current_config = self.partition_state.current_configuration.clone();
+            let replica_count = current_config.replicas.len();
+            let new_replicas = current_config
+                .replicas
+                .iter()
+                .filter(|r| r.id != replica_id)
+                .cloned()
+                .collect::<Vec<_>>();
+            let write_quorum = (replica_count as u32) / 2 + 1; // Note that quorum is not changing here during graceful restart.
+            let new_config = mssf_core::types::ReplicaSetConfig {
+                replicas: new_replicas,
+                write_quorum,
+            };
+            primary
+                .replicator
+                .update_current_replica_set_configuration(new_config.clone())?;
+            self.partition_state.current_configuration = new_config;
+        }
+
+        let prev_state = self
+            .partition_state
+            .replica_states
+            .remove(&replica_id)
+            .unwrap();
+        let factory_index = prev_state.factory_index;
+        // Close the Secondary, and cleanup.
+        {
+            let cancellation_token = mssf_core::sync::SimpleCancelToken::new_boxed();
+            prev_state.replica.close(cancellation_token.clone()).await?;
+            prev_state.replicator.close(cancellation_token).await?;
+            drop(prev_state);
+        }
+
+        // Create replica existing from the same factory.
+        let factory = &*self.service_factory[factory_index as usize];
+        let replica = factory
+            .create_replica(
+                self.partition_state
+                    .static_info
+                    .as_ref()
+                    .unwrap()
+                    .service_type_name
+                    .clone(),
+                self.partition_state
+                    .static_info
+                    .as_ref()
+                    .unwrap()
+                    .service_name
+                    .clone(),
+                &self.partition_state.static_info.as_ref().unwrap().init_data,
+                self.partition_state
+                    .static_info
+                    .as_ref()
+                    .unwrap()
+                    .partition_id,
+                replica_id,
+            )
+            .inspect_err(|e| {
+                tracing::error!("Failed to create stateful service replica: {:?}", e)
+            })?;
+        // open the replica
+        let partition = StatefulServicePartitionMock::new(ServicePartitionInformation::Singleton(
+            mssf_core::types::SingletonPartitionInformation {
+                id: self
+                    .partition_state
+                    .static_info
+                    .as_ref()
+                    .unwrap()
+                    .partition_id,
+            },
+        ));
+        // open existing replicator
+        let replctr = replica
+            .open(
+                mssf_core::types::OpenMode::Existing,
+                partition.clone_box(),
+                SimpleCancelToken::new_boxed(),
+            )
+            .await
+            .inspect_err(|e| tracing::error!("Fail to open replica {}", e))?;
+        // open the replicator
+        let replctr_addr = replctr.open(SimpleCancelToken::new_boxed()).await?;
+        // change role to idle secondary
+        replctr
+            .change_role(
+                self.partition_state.epoch.clone(),
+                mssf_core::types::ReplicaRole::IdleSecondary,
+                SimpleCancelToken::new_boxed(),
+            )
+            .await?;
+        let replica_addr = replica
+            .change_role(
+                mssf_core::types::ReplicaRole::IdleSecondary,
+                SimpleCancelToken::new_boxed(),
+            )
+            .await?;
+
+        // build the replica again using the same id.
+        let primary = self.get_primary_state().unwrap();
+
+        let replica_info = mssf_core::types::ReplicaInformation {
+            replicator_address: replctr_addr.clone(),
+            id: replica_id,
+            role: mssf_core::types::ReplicaRole::IdleSecondary,
+            status: mssf_core::types::ReplicaStatus::Up,
+            current_progress: -1, // Observed value for restart.
+            catch_up_capability: -1,
+            must_catch_up: false,
+        };
+        primary
+            .replicator
+            .build_replica(replica_info.clone(), SimpleCancelToken::new_boxed())
+            .await?;
+
+        // change role to active secondary after successful build.
+        replica
+            .change_role(
+                mssf_core::types::ReplicaRole::ActiveSecondary,
+                SimpleCancelToken::new_boxed(),
+            )
+            .await?;
+        // update the replica info
+        let mut updated_replica_info = replica_info.clone();
+        updated_replica_info.role = mssf_core::types::ReplicaRole::ActiveSecondary;
+        // update catch up config again.
+        let prev_config = self.partition_state.current_configuration.clone();
+        let mut new_replicas = prev_config.replicas.clone();
+        new_replicas.push(updated_replica_info.clone());
+        let write_quorum = (new_replicas.len() as u32) / 2 + 1;
+        let new_config = mssf_core::types::ReplicaSetConfig {
+            replicas: new_replicas,
+            write_quorum,
+        };
+        primary
+            .replicator
+            .update_catch_up_replica_set_configuration(new_config.clone(), prev_config)?;
+        // wait for catch up
+        primary
+            .replicator
+            .wait_for_catch_up_quorum(
+                mssf_core::types::ReplicaSetQuorumMode::Write,
+                SimpleCancelToken::new_boxed(),
+            )
+            .await?;
+        // update current configuration again.
+        primary
+            .replicator
+            .update_current_replica_set_configuration(new_config.clone())?;
+        self.partition_state.current_configuration = new_config;
+        // save the state
+        let state = StatefulServiceReplicaState {
+            replica,
+            replicator: replctr,
+            _replica_address: replica_addr,
+            _replicator_address: replctr_addr,
+            partition,
+            factory_index,
+        };
+        let prev = self
+            .partition_state
+            .replica_states
+            .insert(replica_id, state);
+        assert!(prev.is_none(), "Service replica already exists");
+        // done.
+        self.check_partition_state();
         Ok(())
     }
 }

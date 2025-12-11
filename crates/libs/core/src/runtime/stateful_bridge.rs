@@ -624,7 +624,7 @@ where
             .unwrap()
             .cast::<IFabricStatefulServicePartition3>()
             .expect("cannot query interface");
-        let partition = Box::new(StatefulServicePartition::from(&com_partition));
+        let partition = Arc::new(StatefulServicePartition::from(&com_partition));
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner

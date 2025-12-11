@@ -43,7 +43,7 @@ impl IStatelessServiceInstance for ServiceInstance {
     #[tracing::instrument(skip(self, partition, _token))]
     async fn open(
         &self,
-        partition: Box<dyn IStatelessServicePartition>,
+        partition: Arc<dyn IStatelessServicePartition>,
         _token: BoxedCancelToken,
     ) -> mssf_core::Result<WString> {
         info!("open");

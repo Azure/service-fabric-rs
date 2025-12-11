@@ -6,6 +6,7 @@
 // echo server impl using tokio
 
 use std::io::Error;
+use std::sync::Arc;
 
 use mssf_core::types::LoadMetric;
 use mssf_core::{WString, runtime::IStatefulServicePartition};
@@ -23,7 +24,7 @@ pub fn get_addr(port: u32, hostname: WString) -> String {
 
 /// Report load for the app via SF partition api periodically
 pub async fn report_load_loop(
-    partition: Box<dyn IStatefulServicePartition>,
+    partition: Arc<dyn IStatefulServicePartition>,
     token: CancellationToken,
 ) {
     let mut value = 0;
@@ -57,7 +58,7 @@ pub async fn start_load_report(
     token: CancellationToken,
     port: u32,
     hostname: WString,
-    partition: Box<dyn IStatefulServicePartition>,
+    partition: Arc<dyn IStatefulServicePartition>,
 ) -> Result<(), Error> {
     let addr = get_addr(port, hostname);
     info!("start_load_report without listener: {}", addr);

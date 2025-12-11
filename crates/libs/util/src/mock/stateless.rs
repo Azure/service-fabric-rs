@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use std::sync::Arc;
+
 use mssf_core::{runtime::IStatelessServicePartition, types::ServicePartitionInformation};
 
 /// Mock for IStatelessServicePartition
@@ -16,8 +18,8 @@ impl StatelessServicePartitionMock {
     pub fn new(info: ServicePartitionInformation) -> Self {
         Self { info }
     }
-    pub fn new_boxed(info: ServicePartitionInformation) -> Box<dyn IStatelessServicePartition> {
-        Box::new(Self::new(info))
+    pub fn new_arc(info: ServicePartitionInformation) -> Arc<dyn IStatelessServicePartition> {
+        Arc::new(Self::new(info))
     }
 }
 

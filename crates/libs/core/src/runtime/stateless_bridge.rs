@@ -135,7 +135,7 @@ where
         let (ctx, token) = BridgeContext::make(callback);
         ctx.spawn(&self.rt, async move {
             inner
-                .open(Box::new(partition_bridge), token)
+                .open(Arc::new(partition_bridge), token)
                 .await
                 .map(|s| IFabricStringResult::from(StringResult::new(s)))
                 .map_err(crate::WinError::from)

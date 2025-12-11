@@ -59,7 +59,7 @@ impl StatelessServiceInstanceDriver {
 
         let instance_ref = self.instance.as_ref().unwrap();
         let partition =
-            StatelessServicePartitionMock::new_boxed(ServicePartitionInformation::Singleton(
+            StatelessServicePartitionMock::new_arc(ServicePartitionInformation::Singleton(
                 mssf_core::types::SingletonPartitionInformation {
                     id: desc.partition_id,
                 },

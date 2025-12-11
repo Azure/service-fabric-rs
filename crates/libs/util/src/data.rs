@@ -25,7 +25,7 @@ use mssf_core::{
 #[derive(Clone)]
 pub struct EmptyReplicator {
     name: WString,
-    partition: Option<Arc<Box<dyn IStatefulServicePartition>>>,
+    partition: Option<Arc<dyn IStatefulServicePartition>>,
 }
 
 impl EmptyReplicator {
@@ -57,12 +57,9 @@ impl EmptyReplicator {
     /// Create a new empty replicator with a name for tracing purpose.
     pub fn new(
         name: WString,
-        partition: Option<Box<dyn IStatefulServicePartition>>,
+        partition: Option<Arc<dyn IStatefulServicePartition>>,
     ) -> EmptyReplicator {
-        EmptyReplicator {
-            name,
-            partition: partition.map(Arc::new),
-        }
+        EmptyReplicator { name, partition }
     }
 }
 

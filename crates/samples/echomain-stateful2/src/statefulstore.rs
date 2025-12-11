@@ -113,14 +113,14 @@ impl Service {
         }
     }
 
-    pub fn start_loop_in_background(&self, partition: &dyn IStatefulServicePartition) {
+    pub fn start_loop_in_background(&self, partition: &Arc<dyn IStatefulServicePartition>) {
         info!("Service::start_loop_in_background");
         self.stop();
         let token = CancellationToken::new();
         self.cancel.lock().unwrap().set(Some(token.clone()));
         let port_copy = self.tcp_port;
         let hostname_copy = self.hostname_.clone();
-        let partition_cp = partition.clone_box();
+        let partition_cp = partition.clone();
         // start the echo server in background
         self.rt.get_ref().spawn(async move {
             info!("Service: start echo");
@@ -142,11 +142,11 @@ impl IStatefulServiceReplica for Replica {
     async fn open(
         &self,
         _openmode: OpenMode,
-        partition: Box<dyn IStatefulServicePartition>,
+        partition: Arc<dyn IStatefulServicePartition>,
         _token: BoxedCancelToken,
     ) -> mssf_core::Result<Box<dyn IPrimaryReplicator>> {
-        self.ctx.init(partition.clone_box());
-        self.svc.start_loop_in_background(partition.as_ref());
+        self.ctx.init(partition.clone());
+        self.svc.start_loop_in_background(&partition);
         // Use empty replicator
         Ok(Box::new(EmptyReplicator::new(
             WString::from("Stateful2"),
@@ -179,7 +179,7 @@ impl IStatefulServiceReplica for Replica {
 /// Stores info shared between replica and replicator
 #[derive(Clone)]
 pub struct ReplicaCtx {
-    pub partition: Arc<Mutex<Option<Box<dyn IStatefulServicePartition>>>>,
+    pub partition: Arc<Mutex<Option<Arc<dyn IStatefulServicePartition>>>>,
 }
 
 impl ReplicaCtx {
@@ -188,17 +188,13 @@ impl ReplicaCtx {
             partition: Arc::new(Mutex::new(None)),
         }
     }
-    fn init(&self, partition: Box<dyn IStatefulServicePartition>) {
+    fn init(&self, partition: Arc<dyn IStatefulServicePartition>) {
         let prev = self.partition.lock().unwrap().replace(partition);
         assert!(prev.is_none())
     }
 
-    fn get_partition(&self) -> Option<Box<dyn IStatefulServicePartition>> {
-        self.partition
-            .lock()
-            .unwrap()
-            .as_ref()
-            .map(|p| p.clone_box())
+    fn get_partition(&self) -> Option<Arc<dyn IStatefulServicePartition>> {
+        self.partition.lock().unwrap().as_ref().map(|p| p.clone())
     }
 
     /// Get read status for tracing.

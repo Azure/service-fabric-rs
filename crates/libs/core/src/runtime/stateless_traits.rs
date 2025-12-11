@@ -5,6 +5,8 @@
 
 #![deny(non_snake_case)] // this file is safe rust
 
+use std::sync::Arc;
+
 use crate::WString;
 use crate::runtime::executor::BoxedCancelToken;
 use crate::types::ServicePartitionInformation;
@@ -35,7 +37,7 @@ pub trait IStatelessServiceInstance: Send + Sync + 'static {
     /// clients that resolve the service via resolve_service_partition(uri).
     async fn open(
         &self,
-        partition: Box<dyn IStatelessServicePartition>,
+        partition: Arc<dyn IStatelessServicePartition>,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<WString>;
 

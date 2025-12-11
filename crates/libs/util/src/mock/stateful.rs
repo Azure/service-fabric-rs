@@ -662,7 +662,7 @@ impl StatefulServicePartitionDriver {
         let replctr = replica
             .open(
                 mssf_core::types::OpenMode::Existing,
-                partition.clone_box(),
+                Arc::new(partition.clone()),
                 SimpleCancelToken::new_boxed(),
             )
             .await

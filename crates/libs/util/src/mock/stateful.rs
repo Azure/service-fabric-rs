@@ -101,10 +101,6 @@ impl IStatefulServicePartition for StatefulServicePartitionMock {
     ) -> mssf_core::Result<&mssf_com::FabricRuntime::IFabricStatefulServicePartition> {
         Err(mssf_core::ErrorCode::FABRIC_E_OPERATION_NOT_SUPPORTED.into())
     }
-
-    fn clone_box(&self) -> Box<dyn IStatefulServicePartition> {
-        Box::new(self.clone())
-    }
 }
 
 #[derive(Clone)]
@@ -323,7 +319,7 @@ impl StatefulServicePartitionDriver {
             let replctr = replica
                 .open(
                     mssf_core::types::OpenMode::New,
-                    partition.clone_box(),
+                    Arc::new(partition.clone()),
                     cancellation_token,
                 )
                 .await?;

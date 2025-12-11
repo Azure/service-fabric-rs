@@ -6,13 +6,9 @@
 // stateful_proxy is a wrapper layer around com api,
 // making manipulating com simple.
 
-use std::ffi::c_void;
+use std::{ffi::c_void, sync::Arc};
 
-use crate::{
-    Interface, WString,
-    runtime::{IStatefulServicePartition, executor::BoxedCancelToken},
-    strings::StringResult,
-};
+use crate::{Interface, WString, runtime::executor::BoxedCancelToken, strings::StringResult};
 use mssf_com::FabricRuntime::{
     IFabricPrimaryReplicator, IFabricReplicator, IFabricReplicatorCatchupSpecificQuorum,
     IFabricStatefulServicePartition3, IFabricStatefulServiceReplica,
@@ -49,7 +45,7 @@ impl IStatefulServiceReplica for StatefulServiceReplicaProxy {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: Box<dyn super::IStatefulServicePartition>,
+        partition: Arc<dyn super::IStatefulServicePartition>,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<Box<dyn IPrimaryReplicator>> {
         let com1 = &self.com_impl;
@@ -440,10 +436,6 @@ impl super::IStatefulServicePartition for StatefulServicePartition {
         &self,
     ) -> crate::Result<&mssf_com::FabricRuntime::IFabricStatefulServicePartition> {
         Ok(&self.com_impl)
-    }
-
-    fn clone_box(&self) -> Box<dyn IStatefulServicePartition> {
-        Box::new(self.clone())
     }
 }
 

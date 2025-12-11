@@ -1,4 +1,7 @@
-use std::{cell::Cell, sync::Mutex};
+use std::{
+    cell::Cell,
+    sync::{Arc, Mutex},
+};
 
 use mssf_com::{
     FabricRuntime::{
@@ -184,7 +187,7 @@ impl IStatefulServiceReplica for Replica {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: Box<dyn IStatefulServicePartition>,
+        partition: Arc<dyn IStatefulServicePartition>,
         cancellation_token: BoxedCancelToken,
     ) -> mssf_core::Result<Box<dyn IPrimaryReplicator>> {
         // should be primary replicator

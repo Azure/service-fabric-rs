@@ -40,7 +40,7 @@ pub trait IStatefulServiceReplica: Send + Sync + 'static {
     async fn open(
         &self,
         openmode: OpenMode,
-        partition: Box<dyn IStatefulServicePartition>,
+        partition: std::sync::Arc<dyn IStatefulServicePartition>,
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<Box<dyn IPrimaryReplicator>>;
 
@@ -310,9 +310,6 @@ pub trait IStatefulServicePartition: Send + Sync + 'static {
     fn try_get_com(
         &self,
     ) -> crate::Result<&mssf_com::FabricRuntime::IFabricStatefulServicePartition>;
-
-    /// Clones the partition object.
-    fn clone_box(&self) -> Box<dyn IStatefulServicePartition>;
 }
 
 impl std::fmt::Debug for dyn IStatefulServicePartition {

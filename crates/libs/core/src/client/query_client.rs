@@ -229,13 +229,7 @@ impl QueryClient {
             #[allow(unused_assignments)]
             {
                 ex1.Reserved = std::ptr::addr_of!(ex2) as *mut c_void;
-            }
-            #[allow(unused_assignments)]
-            {
                 ex2.Reserved = std::ptr::addr_of!(ex3) as *mut c_void;
-            }
-            #[allow(unused_assignments)]
-            {
                 ex3.Reserved = std::ptr::addr_of!(ex4) as *mut c_void;
             }
             self.get_application_list_internal(
@@ -259,9 +253,6 @@ impl QueryClient {
             #[allow(unused_assignments)]
             {
                 ex1.Reserved = &ex2 as *const _ as *mut c_void;
-            }
-            #[allow(unused_assignments)]
-            {
                 ex2.Reserved = &ex3 as *const _ as *mut c_void;
             }
 

@@ -226,9 +226,12 @@ impl QueryClient {
         let com = {
             let (mut base, mut ex1, mut ex2, mut ex3, ex4) = desc.get_raw_parts();
             base.Reserved = std::ptr::addr_of!(ex1) as *mut c_void;
-            ex1.Reserved = std::ptr::addr_of!(ex2) as *mut c_void;
-            ex2.Reserved = std::ptr::addr_of!(ex3) as *mut c_void;
-            ex3.Reserved = std::ptr::addr_of!(ex4) as *mut c_void;
+            #[allow(unused_assignments)]
+            {
+                ex1.Reserved = std::ptr::addr_of!(ex2) as *mut c_void;
+                ex2.Reserved = std::ptr::addr_of!(ex3) as *mut c_void;
+                ex3.Reserved = std::ptr::addr_of!(ex4) as *mut c_void;
+            }
             self.get_application_list_internal(
                 &base,
                 timeout.as_millis().try_into().unwrap(),
@@ -247,8 +250,11 @@ impl QueryClient {
         let com = {
             let (mut base, mut ex1, mut ex2, ex3) = desc.get_raw_parts();
             base.Reserved = &ex1 as *const _ as *mut c_void;
-            ex1.Reserved = &ex2 as *const _ as *mut c_void;
-            ex2.Reserved = &ex3 as *const _ as *mut c_void;
+            #[allow(unused_assignments)]
+            {
+                ex1.Reserved = &ex2 as *const _ as *mut c_void;
+                ex2.Reserved = &ex3 as *const _ as *mut c_void;
+            }
 
             self.get_service_list_internal(&base, timeout.as_millis() as u32, cancellation_token)
         }

@@ -16,6 +16,7 @@ use windows_core::{PCWSTR, WString};
 use super::{FabricProtectionLevel, FabricSecurityCredentialKind};
 
 #[allow(non_snake_case, reason = "Consistency with underlying API")]
+#[derive(Debug, Clone, Default)]
 pub struct FabricClaimsCredentials {
     pub ServerCommonNames: Vec<WString>,
     pub IssuerThumbprints: Vec<WString>,

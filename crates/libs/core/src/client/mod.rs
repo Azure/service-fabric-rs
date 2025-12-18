@@ -32,7 +32,7 @@ mod property_client;
 pub mod query_client;
 pub mod svc_mgmt_client;
 // reexport
-pub use connection::GatewayInformationResult;
+pub use connection::{ClaimsRetrievalMetadata, GatewayInformationResult};
 pub use notification::ServiceNotification;
 pub use property_client::PropertyManagementClient;
 
@@ -205,6 +205,19 @@ impl FabricClientBuilder {
         }
         if let Some(cc) = self.cc_handler.as_mut() {
             cc.set_f_disconn(f)
+        }
+        self
+    }
+
+    pub fn with_on_claims_retrieval<T>(mut self, f: T) -> Self
+    where
+        T: Fn(connection::ClaimsRetrievalMetadata) -> crate::Result<crate::WString> + 'static,
+    {
+        if self.cc_handler.is_none() {
+            self.cc_handler = Some(LambdaClientConnectionNotificationHandler::new());
+        }
+        if let Some(cc) = self.cc_handler.as_mut() {
+            cc.set_f_claims(f)
         }
         self
     }

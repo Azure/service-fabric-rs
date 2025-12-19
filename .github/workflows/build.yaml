@@ -1,6 +1,12 @@
 name: build
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Temporary frequent schedule to repro some onebox issues.
+    - cron: '0 */6 * * *'  # Runs every 6 hours
 
 env:
   RUST_VERSION: "1.91.1"

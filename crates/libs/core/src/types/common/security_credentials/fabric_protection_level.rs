@@ -10,8 +10,9 @@ use mssf_com::FabricTypes::{
 /// The Fabric Protection Level
 /// See https://learn.microsoft.com/en-us/dotnet/api/system.fabric.protectionlevel?view=azure-dotnet
 #[non_exhaustive]
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
 pub enum FabricProtectionLevel {
+    #[default]
     None,
     Sign,
     EncryptAndSign,

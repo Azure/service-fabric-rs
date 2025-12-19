@@ -173,6 +173,8 @@ impl WString {
 
 impl From<&str> for WString {
     fn from(value: &str) -> Self {
+        // TODO: if string is empty string. we should still allocate.
+        // There are 3 states: null, empty, non-empty. Currently it is not handled correctly.
         unsafe { Self::from_wide_iter(value.encode_utf16(), value.len()) }
     }
 }

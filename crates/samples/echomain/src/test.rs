@@ -16,12 +16,12 @@ use mssf_core::{
         },
     },
     types::{
-        FabricClaimsCredentials, QueryServiceReplicaStatus, RemoveReplicaDescription,
-        ServiceNotificationFilterDescription, ServiceNotificationFilterFlags,
-        ServicePartitionInformation, ServicePartitionQueryDescription,
-        ServicePartitionQueryResultItem, ServicePartitionStatus, ServiceReplicaQueryDescription,
-        ServiceReplicaQueryResultItem, SingletonPartitionInformation,
-        StatelessServiceInstanceQueryResult, StatelessServicePartitionQueryResult, Uri,
+        QueryServiceReplicaStatus, RemoveReplicaDescription, ServiceNotificationFilterDescription,
+        ServiceNotificationFilterFlags, ServicePartitionInformation,
+        ServicePartitionQueryDescription, ServicePartitionQueryResultItem, ServicePartitionStatus,
+        ServiceReplicaQueryDescription, ServiceReplicaQueryResultItem,
+        SingletonPartitionInformation, StatelessServiceInstanceQueryResult,
+        StatelessServicePartitionQueryResult, Uri,
     },
 };
 
@@ -112,76 +112,6 @@ impl EchoTestClient {
         let first = resolved_partition.endpoints.first().unwrap().clone();
         (resolved_partition, first)
     }
-}
-
-/// pwsh test:
-/// $env:MY_SF_ENDPOINT="localhost:19000"
-/// $env:MY_CLAIM="some_claim"
-/// cargo test --package samples_echomain --bin samples_echomain -- test::test_fabric_client_temp --exact --nocapture
-#[tokio::test]
-#[test_log::test]
-async fn test_fabric_client_temp() {
-    let env_endpoint = match std::env::var("MY_SF_ENDPOINT") {
-        Ok(v) => WString::from(v),
-        Err(_) => {
-            tracing::info!("MY_SF_ENDPOINT not set, skip the test");
-            return;
-        }
-    };
-
-    // split host and port
-    let endpoint_str = env_endpoint.to_string_lossy();
-    let mut parts = endpoint_str.split(':');
-    let host_str = parts.next().unwrap();
-    assert_eq!(parts.next().unwrap(), "19000");
-
-    // channel for client connection notification
-    let (cc_tx, mut cc_rx) = tokio::sync::mpsc::channel::<GatewayInformationResult>(1);
-    // channel for message retrieval notification
-    let (claims_tx, mut claims_rx) = tokio::sync::mpsc::channel::<ClaimsRetrievalMetadata>(1);
-    let fc = FabricClient::builder()
-        .with_connection_strings(vec![env_endpoint])
-        .with_on_client_connect(move |gw| {
-            cc_tx.blocking_send(gw.clone()).expect("cannot send");
-            Ok(())
-        })
-        .with_on_client_disconnect(move |_| {
-            // This is not invoked in this test. FabricClient does not invoke this on drop.
-            panic!("client disconnected");
-        })
-        .with_on_claims_retrieval(move |meta| {
-            claims_tx
-                .blocking_send(meta.clone())
-                .expect("cannot send claims retrieval metadata");
-            // For test purpose, return empty claims.
-            Ok(WString::from("_Invalid_"))
-        })
-        .with_credentials(mssf_core::types::FabricSecurityCredentials::Claims(
-            FabricClaimsCredentials {
-                ServerCommonNames: vec![WString::from(host_str)],
-                ..Default::default()
-            },
-        ))
-        .with_client_role(mssf_core::types::ClientRole::Unknown)
-        .build()
-        .unwrap();
-
-    let timeout = Duration::from_secs(5);
-    // dummy request to trigger connection
-    fc.get_property_manager()
-        .name_exists(&Uri::from("fabric:/DummyApp/DummySvc"), timeout, None)
-        .await
-        .expect_err("should not succeed.");
-    // try wait for claims retrieval notification for some timeout
-    let meta = tokio::time::timeout(Duration::from_secs(10), claims_rx.recv())
-        .await
-        .expect("timeout waiting for claims retrieval")
-        .expect("claims retrieval channel closed");
-    assert_eq!(meta, ClaimsRetrievalMetadata::None);
-
-    // Connection event notification should be received since we already sent a request.
-    let gw = cc_rx.try_recv().expect("notification not present");
-    assert!(!gw.node_name.is_empty());
 }
 
 // Requires app to be deployed on onebox.

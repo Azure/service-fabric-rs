@@ -5,6 +5,7 @@ edition.workspace = true
 publish = false
 
 [dependencies]
-windows-core.workspace = true
-mssf-com.workspace = true
 mssf-core.workspace = true
+tokio.workspace = true
+tracing-subscriber.workspace = true
+tracing.workspace = true

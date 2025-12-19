@@ -20,7 +20,7 @@ use super::{FabricProtectionLevel, FabricSecurityCredentialKind};
 pub struct FabricClaimsCredentials {
     pub ServerCommonNames: Vec<WString>,
     pub IssuerThumbprints: Vec<WString>,
-    pub LocalClaims: WString,
+    pub LocalClaims: Option<WString>,
     pub ProtectionLevel: FabricProtectionLevel,
     // FABRIC_CLAIMS_CREDENTIALS_EX1
     pub ServerThumbprints: Vec<WString>,
@@ -60,12 +60,21 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
             .iter()
             .map(WString::as_pcwstr)
             .collect();
+
+        // TODO: clean this up
+        // FabricClient expects a non-null pointer even for empty strings.
+        let empty_local_claims = 0_u16;
+        let local_claims_pcwstr: PCWSTR = match &self.LocalClaims {
+            Some(claims) => claims.as_pcwstr(),
+            None => PCWSTR::from_raw(&empty_local_claims),
+        };
+        assert!(!local_claims_pcwstr.is_null());
         let mut value = FABRIC_CLAIMS_CREDENTIALS {
             ServerCommonNameCount: u32::try_from(server_common_names.len()).unwrap(),
             ServerCommonNames: slice_to_ptr(&server_common_names),
             IssuerThumbprintCount: u32::try_from(issuer_thumbprints.len()).unwrap(),
             IssuerThumbprints: slice_to_ptr(&issuer_thumbprints),
-            LocalClaims: self.LocalClaims.as_pcwstr(),
+            LocalClaims: local_claims_pcwstr,
             ProtectionLevel: self.ProtectionLevel.into(),
             Reserved: addr_of_mut!(ex1) as *mut c_void,
         };
@@ -105,7 +114,7 @@ mod test {
                 WString::from(TEST_THUMBPRINT_1),
                 WString::from(TEST_THUMBPRINT_2),
             ],
-            LocalClaims: WString::from(TEST_CLAIMS),
+            LocalClaims: Some(WString::from(TEST_CLAIMS)),
             ProtectionLevel: FabricProtectionLevel::EncryptAndSign,
             ServerThumbprints: vec![
                 WString::from(TEST_THUMBPRINT_3),
@@ -118,7 +127,7 @@ mod test {
         FabricClaimsCredentials {
             ServerCommonNames: vec![],
             IssuerThumbprints: vec![],
-            LocalClaims: WString::new(),
+            LocalClaims: None,
             ProtectionLevel: FabricProtectionLevel::Sign,
             ServerThumbprints: vec![],
         }

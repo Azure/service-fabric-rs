@@ -209,6 +209,12 @@ impl FabricClientBuilder {
         self
     }
 
+    /// Invoked when claim based credential is used, and claims retrieval is needed.
+    /// The callback payload contains metadata for claims retrieval, and user needs
+    /// to call AAD or other identity provider to get the claims.
+    /// The returned claims are used by FabricClient to authenticate to the cluster.
+    /// If empty claim or error is returned, the default handler inside SF client
+    /// is invoked for AAD auth.
     pub fn with_on_claims_retrieval<T>(mut self, f: T) -> Self
     where
         T: Fn(connection::ClaimsRetrievalMetadata) -> crate::Result<crate::WString> + 'static,

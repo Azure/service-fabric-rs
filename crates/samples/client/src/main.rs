@@ -52,7 +52,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .blocking_send(meta.clone())
                 .expect("cannot send claims retrieval metadata");
             // For test purpose, return empty claims.
-            Ok(WString::from("_Invalid_"))
+            // Empty claims will trigger default handler to run.
+            // See: https://github.com/microsoft/service-fabric/blob/36f7531df0fd990f8af1792ae2cd5cf811521ab3/src/prod/src/client/ClientConnectionManager.cpp#L933
+            // Ok(WString::from("_Invalid_"))
+            Ok(WString::from(""))
         })
         .with_credentials(mssf_core::types::FabricSecurityCredentials::Claims(
             FabricClaimsCredentials {
@@ -66,11 +69,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let timeout = Duration::from_secs(5);
     // dummy request to trigger connection
-    fc.get_property_manager()
+    let err = fc
+        .get_property_manager()
         .name_exists(&Uri::from("fabric:/DummyApp/DummySvc"), timeout, None)
         .await
-        .inspect_err(|e| tracing::info!("expected first error: {e}"))
-        .expect_err("should not succeed.");
+        .inspect_err(|e| tracing::info!("expected first error: {e}"));
+
+    if err.is_ok() {
+        tracing::info!("Cluster is not secured with AAD. Exiting.");
+        return Ok(());
+    }
+
     // try wait for claims retrieval notification for some timeout
     let meta = tokio::time::timeout(Duration::from_secs(10), claims_rx.recv())
         .await

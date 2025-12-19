@@ -185,10 +185,6 @@ impl ClientConnectionEventHandler for LambdaClientConnectionNotificationHandler 
         if let Some(f) = &self.f_claims {
             f(metadata)
         } else {
-            // tracing::info!(
-            //     "Claims retrieval requested, but no handler is set. {:?}",
-            //     metadata
-            // );
             // Not implemented
             Err(crate::ErrorCode::E_NOTIMPL.into())
         }

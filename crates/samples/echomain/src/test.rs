@@ -8,7 +8,8 @@ use std::{sync::Arc, time::Duration};
 use mssf_core::{
     ErrorCode, GUID, WString,
     client::{
-        FabricClient, GatewayInformationResult, PropertyManagementClient, ServiceNotification,
+        ClaimsRetrievalMetadata, FabricClient, GatewayInformationResult, PropertyManagementClient,
+        ServiceNotification,
         svc_mgmt_client::{
             PartitionKeyType, ResolvedServiceEndpoint, ResolvedServicePartition,
             ServiceEndpointRole, ServicePartitionKind,
@@ -116,11 +117,14 @@ impl EchoTestClient {
 // Requires app to be deployed on onebox.
 // Uses fabric client to perform various actions to the app.
 #[tokio::test]
+#[test_log::test]
 async fn test_fabric_client() {
     // channel for service notification
     let (sn_tx, mut sn_rx) = tokio::sync::mpsc::channel::<ServiceNotification>(1);
     // channel for client connection notification
     let (cc_tx, mut cc_rx) = tokio::sync::mpsc::channel::<GatewayInformationResult>(1);
+    // channel for message retrieval notification
+    let (claims_tx, mut claims_rx) = tokio::sync::mpsc::channel::<ClaimsRetrievalMetadata>(1);
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
         .with_on_service_notification(move |notification| {
@@ -136,6 +140,13 @@ async fn test_fabric_client() {
         .with_on_client_disconnect(move |_| {
             // This is not invoked in this test. FabricClient does not invoke this on drop.
             panic!("client disconnected");
+        })
+        .with_on_claims_retrieval(move |meta| {
+            claims_tx
+                .blocking_send(meta.clone())
+                .expect("cannot send claims retrieval metadata");
+            // For test purpose, return empty claims.
+            Ok(WString::new())
         })
         .with_client_role(mssf_core::types::ClientRole::Unknown)
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -158,6 +169,9 @@ async fn test_fabric_client() {
     // Connection event notification should be received since we already sent a request.
     let gw = cc_rx.try_recv().expect("notification not present");
     assert!(!gw.node_name.is_empty());
+
+    let meta_err = claims_rx.try_recv().expect_err("onebox does not have aad");
+    assert_eq!(meta_err, tokio::sync::mpsc::error::TryRecvError::Empty);
 
     // Get replica info
     let stateless_replica = ec.get_replica(single.id).await.unwrap();

@@ -54,8 +54,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             // For test purpose, return empty claims.
             // Empty claims will trigger default handler to run.
             // See: https://github.com/microsoft/service-fabric/blob/36f7531df0fd990f8af1792ae2cd5cf811521ab3/src/prod/src/client/ClientConnectionManager.cpp#L933
-            // Ok(WString::from("_Invalid_"))
-            Ok(WString::from(""))
+            Ok(WString::from("_Invalid_"))
+            // Ok(WString::from(""))
         })
         .with_credentials(mssf_core::types::FabricSecurityCredentials::Claims(
             FabricClaimsCredentials {

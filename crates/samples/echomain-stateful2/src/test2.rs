@@ -211,10 +211,11 @@ async fn test_resolve_notification() {
         .unwrap();
     sm.delete_service(&uri).await;
 
-    // Invalid memory access Issue 184 happens when this test finishes.
+    // Invalid memory access https://github.com/Azure/service-fabric-rs/issues/184 happens when this test finishes.
     // Delay the process clean up is helping with the issue.
     // It seems like FabricClient cleanup has some background tasks that need to finish.
     // This is a bug in FabricClient.
+    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
     drop(fc);
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 }

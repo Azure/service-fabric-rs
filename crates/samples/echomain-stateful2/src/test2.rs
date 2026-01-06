@@ -220,9 +220,7 @@ async fn test_resolve_notification() {
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-#[test_log::test]
-async fn test_replica_mock() {
+async fn test_replica_mock(replica_count: usize) {
     use crate::Factory;
     let rt = TokioExecutor::new(tokio::runtime::Handle::current());
     let factory = Box::new(Factory::create(12312, "localhost".into(), rt));
@@ -231,7 +229,7 @@ async fn test_replica_mock() {
     driver.register_service_factory(factory);
     let args = mssf_util::mock::CreateStatefulServicePartitionArg {
         partition_id: 1.into(),
-        replica_count: 3,
+        replica_count,
         service_type_name: crate::SERVICE_TYPE_NAME.into(),
         service_name: "fabric:/StatefulEchoApp/DummyTest".into(),
         init_data: vec![],
@@ -258,4 +256,23 @@ async fn test_replica_mock() {
 
     tracing::info!("Deleting the service partition");
     driver.delete_service_partition().await.unwrap();
+}
+
+// Test logs are too verbose. Uncomment to enable logs.
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+// #[test_log::test]
+async fn test_replica_mock_1_replica() {
+    test_replica_mock(1).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+// #[test_log::test]
+async fn test_replica_mock_2_replicas() {
+    test_replica_mock(2).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test_log::test]
+async fn test_replica_mock_3_replicas() {
+    test_replica_mock(3).await;
 }

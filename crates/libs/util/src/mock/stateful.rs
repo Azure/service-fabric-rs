@@ -123,10 +123,12 @@ pub struct StatefulServicePartitionDriver {
 }
 
 struct PartitionState {
+    // states for all replicas.
     pub replica_states: HashMap<i64, StatefulServiceReplicaState>,
     pub primary_index: i64,
     pub epoch: Epoch,
     pub static_info: Option<CreateStatefulServicePartitionArg>, // Filled when created.
+    // Write quorum and secondary replica list.
     pub current_configuration: mssf_core::types::ReplicaSetConfig,
 }
 
@@ -428,6 +430,8 @@ impl StatefulServicePartitionDriver {
             replicas: vec![],
             write_quorum: 1, // for primary
         };
+        // incase only primary exists, save the current configuration.
+        self.partition_state.current_configuration = new_config.clone();
         let mut ready_replicas = 1;
         for id in replicas.keys() {
             if *id == self.partition_state.primary_index {
@@ -713,11 +717,13 @@ impl StatefulServicePartitionDriver {
         updated_replica_info.role = mssf_core::types::ReplicaRole::ActiveSecondary;
         // update catch up config again.
         let prev_config = self.partition_state.current_configuration.clone();
-        let mut new_replicas = prev_config.replicas.clone();
-        new_replicas.push(updated_replica_info.clone());
-        let write_quorum = (new_replicas.len() as u32) / 2 + 1;
+        let mut new_config_replicas = prev_config.replicas.clone();
+        new_config_replicas.push(updated_replica_info.clone());
+
+        let total_replica_count = new_config_replicas.len() + 1; // including primary
+        let write_quorum = (total_replica_count as u32) / 2 + 1;
         let new_config = mssf_core::types::ReplicaSetConfig {
-            replicas: new_replicas,
+            replicas: new_config_replicas,
             write_quorum,
         };
         primary

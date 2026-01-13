@@ -17,9 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - uses: lukka/get-cmake@latest
-      with:
-        cmakeVersion: "3.21.2"
+    - name: Show cmake version
+      run: cmake --version
 
     - name: Install rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -83,15 +82,16 @@ jobs:
 
       - uses: actions/checkout@v6
 
-      - uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: "3.21.2"
-
       - name: Install rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ env.RUST_VERSION }}
           components: rustfmt, clippy
+
+      - name: Install cmake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.29.0" # Use version 3.29.x
       
       - name: Run cargo check
         run: cargo check

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.29)
 
 project(service-fabric-rs LANGUAGES)
 
@@ -8,15 +8,10 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 if(WIN32)
 message(STATUS "fetching fabric_metadata")
 include(FetchContent)
-FetchContent_Declare(fabric_metadata
+FetchContent_Populate(fabric_metadata
     GIT_REPOSITORY https://github.com/Azure/service-fabric-metadata.git
-    GIT_TAG 552f4e38ad2c772419e52e62207c236fc31ffcbb
+    GIT_TAG        v0.0.3
 )
-FetchContent_GetProperties(fabric_metadata)
-if(NOT fabric_metadata_POPULATED)
-    FetchContent_Populate(fabric_metadata)
-    # do not add to cmake build since we only need winmd file to generate code.
-endif()
 endif(WIN32)
 
 # generate rust code

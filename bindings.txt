@@ -1,4 +1,4 @@
---in  ./build/_deps/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd
+--in  ./build/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd
 --out crates/libs/com/src/Microsoft.rs
 
 --filter

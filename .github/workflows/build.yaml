@@ -17,9 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - uses: lukka/get-cmake@latest
-      with:
-        cmakeVersion: "3.21.2"
+    - name: Show cmake version
+      run: cmake --version
 
     - name: Install rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -82,10 +81,6 @@ jobs:
           tdnf install --noplugins --skipsignature -y tar unzip ca-certificates gcc glibc-devel binutils make
 
       - uses: actions/checkout@v6
-
-      - uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: "3.21.2"
 
       - name: Install rust stable
         uses: dtolnay/rust-toolchain@stable

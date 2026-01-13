@@ -87,6 +87,11 @@ jobs:
         with:
           toolchain: ${{ env.RUST_VERSION }}
           components: rustfmt, clippy
+
+      - name: Install cmake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.29.0" # Use version 3.29.x
       
       - name: Run cargo check
         run: cargo check

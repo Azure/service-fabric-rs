@@ -44,7 +44,7 @@ tracing-subscriber = { version = "0.3", default-features = false, features = [
 test-log = { version = "0.2", default-features = false , features = ["trace"]}
 trait-variant = "0.1"
 windows = { version = "0.62", default-features = false }
-windows-bindgen = "0.65"
+windows-bindgen = "0.66"
 windows-core = "0.62"
 
 # crates in this repo

@@ -4,11 +4,11 @@
 
 Build Service Fabric Reliable Services in Rust.
 
-Service Fabric is open sourced on github: `https://github.com/microsoft/service-fabric`.
-The latest open sourced version of SF is `6.4`.
-This SDK only provides `6.4` functionalities. New functionalities in newer versions is are not accessible in this SDK.
+Service Fabric is open sourced on github: [service-fabric](https://github.com/microsoft/service-fabric).
 
-The FabricRuntime and FabricClient are accessible from the DLLs installed from Service Fabric Runtime. The C header files are generated from open-sourced IDLs in repo [service-fabric](https://github.com/microsoft/service-fabric/tree/master/src/prod/src/idl/public)
+SF SDK idl `11.1` version is available on github here: [service-fabric-metadata](https://github.com/Azure/service-fabric-metadata).
+
+Rust SDK currently supports SF `11.1` COM apis, but only `6.4` version apis are used (this is subject to change), which is the minimum SF version supported by this SDK.
 
 This lib is in alpha state, and apis are subjected to change.
 

@@ -10,7 +10,8 @@ message(STATUS "fetching fabric_metadata")
 include(FetchContent)
 FetchContent_Populate(fabric_metadata
     GIT_REPOSITORY https://github.com/Azure/service-fabric-metadata.git
-    GIT_TAG        v0.0.3
+    GIT_TAG        3a93258ffd1e24f83de1559d83bf133060791331 # v0.0.4
+    GIT_SHALLOW    TRUE
 )
 endif(WIN32)
 

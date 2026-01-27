@@ -43,6 +43,17 @@ impl Default for FABRIC_APPLICATIONS_HEALTH_EVALUATION {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_ARM_METADATA_UPDATE_DESCRIPTION {
+    pub ArmMetadata: *mut FABRIC_COMMON_ARM_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_ARM_METADATA_UPDATE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_APPLICATION_CAPACITY_DESCRIPTION {
     pub MaximumNodes: u32,
     pub MinimumNodes: u32,
@@ -99,6 +110,17 @@ pub struct FABRIC_APPLICATION_DESCRIPTION_EX1 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_APPLICATION_DESCRIPTION_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_DESCRIPTION_EX2 {
+    pub ManagedApplicationIdentity: *const FABRIC_MANAGED_APPLICATION_IDENTITY_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_DESCRIPTION_EX2 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -402,6 +424,17 @@ impl Default for FABRIC_APPLICATION_LOAD_METRIC_INFORMATION_LIST {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_METADATA {
+    pub ArmMetadata: *mut FABRIC_COMMON_ARM_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_METADATA {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_APPLICATION_METRIC_DESCRIPTION {
     pub Name: windows_core::PCWSTR,
     pub NodeReservationCapacity: u32,
@@ -529,6 +562,20 @@ impl Default for FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION_EX1 {
+    pub ManagedIdentities: *const FABRIC_MANAGED_IDENTITY_DESCRIPTION_LIST,
+    pub TokenServiceEndpoint: windows_core::PCWSTR,
+    pub DefaultIdentity: windows_core::PCWSTR,
+    pub UseServiceLevelIdentities: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_APPLICATION_QUERY_DESCRIPTION {
     pub ApplicationNameFilter: FABRIC_URI,
     pub Reserved: *mut core::ffi::c_void,
@@ -585,6 +632,17 @@ impl Default for FABRIC_APPLICATION_QUERY_DESCRIPTION_EX4 {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_QUERY_DESCRIPTION_EX5 {
+    pub ExcludeManagedApplicationIdentity: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_QUERY_DESCRIPTION_EX5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_APPLICATION_QUERY_RESULT_ITEM {
     pub ApplicationName: FABRIC_URI,
     pub ApplicationTypeName: windows_core::PCWSTR,
@@ -618,6 +676,28 @@ pub struct FABRIC_APPLICATION_QUERY_RESULT_ITEM_EX2 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_APPLICATION_QUERY_RESULT_ITEM_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_QUERY_RESULT_ITEM_EX3 {
+    pub ManagedApplicationIdentity: *const FABRIC_MANAGED_APPLICATION_IDENTITY_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_QUERY_RESULT_ITEM_EX3 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_QUERY_RESULT_ITEM_EX4 {
+    pub Metadata: *mut FABRIC_APPLICATION_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_QUERY_RESULT_ITEM_EX4 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -660,6 +740,17 @@ pub struct FABRIC_APPLICATION_TYPE_APPLICATIONS_HEALTH_EVALUATION {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_APPLICATION_TYPE_APPLICATIONS_HEALTH_EVALUATION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_TYPE_ARM_METADATA_UPDATE_DESCRIPTION {
+    pub ArmMetadata: *mut FABRIC_COMMON_ARM_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_TYPE_ARM_METADATA_UPDATE_DESCRIPTION {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -712,6 +803,18 @@ pub struct FABRIC_APPLICATION_TYPE_HEALTH_POLICY_MAP_ITEM {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_TYPE_METADATA {
+    pub ProvisionTimestamp: windows::Win32::Foundation::FILETIME,
+    pub ArmMetadata: *mut FABRIC_COMMON_ARM_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_TYPE_METADATA {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION {
     pub ApplicationTypeNameFilter: windows_core::PCWSTR,
     pub Reserved: *mut core::ffi::c_void,
@@ -753,6 +856,29 @@ pub struct FABRIC_APPLICATION_TYPE_QUERY_RESULT_ITEM_EX2 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_APPLICATION_TYPE_QUERY_RESULT_ITEM_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_TYPE_QUERY_RESULT_ITEM_EX3 {
+    pub Metadata: *mut FABRIC_APPLICATION_TYPE_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_TYPE_QUERY_RESULT_ITEM_EX3 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_TYPE_QUERY_RESULT_ITEM_EX4 {
+    pub ManagedKeyVaultReferenceParameterList:
+        *mut FABRIC_MANAGED_KEY_VAULT_REFERENCE_PARAMETER_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_TYPE_QUERY_RESULT_ITEM_EX4 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -823,6 +949,17 @@ impl Default for FABRIC_APPLICATION_UPGRADE_DESCRIPTION {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_UPGRADE_DESCRIPTION_EX1 {
+    pub ManagedApplicationIdentity: *mut FABRIC_MANAGED_APPLICATION_IDENTITY_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_UPGRADE_DESCRIPTION_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_APPLICATION_UPGRADE_KIND(pub i32);
@@ -874,6 +1011,19 @@ impl Default for FABRIC_APPLICATION_UPGRADE_PROGRESS_EX2 {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_APPLICATION_UPGRADE_PROGRESS_EX3 {
+    pub HealthCheckElapsedTime: u32,
+    pub HealthCheckPhase: FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE,
+    pub HealthCheckFlips: i64,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_APPLICATION_UPGRADE_PROGRESS_EX3 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_APPLICATION_UPGRADE_STATE(pub i32);
@@ -908,6 +1058,52 @@ impl Default for FABRIC_APPLICATION_UPGRADE_UPDATE_DESCRIPTION {
     }
 }
 pub const FABRIC_AUTO_SEQUENCE_NUMBER: u32 = 0u32;
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_BLOCK_LIST_QUERY_DESCRIPTION {
+    pub ServiceName: FABRIC_URI,
+    pub r#type: FABRIC_BLOCK_LIST_TYPE,
+    pub PagingDescription: *mut FABRIC_QUERY_PAGING_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_BLOCK_LIST_QUERY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_BLOCK_LIST_QUERY_RESULT_ITEM {
+    pub NodeName: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_BLOCK_LIST_QUERY_RESULT_ITEM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_BLOCK_LIST_QUERY_RESULT_LIST {
+    pub Count: u32,
+    pub Items: *const FABRIC_BLOCK_LIST_QUERY_RESULT_ITEM,
+}
+impl Default for FABRIC_BLOCK_LIST_QUERY_RESULT_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_BLOCK_LIST_TYPE(pub i32);
+pub const FABRIC_BLOCK_LIST_TYPE_OVERALL: FABRIC_BLOCK_LIST_TYPE = FABRIC_BLOCK_LIST_TYPE(1i32);
+pub const FABRIC_BLOCK_LIST_TYPE_PLACEMENT_TAGS: FABRIC_BLOCK_LIST_TYPE =
+    FABRIC_BLOCK_LIST_TYPE(3i32);
+pub const FABRIC_BLOCK_LIST_TYPE_PREFERRED_PRIMARY: FABRIC_BLOCK_LIST_TYPE =
+    FABRIC_BLOCK_LIST_TYPE(2i32);
+pub const FABRIC_BLOCK_LIST_TYPE_RUNNING_TAGS: FABRIC_BLOCK_LIST_TYPE =
+    FABRIC_BLOCK_LIST_TYPE(4i32);
+pub const FABRIC_BLOCK_LIST_TYPE_SERVICE: FABRIC_BLOCK_LIST_TYPE = FABRIC_BLOCK_LIST_TYPE(0i32);
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_CANCEL_TEST_COMMAND_DESCRIPTION {
@@ -1322,6 +1518,7 @@ pub const FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND_NONE: FABRIC_CLAIMS_RETRIEVAL_ME
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_CLIENT_ROLE(pub i32);
 pub const FABRIC_CLIENT_ROLE_ADMIN: FABRIC_CLIENT_ROLE = FABRIC_CLIENT_ROLE(2i32);
+pub const FABRIC_CLIENT_ROLE_ELEVATED_ADMIN: FABRIC_CLIENT_ROLE = FABRIC_CLIENT_ROLE(4i32);
 pub const FABRIC_CLIENT_ROLE_UNKNOWN: FABRIC_CLIENT_ROLE = FABRIC_CLIENT_ROLE(0i32);
 pub const FABRIC_CLIENT_ROLE_USER: FABRIC_CLIENT_ROLE = FABRIC_CLIENT_ROLE(1i32);
 #[repr(C)]
@@ -1383,6 +1580,18 @@ pub struct FABRIC_CLIENT_SETTINGS_EX4 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_CLIENT_SETTINGS_EX4 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_CLIENT_SETTINGS_EX5 {
+    pub AllowHealthReportCleanup: bool,
+    pub HealthReportDropTransientReportTtlThresholdInSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_CLIENT_SETTINGS_EX5 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -1486,6 +1695,17 @@ impl Default for FABRIC_CLUSTER_HEALTH_POLICY_EX1 {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_CLUSTER_HEALTH_POLICY_EX2 {
+    pub NodeTypeHealthPolicyMap: *const FABRIC_NODE_TYPE_HEALTH_POLICY_MAP,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_CLUSTER_HEALTH_POLICY_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION {
     pub HealthPolicy: *const FABRIC_CLUSTER_HEALTH_POLICY,
     pub ApplicationHealthPolicyMap: *const FABRIC_APPLICATION_HEALTH_POLICY_MAP,
@@ -1571,6 +1791,28 @@ impl Default for FABRIC_CLUSTER_UPGRADE_HEALTH_POLICY {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_CODE_PACKAGE_ACTIVATION_INFORMATION {
+    pub CodePackageName: windows_core::PCWSTR,
+    pub ExecutionPolicy: *mut FABRIC_EXECUTION_POLICY_DESCRIPTION,
+}
+impl Default for FABRIC_CODE_PACKAGE_ACTIVATION_INFORMATION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_CODE_PACKAGE_ACTIVATION_INFORMATION_LIST {
+    pub Count: u32,
+    pub Items: *mut FABRIC_CODE_PACKAGE_ACTIVATION_INFORMATION,
+}
+impl Default for FABRIC_CODE_PACKAGE_ACTIVATION_INFORMATION_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_CODE_PACKAGE_DESCRIPTION {
     pub Name: windows_core::PCWSTR,
     pub Version: windows_core::PCWSTR,
@@ -1635,6 +1877,17 @@ impl Default for FABRIC_CODE_PACKAGE_ENTRY_POINT_EX1 {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_CODE_PACKAGE_ENTRY_POINT_EX2 {
+    pub ContainerId: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_CODE_PACKAGE_ENTRY_POINT_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_CODE_PACKAGE_ENTRY_POINT_KIND(pub i32);
@@ -1693,6 +1946,8 @@ pub const FABRIC_CODE_PACKAGE_EVENT_TYPE_HEALTH: FABRIC_CODE_PACKAGE_EVENT_TYPE 
     FABRIC_CODE_PACKAGE_EVENT_TYPE(4i32);
 pub const FABRIC_CODE_PACKAGE_EVENT_TYPE_INVALID: FABRIC_CODE_PACKAGE_EVENT_TYPE =
     FABRIC_CODE_PACKAGE_EVENT_TYPE(0i32);
+pub const FABRIC_CODE_PACKAGE_EVENT_TYPE_RAN_TO_COMPLETION: FABRIC_CODE_PACKAGE_EVENT_TYPE =
+    FABRIC_CODE_PACKAGE_EVENT_TYPE(7i32);
 pub const FABRIC_CODE_PACKAGE_EVENT_TYPE_READY: FABRIC_CODE_PACKAGE_EVENT_TYPE =
     FABRIC_CODE_PACKAGE_EVENT_TYPE(3i32);
 pub const FABRIC_CODE_PACKAGE_EVENT_TYPE_STARTED: FABRIC_CODE_PACKAGE_EVENT_TYPE =
@@ -1703,6 +1958,42 @@ pub const FABRIC_CODE_PACKAGE_EVENT_TYPE_STOPPED: FABRIC_CODE_PACKAGE_EVENT_TYPE
     FABRIC_CODE_PACKAGE_EVENT_TYPE(5i32);
 pub const FABRIC_CODE_PACKAGE_EVENT_TYPE_TERMINATED: FABRIC_CODE_PACKAGE_EVENT_TYPE =
     FABRIC_CODE_PACKAGE_EVENT_TYPE(6i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_CODE_PACKAGE_USAGE_STATISTICS {
+    pub CodePackageStats: *mut FABRIC_STRING_MAP,
+    pub TimeRead: windows::Win32::Foundation::FILETIME,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_CODE_PACKAGE_USAGE_STATISTICS {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_COMMON_ARM_METADATA {
+    pub ArmResourceId: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_COMMON_ARM_METADATA {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_COMPLETE_REPLICA_DESCRIPTION {
+    pub NodeName: windows_core::PCWSTR,
+    pub PartitionId: windows_core::GUID,
+    pub ReplicaOrInstanceId: i64,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_COMPLETE_REPLICA_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION {
@@ -1760,6 +2051,32 @@ pub struct FABRIC_CONFIGURATION_PARAMETER_LIST {
     pub Items: *const FABRIC_CONFIGURATION_PARAMETER,
 }
 impl Default for FABRIC_CONFIGURATION_PARAMETER_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_CONFIGURATION_PARAMETER_OVERRIDE {
+    pub SectionName: windows_core::PCWSTR,
+    pub ParameterName: windows_core::PCWSTR,
+    pub ParameterValue: windows_core::PCWSTR,
+    pub Timeout: u32,
+    pub PersistAcrossUpgrade: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_CONFIGURATION_PARAMETER_OVERRIDE {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_CONFIGURATION_PARAMETER_OVERRIDE_LIST {
+    pub Count: u32,
+    pub Items: *const FABRIC_CONFIGURATION_PARAMETER_OVERRIDE,
+}
+impl Default for FABRIC_CONFIGURATION_PARAMETER_OVERRIDE_LIST {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -2186,6 +2503,17 @@ impl Default for FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_DESCRIPTION {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_DESCRIPTION_EX1 {
+    pub IncludeCodePackageUsageStats: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_DESCRIPTION_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_ITEM {
     pub CodePackageName: windows_core::PCWSTR,
     pub CodePackageVersion: windows_core::PCWSTR,
@@ -2210,6 +2538,17 @@ pub struct FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_ITEM_EX1 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_ITEM_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_ITEM_EX2 {
+    pub CodePackageStats: *mut FABRIC_CODE_PACKAGE_USAGE_STATISTICS,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_ITEM_EX2 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -2326,6 +2665,47 @@ pub struct FABRIC_DEPLOYED_NETWORK_QUERY_RESULT_LIST {
     pub Items: *const FABRIC_DEPLOYED_NETWORK_QUERY_RESULT_ITEM,
 }
 impl Default for FABRIC_DEPLOYED_NETWORK_QUERY_RESULT_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_DEPLOYED_SELF_RECONFIGURING_SERVICE_INSTANCE_DETAIL_QUERY_RESULT_ITEM {
+    pub ServiceName: FABRIC_URI,
+    pub PartitionId: windows_core::GUID,
+    pub InstanceId: i64,
+    pub CurrentServiceOperation: FABRIC_QUERY_SERVICE_OPERATION_NAME,
+    pub CurrentServiceOperationStartTimeUtc: windows::Win32::Foundation::FILETIME,
+    pub ReportedLoad: *mut FABRIC_LOAD_METRIC_REPORT_LIST,
+    pub DeployedServiceInstance:
+        *mut FABRIC_DEPLOYED_SELF_RECONFIGURING_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_DEPLOYED_SELF_RECONFIGURING_SERVICE_INSTANCE_DETAIL_QUERY_RESULT_ITEM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_DEPLOYED_SELF_RECONFIGURING_SERVICE_INSTANCE_QUERY_RESULT_ITEM {
+    pub ServiceName: FABRIC_URI,
+    pub ServiceTypeName: windows_core::PCWSTR,
+    pub ServiceManifestVersion: windows_core::PCWSTR,
+    pub CodePackageName: windows_core::PCWSTR,
+    pub PartitionId: windows_core::GUID,
+    pub InstanceId: i64,
+    pub InstanceRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE,
+    pub ReplicaStatus: FABRIC_QUERY_SERVICE_REPLICA_STATUS,
+    pub Address: windows_core::PCWSTR,
+    pub ServiceManifestName: windows_core::PCWSTR,
+    pub ServicePackageActivationId: windows_core::PCWSTR,
+    pub HostProcessId: i64,
+    pub ReconfigurationInformation: *mut FABRIC_RECONFIGURATION_INFORMATION_QUERY_RESULT,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_DEPLOYED_SELF_RECONFIGURING_SERVICE_INSTANCE_QUERY_RESULT_ITEM {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -2609,6 +2989,17 @@ pub struct FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX1 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX2 {
+    pub HealthState: FABRIC_HEALTH_STATE,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX2 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -2918,8 +3309,12 @@ pub const FABRIC_DEPLOYMENT_STATUS_DEACTIVATING: FABRIC_DEPLOYMENT_STATUS =
     FABRIC_DEPLOYMENT_STATUS(5i32);
 pub const FABRIC_DEPLOYMENT_STATUS_DOWNLOADING: FABRIC_DEPLOYMENT_STATUS =
     FABRIC_DEPLOYMENT_STATUS(1i32);
+pub const FABRIC_DEPLOYMENT_STATUS_FAILED: FABRIC_DEPLOYMENT_STATUS =
+    FABRIC_DEPLOYMENT_STATUS(7i32);
 pub const FABRIC_DEPLOYMENT_STATUS_INVALID: FABRIC_DEPLOYMENT_STATUS =
     FABRIC_DEPLOYMENT_STATUS(0i32);
+pub const FABRIC_DEPLOYMENT_STATUS_RAN_TO_COMPLETION: FABRIC_DEPLOYMENT_STATUS =
+    FABRIC_DEPLOYMENT_STATUS(6i32);
 pub const FABRIC_DEPLOYMENT_STATUS_UPGRADING: FABRIC_DEPLOYMENT_STATUS =
     FABRIC_DEPLOYMENT_STATUS(4i32);
 #[repr(transparent)]
@@ -2929,6 +3324,69 @@ pub const FABRIC_DIAGNOSTICS_SINKS_KIND_AZUREINTERNAL: FABRIC_DIAGNOSTICS_SINKS_
     FABRIC_DIAGNOSTICS_SINKS_KIND(1i32);
 pub const FABRIC_DIAGNOSTICS_SINKS_KIND_INVALID: FABRIC_DIAGNOSTICS_SINKS_KIND =
     FABRIC_DIAGNOSTICS_SINKS_KIND(0i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_DIGESTED_MANAGED_IDENTITY {
+    pub Name: windows_core::PCWSTR,
+    pub Identity: *const FABRIC_MANAGED_IDENTITY_DESCRIPTION,
+    pub IdentityBindingPolicy: *const FABRIC_IDENTITY_BINDING_POLICY_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_DIGESTED_MANAGED_IDENTITY {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_DIGESTED_MANAGED_IDENTITY_DESCRIPTION {
+    pub TokenServiceEndpoint: windows_core::PCWSTR,
+    pub DefaultIdentity: *const FABRIC_MANAGED_IDENTITY_DESCRIPTION,
+    pub WhitelistedIdentities: *const FABRIC_MANAGED_IDENTITY_DESCRIPTION_LIST,
+    pub DigestedManagedIdentities: *const FABRIC_DIGESTED_MANAGED_IDENTITY_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_DIGESTED_MANAGED_IDENTITY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_DIGESTED_MANAGED_IDENTITY_ITEM {
+    pub ApplicationIdentityName: windows_core::PCWSTR,
+    pub DigestedManagedIdentity: *const FABRIC_DIGESTED_MANAGED_IDENTITY,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_DIGESTED_MANAGED_IDENTITY_ITEM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_DIGESTED_MANAGED_IDENTITY_LIST {
+    pub Count: u32,
+    pub Items: *const FABRIC_DIGESTED_MANAGED_IDENTITY_ITEM,
+}
+impl Default for FABRIC_DIGESTED_MANAGED_IDENTITY_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_DISABLE_SERVICE_DESCRIPTION {
+    pub ServiceName: FABRIC_URI,
+    pub DisableServiceFlag: FABRIC_SERVICE_DISABLE_FLAG,
+    pub ForceDisable: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_DISABLE_SERVICE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_DLLHOST_ENTRY_POINT_DESCRIPTION {
@@ -3205,6 +3663,43 @@ impl Default for FABRIC_ESE_LOCAL_STORE_SETTINGS_EX6 {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_ESE_LOCAL_STORE_SETTINGS_EX7 {
+    pub PoolMinSize: i32,
+    pub PoolAdjustmentSize: i32,
+    pub PoolCachedReadCursorsPerSessionSize: i32,
+    pub PoolEvictionPeriodInSeconds: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_ESE_LOCAL_STORE_SETTINGS_EX7 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_ESE_LOCAL_STORE_SETTINGS_EX8 {
+    pub FreePageSizeThresholdInMB: i32,
+    pub CompactionProbabilityInPercent: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_ESE_LOCAL_STORE_SETTINGS_EX8 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_ESE_LOCAL_STORE_SETTINGS_EX9 {
+    pub FreePageSizeThresholdInPercent: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_ESE_LOCAL_STORE_SETTINGS_EX9 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_EVENT_CONTEXT_MAP {
     pub Count: u32,
     pub Items: *mut FABRIC_EVENT_CONTEXT_MAP_ITEM,
@@ -3246,6 +3741,28 @@ impl Default for FABRIC_EXECUTING_FAULTS_EVENT {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct FABRIC_EXECUTION_POLICY_DESCRIPTION {
+    pub ExecutionType: FABRIC_EXECUTION_POLICY_EXECUTION_TYPE,
+    pub RestartPolicy: FABRIC_EXECUTION_POLICY_RESTART_POLICY,
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_EXECUTION_POLICY_EXECUTION_TYPE(pub i32);
+pub const FABRIC_EXECUTION_POLICY_EXECUTION_TYPE_RUN_ALWAYS:
+    FABRIC_EXECUTION_POLICY_EXECUTION_TYPE = FABRIC_EXECUTION_POLICY_EXECUTION_TYPE(0i32);
+pub const FABRIC_EXECUTION_POLICY_EXECUTION_TYPE_RUN_TO_COMPLETION:
+    FABRIC_EXECUTION_POLICY_EXECUTION_TYPE = FABRIC_EXECUTION_POLICY_EXECUTION_TYPE(1i32);
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_EXECUTION_POLICY_RESTART_POLICY(pub i32);
+pub const FABRIC_EXECUTION_POLICY_RESTART_POLICY_ALWAYS: FABRIC_EXECUTION_POLICY_RESTART_POLICY =
+    FABRIC_EXECUTION_POLICY_RESTART_POLICY(0i32);
+pub const FABRIC_EXECUTION_POLICY_RESTART_POLICY_NEVER: FABRIC_EXECUTION_POLICY_RESTART_POLICY =
+    FABRIC_EXECUTION_POLICY_RESTART_POLICY(2i32);
+pub const FABRIC_EXECUTION_POLICY_RESTART_POLICY_ON_FAILURE:
+    FABRIC_EXECUTION_POLICY_RESTART_POLICY = FABRIC_EXECUTION_POLICY_RESTART_POLICY(1i32);
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_EXEHOST_ENTRY_POINT_DESCRIPTION {
@@ -3330,6 +3847,9 @@ pub const FABRIC_E_APPLICATION_UPGRADE_IN_PROGRESS: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017762i32);
 pub const FABRIC_E_APPLICATION_UPGRADE_VALIDATION_ERROR: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017761i32);
+pub const FABRIC_E_AUXILIARY_ALREADY_EXISTS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508796i32);
+pub const FABRIC_E_AUXILIARY_FEATURE_DISABLED: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508795i32);
 pub const FABRIC_E_BACKUPCOPIER_ACCESS_DENIED: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017601i32);
 pub const FABRIC_E_BACKUPCOPIER_TIMEOUT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017602i32);
@@ -3340,6 +3860,7 @@ pub const FABRIC_E_BACKUP_DIRECTORY_NOT_EMPTY: FABRIC_ERROR_CODE =
 pub const FABRIC_E_BACKUP_IN_PROGRESS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017672i32);
 pub const FABRIC_E_BACKUP_IS_ENABLED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017612i32);
 pub const FABRIC_E_BACKUP_NOT_ENABLED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017613i32);
+pub const FABRIC_E_BACKUP_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508792i32);
 pub const FABRIC_E_BACKUP_POLICY_ALREADY_EXISTS: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017610i32);
 pub const FABRIC_E_BACKUP_POLICY_DOES_NOT_EXIST: FABRIC_ERROR_CODE =
@@ -3371,14 +3892,18 @@ pub const FABRIC_E_CONNECTION_DENIED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-214
 pub const FABRIC_E_CONSTRAINT_KEY_UNDEFINED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017659i32);
 pub const FABRIC_E_CONSTRAINT_NOT_SATISFIED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017650i32);
 pub const FABRIC_E_CONTAINER_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017606i32);
+pub const FABRIC_E_COPY_ABORTED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508797i32);
 pub const FABRIC_E_CORRUPTED_IMAGE_STORE_OBJECT_FOUND: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017723i32);
+pub const FABRIC_E_DATABASE_FILES_CORRUPTED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508788i32);
 pub const FABRIC_E_DATABASE_MIGRATION_IN_PROGRESS: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017595i32);
 pub const FABRIC_E_DATA_PACKAGE_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017734i32);
 pub const FABRIC_E_DECRYPTION_FAILED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017736i32);
 pub const FABRIC_E_DELETE_BACKUP_FILE_FAILED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017647i32);
 pub const FABRIC_E_DIRECTORY_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017727i32);
+pub const FABRIC_E_DISABLE_ENABLE_SERVICE_FEATURE_DISABLED: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508784i32);
 pub const FABRIC_E_DNS_NAME_IN_USE: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017620i32);
 pub const FABRIC_E_DNS_SERVICE_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017622i32);
 pub const FABRIC_E_DUPLICATE_BACKUPS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017637i32);
@@ -3401,6 +3926,8 @@ pub const FABRIC_E_FABRIC_VERSION_ALREADY_EXISTS: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017717i32);
 pub const FABRIC_E_FABRIC_VERSION_IN_USE: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017718i32);
 pub const FABRIC_E_FABRIC_VERSION_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017719i32);
+pub const FABRIC_E_FACILITY_SF_FIRST_HRESULT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508800i32);
+pub const FABRIC_E_FACILITY_SF_LAST_HRESULT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018443265i32);
 pub const FABRIC_E_FAULT_ANALYSIS_SERVICE_NOT_ENABLED: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017607i32);
 pub const FABRIC_E_FILE_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017728i32);
@@ -3424,9 +3951,16 @@ pub const FABRIC_E_IMAGEBUILDER_UNEXPECTED_ERROR: FABRIC_ERROR_CODE =
 pub const FABRIC_E_IMAGEBUILDER_VALIDATION_ERROR: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017754i32);
 pub const FABRIC_E_IMAGESTORE_IOERROR: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017724i32);
+pub const FABRIC_E_INCOMPATIBLE_EXCLUSIVE_SELF_RECONFIGURING: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508776i32);
+pub const FABRIC_E_INSTANCE_ALREADY_EXISTS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508800i32);
+pub const FABRIC_E_INSTANCE_COUNT_UPDATE_NOT_ALLOWED: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508798i32);
 pub const FABRIC_E_INSTANCE_ID_MISMATCH: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017680i32);
 pub const FABRIC_E_INSUFFICIENT_CLUSTER_CAPACITY: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017677i32);
+pub const FABRIC_E_INSUFFICIENT_MAX_LOAD_CAPACITY: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508787i32);
 pub const FABRIC_E_INVALID_ADDRESS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017795i32);
 pub const FABRIC_E_INVALID_ALLOWED_COMMON_NAME_LIST: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017738i32);
@@ -3476,8 +4010,12 @@ pub const FABRIC_E_INVALID_X509_THUMBPRINT: FABRIC_ERROR_CODE = FABRIC_ERROR_COD
 pub const FABRIC_E_KEY_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017709i32);
 pub const FABRIC_E_KEY_TOO_LARGE: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017710i32);
 pub const FABRIC_E_LAST_RESERVED_HRESULT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017397i32);
+pub const FABRIC_E_LAST_USED_FACILITY_SF_HRESULT: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508776i32);
 pub const FABRIC_E_LAST_USED_HRESULT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017585i32);
 pub const FABRIC_E_LOADBALANCER_NOT_READY: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017668i32);
+pub const FABRIC_E_MAX_ALLOWED_DISABLED_SERVICES_REACHED: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508783i32);
 pub const FABRIC_E_MESSAGE_TOO_LARGE: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017651i32);
 pub const FABRIC_E_MISSING_FULL_BACKUP: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017673i32);
 pub const FABRIC_E_MULTITHREADED_TRANSACTIONS_NOT_ALLOWED: FABRIC_ERROR_CODE =
@@ -3493,6 +4031,7 @@ pub const FABRIC_E_NODE_IS_UP: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017788
 pub const FABRIC_E_NODE_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017789i32);
 pub const FABRIC_E_NODE_TRANSITION_IN_PROGRESS: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017632i32);
+pub const FABRIC_E_NODE_TYPE_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508799i32);
 pub const FABRIC_E_NOT_PRIMARY: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017786i32);
 pub const FABRIC_E_NOT_READABLE: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017604i32);
 pub const FABRIC_E_NOT_READY: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017785i32);
@@ -3548,6 +4087,10 @@ pub const FABRIC_E_RESTORE_IN_PROGRESS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2
 pub const FABRIC_E_RESTORE_SAFE_CHECK_FAILED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017628i32);
 pub const FABRIC_E_RESTORE_SOURCE_TARGET_PARTITION_MISMATCH: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017608i32);
+pub const FABRIC_E_RESTORE_WAITING_FOR_USER_INTERVENTION: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508789i32);
+pub const FABRIC_E_RUN_TO_COMPLETION_INCOMPATIBLE_WITH_SHARED_PROCESS: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508794i32);
 pub const FABRIC_E_SECONDARY_ALREADY_EXISTS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017665i32);
 pub const FABRIC_E_SECRET_INVALID: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017593i32);
 pub const FABRIC_E_SECRET_TYPE_CANNOT_BE_CHANGED: FABRIC_ERROR_CODE =
@@ -3561,6 +4104,11 @@ pub const FABRIC_E_SERVER_AUTHENTICATION_FAILED: FABRIC_ERROR_CODE =
 pub const FABRIC_E_SERVICE_AFFINITY_CHAIN_NOT_SUPPORTED: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017776i32);
 pub const FABRIC_E_SERVICE_ALREADY_EXISTS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017780i32);
+pub const FABRIC_E_SERVICE_ALREADY_IN_REQUESTED_STATE: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508785i32);
+pub const FABRIC_E_SERVICE_DISABLED: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508782i32);
+pub const FABRIC_E_SERVICE_DISABLE_IN_PROGRESS: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508781i32);
 pub const FABRIC_E_SERVICE_DOES_NOT_EXIST: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017779i32);
 pub const FABRIC_E_SERVICE_ENDPOINT_RESOURCE_NOT_FOUND: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017732i32);
@@ -3587,7 +4135,16 @@ pub const FABRIC_E_SINGLE_INSTANCE_APPLICATION_NOT_FOUND: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017598i32);
 pub const FABRIC_E_SINGLE_INSTANCE_APPLICATION_UPGRADE_IN_PROGRESS: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017591i32);
+pub const FABRIC_E_SKIP_RESTORE_OPERATION: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508791i32);
 pub const FABRIC_E_STOP_IN_PROGRESS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017635i32);
+pub const FABRIC_E_STORE_DISK_ERROR: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508786i32);
+pub const FABRIC_E_STORE_OUT_OF_INSTANCES: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508779i32);
+pub const FABRIC_E_STORE_OUT_OF_LONG_VALUE_IDS: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508780i32);
+pub const FABRIC_E_STORE_OUT_OF_SESSIONS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508790i32);
+pub const FABRIC_E_STORE_SERIALIZATION_ERROR: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2018508777i32);
+pub const FABRIC_E_STORE_SERIALIZED_STREAM_NULL: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508778i32);
 pub const FABRIC_E_TEST_COMMAND_OPERATION_ID_ALREADY_EXISTS: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017644i32);
 pub const FABRIC_E_TIMEOUT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017729i32);
@@ -3607,6 +4164,8 @@ pub const FABRIC_E_VALUE_EMPTY: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-214701777
 pub const FABRIC_E_VALUE_TOO_LARGE: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017773i32);
 pub const FABRIC_E_VERBOSE_FM_PLACEMENT_HEALTH_REPORTING_REQUIRED: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(-2147017656i32);
+pub const FABRIC_E_VERSION_STORE_OUT_OF_MEMORY: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(-2018508793i32);
 pub const FABRIC_E_VOLUME_ALREADY_EXISTS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017597i32);
 pub const FABRIC_E_VOLUME_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017596i32);
 pub const FABRIC_E_WRITE_CONFLICT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(-2147017770i32);
@@ -3713,6 +4272,8 @@ pub const FABRIC_HEALTH_EVALUATION_KIND_NODE: FABRIC_HEALTH_EVALUATION_KIND =
     FABRIC_HEALTH_EVALUATION_KIND(12i32);
 pub const FABRIC_HEALTH_EVALUATION_KIND_NODES: FABRIC_HEALTH_EVALUATION_KIND =
     FABRIC_HEALTH_EVALUATION_KIND(7i32);
+pub const FABRIC_HEALTH_EVALUATION_KIND_NODE_TYPE_NODES: FABRIC_HEALTH_EVALUATION_KIND =
+    FABRIC_HEALTH_EVALUATION_KIND(22i32);
 pub const FABRIC_HEALTH_EVALUATION_KIND_PARTITION: FABRIC_HEALTH_EVALUATION_KIND =
     FABRIC_HEALTH_EVALUATION_KIND(14i32);
 pub const FABRIC_HEALTH_EVALUATION_KIND_PARTITIONS: FABRIC_HEALTH_EVALUATION_KIND =
@@ -3812,6 +4373,17 @@ impl Default for FABRIC_HEALTH_INFORMATION {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_HEALTH_INFORMATION_EX1 {
+    pub HealthReportId: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_HEALTH_INFORMATION_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_HEALTH_REPORT {
     pub Kind: FABRIC_HEALTH_REPORT_KIND,
     pub Value: *mut core::ffi::c_void,
@@ -3839,6 +4411,8 @@ pub const FABRIC_HEALTH_REPORT_KIND_NODE: FABRIC_HEALTH_REPORT_KIND =
     FABRIC_HEALTH_REPORT_KIND(4i32);
 pub const FABRIC_HEALTH_REPORT_KIND_PARTITION: FABRIC_HEALTH_REPORT_KIND =
     FABRIC_HEALTH_REPORT_KIND(3i32);
+pub const FABRIC_HEALTH_REPORT_KIND_SELF_RECONFIGURING_SERVICE_INSTANCE: FABRIC_HEALTH_REPORT_KIND =
+    FABRIC_HEALTH_REPORT_KIND(10i32);
 pub const FABRIC_HEALTH_REPORT_KIND_SERVICE: FABRIC_HEALTH_REPORT_KIND =
     FABRIC_HEALTH_REPORT_KIND(5i32);
 pub const FABRIC_HEALTH_REPORT_KIND_STATEFUL_SERVICE_REPLICA: FABRIC_HEALTH_REPORT_KIND =
@@ -3919,6 +4493,18 @@ pub struct FABRIC_HOST_TYPE(pub i32);
 pub const FABRIC_HOST_TYPE_CONTAINER_HOST: FABRIC_HOST_TYPE = FABRIC_HOST_TYPE(2i32);
 pub const FABRIC_HOST_TYPE_EXE_HOST: FABRIC_HOST_TYPE = FABRIC_HOST_TYPE(1i32);
 pub const FABRIC_HOST_TYPE_INVALID: FABRIC_HOST_TYPE = FABRIC_HOST_TYPE(0i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_IDENTITY_BINDING_POLICY_DESCRIPTION {
+    pub ServiceIdentityRef: windows_core::PCWSTR,
+    pub ApplicationIdentityRef: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_IDENTITY_BINDING_POLICY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 pub const FABRIC_IGNORE_SEQUENCE_NUMBER_CHECK: u32 = 0u32;
 pub const FABRIC_INFINITE_DURATION: u32 = 4294967295u32;
 #[repr(C)]
@@ -4098,6 +4684,28 @@ impl Default for FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS_EX3 {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS_EX4 {
+    pub DisableTombstoneCleanup: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS_EX4 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS_EX5 {
+    pub LogicalCopyProbabilityInPercent: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_KEY_VALUE_STORE_REPLICA_SETTINGS_EX5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_KEY_VALUE_STORE_RESTORE_SETTINGS {
     pub InlineReopen: bool,
     pub Reserved: *mut core::ffi::c_void,
@@ -4147,11 +4755,61 @@ impl Default for FABRIC_KEY_VALUE_STORE_STATUS_QUERY_RESULT_EX1 {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_KEY_VALUE_STORE_STATUS_QUERY_RESULT_EX2 {
+    pub DatabasePhysicalSizeEstimateInBytes: i64,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_KEY_VALUE_STORE_STATUS_QUERY_RESULT_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_KEY_VALUE_STORE_TRANSACTION_SETTINGS {
     pub SerializationBlockSize: u32,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_KEY_VALUE_STORE_TRANSACTION_SETTINGS {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_LOADED_PARTITION_INFORMATION_QUERY_DESCRIPTION {
+    pub MetricName: windows_core::PCWSTR,
+    pub ServiceName: FABRIC_URI,
+    pub Ordering: FABRIC_ORDERING,
+    pub PagingDescription: *mut FABRIC_QUERY_PAGING_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_LOADED_PARTITION_INFORMATION_QUERY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_LOADED_PARTITION_INFORMATION_QUERY_RESULT_ITEM {
+    pub ServiceName: FABRIC_URI,
+    pub PartitionId: windows_core::GUID,
+    pub MetricName: windows_core::PCWSTR,
+    pub Load: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_LOADED_PARTITION_INFORMATION_QUERY_RESULT_ITEM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_LOADED_PARTITION_INFORMATION_QUERY_RESULT_LIST {
+    pub Count: u32,
+    pub Items: *const FABRIC_LOADED_PARTITION_INFORMATION_QUERY_RESULT_ITEM,
+}
+impl Default for FABRIC_LOADED_PARTITION_INFORMATION_QUERY_RESULT_LIST {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -4228,6 +4886,17 @@ pub struct FABRIC_LOAD_METRIC_INFORMATION_EX3 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_LOAD_METRIC_INFORMATION_EX3 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_LOAD_METRIC_INFORMATION_EX4 {
+    pub PlannedLoadRemoval: f64,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_LOAD_METRIC_INFORMATION_EX4 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -4318,6 +4987,119 @@ impl Default for FABRIC_LOCAL_NETWORK_INFORMATION {
 pub struct FABRIC_LOCAL_STORE_KIND(pub i32);
 pub const FABRIC_LOCAL_STORE_KIND_ESE: FABRIC_LOCAL_STORE_KIND = FABRIC_LOCAL_STORE_KIND(1i32);
 pub const FABRIC_LOCAL_STORE_KIND_INVALID: FABRIC_LOCAL_STORE_KIND = FABRIC_LOCAL_STORE_KIND(0i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MANAGED_APPLICATION_IDENTITY_DESCRIPTION {
+    pub ManagedIdentities: *const FABRIC_MANAGED_IDENTITY_DESCRIPTION_LIST,
+    pub TokenServiceEndpoint: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MANAGED_APPLICATION_IDENTITY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MANAGED_IDENTITY_DESCRIPTION {
+    pub Name: windows_core::PCWSTR,
+    pub PrincipalId: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MANAGED_IDENTITY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MANAGED_IDENTITY_DESCRIPTION_LIST {
+    pub Count: u32,
+    pub Items: *const FABRIC_MANAGED_IDENTITY_DESCRIPTION,
+}
+impl Default for FABRIC_MANAGED_IDENTITY_DESCRIPTION_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MANAGED_IDENTITY_POLICY_BINDING {
+    pub ServiceIdentityRef: windows_core::PCWSTR,
+    pub ApplicationIdentityRef: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MANAGED_IDENTITY_POLICY_BINDING {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MANAGED_IDENTITY_TOKEN_SERVICE_DESCRIPTION {
+    pub IsTokenServiceEnabled: bool,
+    pub IsClusterIdentityEnabled: bool,
+    pub ApplicationTokenEndpoint: windows_core::PCWSTR,
+    pub SystemTokenEndpoint: windows_core::PCWSTR,
+    pub ClusterIdentityObjectId: windows_core::PCWSTR,
+    pub RemoteTokenEndpoint: windows_core::PCWSTR,
+    pub ServerCertificateThumbprint: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MANAGED_IDENTITY_TOKEN_SERVICE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MANAGED_KEY_VAULT_REFERENCE_PARAMETER {
+    pub Name: windows_core::PCWSTR,
+    pub Identity: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MANAGED_KEY_VAULT_REFERENCE_PARAMETER {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MANAGED_KEY_VAULT_REFERENCE_PARAMETER_LIST {
+    pub Count: u32,
+    pub Items: *mut FABRIC_MANAGED_KEY_VAULT_REFERENCE_PARAMETER,
+}
+impl Default for FABRIC_MANAGED_KEY_VAULT_REFERENCE_PARAMETER_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_METRIC_LOAD_DESCRIPTION {
+    pub MetricName: windows_core::PCWSTR,
+    pub CurrentLoad: u32,
+    pub IsCurrentLoadSpecified: bool,
+    pub PredictedLoad: u32,
+    pub IsPredictedLoadSpecified: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_METRIC_LOAD_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_METRIC_LOAD_DESCRIPTION_LIST {
+    pub Count: u32,
+    pub Items: *mut FABRIC_METRIC_LOAD_DESCRIPTION,
+}
+impl Default for FABRIC_METRIC_LOAD_DESCRIPTION_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_MONITORED_UPGRADE_FAILURE_ACTION(pub i32);
@@ -4329,11 +5111,121 @@ pub const FABRIC_MONITORED_UPGRADE_FAILURE_ACTION_ROLLBACK:
     FABRIC_MONITORED_UPGRADE_FAILURE_ACTION = FABRIC_MONITORED_UPGRADE_FAILURE_ACTION(1i32);
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE(pub i32);
+pub const FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE_INVALID:
+    FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE = FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE(0i32);
+pub const FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE_RETRY:
+    FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE = FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE(3i32);
+pub const FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE_STABLE_DURATION:
+    FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE = FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE(2i32);
+pub const FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE_WAIT_DURATION:
+    FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE = FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE(1i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MOVE_AUXILIARY_DESCRIPTION {
+    pub Kind: FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND,
+    pub Value: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MOVE_AUXILIARY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND(pub i32);
+pub const FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND_INVALID: FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND =
+    FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND(0i32);
+pub const FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND_USING_NODE_NAME:
+    FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND = FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND(1i32);
+pub const FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND_USING_REPLICA_SELECTOR:
+    FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND = FABRIC_MOVE_AUXILIARY_DESCRIPTION_KIND(2i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MOVE_AUXILIARY_DESCRIPTION_USING_NODE_NAME {
+    pub CurrentNodeName: windows_core::PCWSTR,
+    pub NewNodeName: windows_core::PCWSTR,
+    pub ServiceName: FABRIC_URI,
+    pub PartitionId: windows_core::GUID,
+    pub IgnoreConstraints: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MOVE_AUXILIARY_DESCRIPTION_USING_NODE_NAME {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MOVE_AUXILIARY_RESULT {
+    pub CurrentNodeName: windows_core::PCWSTR,
+    pub NewNodeName: windows_core::PCWSTR,
+    pub ServiceName: FABRIC_URI,
+    pub PartitionId: windows_core::GUID,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MOVE_AUXILIARY_RESULT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_MOVE_COST(pub i32);
 pub const FABRIC_MOVE_COST_HIGH: FABRIC_MOVE_COST = FABRIC_MOVE_COST(3i32);
 pub const FABRIC_MOVE_COST_LOW: FABRIC_MOVE_COST = FABRIC_MOVE_COST(1i32);
 pub const FABRIC_MOVE_COST_MEDIUM: FABRIC_MOVE_COST = FABRIC_MOVE_COST(2i32);
+pub const FABRIC_MOVE_COST_VERYHIGH: FABRIC_MOVE_COST = FABRIC_MOVE_COST(4i32);
 pub const FABRIC_MOVE_COST_ZERO: FABRIC_MOVE_COST = FABRIC_MOVE_COST(0i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MOVE_INSTANCE_DESCRIPTION {
+    pub Kind: FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND,
+    pub Value: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MOVE_INSTANCE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND(pub i32);
+pub const FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND_INVALID: FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND =
+    FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND(0i32);
+pub const FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND_USING_NODE_NAME:
+    FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND = FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND(1i32);
+pub const FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND_USING_REPLICA_SELECTOR:
+    FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND = FABRIC_MOVE_INSTANCE_DESCRIPTION_KIND(2i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MOVE_INSTANCE_DESCRIPTION_USING_NODE_NAME {
+    pub CurrentNodeName: windows_core::PCWSTR,
+    pub NewNodeName: windows_core::PCWSTR,
+    pub ServiceName: FABRIC_URI,
+    pub PartitionId: windows_core::GUID,
+    pub IgnoreConstraints: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MOVE_INSTANCE_DESCRIPTION_USING_NODE_NAME {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_MOVE_INSTANCE_RESULT {
+    pub CurrentNodeName: windows_core::PCWSTR,
+    pub NewNodeName: windows_core::PCWSTR,
+    pub ServiceName: FABRIC_URI,
+    pub PartitionId: windows_core::GUID,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_MOVE_INSTANCE_RESULT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_MOVE_PRIMARY_DESCRIPTION2 {
@@ -4747,6 +5639,17 @@ impl Default for FABRIC_NODE_DEACTIVATION_TASK {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_NODE_DEACTIVATION_TASK_EX1 {
+    pub Description: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_NODE_DEACTIVATION_TASK_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_NODE_DEACTIVATION_TASK_ID {
     pub Id: windows_core::PCWSTR,
     pub Type: FABRIC_NODE_DEACTIVATION_TASK_TYPE,
@@ -5001,6 +5904,17 @@ impl Default for FABRIC_NODE_LOAD_METRIC_INFORMATION_EX2 {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_NODE_LOAD_METRIC_INFORMATION_EX3 {
+    pub PlannedNodeLoadRemoval: f64,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_NODE_LOAD_METRIC_INFORMATION_EX3 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_NODE_LOAD_METRIC_INFORMATION_LIST {
     pub Count: u32,
     pub Items: *mut FABRIC_NODE_LOAD_METRIC_INFORMATION,
@@ -5144,6 +6058,39 @@ impl Default for FABRIC_NODE_QUERY_RESULT_ITEM_EX6 {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_NODE_QUERY_RESULT_ITEM_EX7 {
+    pub InfrastructurePlacementID: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_NODE_QUERY_RESULT_ITEM_EX7 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_NODE_QUERY_RESULT_ITEM_EX8 {
+    pub NodeTags: *mut FABRIC_STRING_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_NODE_QUERY_RESULT_ITEM_EX8 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_NODE_QUERY_RESULT_ITEM_EX9 {
+    pub IsNodeByNodeUpgradeInProgress: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_NODE_QUERY_RESULT_ITEM_EX9 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_NODE_QUERY_RESULT_LIST {
     pub Count: u32,
     pub Items: *const FABRIC_NODE_QUERY_RESULT_ITEM,
@@ -5236,6 +6183,39 @@ pub const FABRIC_NODE_TRANSITION_TYPE_START: FABRIC_NODE_TRANSITION_TYPE =
     FABRIC_NODE_TRANSITION_TYPE(1i32);
 pub const FABRIC_NODE_TRANSITION_TYPE_STOP: FABRIC_NODE_TRANSITION_TYPE =
     FABRIC_NODE_TRANSITION_TYPE(2i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_NODE_TYPE_HEALTH_POLICY_MAP {
+    pub Count: u32,
+    pub Items: *const FABRIC_NODE_TYPE_HEALTH_POLICY_MAP_ITEM,
+}
+impl Default for FABRIC_NODE_TYPE_HEALTH_POLICY_MAP {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct FABRIC_NODE_TYPE_HEALTH_POLICY_MAP_ITEM {
+    pub NodeTypeName: windows_core::PCWSTR,
+    pub MaxPercentUnhealthyNodes: u8,
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_NODE_TYPE_NODES_HEALTH_EVALUATION {
+    pub Description: windows_core::PCWSTR,
+    pub AggregatedHealthState: FABRIC_HEALTH_STATE,
+    pub NodeTypeName: windows_core::PCWSTR,
+    pub UnhealthyEvaluations: *const FABRIC_HEALTH_EVALUATION_LIST,
+    pub TotalCount: u32,
+    pub MaxPercentUnhealthyNodes: u8,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_NODE_TYPE_NODES_HEALTH_EVALUATION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_NODE_UPGRADE_PHASE(pub i32);
@@ -5256,6 +6236,17 @@ pub struct FABRIC_NODE_UPGRADE_PROGRESS {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_NODE_UPGRADE_PROGRESS {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_NODE_UPGRADE_PROGRESS_EX1 {
+    pub UpgradeDurationInSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_NODE_UPGRADE_PROGRESS_EX1 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -5356,6 +6347,11 @@ impl Default for FABRIC_ORCHESTRATION_UPGRADE_PROGRESS_EX2 {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_ORDERING(pub i32);
+pub const FABRIC_ORDERING_ASC: FABRIC_ORDERING = FABRIC_ORDERING(1i32);
+pub const FABRIC_ORDERING_DESC: FABRIC_ORDERING = FABRIC_ORDERING(0i32);
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_PACKAGE_SHARING_POLICY {
@@ -5402,6 +6398,21 @@ pub struct FABRIC_PAGED_DEPLOYED_APPLICATION_QUERY_DESCRIPTION {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_PAGED_DEPLOYED_APPLICATION_QUERY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_PAGED_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION {
+    pub NodeName: windows_core::PCWSTR,
+    pub ApplicationName: FABRIC_URI,
+    pub ServiceManifestNameFilter: windows_core::PCWSTR,
+    pub IncludeHealthState: bool,
+    pub PagingDescription: *const FABRIC_QUERY_PAGING_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_PAGED_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -5664,11 +6675,113 @@ impl Default for FABRIC_PARTITION_LOAD_INFORMATION {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_PARTITION_LOAD_INFORMATION_EX1 {
+    pub AuxiliaryLoadMetricReports: *mut FABRIC_LOAD_METRIC_REPORT_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_PARTITION_LOAD_INFORMATION_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_PARTITION_LOAD_INFORMATION_EX2 {
+    pub MaximumLoadMetricReports: *mut FABRIC_LOAD_METRIC_REPORT_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_PARTITION_LOAD_INFORMATION_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION {
     pub PartitionId: windows_core::GUID,
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_PARTITION_METRIC_LOAD_DESCRIPTION {
+    pub PartitionId: windows_core::GUID,
+    pub PrimaryReplicaLoadEntries: *mut FABRIC_METRIC_LOAD_DESCRIPTION_LIST,
+    pub SecondaryReplicasOrInstancesLoadEntries: *mut FABRIC_METRIC_LOAD_DESCRIPTION_LIST,
+    pub SecondaryReplicaOrInstanceLoadEntriesPerNode:
+        *mut FABRIC_REPLICA_METRIC_LOAD_DESCRIPTION_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_PARTITION_METRIC_LOAD_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_PARTITION_METRIC_LOAD_DESCRIPTION_EX1 {
+    pub AuxiliaryReplicasLoadEntries: *mut FABRIC_METRIC_LOAD_DESCRIPTION_LIST,
+    pub AuxiliaryReplicaLoadEntriesPerNode: *mut FABRIC_REPLICA_METRIC_LOAD_DESCRIPTION_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_PARTITION_METRIC_LOAD_DESCRIPTION_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_PARTITION_METRIC_LOAD_DESCRIPTION_EX2 {
+    pub MaximumReplicaLoadEntries: *mut FABRIC_METRIC_LOAD_DESCRIPTION_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_PARTITION_METRIC_LOAD_DESCRIPTION_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_PARTITION_METRIC_LOAD_DESCRIPTION_LIST {
+    pub Count: u32,
+    pub Items: *mut FABRIC_PARTITION_METRIC_LOAD_DESCRIPTION,
+}
+impl Default for FABRIC_PARTITION_METRIC_LOAD_DESCRIPTION_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_PARTITION_MOVE_COST_DESCRIPTION {
+    pub PartitionId: windows_core::GUID,
+    pub PrimaryReplicaMoveCostEntry: FABRIC_MOVE_COST,
+    pub IsPrimaryReplicaMoveCostEntrySpecified: bool,
+    pub SecondaryReplicasOrInstancesMoveCostEntry: FABRIC_MOVE_COST,
+    pub IsSecondaryReplicasOrInstancesMoveCostEntrySpecified: bool,
+    pub SecondaryReplicaOrInstanceMoveCostEntriesPerNode:
+        *mut FABRIC_REPLICA_MOVE_COST_DESCRIPTION_LIST,
+    pub AuxiliaryReplicasMoveCostEntry: FABRIC_MOVE_COST,
+    pub IsAuxiliaryReplicasMoveCostEntrySpecified: bool,
+    pub AuxiliaryReplicaMoveCostEntriesPerNode: *mut FABRIC_REPLICA_MOVE_COST_DESCRIPTION_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_PARTITION_MOVE_COST_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_PARTITION_MOVE_COST_DESCRIPTION_LIST {
+    pub Count: u32,
+    pub Items: *mut FABRIC_PARTITION_MOVE_COST_DESCRIPTION,
+}
+impl Default for FABRIC_PARTITION_MOVE_COST_DESCRIPTION_LIST {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -5781,6 +6894,18 @@ pub const FABRIC_PARTITION_SELECTOR_TYPE_SINGLETON: FABRIC_PARTITION_SELECTOR_TY
     FABRIC_PARTITION_SELECTOR_TYPE(1i32);
 pub const FABRIC_PARTITION_SELECTOR_TYPE_UNIFORM_INT64: FABRIC_PARTITION_SELECTOR_TYPE =
     FABRIC_PARTITION_SELECTOR_TYPE(3i32);
+pub const FABRIC_PLACEMENT_POLICY_ALLOW_MULTIPLE_STATELESS_INSTANCES_ON_NODE:
+    FABRIC_PLACEMENT_POLICY_TYPE = FABRIC_PLACEMENT_POLICY_TYPE(6i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_PLACEMENT_POLICY_ALLOW_MULTIPLE_STATELESS_INSTANCES_ON_NODE_DESCRIPTION {
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_PLACEMENT_POLICY_ALLOW_MULTIPLE_STATELESS_INSTANCES_ON_NODE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 pub const FABRIC_PLACEMENT_POLICY_INVALID: FABRIC_PLACEMENT_POLICY_TYPE =
     FABRIC_PLACEMENT_POLICY_TYPE(0i32);
 pub const FABRIC_PLACEMENT_POLICY_INVALID_DOMAIN: FABRIC_PLACEMENT_POLICY_TYPE =
@@ -6136,6 +7261,10 @@ pub const FABRIC_QUERY_SERVICE_OPERATION_NAME_OPEN: FABRIC_QUERY_SERVICE_OPERATI
 pub struct FABRIC_QUERY_SERVICE_PARTITION_STATUS(pub i32);
 pub const FABRIC_QUERY_SERVICE_PARTITION_STATUS_DELETING: FABRIC_QUERY_SERVICE_PARTITION_STATUS =
     FABRIC_QUERY_SERVICE_PARTITION_STATUS(5i32);
+pub const FABRIC_QUERY_SERVICE_PARTITION_STATUS_DISABLED: FABRIC_QUERY_SERVICE_PARTITION_STATUS =
+    FABRIC_QUERY_SERVICE_PARTITION_STATUS(7i32);
+pub const FABRIC_QUERY_SERVICE_PARTITION_STATUS_DISABLING: FABRIC_QUERY_SERVICE_PARTITION_STATUS =
+    FABRIC_QUERY_SERVICE_PARTITION_STATUS(6i32);
 pub const FABRIC_QUERY_SERVICE_PARTITION_STATUS_INVALID: FABRIC_QUERY_SERVICE_PARTITION_STATUS =
     FABRIC_QUERY_SERVICE_PARTITION_STATUS(0i32);
 pub const FABRIC_QUERY_SERVICE_PARTITION_STATUS_IN_QUORUM_LOSS:
@@ -6149,6 +7278,8 @@ pub const FABRIC_QUERY_SERVICE_PARTITION_STATUS_RECONFIGURING:
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_QUERY_SERVICE_REPLICA_STATUS(pub i32);
+pub const FABRIC_QUERY_SERVICE_REPLICA_STATUS_COMPLETED: FABRIC_QUERY_SERVICE_REPLICA_STATUS =
+    FABRIC_QUERY_SERVICE_REPLICA_STATUS(6i32);
 pub const FABRIC_QUERY_SERVICE_REPLICA_STATUS_DOWN: FABRIC_QUERY_SERVICE_REPLICA_STATUS =
     FABRIC_QUERY_SERVICE_REPLICA_STATUS(4i32);
 pub const FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED: FABRIC_QUERY_SERVICE_REPLICA_STATUS =
@@ -6159,6 +7290,8 @@ pub struct FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER(pub i32);
 pub const FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER_ALL:
     FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER =
     FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER(65535i32);
+pub const FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER_COMPLETED:
+    FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER = FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER(32i32);
 pub const FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER_DEFAULT:
     FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER = FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER(0i32);
 pub const FABRIC_QUERY_SERVICE_REPLICA_STATUS_FILTER_DOWN:
@@ -6188,6 +7321,10 @@ pub const FABRIC_QUERY_SERVICE_STATUS_CREATING: FABRIC_QUERY_SERVICE_STATUS =
     FABRIC_QUERY_SERVICE_STATUS(4i32);
 pub const FABRIC_QUERY_SERVICE_STATUS_DELETING: FABRIC_QUERY_SERVICE_STATUS =
     FABRIC_QUERY_SERVICE_STATUS(3i32);
+pub const FABRIC_QUERY_SERVICE_STATUS_DISABLED: FABRIC_QUERY_SERVICE_STATUS =
+    FABRIC_QUERY_SERVICE_STATUS(7i32);
+pub const FABRIC_QUERY_SERVICE_STATUS_DISABLING: FABRIC_QUERY_SERVICE_STATUS =
+    FABRIC_QUERY_SERVICE_STATUS(6i32);
 pub const FABRIC_QUERY_SERVICE_STATUS_FAILED: FABRIC_QUERY_SERVICE_STATUS =
     FABRIC_QUERY_SERVICE_STATUS(5i32);
 pub const FABRIC_QUERY_SERVICE_STATUS_UNKNOWN: FABRIC_QUERY_SERVICE_STATUS =
@@ -6416,6 +7553,8 @@ pub const FABRIC_REPAIR_NODE_IMPACT_LEVEL_INVALID: FABRIC_REPAIR_NODE_IMPACT_LEV
     FABRIC_REPAIR_NODE_IMPACT_LEVEL(0i32);
 pub const FABRIC_REPAIR_NODE_IMPACT_LEVEL_NONE: FABRIC_REPAIR_NODE_IMPACT_LEVEL =
     FABRIC_REPAIR_NODE_IMPACT_LEVEL(1i32);
+pub const FABRIC_REPAIR_NODE_IMPACT_LEVEL_PAUSE: FABRIC_REPAIR_NODE_IMPACT_LEVEL =
+    FABRIC_REPAIR_NODE_IMPACT_LEVEL(5i32);
 pub const FABRIC_REPAIR_NODE_IMPACT_LEVEL_REMOVE_DATA: FABRIC_REPAIR_NODE_IMPACT_LEVEL =
     FABRIC_REPAIR_NODE_IMPACT_LEVEL(3i32);
 pub const FABRIC_REPAIR_NODE_IMPACT_LEVEL_REMOVE_NODE: FABRIC_REPAIR_NODE_IMPACT_LEVEL =
@@ -6709,6 +7848,10 @@ pub const FABRIC_REPLICATOR_COPY_QUEUE_INITIAL_SIZE: FABRIC_REPLICATOR_SETTINGS_
     FABRIC_REPLICATOR_SETTINGS_FLAGS(128i32);
 pub const FABRIC_REPLICATOR_COPY_QUEUE_MAX_SIZE: FABRIC_REPLICATOR_SETTINGS_FLAGS =
     FABRIC_REPLICATOR_SETTINGS_FLAGS(256i32);
+pub const FABRIC_REPLICATOR_ENABLE_SEND_WINDOW_SIZE_IN_BYTES: FABRIC_REPLICATOR_SETTINGS_FLAGS =
+    FABRIC_REPLICATOR_SETTINGS_FLAGS(4194304i32);
+pub const FABRIC_REPLICATOR_INITIAL_REPLICA_HEAP_SIZE_IN_KB: FABRIC_REPLICATOR_SETTINGS_FLAGS =
+    FABRIC_REPLICATOR_SETTINGS_FLAGS(16777216i32);
 pub const FABRIC_REPLICATOR_LISTEN_ADDRESS: FABRIC_REPLICATOR_SETTINGS_FLAGS =
     FABRIC_REPLICATOR_SETTINGS_FLAGS(1048576i32);
 pub const FABRIC_REPLICATOR_PRIMARY_REPLICATION_QUEUE_INITIAL_SIZE:
@@ -6737,6 +7880,10 @@ impl Default for FABRIC_REPLICATOR_QUEUE_STATUS {
         unsafe { core::mem::zeroed() }
     }
 }
+pub const FABRIC_REPLICATOR_REPLICATION_BATCH_SEND_INTERVAL: FABRIC_REPLICATOR_SETTINGS_FLAGS =
+    FABRIC_REPLICATOR_SETTINGS_FLAGS(67108864i32);
+pub const FABRIC_REPLICATOR_REPLICATION_BATCH_SIZE: FABRIC_REPLICATOR_SETTINGS_FLAGS =
+    FABRIC_REPLICATOR_SETTINGS_FLAGS(33554432i32);
 pub const FABRIC_REPLICATOR_REPLICATION_MESSAGE_MAX_SIZE: FABRIC_REPLICATOR_SETTINGS_FLAGS =
     FABRIC_REPLICATOR_SETTINGS_FLAGS(2048i32);
 pub const FABRIC_REPLICATOR_REPLICATION_QUEUE_INITIAL_SIZE: FABRIC_REPLICATOR_SETTINGS_FLAGS =
@@ -6832,6 +7979,43 @@ impl Default for FABRIC_REPLICATOR_SETTINGS_EX4 {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_REPLICATOR_SETTINGS_EX5 {
+    pub EnableSendWindowSizeInBytes: bool,
+    pub MaxReplicationQueueSendWindowSizeInBytes: u32,
+    pub MaxCopyQueueSendWindowSizeInBytes: u32,
+    pub UseIndividualHeapPerReplica: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_REPLICATOR_SETTINGS_EX5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_REPLICATOR_SETTINGS_EX6 {
+    pub InitialReplicaHeapSizeInKB: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_REPLICATOR_SETTINGS_EX6 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_REPLICATOR_SETTINGS_EX7 {
+    pub ReplicationBatchSize: u32,
+    pub ReplicationBatchSendIntervalMilliseconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_REPLICATOR_SETTINGS_EX7 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_REPLICATOR_SETTINGS_FLAGS(pub i32);
@@ -6848,6 +8032,8 @@ impl Default for FABRIC_REPLICATOR_STATUS_QUERY_RESULT {
         unsafe { core::mem::zeroed() }
     }
 }
+pub const FABRIC_REPLICATOR_USE_INDIVIDUAL_HEAP_PER_REPLICA: FABRIC_REPLICATOR_SETTINGS_FLAGS =
+    FABRIC_REPLICATOR_SETTINGS_FLAGS(8388608i32);
 pub const FABRIC_REPLICATOR_USE_STREAMFAULTS_AND_ENDOFSTREAM_OPERATIONACK:
     FABRIC_REPLICATOR_SETTINGS_FLAGS = FABRIC_REPLICATOR_SETTINGS_FLAGS(4096i32);
 #[repr(C)]
@@ -7023,6 +8209,52 @@ impl Default for FABRIC_REPLICA_LOAD_INFORMATION_QUERY_DESCRIPTION {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_REPLICA_METRIC_LOAD_DESCRIPTION {
+    pub NodeName: windows_core::PCWSTR,
+    pub ReplicaOrInstanceLoadEntries: *mut FABRIC_METRIC_LOAD_DESCRIPTION_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_REPLICA_METRIC_LOAD_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_REPLICA_METRIC_LOAD_DESCRIPTION_LIST {
+    pub Count: u32,
+    pub Items: *mut FABRIC_REPLICA_METRIC_LOAD_DESCRIPTION,
+}
+impl Default for FABRIC_REPLICA_METRIC_LOAD_DESCRIPTION_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_REPLICA_MOVE_COST_DESCRIPTION {
+    pub NodeName: windows_core::PCWSTR,
+    pub ReplicaOrInstanceMoveCostEntry: FABRIC_MOVE_COST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_REPLICA_MOVE_COST_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_REPLICA_MOVE_COST_DESCRIPTION_LIST {
+    pub Count: u32,
+    pub Items: *mut FABRIC_REPLICA_MOVE_COST_DESCRIPTION,
+}
+impl Default for FABRIC_REPLICA_MOVE_COST_DESCRIPTION_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_REPLICA_OPEN_MODE(pub i32);
@@ -7034,10 +8266,13 @@ pub const FABRIC_REPLICA_OPEN_MODE_NEW: FABRIC_REPLICA_OPEN_MODE = FABRIC_REPLIC
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_REPLICA_ROLE(pub i32);
+pub const FABRIC_REPLICA_ROLE_ACTIVE_AUXILIARY: FABRIC_REPLICA_ROLE = FABRIC_REPLICA_ROLE(6i32);
 pub const FABRIC_REPLICA_ROLE_ACTIVE_SECONDARY: FABRIC_REPLICA_ROLE = FABRIC_REPLICA_ROLE(4i32);
+pub const FABRIC_REPLICA_ROLE_IDLE_AUXILIARY: FABRIC_REPLICA_ROLE = FABRIC_REPLICA_ROLE(5i32);
 pub const FABRIC_REPLICA_ROLE_IDLE_SECONDARY: FABRIC_REPLICA_ROLE = FABRIC_REPLICA_ROLE(3i32);
 pub const FABRIC_REPLICA_ROLE_NONE: FABRIC_REPLICA_ROLE = FABRIC_REPLICA_ROLE(1i32);
 pub const FABRIC_REPLICA_ROLE_PRIMARY: FABRIC_REPLICA_ROLE = FABRIC_REPLICA_ROLE(2i32);
+pub const FABRIC_REPLICA_ROLE_PRIMARY_AUXILIARY: FABRIC_REPLICA_ROLE = FABRIC_REPLICA_ROLE(7i32);
 pub const FABRIC_REPLICA_ROLE_UNKNOWN: FABRIC_REPLICA_ROLE = FABRIC_REPLICA_ROLE(0i32);
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -7262,6 +8497,8 @@ pub const FABRIC_ROLLING_UPGRADE_MODE_MONITORED: FABRIC_ROLLING_UPGRADE_MODE =
     FABRIC_ROLLING_UPGRADE_MODE(3i32);
 pub const FABRIC_ROLLING_UPGRADE_MODE_UNMONITORED_AUTO: FABRIC_ROLLING_UPGRADE_MODE =
     FABRIC_ROLLING_UPGRADE_MODE(1i32);
+pub const FABRIC_ROLLING_UPGRADE_MODE_UNMONITORED_DEFERRED: FABRIC_ROLLING_UPGRADE_MODE =
+    FABRIC_ROLLING_UPGRADE_MODE(4i32);
 pub const FABRIC_ROLLING_UPGRADE_MODE_UNMONITORED_MANUAL: FABRIC_ROLLING_UPGRADE_MODE =
     FABRIC_ROLLING_UPGRADE_MODE(2i32);
 #[repr(C)]
@@ -7338,6 +8575,28 @@ impl Default for FABRIC_ROLLING_UPGRADE_POLICY_DESCRIPTION_EX3 {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_ROLLING_UPGRADE_POLICY_DESCRIPTION_EX4 {
+    pub UpgradeSortOrder: FABRIC_UPGRADE_SORT_ORDER,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_ROLLING_UPGRADE_POLICY_DESCRIPTION_EX4 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_ROLLING_UPGRADE_POLICY_DESCRIPTION_EX5 {
+    pub InstanceCloseDelayDurationInSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_ROLLING_UPGRADE_POLICY_DESCRIPTION_EX5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS(pub i32);
@@ -7355,6 +8614,8 @@ pub const FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS_HEALTH_CHECK_WAIT:
     FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS = FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS(16i32);
 pub const FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS_HEALTH_POLICY: FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS =
     FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS(512i32);
+pub const FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS_INSTANCE_CLOSE_DELAY_DURATION:
+    FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS = FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS(8192i32);
 pub const FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS_NONE: FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS =
     FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS(0i32);
 pub const FABRIC_ROLLING_UPGRADE_UPDATE_FLAGS_REPLICA_SET_CHECK_TIMEOUT:
@@ -7536,6 +8797,7 @@ pub struct FABRIC_SECRET {
     pub Value: windows_core::PCWSTR,
     pub Kind: windows_core::PCWSTR,
     pub ContentType: windows_core::PCWSTR,
+    pub Description: windows_core::PCWSTR,
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -7668,6 +8930,395 @@ impl Default for FABRIC_SELECTED_PARTITION {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_CONFIGURATION_CHANGE_REQUEST {
+    pub RequestId: FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST_ID,
+    pub Instances: *const FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_CONFIGURATION_CHANGE_REQUEST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT {
+    pub RequestId: FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST_ID,
+    pub ReportId: FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT_ID,
+    pub Instances: *const FABRIC_SELF_RECONFIGURING_INSTANCE_INFORMATION_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT_ID {
+    pub SequenceNumber: i64,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT_ID {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST {
+    pub RequestId: FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST_ID,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST_ID {
+    pub GenerationNumber: i64,
+    pub SequenceNumber: i64,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST_ID {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE(pub i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST {
+    pub InstanceId: i64,
+    pub Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE,
+    pub RequestedRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE,
+    pub ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE,
+    pub RequestedActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE,
+    pub Endpoints: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST_LIST {
+    pub Count: u32,
+    pub Items: *const FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_INSTANCE_INFORMATION {
+    pub InstanceId: i64,
+    pub Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE,
+    pub ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_INSTANCE_INFORMATION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_INSTANCE_INFORMATION_LIST {
+    pub Count: u32,
+    pub Items: *const FABRIC_SELF_RECONFIGURING_INSTANCE_INFORMATION,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_INSTANCE_INFORMATION_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE(pub i32);
+pub const FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_EXISTING:
+    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE =
+    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE(2i32);
+pub const FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_INVALID:
+    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE =
+    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE(0i32);
+pub const FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_NEW:
+    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE =
+    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE(1i32);
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE(pub i32);
+pub const FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE =
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE(1i32);
+pub const FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE =
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE(2i32);
+pub const FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_NONE: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE =
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE(0i32);
+pub const FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED:
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE =
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE(1i32);
+pub const FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED:
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE =
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE(2i32);
+pub const FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_INVALID:
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE =
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE(0i32);
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_CORRELATIONS:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(16i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION {
+    pub ApplicationName: FABRIC_URI,
+    pub ServiceName: FABRIC_URI,
+    pub ServiceTypeName: windows_core::PCWSTR,
+    pub InitializationDataSize: u32,
+    pub InitializationData: *mut u8,
+    pub PartitionScheme: FABRIC_PARTITION_SCHEME,
+    pub PartitionSchemeDescription: *mut core::ffi::c_void,
+    pub PlacementConstraints: windows_core::PCWSTR,
+    pub CorrelationCount: u32,
+    pub Correlations: *mut FABRIC_SERVICE_CORRELATION_DESCRIPTION,
+    pub MetricCount: u32,
+    pub Metrics: *mut FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION,
+    pub PolicyList: *mut FABRIC_SERVICE_PLACEMENT_POLICY_LIST,
+    pub IsDefaultMoveCostSpecified: bool,
+    pub DefaultMoveCost: FABRIC_MOVE_COST,
+    pub ServicePackageActivationMode: FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE,
+    pub ServiceDnsName: windows_core::PCWSTR,
+    pub ScalingPolicyCount: u32,
+    pub ServiceScalingPolicies: *mut FABRIC_SERVICE_SCALING_POLICY,
+    pub TagsDescription: *mut FABRIC_SERVICE_TAGS_DESCRIPTION,
+    pub FailoverSettings: *mut FABRIC_SELF_RECONFIGURING_SERVICE_FAILOVER_SETTINGS,
+    pub MinInstanceCount: i32,
+    pub InstanceCount: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION_EX1 {
+    pub IsCreateAsDisabled: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_FAILOVER_SETTINGS {
+    pub Flags: u32,
+    pub InstanceLifecycleDescription: *mut SELF_RECONFIGURING_INSTANCE_LIFECYCLE_DESCRIPTION,
+    pub InstanceRestartWaitDurationSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_FAILOVER_SETTINGS {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_COUNT:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(1i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH {
+    pub PartitionId: windows_core::GUID,
+    pub InstanceId: i64,
+    pub AggregatedHealthState: FABRIC_HEALTH_STATE,
+    pub HealthEvents: *const FABRIC_HEALTH_EVENT_LIST,
+    pub UnhealthyEvaluations: *const FABRIC_HEALTH_EVALUATION_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_REPORT {
+    pub PartitionId: windows_core::GUID,
+    pub InstanceId: i64,
+    pub HealthInformation: *const FABRIC_HEALTH_INFORMATION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_REPORT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_STATE {
+    pub PartitionId: windows_core::GUID,
+    pub InstanceId: i64,
+    pub AggregatedHealthState: FABRIC_HEALTH_STATE,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_STATE {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_STATE_EX1 {
+    pub UnhealthyEvaluations: *const FABRIC_HEALTH_EVALUATION_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_STATE_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_QUERY_RESULT_ITEM {
+    pub InstanceId: i64,
+    pub InstanceRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE,
+    pub ReplicaStatus: FABRIC_QUERY_SERVICE_REPLICA_STATUS,
+    pub AggregatedHealthState: FABRIC_HEALTH_STATE,
+    pub ReplicaAddress: windows_core::PCWSTR,
+    pub NodeName: windows_core::PCWSTR,
+    pub LastInBuildDurationInSeconds: i64,
+    pub PreviousSelfReconfiguringInstanceRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_QUERY_RESULT_ITEM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_RESTART_WAIT_DURATION:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(4096i32);
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_METRICS:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(32i32);
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_MIN_INSTANCE_COUNT:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(2i32);
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_MOVE_COST:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(64i32);
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_NONE:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(0i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_PARTITION_QUERY_RESULT_ITEM {
+    pub PartitionInformation: *const FABRIC_SERVICE_PARTITION_INFORMATION,
+    pub InstanceCount: u32,
+    pub HealthState: FABRIC_HEALTH_STATE,
+    pub PartitionStatus: FABRIC_QUERY_SERVICE_PARTITION_STATUS,
+    pub MinInstanceCount: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_PARTITION_QUERY_RESULT_ITEM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_PLACEMENT_CONSTRAINTS:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(4i32);
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_POLICY_LIST:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(8i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_QUERY_RESULT_ITEM {
+    pub ServiceName: FABRIC_URI,
+    pub ServiceTypeName: windows_core::PCWSTR,
+    pub ServiceManifestVersion: windows_core::PCWSTR,
+    pub HealthState: FABRIC_HEALTH_STATE,
+    pub ServiceStatus: FABRIC_QUERY_SERVICE_STATUS,
+    pub Metadata: *mut FABRIC_SERVICE_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_QUERY_RESULT_ITEM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(512i32);
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_SCALING_POLICY:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(128i32);
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_SERVICE_DNS_NAME:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(256i32);
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_TAGS_REQUIRED_TO_PLACE:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(1024i32);
+pub const FABRIC_SELF_RECONFIGURING_SERVICE_TAGS_REQUIRED_TO_RUN:
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(2048i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_TYPE_DESCRIPTION {
+    pub ServiceTypeName: windows_core::PCWSTR,
+    pub PlacementConstraints: windows_core::PCWSTR,
+    pub LoadMetrics: *const FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_LIST,
+    pub Extensions: *const FABRIC_SERVICE_TYPE_DESCRIPTION_EXTENSION_LIST,
+    pub PolicyList: *mut FABRIC_SERVICE_PLACEMENT_POLICY_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_TYPE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION {
+    pub Flags: u32,
+    pub PlacementConstraints: windows_core::PCWSTR,
+    pub PolicyList: *mut FABRIC_SERVICE_PLACEMENT_POLICY_LIST,
+    pub CorrelationCount: u32,
+    pub Correlations: *mut FABRIC_SERVICE_CORRELATION_DESCRIPTION,
+    pub MetricCount: u32,
+    pub Metrics: *mut FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION,
+    pub DefaultMoveCost: FABRIC_MOVE_COST,
+    pub RepartitionKind: FABRIC_SERVICE_PARTITION_KIND,
+    pub RepartitionDescription: *mut core::ffi::c_void,
+    pub ScalingPolicyCount: u32,
+    pub ServiceScalingPolicies: *mut FABRIC_SERVICE_SCALING_POLICY,
+    pub ServiceDnsName: windows_core::PCWSTR,
+    pub TagsDescription: *mut FABRIC_SERVICE_TAGS_DESCRIPTION,
+    pub InstanceLifecycleDescription: *mut SELF_RECONFIGURING_INSTANCE_LIFECYCLE_DESCRIPTION,
+    pub InstanceCount: i32,
+    pub MinInstanceCount: i32,
+    pub InstanceRestartWaitDurationSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_SELF_RECONFIGURING_SERVICE_UPDATE_DESCRIPTION_FLAGS(pub i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_SERVICES_HEALTH_EVALUATION {
     pub Description: windows_core::PCWSTR,
     pub AggregatedHealthState: FABRIC_HEALTH_STATE,
@@ -7678,6 +9329,17 @@ pub struct FABRIC_SERVICES_HEALTH_EVALUATION {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_SERVICES_HEALTH_EVALUATION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SERVICE_ARM_METADATA_UPDATE_DESCRIPTION {
+    pub ArmMetadata: *mut FABRIC_COMMON_ARM_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SERVICE_ARM_METADATA_UPDATE_DESCRIPTION {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -7721,10 +9383,19 @@ impl Default for FABRIC_SERVICE_DESCRIPTION {
 pub struct FABRIC_SERVICE_DESCRIPTION_KIND(pub i32);
 pub const FABRIC_SERVICE_DESCRIPTION_KIND_INVALID: FABRIC_SERVICE_DESCRIPTION_KIND =
     FABRIC_SERVICE_DESCRIPTION_KIND(0i32);
+pub const FABRIC_SERVICE_DESCRIPTION_KIND_SELF_RECONFIGURING: FABRIC_SERVICE_DESCRIPTION_KIND =
+    FABRIC_SERVICE_DESCRIPTION_KIND(3i32);
 pub const FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL: FABRIC_SERVICE_DESCRIPTION_KIND =
     FABRIC_SERVICE_DESCRIPTION_KIND(2i32);
 pub const FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS: FABRIC_SERVICE_DESCRIPTION_KIND =
     FABRIC_SERVICE_DESCRIPTION_KIND(1i32);
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_SERVICE_DISABLE_FLAG(pub i32);
+pub const FABRIC_SERVICE_DISABLE_FLAG_INVALID: FABRIC_SERVICE_DISABLE_FLAG =
+    FABRIC_SERVICE_DISABLE_FLAG(0i32);
+pub const FABRIC_SERVICE_DISABLE_FLAG_REMOVE_DATA: FABRIC_SERVICE_DISABLE_FLAG =
+    FABRIC_SERVICE_DISABLE_FLAG(1i32);
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_SERVICE_ENDPOINT_ROLE(pub i32);
@@ -8127,8 +9798,20 @@ impl Default for FABRIC_SERVICE_HEALTH_STATISTICS_FILTER {
 }
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_SERVICE_HOST_UPGRADE_IMPACT(pub i32);
+pub const FABRIC_SERVICE_HOST_UPGRADE_IMPACT_INVALID: FABRIC_SERVICE_HOST_UPGRADE_IMPACT =
+    FABRIC_SERVICE_HOST_UPGRADE_IMPACT(0i32);
+pub const FABRIC_SERVICE_HOST_UPGRADE_IMPACT_NONE: FABRIC_SERVICE_HOST_UPGRADE_IMPACT =
+    FABRIC_SERVICE_HOST_UPGRADE_IMPACT(1i32);
+pub const FABRIC_SERVICE_HOST_UPGRADE_IMPACT_SERVICE_HOST_RESTART:
+    FABRIC_SERVICE_HOST_UPGRADE_IMPACT = FABRIC_SERVICE_HOST_UPGRADE_IMPACT(2i32);
+pub const FABRIC_SERVICE_HOST_UPGRADE_IMPACT_UNEXPECTED_SERVICE_HOST_RESTART:
+    FABRIC_SERVICE_HOST_UPGRADE_IMPACT = FABRIC_SERVICE_HOST_UPGRADE_IMPACT(3i32);
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_SERVICE_KIND(pub i32);
 pub const FABRIC_SERVICE_KIND_INVALID: FABRIC_SERVICE_KIND = FABRIC_SERVICE_KIND(0i32);
+pub const FABRIC_SERVICE_KIND_SELF_RECONFIGURING: FABRIC_SERVICE_KIND = FABRIC_SERVICE_KIND(3i32);
 pub const FABRIC_SERVICE_KIND_STATEFUL: FABRIC_SERVICE_KIND = FABRIC_SERVICE_KIND(2i32);
 pub const FABRIC_SERVICE_KIND_STATELESS: FABRIC_SERVICE_KIND = FABRIC_SERVICE_KIND(1i32);
 #[repr(C)]
@@ -8141,6 +9824,28 @@ pub struct FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX1 {
+    pub AuxiliaryDefaultLoad: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX2 {
+    pub MaximumLoad: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX2 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -8167,6 +9872,17 @@ pub const FABRIC_SERVICE_LOAD_METRIC_WEIGHT_MEDIUM: FABRIC_SERVICE_LOAD_METRIC_W
     FABRIC_SERVICE_LOAD_METRIC_WEIGHT(2i32);
 pub const FABRIC_SERVICE_LOAD_METRIC_WEIGHT_ZERO: FABRIC_SERVICE_LOAD_METRIC_WEIGHT =
     FABRIC_SERVICE_LOAD_METRIC_WEIGHT(0i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SERVICE_METADATA {
+    pub ArmMetadata: *mut FABRIC_COMMON_ARM_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SERVICE_METADATA {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_SERVICE_NAME_QUERY_DESCRIPTION {
@@ -8466,8 +10182,14 @@ impl Default for FABRIC_SERVICE_REPLICA_QUERY_RESULT_LIST {
 }
 pub const FABRIC_SERVICE_ROLE_INVALID: FABRIC_SERVICE_ENDPOINT_ROLE =
     FABRIC_SERVICE_ENDPOINT_ROLE(0i32);
+pub const FABRIC_SERVICE_ROLE_SELF_RECONFIGURING: FABRIC_SERVICE_ENDPOINT_ROLE =
+    FABRIC_SERVICE_ENDPOINT_ROLE(6i32);
+pub const FABRIC_SERVICE_ROLE_STATEFUL_AUXILIARY: FABRIC_SERVICE_ENDPOINT_ROLE =
+    FABRIC_SERVICE_ENDPOINT_ROLE(5i32);
 pub const FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY: FABRIC_SERVICE_ENDPOINT_ROLE =
     FABRIC_SERVICE_ENDPOINT_ROLE(2i32);
+pub const FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY_AUXILIARY: FABRIC_SERVICE_ENDPOINT_ROLE =
+    FABRIC_SERVICE_ENDPOINT_ROLE(4i32);
 pub const FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY: FABRIC_SERVICE_ENDPOINT_ROLE =
     FABRIC_SERVICE_ENDPOINT_ROLE(3i32);
 pub const FABRIC_SERVICE_ROLE_STATELESS: FABRIC_SERVICE_ENDPOINT_ROLE =
@@ -8480,6 +10202,18 @@ pub struct FABRIC_SERVICE_SCALING_POLICY {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_SERVICE_SCALING_POLICY {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_SERVICE_TAGS_DESCRIPTION {
+    pub TagsRequiredToPlace: *mut FABRIC_STRING_LIST,
+    pub TagsRequiredToRun: *mut FABRIC_STRING_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_SERVICE_TAGS_DESCRIPTION {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -8739,6 +10473,19 @@ impl Default for FABRIC_START_NODE_DESCRIPTION_USING_NODE_NAME {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_START_NODE_POISON_DESCRIPTION {
+    pub NodeId: windows_core::PCWSTR,
+    pub NodeInstanceId: u64,
+    pub Neighbors: *mut FABRIC_STRING_LIST,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_START_NODE_POISON_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_START_NODE_STATUS {
     pub NodeResult: *mut FABRIC_NODE_RESULT,
     pub Reserved: *mut core::ffi::c_void,
@@ -8819,6 +10566,9 @@ impl Default for FABRIC_START_UPGRADE_DESCRIPTION_EX1 {
         unsafe { core::mem::zeroed() }
     }
 }
+pub const FABRIC_STATEFUL_SERVICE_AUXILIARY_REPLICA_COUNT:
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(262144i32);
 pub const FABRIC_STATEFUL_SERVICE_CORRELATIONS: FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
     FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(128i32);
 #[repr(C)]
@@ -8896,6 +10646,31 @@ impl Default for FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4 {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX5 {
+    pub TagsDescription: *mut FABRIC_SERVICE_TAGS_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX6 {
+    pub IsCreateAsDisabled: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX6 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+pub const FABRIC_STATEFUL_SERVICE_DROP_SOURCE_REPLICA_ON_MOVE:
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(4096i32);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS {
     pub Flags: u32,
     pub ReplicaRestartWaitDurationSeconds: u32,
@@ -8918,9 +10693,67 @@ impl Default for FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX1 {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX2 {
+    pub ServicePlacementTimeLimitSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX3 {
+    pub DropSourceReplicaOnMove: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX3 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX4 {
+    pub ReplicaLifecycleDescription: *mut REPLICA_LIFECYCLE_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX4 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX5 {
+    pub AuxiliaryReplicaCount: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX6 {
+    pub ServiceSensitivityDescription: *mut SERVICE_SENSITIVITY_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX6 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS(pub i32);
+pub const FABRIC_STATEFUL_SERVICE_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE:
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(16384i32);
 pub const FABRIC_STATEFUL_SERVICE_METRICS: FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
     FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(256i32);
 pub const FABRIC_STATEFUL_SERVICE_MIN_REPLICA_SET_SIZE:
@@ -8953,6 +10786,17 @@ pub struct FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX1 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX2 {
+    pub AuxiliaryReplicaCount: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX2 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -8995,6 +10839,17 @@ pub struct FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM_EX2 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM_EX3 {
+    pub Metadata: *mut FABRIC_SERVICE_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM_EX3 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -9081,11 +10936,43 @@ impl Default for FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM_EX1 {
+    pub PreviousReplicaRole: FABRIC_REPLICA_ROLE,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
 pub const FABRIC_STATEFUL_SERVICE_REPLICA_RESTART_WAIT_DURATION:
     FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
     FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(2i32);
+pub const FABRIC_STATEFUL_SERVICE_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE:
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(32768i32);
 pub const FABRIC_STATEFUL_SERVICE_SCALING_POLICY: FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
     FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(1024i32);
+pub const FABRIC_STATEFUL_SERVICE_SERVICE_DNS_NAME:
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(8192i32);
+pub const FABRIC_STATEFUL_SERVICE_SERVICE_PLACEMENT_TIME_LIMIT:
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(2048i32);
+pub const FABRIC_STATEFUL_SERVICE_SERVICE_SENSITIVITY:
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(524288i32);
+pub const FABRIC_STATEFUL_SERVICE_SETTINGS_AUXILIARY_REPLICA_COUNT:
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS =
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS(128i32);
+pub const FABRIC_STATEFUL_SERVICE_SETTINGS_DROP_SOURCE_REPLICA_ON_MOVE:
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS =
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS(16i32);
+pub const FABRIC_STATEFUL_SERVICE_SETTINGS_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE:
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS =
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS(32i32);
 pub const FABRIC_STATEFUL_SERVICE_SETTINGS_NONE: FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS =
     FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS(0i32);
 pub const FABRIC_STATEFUL_SERVICE_SETTINGS_QUORUM_LOSS_WAIT_DURATION:
@@ -9094,12 +10981,27 @@ pub const FABRIC_STATEFUL_SERVICE_SETTINGS_QUORUM_LOSS_WAIT_DURATION:
 pub const FABRIC_STATEFUL_SERVICE_SETTINGS_REPLICA_RESTART_WAIT_DURATION:
     FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS =
     FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS(1i32);
+pub const FABRIC_STATEFUL_SERVICE_SETTINGS_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE:
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS =
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS(64i32);
+pub const FABRIC_STATEFUL_SERVICE_SETTINGS_SERVICE_PLACEMENT_TIME_LIMIT:
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS =
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS(8i32);
+pub const FABRIC_STATEFUL_SERVICE_SETTINGS_SERVICE_SENSITIVITY:
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS =
+    FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS(256i32);
 pub const FABRIC_STATEFUL_SERVICE_SETTINGS_STANDBY_REPLICA_KEEP_DURATION:
     FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS =
     FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS(4i32);
 pub const FABRIC_STATEFUL_SERVICE_STANDBY_REPLICA_KEEP_DURATION:
     FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
     FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(8i32);
+pub const FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_PLACE:
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(65536i32);
+pub const FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_RUN:
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(131072i32);
 pub const FABRIC_STATEFUL_SERVICE_TARGET_REPLICA_SET_SIZE:
     FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS =
     FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS(1i32);
@@ -9156,6 +11058,39 @@ impl Default for FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX1 {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX10 {
+    pub TagsDescription: *mut FABRIC_SERVICE_TAGS_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX10 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX11 {
+    pub AuxiliaryReplicaCount: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX11 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX12 {
+    pub ServiceSensitivityDescription: *mut SERVICE_SENSITIVITY_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX12 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX2 {
     pub MinReplicaSetSize: i32,
     pub Reserved: *mut core::ffi::c_void,
@@ -9202,6 +11137,50 @@ pub struct FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX6 {
+    pub ServicePlacementTimeLimitSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX6 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX7 {
+    pub DropSourceReplicaOnMove: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX7 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX8 {
+    pub ServiceDnsName: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX8 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX9 {
+    pub ReplicaLifecycleDescription: *mut REPLICA_LIFECYCLE_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX9 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -9281,6 +11260,91 @@ impl Default for FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4 {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_DESCRIPTION_EX5 {
+    pub MinInstanceCount: i32,
+    pub MinInstancePercentage: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_DESCRIPTION_EX5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_DESCRIPTION_EX6 {
+    pub FailoverSettings: *mut FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_DESCRIPTION_EX6 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_DESCRIPTION_EX7 {
+    pub TagsDescription: *mut FABRIC_SERVICE_TAGS_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_DESCRIPTION_EX7 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_DESCRIPTION_EX8 {
+    pub IsCreateAsDisabled: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_DESCRIPTION_EX8 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS {
+    pub Flags: u32,
+    pub InstanceCloseDelayDurationSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_EX1 {
+    pub InstanceRestartWaitDurationSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_EX1 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_EX2 {
+    pub InstanceLifecycleDescription: *mut INSTANCE_LIFECYCLE_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_FLAGS(pub i32);
+pub const FABRIC_STATELESS_SERVICE_INSTANCE_CLOSE_DELAY_DURATION:
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(512i32);
 pub const FABRIC_STATELESS_SERVICE_INSTANCE_COUNT:
     FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
     FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(1i32);
@@ -9362,8 +11426,17 @@ impl Default for FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM {
         unsafe { core::mem::zeroed() }
     }
 }
+pub const FABRIC_STATELESS_SERVICE_INSTANCE_RESTART_WAIT_DURATION:
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(1024i32);
 pub const FABRIC_STATELESS_SERVICE_METRICS: FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
     FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(16i32);
+pub const FABRIC_STATELESS_SERVICE_MIN_INSTANCE_COUNT:
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(128i32);
+pub const FABRIC_STATELESS_SERVICE_MIN_INSTANCE_PERCENTAGE:
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(256i32);
 pub const FABRIC_STATELESS_SERVICE_MOVE_COST: FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
     FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(32i32);
 pub const FABRIC_STATELESS_SERVICE_NONE: FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
@@ -9378,6 +11451,18 @@ pub struct FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX1 {
+    pub MinInstanceCount: i32,
+    pub MinInstancePercentage: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX1 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -9423,9 +11508,40 @@ impl Default for FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM_EX2 {
         unsafe { core::mem::zeroed() }
     }
 }
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM_EX3 {
+    pub Metadata: *mut FABRIC_SERVICE_METADATA,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM_EX3 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+pub const FABRIC_STATELESS_SERVICE_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE:
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(4096i32);
 pub const FABRIC_STATELESS_SERVICE_SCALING_POLICY:
     FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
     FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(64i32);
+pub const FABRIC_STATELESS_SERVICE_SERVICE_DNS_NAME:
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(2048i32);
+pub const FABRIC_STATELESS_SERVICE_SETTINGS_INSTANCE_CLOSE_DELAY_DURATION:
+    FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_FLAGS =
+    FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_FLAGS(1i32);
+pub const FABRIC_STATELESS_SERVICE_SETTINGS_INSTANCE_RESTART_WAIT_DURATION:
+    FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_FLAGS =
+    FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_FLAGS(2i32);
+pub const FABRIC_STATELESS_SERVICE_SETTINGS_NONE: FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_FLAGS =
+    FABRIC_STATELESS_SERVICE_FAILOVER_SETTINGS_FLAGS(0i32);
+pub const FABRIC_STATELESS_SERVICE_TAGS_REQUIRED_TO_PLACE:
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(8192i32);
+pub const FABRIC_STATELESS_SERVICE_TAGS_REQUIRED_TO_RUN:
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS =
+    FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_FLAGS(16384i32);
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_STATELESS_SERVICE_TYPE_DESCRIPTION {
@@ -9501,6 +11617,73 @@ pub struct FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX3 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX3 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX4 {
+    pub MinInstanceCount: i32,
+    pub MinInstancePercentage: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX4 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX5 {
+    pub InstanceCloseDelayDurationSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX5 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX6 {
+    pub InstanceRestartWaitDurationSeconds: u32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX6 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX7 {
+    pub ServiceDnsName: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX7 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX8 {
+    pub InstanceLifecycleDescription: *mut INSTANCE_LIFECYCLE_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX8 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX9 {
+    pub TagsDescription: *mut FABRIC_SERVICE_TAGS_DESCRIPTION,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX9 {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }
@@ -9818,6 +12001,78 @@ impl Default for FABRIC_UNPROVISION_APPLICATION_TYPE_DESCRIPTION {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_UPDATE_PARTITION_LOAD_QUERY_DESCRIPTION {
+    pub PartitionMetricLoadDescriptionList: *mut FABRIC_PARTITION_METRIC_LOAD_DESCRIPTION_LIST,
+    pub ContinuationToken: windows_core::PCWSTR,
+    pub MaxResults: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_UPDATE_PARTITION_LOAD_QUERY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_UPDATE_PARTITION_LOAD_QUERY_RESULT_ITEM {
+    pub PartitionId: windows_core::GUID,
+    pub ErrorCode: windows_core::HRESULT,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_UPDATE_PARTITION_LOAD_QUERY_RESULT_ITEM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_UPDATE_PARTITION_LOAD_QUERY_RESULT_LIST {
+    pub Count: u32,
+    pub Items: *mut FABRIC_UPDATE_PARTITION_LOAD_QUERY_RESULT_ITEM,
+}
+impl Default for FABRIC_UPDATE_PARTITION_LOAD_QUERY_RESULT_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_UPDATE_PARTITION_MOVE_COST_QUERY_DESCRIPTION {
+    pub PartitionMoveCostDescriptionList: *mut FABRIC_PARTITION_MOVE_COST_DESCRIPTION_LIST,
+    pub ContinuationToken: windows_core::PCWSTR,
+    pub MaxResults: i32,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_UPDATE_PARTITION_MOVE_COST_QUERY_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_UPDATE_PARTITION_MOVE_COST_QUERY_RESULT_ITEM {
+    pub PartitionId: windows_core::GUID,
+    pub ErrorCode: windows_core::HRESULT,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_UPDATE_PARTITION_MOVE_COST_QUERY_RESULT_ITEM {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_UPDATE_PARTITION_MOVE_COST_QUERY_RESULT_LIST {
+    pub Count: u32,
+    pub Items: *mut FABRIC_UPDATE_PARTITION_MOVE_COST_QUERY_RESULT_ITEM,
+}
+impl Default for FABRIC_UPDATE_PARTITION_MOVE_COST_QUERY_RESULT_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_UPGRADE_DESCRIPTION {
     pub CodeVersion: windows_core::PCWSTR,
     pub ConfigVersion: windows_core::PCWSTR,
@@ -10021,6 +12276,19 @@ impl Default for FABRIC_UPGRADE_PROGRESS_EX1 {
 }
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FABRIC_UPGRADE_PROGRESS_EX2 {
+    pub HealthCheckElapsedTime: u32,
+    pub HealthCheckPhase: FABRIC_MONITORED_UPGRADE_HEALTH_CHECK_PHASE,
+    pub HealthCheckFlips: i64,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for FABRIC_UPGRADE_PROGRESS_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FABRIC_UPGRADE_SAFETY_CHECK {
     pub Kind: FABRIC_UPGRADE_SAFETY_CHECK_KIND,
     pub Value: *mut core::ffi::c_void,
@@ -10058,6 +12326,21 @@ impl Default for FABRIC_UPGRADE_SEED_NODE_SAFETY_CHECK {
 }
 pub const FABRIC_UPGRADE_SEED_NODE_SAFETY_CHECK_KIND_ENSURE_QUORUM:
     FABRIC_UPGRADE_SAFETY_CHECK_KIND = FABRIC_UPGRADE_SAFETY_CHECK_KIND(1i32);
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct FABRIC_UPGRADE_SORT_ORDER(pub i32);
+pub const FABRIC_UPGRADE_SORT_ORDER_DEFAULT: FABRIC_UPGRADE_SORT_ORDER =
+    FABRIC_UPGRADE_SORT_ORDER(1i32);
+pub const FABRIC_UPGRADE_SORT_ORDER_INVALID: FABRIC_UPGRADE_SORT_ORDER =
+    FABRIC_UPGRADE_SORT_ORDER(0i32);
+pub const FABRIC_UPGRADE_SORT_ORDER_LEXICOGRAPHICAL: FABRIC_UPGRADE_SORT_ORDER =
+    FABRIC_UPGRADE_SORT_ORDER(3i32);
+pub const FABRIC_UPGRADE_SORT_ORDER_NUMERIC: FABRIC_UPGRADE_SORT_ORDER =
+    FABRIC_UPGRADE_SORT_ORDER(2i32);
+pub const FABRIC_UPGRADE_SORT_ORDER_REVERSE_LEXICOGRAPHICAL: FABRIC_UPGRADE_SORT_ORDER =
+    FABRIC_UPGRADE_SORT_ORDER(5i32);
+pub const FABRIC_UPGRADE_SORT_ORDER_REVERSE_NUMERIC: FABRIC_UPGRADE_SORT_ORDER =
+    FABRIC_UPGRADE_SORT_ORDER(4i32);
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct FABRIC_UPGRADE_STATE(pub i32);
@@ -10256,6 +12539,41 @@ pub const FABRIC_X509_STORE_LOCATION_LOCALMACHINE: FABRIC_X509_STORE_LOCATION =
     FABRIC_X509_STORE_LOCATION(2i32);
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct INSTANCE_LIFECYCLE_DESCRIPTION {
+    pub IsRestoreReplicaLocationAfterUpgradeSpecified: bool,
+    pub RestoreReplicaLocationAfterUpgrade: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for INSTANCE_LIFECYCLE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct NODE_TYPE_PLACEMENT_CONSTRAINT {
+    pub NodePropertyName: windows_core::PCWSTR,
+    pub NodePropertyValue: windows_core::PCWSTR,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for NODE_TYPE_PLACEMENT_CONSTRAINT {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct NODE_TYPE_PLACEMENT_CONSTRAINT_LIST {
+    pub Count: u32,
+    pub Items: *const NODE_TYPE_PLACEMENT_CONSTRAINT,
+}
+impl Default for NODE_TYPE_PLACEMENT_CONSTRAINT_LIST {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PAGED_FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION {
     pub ApplicationTypeNameFilter: windows_core::PCWSTR,
     pub MaxResults: i32,
@@ -10286,6 +12604,46 @@ pub struct PAGED_FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION_EX2 {
     pub Reserved: *mut core::ffi::c_void,
 }
 impl Default for PAGED_FABRIC_APPLICATION_TYPE_QUERY_DESCRIPTION_EX2 {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct REPLICA_LIFECYCLE_DESCRIPTION {
+    pub IsIsSingletonReplicaMoveAllowedDuringUpgradeSpecified: bool,
+    pub IsSingletonReplicaMoveAllowedDuringUpgrade: bool,
+    pub IsRestoreReplicaLocationAfterUpgradeSpecified: bool,
+    pub RestoreReplicaLocationAfterUpgrade: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for REPLICA_LIFECYCLE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct SELF_RECONFIGURING_INSTANCE_LIFECYCLE_DESCRIPTION {
+    pub IsRestoreReplicaLocationAfterUpgradeSpecified: bool,
+    pub RestoreReplicaLocationAfterUpgrade: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for SELF_RECONFIGURING_INSTANCE_LIFECYCLE_DESCRIPTION {
+    fn default() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct SERVICE_SENSITIVITY_DESCRIPTION {
+    pub PrimaryDefaultSensitivity: u32,
+    pub SecondaryDefaultSensitivity: u32,
+    pub AuxiliaryDefaultSensitivity: u32,
+    pub IsMaximumSensitivity: bool,
+    pub Reserved: *mut core::ffi::c_void,
+}
+impl Default for SERVICE_SENSITIVITY_DESCRIPTION {
     fn default() -> Self {
         unsafe { core::mem::zeroed() }
     }

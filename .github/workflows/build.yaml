@@ -9,7 +9,7 @@ on:
     - cron: '0 */6 * * *'  # Runs every 6 hours
 
 env:
-  RUST_VERSION: "1.92.0"
+  RUST_VERSION: "1.93.0"
 
 jobs:
   build:

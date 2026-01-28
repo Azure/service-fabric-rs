@@ -10,6 +10,8 @@ SF SDK idl `11.1` version is available on github here: [service-fabric-metadata]
 
 Rust SDK currently supports SF `11.1` COM apis, but only `6.4` version apis are used (this is subject to change), which is the minimum SF version supported by this SDK.
 
+The minimum supported Rust version (MSRV) is **1.90.0**.
+
 This lib is in alpha state, and apis are subjected to change.
 
 ## Getting Started - Windows

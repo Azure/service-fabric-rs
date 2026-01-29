@@ -21,6 +21,7 @@ services:
         USERNAME: vscode
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
+        RUST_VERSION: ${RUST_VERSION:-stable}
     volumes:
       - ../../:/home/vscode/repo # repo dir
       - ~/.ssh:/home/vscode/.ssh:ro # git creds

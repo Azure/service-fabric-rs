@@ -58,7 +58,7 @@ impl From<&HealthState> for FABRIC_HEALTH_STATE {
 }
 
 // FABRIC_FAULT_TYPE
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum FaultType {
     Invalid,
     Permanent,

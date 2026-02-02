@@ -171,10 +171,7 @@ impl StatefulServiceDescription {
         });
         let ex2 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2 {
             IsDefaultMoveCostSpecified: self.default_move_cost.is_some(),
-            DefaultMoveCost: self
-                .default_move_cost
-                .unwrap_or(MoveCost::Zero)
-                .into(),
+            DefaultMoveCost: self.default_move_cost.unwrap_or(MoveCost::Zero).into(),
             Reserved: ex3.as_ref() as *const _ as *mut c_void,
         });
         let ex1 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX1 {
@@ -319,10 +316,7 @@ impl StatelessServiceDescription {
         });
         let ex2 = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2 {
             IsDefaultMoveCostSpecified: self.default_move_cost.is_some(),
-            DefaultMoveCost: self
-                .default_move_cost
-                .unwrap_or(MoveCost::Zero)
-                .into(),
+            DefaultMoveCost: self.default_move_cost.unwrap_or(MoveCost::Zero).into(),
             Reserved: ex3.as_ref() as *const _ as *mut c_void,
         });
         let ex1 = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX1 {

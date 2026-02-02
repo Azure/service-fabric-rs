@@ -48,6 +48,7 @@ impl ReplicatorSettings {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LocalStoreKind {
     Ese,
     Invalid,
@@ -89,6 +90,7 @@ impl EseLocalStoreSettings {
 }
 
 // FABRIC_TRANSACTION_ISOLATION_LEVEL
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TransactionIsolationLevel {
     Default,
     ReadCommitted,

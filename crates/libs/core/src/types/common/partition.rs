@@ -129,7 +129,7 @@ impl ServicePartitionInformation {
 /// Note that write operations might still see an exception from the replicator for one of these
 /// conditions, because the condition might change between the WriteStatus check and the call
 /// to StateReplicator.Replicate() (Not yet supported in mssf).
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServicePartitionAccessStatus {
     Invalid,
     /// Indicates that the read or write operation access is granted and the operation is allowed.
@@ -263,7 +263,7 @@ impl Clone for NamedPartitionSchemeDescription {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ServicePackageActivationMode {
     // Invalid = 0,
     #[default]

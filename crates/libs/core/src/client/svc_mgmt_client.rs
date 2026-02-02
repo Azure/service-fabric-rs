@@ -537,7 +537,7 @@ impl PartialOrd for ResolvedServicePartition {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ServiceEndpointRole {
     Invalid,
     StatefulPrimary,

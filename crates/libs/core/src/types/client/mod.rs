@@ -95,7 +95,7 @@ impl From<&ServiceNotificationFilterDescription>
 }
 
 // FABRIC_CLIENT_ROLE
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ClientRole {
     Unknown, // Default client role.
     User,    // User client role. Must set client certificate for tls endpoints.
@@ -126,7 +126,7 @@ impl From<ClientRole> for FABRIC_CLIENT_ROLE {
 }
 
 // FABRIC_QUERY_SERVICE_OPERATION_NAME
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum QueryServiceOperationName {
     Abort,
     ChangeRole,
@@ -150,7 +150,7 @@ impl From<FABRIC_QUERY_SERVICE_OPERATION_NAME> for QueryServiceOperationName {
 }
 
 // FABRIC_QUERY_REPLICATOR_OPERATION_NAME
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum QueryReplicatorOperationName {
     Abort,
     Build,

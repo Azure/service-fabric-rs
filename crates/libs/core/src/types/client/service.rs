@@ -166,14 +166,13 @@ impl StatefulServiceDescription {
         });
         let ex3 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3 {
             ServiceDnsName: windows_core::PCWSTR::null(), // TODO: FABRIC_SERVICE_DNS_NAME
-            ServicePackageActivationMode: self.service_package_activation_mode.clone().into(),
+            ServicePackageActivationMode: self.service_package_activation_mode.into(),
             Reserved: ex4.as_ref() as *const _ as *mut c_void,
         });
         let ex2 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2 {
             IsDefaultMoveCostSpecified: self.default_move_cost.is_some(),
             DefaultMoveCost: self
                 .default_move_cost
-                .clone()
                 .unwrap_or(MoveCost::Zero)
                 .into(),
             Reserved: ex3.as_ref() as *const _ as *mut c_void,
@@ -315,14 +314,13 @@ impl StatelessServiceDescription {
         });
         let ex3 = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3 {
             ServiceDnsName: windows_core::PCWSTR::null(), // TODO: FABRIC_SERVICE_DNS_NAME
-            ServicePackageActivationMode: self.service_package_activation_mode.clone().into(),
+            ServicePackageActivationMode: self.service_package_activation_mode.into(),
             Reserved: ex4.as_ref() as *const _ as *mut c_void,
         });
         let ex2 = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2 {
             IsDefaultMoveCostSpecified: self.default_move_cost.is_some(),
             DefaultMoveCost: self
                 .default_move_cost
-                .clone()
                 .unwrap_or(MoveCost::Zero)
                 .into(),
             Reserved: ex3.as_ref() as *const _ as *mut c_void,
@@ -704,7 +702,7 @@ impl StatefulServiceUpdateDescription {
             Reserved: std::ptr::null_mut(),
         });
         let ex4 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX4 {
-            DefaultMoveCost: self.default_move_cost.clone().into(),
+            DefaultMoveCost: self.default_move_cost.into(),
             Reserved: ex5.as_ref() as *const _ as *mut c_void,
         });
         let ex3 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3 {

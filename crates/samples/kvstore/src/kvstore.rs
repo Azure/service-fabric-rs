@@ -202,7 +202,7 @@ impl IStatefulServiceReplica for Replica {
         info!("Replica::change_role {:?}", newrole);
         let addr = self
             .kv
-            .change_role(newrole.clone(), cancellation_token)
+            .change_role(newrole, cancellation_token)
             .await?;
         if newrole == ReplicaRole::Primary {
             self.svc.start_loop();

@@ -244,7 +244,7 @@ impl ReplicaInformation {
         let info = FABRIC_REPLICA_INFORMATION {
             Id: self.id,
             Role: (&self.role).into(),
-            Status: self.status.clone().into(),
+            Status: self.status.into(),
             ReplicatorAddress: PCWSTR::from_raw(self.replicator_address.as_ptr()),
             CurrentProgress: self.current_progress,
             CatchUpCapability: self.catch_up_capability,

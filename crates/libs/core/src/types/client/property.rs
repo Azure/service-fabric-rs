@@ -44,7 +44,7 @@ impl NameEnumerationResult {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EnumerationStatus {
     BestEffortFinished,
     BestEffortMask,

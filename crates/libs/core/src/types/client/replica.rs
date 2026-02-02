@@ -150,7 +150,7 @@ impl From<&FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM>
 }
 
 // FABRIC_QUERY_SERVICE_REPLICA_STATUS
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum QueryServiceReplicaStatus {
     Invalid,
     Inbuild,

@@ -19,7 +19,7 @@ use mssf_com::FabricTypes::{
 
 use crate::types::ReplicaRole;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OpenMode {
     Invald,
     Existing,
@@ -97,7 +97,7 @@ impl From<&Epoch> for FABRIC_EPOCH {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ReplicaStatus {
     Invalid,
     Down,
@@ -244,7 +244,7 @@ impl ReplicaInformation {
         let info = FABRIC_REPLICA_INFORMATION {
             Id: self.id,
             Role: (&self.role).into(),
-            Status: self.status.clone().into(),
+            Status: self.status.into(),
             ReplicatorAddress: PCWSTR::from_raw(self.replicator_address.as_ptr()),
             CurrentProgress: self.current_progress,
             CatchUpCapability: self.catch_up_capability,
@@ -259,7 +259,7 @@ impl ReplicaInformation {
 }
 
 // FABRIC_REPLICA_SET_QUORUM_MODE
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ReplicaSetQuorumMode {
     All,
     Invalid,

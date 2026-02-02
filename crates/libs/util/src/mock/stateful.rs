@@ -61,13 +61,13 @@ impl IStatefulServicePartition for StatefulServicePartitionMock {
     }
 
     fn get_read_status(&self) -> mssf_core::Result<mssf_core::types::ServicePartitionAccessStatus> {
-        Ok(self.read_status.lock().unwrap().clone())
+        Ok(*self.read_status.lock().unwrap())
     }
 
     fn get_write_status(
         &self,
     ) -> mssf_core::Result<mssf_core::types::ServicePartitionAccessStatus> {
-        Ok(self.write_status.lock().unwrap().clone())
+        Ok(*self.write_status.lock().unwrap())
     }
 
     fn report_load(&self, _metrics: &[mssf_core::types::LoadMetric]) -> mssf_core::Result<()> {

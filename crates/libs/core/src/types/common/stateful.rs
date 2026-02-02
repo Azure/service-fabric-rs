@@ -8,7 +8,7 @@ use mssf_com::FabricTypes::{
     FABRIC_REPLICA_ROLE_NONE, FABRIC_REPLICA_ROLE_PRIMARY, FABRIC_REPLICA_ROLE_UNKNOWN,
 };
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum ReplicaRole {
     ActiveSecondary,
     IdleSecondary,

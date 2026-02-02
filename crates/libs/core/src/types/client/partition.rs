@@ -121,7 +121,7 @@ impl ServicePartitionQueryResultItem {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ServicePartitionStatus {
     Invalid,
     Ready,

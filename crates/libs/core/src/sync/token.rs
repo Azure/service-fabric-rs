@@ -21,6 +21,7 @@ pub struct SimpleCancelToken {
 struct TokenInner {
     cancelled: AtomicBool,
     wakers: Mutex<Vec<Waker>>,
+    child: Mutex<Option<BoxedCancelToken>>,
 }
 
 impl SimpleCancelToken {
@@ -29,6 +30,7 @@ impl SimpleCancelToken {
             inner: Arc::new(TokenInner {
                 cancelled: AtomicBool::new(false),
                 wakers: Mutex::new(Vec::new()),
+                child: Mutex::new(None),
             }),
         }
     }
@@ -45,6 +47,14 @@ impl SimpleCancelToken {
         let mut wakers = self.inner.wakers.lock().unwrap();
         for waker in wakers.drain(..) {
             waker.wake();
+        }
+        drop(wakers);
+
+        // Take and cancel the child, releasing the lock
+        // before calling cancel to avoid deadlock on self-attach or circular chains.
+        let child = self.inner.child.lock().unwrap().take();
+        if let Some(child) = child {
+            child.cancel();
         }
     }
 
@@ -107,51 +117,23 @@ impl CancelToken for SimpleCancelToken {
         Box::pin(self.cancelled())
     }
 
+    fn attach_child(&self, child: BoxedCancelToken) {
+        if self.is_cancelled() {
+            child.cancel();
+            return;
+        }
+        let mut slot = self.inner.child.lock().unwrap();
+        // Double-check after acquiring the lock
+        if self.is_cancelled() {
+            drop(slot);
+            child.cancel();
+        } else {
+            assert!(slot.is_none(), "a child has already been attached");
+            *slot = Some(child);
+        }
+    }
+
     fn clone_box(&self) -> Box<dyn CancelToken> {
         Box::new(self.clone())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_cancel_token() {
-        let token = SimpleCancelToken::new();
-        assert!(!token.is_cancelled());
-        token.cancel();
-        assert!(token.is_cancelled());
-    }
-
-    #[tokio::test]
-    async fn test_cancel_token_async() {
-        let token = SimpleCancelToken::new();
-        let h = tokio::spawn({
-            let token = token.clone();
-            async move {
-                token.wait().await;
-            }
-        });
-        token.cancel();
-        assert!(token.is_cancelled());
-        h.await.unwrap();
-    }
-
-    #[tokio::test]
-    async fn test_cancel_token_multi() {
-        let token = SimpleCancelToken::new();
-        let mut join_set = tokio::task::JoinSet::new();
-
-        for _ in 0..10 {
-            let token = token.clone();
-            join_set.spawn(async move {
-                token.wait().await;
-            });
-            tokio::task::yield_now().await;
-        }
-        token.cancel();
-        assert!(token.is_cancelled());
-        join_set.join_all().await;
     }
 }

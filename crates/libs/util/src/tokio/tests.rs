@@ -457,3 +457,321 @@ mod proxy_test {
         }
     }
 }
+
+mod cancel_token_tests {
+    use mssf_core::runtime::executor::CancelToken;
+    use mssf_core::sync::SimpleCancelToken;
+
+    use crate::tokio::TokioCancelToken;
+
+    // --- cancel ---
+
+    fn test_cancel<T: CancelToken + Clone + Default>() {
+        let token = T::default();
+        assert!(!token.is_cancelled());
+        token.cancel();
+        assert!(token.is_cancelled());
+    }
+
+    #[test]
+    fn simple_cancel() {
+        test_cancel::<SimpleCancelToken>();
+    }
+
+    #[test]
+    fn tokio_cancel() {
+        test_cancel::<TokioCancelToken>();
+    }
+
+    // --- cancel_async_wait ---
+
+    async fn test_cancel_async_wait<T: CancelToken + Clone + Default>() {
+        let token = T::default();
+        let token_clone = token.clone();
+        let h = tokio::spawn(async move {
+            token_clone.wait().await;
+        });
+        token.cancel();
+        assert!(token.is_cancelled());
+        h.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn simple_cancel_async_wait() {
+        test_cancel_async_wait::<SimpleCancelToken>().await;
+    }
+
+    #[tokio::test]
+    async fn tokio_cancel_async_wait() {
+        test_cancel_async_wait::<TokioCancelToken>().await;
+    }
+
+    // --- cancel_multi_waiters ---
+
+    async fn test_cancel_multi_waiters<T: CancelToken + Clone + Default>() {
+        let token = T::default();
+        let mut join_set = tokio::task::JoinSet::new();
+
+        for _ in 0..10 {
+            let t = token.clone();
+            join_set.spawn(async move {
+                t.wait().await;
+            });
+            tokio::task::yield_now().await;
+        }
+        token.cancel();
+        assert!(token.is_cancelled());
+        join_set.join_all().await;
+    }
+
+    #[tokio::test]
+    async fn simple_cancel_multi_waiters() {
+        test_cancel_multi_waiters::<SimpleCancelToken>().await;
+    }
+
+    #[tokio::test]
+    async fn tokio_cancel_multi_waiters() {
+        test_cancel_multi_waiters::<TokioCancelToken>().await;
+    }
+
+    // --- attach_child_propagates ---
+
+    fn test_attach_child_propagates<T: CancelToken + Clone + Default>() {
+        let parent = T::default();
+        let child = T::default();
+        let child_clone = child.clone();
+        parent.attach_child(Box::new(child));
+
+        assert!(!parent.is_cancelled());
+        assert!(!child_clone.is_cancelled());
+
+        parent.cancel();
+        assert!(parent.is_cancelled());
+        assert!(child_clone.is_cancelled());
+    }
+
+    #[test]
+    fn simple_attach_child_propagates() {
+        test_attach_child_propagates::<SimpleCancelToken>();
+    }
+
+    #[test]
+    fn tokio_attach_child_propagates() {
+        test_attach_child_propagates::<TokioCancelToken>();
+    }
+
+    // --- attach_child_already_cancelled ---
+
+    fn test_attach_child_already_cancelled<T: CancelToken + Clone + Default>() {
+        let parent = T::default();
+        parent.cancel();
+
+        let child = T::default();
+        let child_clone = child.clone();
+        parent.attach_child(Box::new(child));
+
+        assert!(child_clone.is_cancelled());
+    }
+
+    #[test]
+    fn simple_attach_child_already_cancelled() {
+        test_attach_child_already_cancelled::<SimpleCancelToken>();
+    }
+
+    #[test]
+    fn tokio_attach_child_already_cancelled() {
+        test_attach_child_already_cancelled::<TokioCancelToken>();
+    }
+
+    // --- attach_child_independent_cancel ---
+
+    fn test_attach_child_independent_cancel<T: CancelToken + Clone + Default>() {
+        let parent = T::default();
+        let child = T::default();
+        let child_clone = child.clone();
+        parent.attach_child(Box::new(child));
+
+        child_clone.cancel();
+        assert!(child_clone.is_cancelled());
+        assert!(!parent.is_cancelled());
+    }
+
+    #[test]
+    fn simple_attach_child_independent_cancel() {
+        test_attach_child_independent_cancel::<SimpleCancelToken>();
+    }
+
+    #[test]
+    fn tokio_attach_child_independent_cancel() {
+        test_attach_child_independent_cancel::<TokioCancelToken>();
+    }
+
+    // --- attach_child_async_wait ---
+
+    async fn test_attach_child_async_wait<T: CancelToken + Clone + Default>() {
+        let parent = T::default();
+        let child = T::default();
+        let child_clone = child.clone();
+        parent.attach_child(Box::new(child));
+
+        let waiter = child_clone.clone();
+        let h = tokio::spawn(async move {
+            waiter.wait().await;
+        });
+
+        parent.cancel();
+        h.await.unwrap();
+        assert!(child_clone.is_cancelled());
+    }
+
+    #[tokio::test]
+    async fn simple_attach_child_async_wait() {
+        test_attach_child_async_wait::<SimpleCancelToken>().await;
+    }
+
+    #[tokio::test]
+    async fn tokio_attach_child_async_wait() {
+        test_attach_child_async_wait::<TokioCancelToken>().await;
+    }
+
+    // --- Cross-impl tests ---
+
+    #[test]
+    fn cross_impl_simple_parent_tokio_child() {
+        let parent = SimpleCancelToken::new();
+        let child = TokioCancelToken::new();
+        let child_clone = child.clone();
+        parent.attach_child(Box::new(child));
+
+        parent.cancel();
+        assert!(parent.is_cancelled());
+        assert!(child_clone.is_cancelled());
+    }
+
+    #[test]
+    fn cross_impl_tokio_parent_simple_child() {
+        let parent = TokioCancelToken::new();
+        let child = SimpleCancelToken::new();
+        let child_clone = child.clone();
+        parent.attach_child(Box::new(child));
+
+        parent.cancel();
+        assert!(parent.is_cancelled());
+        assert!(child_clone.is_cancelled());
+    }
+
+    // --- cancel and attach_child race stress test ---
+
+    /// Stress test: one thread calls cancel() while another thread
+    /// concurrently attaches a child. The child must end up cancelled
+    /// regardless of ordering.
+    fn test_attach_cancel_race<T: CancelToken + Clone + Default + 'static>() {
+        use std::sync::{Arc, Barrier};
+
+        const ITERATIONS: usize = 100;
+
+        for _ in 0..ITERATIONS {
+            let parent = T::default();
+            let barrier = Arc::new(Barrier::new(2));
+
+            let child = T::default();
+            let child_clone = child.clone();
+
+            let parent_clone = parent.clone();
+            let barrier_clone = barrier.clone();
+            let handle = std::thread::spawn(move || {
+                barrier_clone.wait();
+                parent_clone.attach_child(Box::new(child));
+            });
+
+            // The main thread cancels the parent concurrently.
+            barrier.wait();
+            parent.cancel();
+
+            handle.join().unwrap();
+
+            // Invariant: the child must be cancelled.
+            assert!(
+                child_clone.is_cancelled(),
+                "child was not cancelled after race"
+            );
+        }
+    }
+
+    #[test]
+    fn simple_attach_cancel_race() {
+        test_attach_cancel_race::<SimpleCancelToken>();
+    }
+
+    #[test]
+    fn tokio_attach_cancel_race() {
+        test_attach_cancel_race::<TokioCancelToken>();
+    }
+
+    // --- self-attach (should not deadlock) ---
+
+    fn test_attach_self<T: CancelToken + Clone + Default>() {
+        let token = T::default();
+        token.attach_child(token.clone_box());
+
+        // cancel must not deadlock
+        token.cancel();
+        assert!(token.is_cancelled());
+    }
+
+    #[test]
+    fn simple_attach_self() {
+        test_attach_self::<SimpleCancelToken>();
+    }
+
+    #[test]
+    fn tokio_attach_self() {
+        test_attach_self::<TokioCancelToken>();
+    }
+
+    // --- circular attach (A→B→A, should not deadlock) ---
+
+    fn test_attach_loop<T: CancelToken + Clone + Default>() {
+        let a = T::default();
+        let b = T::default();
+        a.attach_child(b.clone_box());
+        b.attach_child(a.clone_box());
+
+        // cancelling a cascades to b, which tries to cancel a again — must not deadlock
+        a.cancel();
+        assert!(a.is_cancelled());
+        assert!(b.is_cancelled());
+    }
+
+    #[test]
+    fn simple_attach_loop() {
+        test_attach_loop::<SimpleCancelToken>();
+    }
+
+    #[test]
+    fn tokio_attach_loop() {
+        test_attach_loop::<TokioCancelToken>();
+    }
+
+    // --- double attach panics ---
+
+    fn test_attach_child_twice_panics<T: CancelToken + Clone + Default>() {
+        let parent = T::default();
+        let child1 = T::default();
+        let child2 = T::default();
+        parent.attach_child(Box::new(child1));
+        parent.attach_child(Box::new(child2)); // should panic
+    }
+
+    #[test]
+    #[should_panic(expected = "a child has already been attached")]
+    fn simple_attach_child_twice_panics() {
+        test_attach_child_twice_panics::<SimpleCancelToken>();
+    }
+
+    #[test]
+    #[should_panic(expected = "a child has already been attached")]
+    fn tokio_attach_child_twice_panics() {
+        test_attach_child_twice_panics::<TokioCancelToken>();
+    }
+}

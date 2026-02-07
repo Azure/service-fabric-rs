@@ -43,6 +43,19 @@ pub trait CancelToken: Send + Sync + 'static {
     /// Cancel the token.
     fn cancel(&self);
 
+    /// Attach a child cancel token. When this token is cancelled,
+    /// the child will also be cancelled.
+    /// The child can be any `BoxedCancelToken` (i.e. any impl type).
+    /// If this token is already cancelled, the child is cancelled immediately.
+    ///
+    /// # Panics
+    /// Panics if a child has already been attached.
+    ///
+    /// **Note:** Circular attachment (e.g. self-attach or A→B→A) creates
+    /// reference cycles that will leak memory if the token is never cancelled.
+    /// Cancellation breaks the cycle by taking the child.
+    fn attach_child(&self, child: BoxedCancelToken);
+
     /// Clone the cancel token.
     /// Because the dyn requirement, CancelToken cannot be cloned directly.
     fn clone_box(&self) -> Box<dyn CancelToken>;

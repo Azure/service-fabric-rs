@@ -8,6 +8,7 @@
 use std::{
     future::Future,
     pin::Pin,
+    sync::{Arc, Mutex},
     task::{Context, Poll},
 };
 
@@ -108,6 +109,7 @@ impl Future for TokioSleep {
 #[derive(Debug, Clone)]
 pub struct TokioCancelToken {
     token: tokio_util::sync::CancellationToken,
+    child: Arc<Mutex<Option<BoxedCancelToken>>>,
 }
 
 impl CancelToken for TokioCancelToken {
@@ -116,12 +118,35 @@ impl CancelToken for TokioCancelToken {
     }
 
     fn cancel(&self) {
-        self.token.cancel()
+        self.token.cancel();
+
+        // Take and cancel the child, releasing the lock
+        // before calling cancel to avoid deadlock on self-attach or circular chains.
+        let child = self.child.lock().unwrap().take();
+        if let Some(child) = child {
+            child.cancel();
+        }
     }
 
     fn wait(&self) -> Pin<Box<dyn EventFuture>> {
         let fut = self.token.clone().cancelled_owned();
         Box::pin(fut) as Pin<Box<dyn EventFuture>>
+    }
+
+    fn attach_child(&self, child: BoxedCancelToken) {
+        if self.token.is_cancelled() {
+            child.cancel();
+            return;
+        }
+        let mut slot = self.child.lock().unwrap();
+        // Double-check after acquiring the lock
+        if self.token.is_cancelled() {
+            drop(slot);
+            child.cancel();
+        } else {
+            assert!(slot.is_none(), "a child has already been attached");
+            *slot = Some(child);
+        }
     }
 
     fn clone_box(&self) -> BoxedCancelToken {
@@ -133,6 +158,7 @@ impl TokioCancelToken {
     pub fn new() -> Self {
         TokioCancelToken {
             token: tokio_util::sync::CancellationToken::new(),
+            child: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -147,7 +173,10 @@ impl TokioCancelToken {
 
 impl From<tokio_util::sync::CancellationToken> for TokioCancelToken {
     fn from(token: tokio_util::sync::CancellationToken) -> Self {
-        TokioCancelToken { token }
+        TokioCancelToken {
+            token,
+            child: Arc::new(Mutex::new(None)),
+        }
     }
 }
 

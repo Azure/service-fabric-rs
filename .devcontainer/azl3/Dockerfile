@@ -16,7 +16,10 @@ RUN tdnf install -y ./ServiceFabric.AL.${SF_VERSION}.rpm
 RUN rm ServiceFabric.AL.${SF_VERSION}.rpm
 
 # install sfctl and its dependencies
-RUN pip3 install -I sfctl==11.1.0 setuptools
+# Note: sfctl uses pkg_resources which was removed in setuptools>=82.
+# Pin setuptools<82 until sfctl migrates to importlib.metadata.
+# See https://setuptools.pypa.io/en/latest/history.html
+RUN pip3 install -I sfctl==11.2.1 setuptools==75.8.2
 ENV PATH="${PATH}:~/.local/bin"
 
 # expose sf shared libs

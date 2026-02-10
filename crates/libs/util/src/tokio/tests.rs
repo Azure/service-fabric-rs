@@ -17,6 +17,7 @@ mod proxy_test {
         runtime::executor::BoxedCancelToken,
         sync::{BridgeContext, fabric_begin_end_proxy},
     };
+    use tokio_util::sync::CancellationToken;
 
     use crate::tokio::{TokioCancelToken, TokioExecutor};
 
@@ -69,8 +70,13 @@ mod proxy_test {
             }
             match (token, ignore_cancel) {
                 (Some(t), false) => {
+                    // Attach a local TokioCancelToken as a child of the incoming
+                    // boxed token, then wait on the local token.  This exercises
+                    // attach_child propagation through the bridge/proxy layers.
+                    let local = CancellationToken::new();
+                    t.attach_child(TokioCancelToken::boxed_from(local.clone()));
                     select! {
-                        _ = t.wait() => {
+                        _ = local.cancelled() => {
                             // The token was cancelled
                             Err(ErrorCode::E_ABORT.into())
                         }

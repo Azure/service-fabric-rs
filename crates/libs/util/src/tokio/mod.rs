@@ -166,6 +166,10 @@ impl TokioCancelToken {
         Box::new(Self::new())
     }
 
+    pub fn boxed_from(token: tokio_util::sync::CancellationToken) -> BoxedCancelToken {
+        Box::new(Self::from(token))
+    }
+
     pub fn get_ref(&self) -> &tokio_util::sync::CancellationToken {
         &self.token
     }

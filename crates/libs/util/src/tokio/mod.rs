@@ -8,6 +8,7 @@
 use std::{
     future::Future,
     pin::Pin,
+    sync::{Arc, Mutex},
     task::{Context, Poll},
 };
 
@@ -105,9 +106,20 @@ impl Future for TokioSleep {
 
 /// CancelToken implementation for tokio
 /// User can use tokio's token and integrate with mssf.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct TokioCancelToken {
     token: tokio_util::sync::CancellationToken,
+    #[allow(clippy::type_complexity)]
+    callback: Arc<Mutex<Option<Box<dyn FnOnce() + Send + Sync>>>>,
+}
+
+impl std::fmt::Debug for TokioCancelToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TokioCancelToken")
+            .field("token", &self.token)
+            .field("has_callback", &self.callback.lock().unwrap().is_some())
+            .finish()
+    }
 }
 
 impl CancelToken for TokioCancelToken {
@@ -116,12 +128,35 @@ impl CancelToken for TokioCancelToken {
     }
 
     fn cancel(&self) {
-        self.token.cancel()
+        self.token.cancel();
+
+        // Take and invoke the callback, releasing the lock
+        // before calling it to avoid deadlock.
+        let callback = self.callback.lock().unwrap().take();
+        if let Some(cb) = callback {
+            cb();
+        }
     }
 
     fn wait(&self) -> Pin<Box<dyn EventFuture>> {
         let fut = self.token.clone().cancelled_owned();
         Box::pin(fut) as Pin<Box<dyn EventFuture>>
+    }
+
+    fn on_cancel(&self, callback: Box<dyn FnOnce() + Send + Sync>) {
+        if self.token.is_cancelled() {
+            callback();
+            return;
+        }
+        let mut slot = self.callback.lock().unwrap();
+        // Double-check after acquiring the lock
+        if self.token.is_cancelled() {
+            drop(slot);
+            callback();
+        } else {
+            debug_assert!(slot.is_none(), "a callback has already been registered");
+            *slot = Some(callback);
+        }
     }
 
     fn clone_box(&self) -> BoxedCancelToken {
@@ -133,11 +168,16 @@ impl TokioCancelToken {
     pub fn new() -> Self {
         TokioCancelToken {
             token: tokio_util::sync::CancellationToken::new(),
+            callback: Arc::new(Mutex::new(None)),
         }
     }
 
     pub fn new_boxed() -> BoxedCancelToken {
         Box::new(Self::new())
+    }
+
+    pub fn boxed_from(token: tokio_util::sync::CancellationToken) -> BoxedCancelToken {
+        Box::new(Self::from(token))
     }
 
     pub fn get_ref(&self) -> &tokio_util::sync::CancellationToken {
@@ -147,7 +187,10 @@ impl TokioCancelToken {
 
 impl From<tokio_util::sync::CancellationToken> for TokioCancelToken {
     fn from(token: tokio_util::sync::CancellationToken) -> Self {
-        TokioCancelToken { token }
+        TokioCancelToken {
+            token,
+            callback: Arc::new(Mutex::new(None)),
+        }
     }
 }
 

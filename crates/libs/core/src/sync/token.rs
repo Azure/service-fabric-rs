@@ -137,7 +137,7 @@ impl CancelToken for SimpleCancelToken {
             drop(slot);
             callback();
         } else {
-            assert!(slot.is_none(), "a callback has already been registered");
+            debug_assert!(slot.is_none(), "a callback has already been registered");
             *slot = Some(callback);
         }
     }

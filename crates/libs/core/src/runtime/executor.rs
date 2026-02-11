@@ -46,7 +46,7 @@ pub trait CancelToken: Send + Sync + 'static {
     /// Register a callback to be invoked when this token is cancelled.
     /// If this token is already cancelled, the callback is invoked immediately.
     ///
-    /// # Panics
+    /// # Panics (debug builds only)
     /// Panics if a callback has already been registered.
     fn on_cancel(&self, callback: Box<dyn FnOnce() + Send + Sync>);
 

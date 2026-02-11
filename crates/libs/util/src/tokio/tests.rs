@@ -771,22 +771,28 @@ mod cancel_token_tests {
         test_circular_cancel::<TokioCancelToken>();
     }
 
-    // --- double on_cancel panics ---
+    // --- double on_cancel panics (debug builds only) ---
 
     fn test_on_cancel_twice_panics<T: CancelToken + Clone + Default>() {
         let parent = T::default();
         parent.on_cancel(Box::new(|| {}));
-        parent.on_cancel(Box::new(|| {})); // should panic
+        parent.on_cancel(Box::new(|| {})); // should panic in debug builds
     }
 
     #[test]
-    #[should_panic(expected = "a callback has already been registered")]
+    #[cfg_attr(
+        debug_assertions,
+        should_panic(expected = "a callback has already been registered")
+    )]
     fn simple_on_cancel_twice_panics() {
         test_on_cancel_twice_panics::<SimpleCancelToken>();
     }
 
     #[test]
-    #[should_panic(expected = "a callback has already been registered")]
+    #[cfg_attr(
+        debug_assertions,
+        should_panic(expected = "a callback has already been registered")
+    )]
     fn tokio_on_cancel_twice_panics() {
         test_on_cancel_twice_panics::<TokioCancelToken>();
     }

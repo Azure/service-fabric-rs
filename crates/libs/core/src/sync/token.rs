@@ -17,11 +17,20 @@ pub struct SimpleCancelToken {
     inner: Arc<TokenInner>,
 }
 
-#[derive(Debug)]
 struct TokenInner {
     cancelled: AtomicBool,
     wakers: Mutex<Vec<Waker>>,
-    child: Mutex<Option<BoxedCancelToken>>,
+    callback: Mutex<Option<Box<dyn FnOnce() + Send + Sync>>>,
+}
+
+impl std::fmt::Debug for TokenInner {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TokenInner")
+            .field("cancelled", &self.cancelled)
+            .field("wakers", &self.wakers)
+            .field("has_callback", &self.callback.lock().unwrap().is_some())
+            .finish()
+    }
 }
 
 impl SimpleCancelToken {
@@ -30,7 +39,7 @@ impl SimpleCancelToken {
             inner: Arc::new(TokenInner {
                 cancelled: AtomicBool::new(false),
                 wakers: Mutex::new(Vec::new()),
-                child: Mutex::new(None),
+                callback: Mutex::new(None),
             }),
         }
     }
@@ -50,11 +59,11 @@ impl SimpleCancelToken {
         }
         drop(wakers);
 
-        // Take and cancel the child, releasing the lock
-        // before calling cancel to avoid deadlock on self-attach or circular chains.
-        let child = self.inner.child.lock().unwrap().take();
-        if let Some(child) = child {
-            child.cancel();
+        // Take and invoke the callback, releasing the lock
+        // before calling it to avoid deadlock.
+        let callback = self.inner.callback.lock().unwrap().take();
+        if let Some(cb) = callback {
+            cb();
         }
     }
 
@@ -117,19 +126,19 @@ impl CancelToken for SimpleCancelToken {
         Box::pin(self.cancelled())
     }
 
-    fn attach_child(&self, child: BoxedCancelToken) {
+    fn on_cancel(&self, callback: Box<dyn FnOnce() + Send + Sync>) {
         if self.is_cancelled() {
-            child.cancel();
+            callback();
             return;
         }
-        let mut slot = self.inner.child.lock().unwrap();
+        let mut slot = self.inner.callback.lock().unwrap();
         // Double-check after acquiring the lock
         if self.is_cancelled() {
             drop(slot);
-            child.cancel();
+            callback();
         } else {
-            assert!(slot.is_none(), "a child has already been attached");
-            *slot = Some(child);
+            assert!(slot.is_none(), "a callback has already been registered");
+            *slot = Some(callback);
         }
     }
 

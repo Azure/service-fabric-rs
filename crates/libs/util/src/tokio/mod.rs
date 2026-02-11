@@ -106,10 +106,20 @@ impl Future for TokioSleep {
 
 /// CancelToken implementation for tokio
 /// User can use tokio's token and integrate with mssf.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct TokioCancelToken {
     token: tokio_util::sync::CancellationToken,
-    child: Arc<Mutex<Option<BoxedCancelToken>>>,
+    #[allow(clippy::type_complexity)]
+    callback: Arc<Mutex<Option<Box<dyn FnOnce() + Send + Sync>>>>,
+}
+
+impl std::fmt::Debug for TokioCancelToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TokioCancelToken")
+            .field("token", &self.token)
+            .field("has_callback", &self.callback.lock().unwrap().is_some())
+            .finish()
+    }
 }
 
 impl CancelToken for TokioCancelToken {
@@ -120,11 +130,11 @@ impl CancelToken for TokioCancelToken {
     fn cancel(&self) {
         self.token.cancel();
 
-        // Take and cancel the child, releasing the lock
-        // before calling cancel to avoid deadlock on self-attach or circular chains.
-        let child = self.child.lock().unwrap().take();
-        if let Some(child) = child {
-            child.cancel();
+        // Take and invoke the callback, releasing the lock
+        // before calling it to avoid deadlock.
+        let callback = self.callback.lock().unwrap().take();
+        if let Some(cb) = callback {
+            cb();
         }
     }
 
@@ -133,19 +143,19 @@ impl CancelToken for TokioCancelToken {
         Box::pin(fut) as Pin<Box<dyn EventFuture>>
     }
 
-    fn attach_child(&self, child: BoxedCancelToken) {
+    fn on_cancel(&self, callback: Box<dyn FnOnce() + Send + Sync>) {
         if self.token.is_cancelled() {
-            child.cancel();
+            callback();
             return;
         }
-        let mut slot = self.child.lock().unwrap();
+        let mut slot = self.callback.lock().unwrap();
         // Double-check after acquiring the lock
         if self.token.is_cancelled() {
             drop(slot);
-            child.cancel();
+            callback();
         } else {
-            assert!(slot.is_none(), "a child has already been attached");
-            *slot = Some(child);
+            assert!(slot.is_none(), "a callback has already been registered");
+            *slot = Some(callback);
         }
     }
 
@@ -158,7 +168,7 @@ impl TokioCancelToken {
     pub fn new() -> Self {
         TokioCancelToken {
             token: tokio_util::sync::CancellationToken::new(),
-            child: Arc::new(Mutex::new(None)),
+            callback: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -179,7 +189,7 @@ impl From<tokio_util::sync::CancellationToken> for TokioCancelToken {
     fn from(token: tokio_util::sync::CancellationToken) -> Self {
         TokioCancelToken {
             token,
-            child: Arc::new(Mutex::new(None)),
+            callback: Arc::new(Mutex::new(None)),
         }
     }
 }

@@ -76,6 +76,16 @@ impl Epoch {
             configuration_number,
         }
     }
+
+    /// An invalid epoch with both data loss number and configuration number set to -1.
+    pub fn invalid() -> Self {
+        Self::new(-1, -1)
+    }
+
+    /// A zero epoch with both data loss number and configuration number set to 0.
+    pub fn zero() -> Self {
+        Self::new(0, 0)
+    }
 }
 
 impl From<&FABRIC_EPOCH> for Epoch {

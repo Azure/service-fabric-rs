@@ -22,7 +22,14 @@ use mssf_com::{
         FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX2,
         FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3,
         FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX4,
-        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5, FABRIC_STATELESS_SERVICE_DESCRIPTION,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX6,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX7,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX8,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX9,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX10,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX11,
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX12, FABRIC_STATELESS_SERVICE_DESCRIPTION,
         FABRIC_STATELESS_SERVICE_DESCRIPTION_EX1, FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2,
         FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3, FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4,
         FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION,
@@ -67,6 +74,7 @@ pub struct StatefulServiceDescription {
     _metrics: Vec<WString>,      // TODO: FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION
     has_persistent_state: bool,
     // ex1
+    // TODO: Auxiliary setting is in the failover settings.
     _policy_list: Vec<WString>, // TODO: FABRIC_SERVICE_PLACEMENT_POLICY_DESCRIPTION
     _failover_settings: WString, // TODO: FABRIC_SERVICE_PARTITION_KIND
     // ex2
@@ -487,7 +495,7 @@ bitflags::bitflags! {
     pub struct StatefulServiceUpdateDescriptionFlags: u32 {
         const FABRIC_STATEFUL_SERVICE_NONE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_NONE.0 as u32;
         const FABRIC_STATEFUL_SERVICE_TARGET_REPLICA_SET_SIZE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_TARGET_REPLICA_SET_SIZE.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_REPLICA_RESTART_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_CORRELATIONS.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_REPLICA_RESTART_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_RESTART_WAIT_DURATION.0 as u32;
         const FABRIC_STATEFUL_SERVICE_QUORUM_LOSS_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_QUORUM_LOSS_WAIT_DURATION.0 as u32;
         const FABRIC_STATEFUL_SERVICE_STANDBY_REPLICA_KEEP_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_STANDBY_REPLICA_KEEP_DURATION.0 as u32;
         const FABRIC_STATEFUL_SERVICE_MIN_REPLICA_SET_SIZE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_MIN_REPLICA_SET_SIZE.0 as u32;
@@ -497,6 +505,15 @@ bitflags::bitflags! {
         const FABRIC_STATEFUL_SERVICE_METRICS = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_METRICS.0 as u32;
         const FABRIC_STATEFUL_SERVICE_MOVE_COST = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_MOVE_COST.0 as u32;
         const FABRIC_STATEFUL_SERVICE_SCALING_POLICY = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SCALING_POLICY.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_SERVICE_PLACEMENT_TIME_LIMIT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SERVICE_PLACEMENT_TIME_LIMIT.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_DROP_SOURCE_REPLICA_ON_MOVE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_DROP_SOURCE_REPLICA_ON_MOVE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_SERVICE_DNS_NAME = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SERVICE_DNS_NAME.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_PLACE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_PLACE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_RUN = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_RUN.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_AUXILIARY_REPLICA_COUNT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_AUXILIARY_REPLICA_COUNT.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_SERVICE_SENSITIVITY = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SERVICE_SENSITIVITY.0 as u32;
     }
 }
 impl Default for StatefulServiceUpdateDescriptionFlags {
@@ -547,6 +564,19 @@ pub struct StatefulServiceUpdateDescription {
     // ex5
     repartition_description: ServiceRepartitionDescription,
     _scaling_policys: Vec<WString>, // TODO: FABRIC_SERVICE_SCALING_POLICY
+    // ex6
+    service_placement_time_limit_seconds: u32,
+    // ex7
+    drop_source_replica_on_move: bool,
+    // ex8
+    service_dns_name: WString,
+    // ex9 - ReplicaLifecycleDescription
+    is_singleton_replica_move_allowed_during_upgrade: Option<bool>,
+    restore_replica_location_after_upgrade: Option<bool>,
+    // ex10 - TagsDescription (not yet wired - complex type)
+    // ex11
+    auxiliary_replica_count: i32,
+    // ex12 - ServiceSensitivityDescription (not yet wired - complex type)
 }
 
 // setters for the fields
@@ -607,6 +637,47 @@ impl StatefulServiceUpdateDescription {
         self.repartition_description = repartition_description;
         self
     }
+
+    pub fn with_service_placement_time_limit_seconds(
+        mut self,
+        service_placement_time_limit_seconds: u32,
+    ) -> Self {
+        self.flags |= StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_SERVICE_PLACEMENT_TIME_LIMIT;
+        self.service_placement_time_limit_seconds = service_placement_time_limit_seconds;
+        self
+    }
+
+    pub fn with_drop_source_replica_on_move(mut self, drop_source_replica_on_move: bool) -> Self {
+        self.flags |= StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_DROP_SOURCE_REPLICA_ON_MOVE;
+        self.drop_source_replica_on_move = drop_source_replica_on_move;
+        self
+    }
+
+    pub fn with_service_dns_name(mut self, service_dns_name: WString) -> Self {
+        self.flags |=
+            StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_SERVICE_DNS_NAME;
+        self.service_dns_name = service_dns_name;
+        self
+    }
+
+    pub fn with_is_singleton_replica_move_allowed_during_upgrade(mut self, allowed: bool) -> Self {
+        self.flags |= StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE;
+        self.is_singleton_replica_move_allowed_during_upgrade = Some(allowed);
+        self
+    }
+
+    pub fn with_restore_replica_location_after_upgrade(mut self, restore: bool) -> Self {
+        self.flags |= StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE;
+        self.restore_replica_location_after_upgrade = Some(restore);
+        self
+    }
+
+    pub fn with_auxiliary_replica_count(mut self, auxiliary_replica_count: i32) -> Self {
+        self.flags |=
+            StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_AUXILIARY_REPLICA_COUNT;
+        self.auxiliary_replica_count = auxiliary_replica_count;
+        self
+    }
 }
 
 /// FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION
@@ -645,7 +716,15 @@ pub(crate) struct StatefulServiceUpdateDescriptionRaw<'a> {
     _internal_ex3: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3>,
     _internal_ex4: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX4>,
     _internal_ex5: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5>,
+    _internal_ex6: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX6>,
+    _internal_ex7: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX7>,
+    _internal_ex8: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX8>,
+    _internal_ex9: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX9>,
+    _internal_ex10: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX10>,
+    _internal_ex11: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX11>,
+    _internal_ex12: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX12>,
     _repartition_owner: ServiceRepartitionDescriptionRaw<'a>,
+    _replica_lifecycle_owner: Box<mssf_com::FabricTypes::REPLICA_LIFECYCLE_DESCRIPTION>,
 }
 
 impl StatefulServiceUpdateDescriptionRaw<'_> {
@@ -688,12 +767,58 @@ impl ServiceUpdateDescriptionRaw<'_> {
 impl StatefulServiceUpdateDescription {
     pub(crate) fn build_raw(&self) -> StatefulServiceUpdateDescriptionRaw<'_> {
         let repartition_raw = self.repartition_description.as_raw();
+
+        // Build replica lifecycle description for ex9
+        let replica_lifecycle = Box::new(mssf_com::FabricTypes::REPLICA_LIFECYCLE_DESCRIPTION {
+            IsIsSingletonReplicaMoveAllowedDuringUpgradeSpecified: self
+                .is_singleton_replica_move_allowed_during_upgrade
+                .is_some(),
+            IsSingletonReplicaMoveAllowedDuringUpgrade: self
+                .is_singleton_replica_move_allowed_during_upgrade
+                .unwrap_or(false),
+            IsRestoreReplicaLocationAfterUpgradeSpecified: self
+                .restore_replica_location_after_upgrade
+                .is_some(),
+            RestoreReplicaLocationAfterUpgrade: self
+                .restore_replica_location_after_upgrade
+                .unwrap_or(false),
+            Reserved: std::ptr::null_mut(),
+        });
+
+        let ex12 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX12 {
+            ServiceSensitivityDescription: std::ptr::null_mut(), // TODO: complex type
+            Reserved: std::ptr::null_mut(),
+        });
+        let ex11 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX11 {
+            AuxiliaryReplicaCount: self.auxiliary_replica_count,
+            Reserved: ex12.as_ref() as *const _ as *mut c_void,
+        });
+        let ex10 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX10 {
+            TagsDescription: std::ptr::null_mut(), // TODO: complex type
+            Reserved: ex11.as_ref() as *const _ as *mut c_void,
+        });
+        let ex9 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX9 {
+            ReplicaLifecycleDescription: replica_lifecycle.as_ref() as *const _ as *mut _,
+            Reserved: ex10.as_ref() as *const _ as *mut c_void,
+        });
+        let ex8 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX8 {
+            ServiceDnsName: self.service_dns_name.as_pcwstr(),
+            Reserved: ex9.as_ref() as *const _ as *mut c_void,
+        });
+        let ex7 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX7 {
+            DropSourceReplicaOnMove: self.drop_source_replica_on_move,
+            Reserved: ex8.as_ref() as *const _ as *mut c_void,
+        });
+        let ex6 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX6 {
+            ServicePlacementTimeLimitSeconds: self.service_placement_time_limit_seconds,
+            Reserved: ex7.as_ref() as *const _ as *mut c_void,
+        });
         let ex5 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5 {
             RepartitionDescription: repartition_raw.as_ffi().1 as *const _ as *mut _,
             RepartitionKind: repartition_raw.as_ffi().0,
             ScalingPolicyCount: 0,
             ServiceScalingPolicies: std::ptr::null_mut(), // TODO: FABRIC_SERVICE_SCALING_POLICY
-            Reserved: std::ptr::null_mut(),
+            Reserved: ex6.as_ref() as *const _ as *mut c_void,
         });
         let ex4 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX4 {
             DefaultMoveCost: self.default_move_cost.into(),
@@ -732,7 +857,15 @@ impl StatefulServiceUpdateDescription {
             _internal_ex3: ex3,
             _internal_ex4: ex4,
             _internal_ex5: ex5,
+            _internal_ex6: ex6,
+            _internal_ex7: ex7,
+            _internal_ex8: ex8,
+            _internal_ex9: ex9,
+            _internal_ex10: ex10,
+            _internal_ex11: ex11,
+            _internal_ex12: ex12,
             _repartition_owner: repartition_raw,
+            _replica_lifecycle_owner: replica_lifecycle,
         }
     }
 }

@@ -72,7 +72,7 @@ jobs:
 
     # Creates a 5 node dev cluster
     - name: start sf cluster
-      run: Powershell.exe -File "C:\Program Files\Microsoft SDKs\Service Fabric\ClusterSetup\DevClusterSetup.ps1"
+      run: Powershell.exe -File .\onebox\windows\StartOnebox.ps1 -Auto
 
     - name: start connection
       run: Powershell.exe -File .\scripts\check_cluster_online.ps1

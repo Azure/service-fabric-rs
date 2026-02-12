@@ -154,14 +154,22 @@ pub struct StatefulServicePartitionQueryResult {
     pub health_state: HealthState,
     pub partition_status: ServicePartitionStatus,
     pub last_quorum_loss_duration_in_seconds: i64,
-    // TODO: reserved fields
-    //pub Reserved: *mut core::ffi::c_void,
+    pub primary_epoch: crate::types::Epoch,
+    pub auxiliary_replica_count: u32,
 }
 
 impl From<&FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM>
     for StatefulServicePartitionQueryResult
 {
     fn from(value: &FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM) -> Self {
+        let ex1 = unsafe {
+            (value.Reserved as *const mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX1).as_ref()
+        }.unwrap();
+        let primary_epoch = (&ex1.PrimaryEpoch).into();
+        let ex2 = unsafe {
+            (ex1.Reserved as *const mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX2).as_ref()
+        }.unwrap();
+        let auxiliary_replica_count = ex2.AuxiliaryReplicaCount;
         Self {
             partition_information: unsafe { value.PartitionInformation.as_ref().unwrap().into() },
             target_replica_set_size: value.TargetReplicaSetSize,
@@ -169,6 +177,8 @@ impl From<&FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM>
             health_state: (&value.HealthState).into(),
             partition_status: (&value.PartitionStatus).into(),
             last_quorum_loss_duration_in_seconds: value.LastQuorumLossDurationInSeconds,
+            primary_epoch,
+            auxiliary_replica_count,
         }
     }
 }

@@ -285,7 +285,8 @@ async fn test_partition_info() {
     // assert_eq!(stateful.health_state, HealthState::Ok);
     assert_eq!(stateful.partition_status, ServicePartitionStatus::Ready);
     assert_eq!(stateful.target_replica_set_size, 3);
-    assert_eq!(stateful.min_replica_set_size, 1);
+    assert_eq!(stateful.min_replica_set_size, 2);
+    assert_eq!(stateful.auxiliary_replica_count, 1);
     assert_ne!(single.id, GUID::zeroed());
 
     // test get replica info

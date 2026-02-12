@@ -10,7 +10,7 @@
   </ServiceManifestImport>
   <DefaultServices>
     <Service Name="StatefulEchoAppService">
-      <StatefulService ServiceTypeName="StatefulEchoAppService" TargetReplicaSetSize="3" MinReplicaSetSize="1">
+      <StatefulService ServiceTypeName="StatefulEchoAppService" TargetReplicaSetSize="3" MinReplicaSetSize="2" AuxiliaryReplicaCount="1" >
         <SingletonPartition />
       </StatefulService>
     </Service>

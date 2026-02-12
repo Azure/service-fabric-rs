@@ -157,11 +157,11 @@ jobs:
 
       - name: Configure Docker to use /mnt directory
         run: |
-          # Create Docker data directory in /mnt
-          sudo mkdir -p /mnt/docker
+          # Stop both docker service and socket to prevent auto-restart
+          sudo systemctl stop docker docker.socket
           
-          # Stop Docker service
-          sudo systemctl stop docker
+          # Move existing Docker data to /mnt
+          sudo mv /var/lib/docker /mnt/docker
           
           # Create or update Docker daemon configuration
           sudo mkdir -p /etc/docker
@@ -172,6 +172,7 @@ jobs:
           
           # Verify Docker is running and using the new data root
           docker info | grep "Docker Root Dir"
+          df -h
 
       - name: Configure core dumps
         run: |

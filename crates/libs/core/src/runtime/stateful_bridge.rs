@@ -533,7 +533,10 @@ where
         let inner = self.inner.clone();
         let r = ReplicaInformation::from(unsafe { replica.as_ref().unwrap() });
         // check the parameter requirements from SF
-        debug_assert!(matches!(r.role, ReplicaRole::IdleSecondary | ReplicaRole::IdleAuxiliary));
+        debug_assert!(matches!(
+            r.role,
+            ReplicaRole::IdleSecondary | ReplicaRole::IdleAuxiliary
+        ));
         debug_assert_eq!(r.catch_up_capability, -1);
         debug_assert_eq!(r.current_progress, -1);
 

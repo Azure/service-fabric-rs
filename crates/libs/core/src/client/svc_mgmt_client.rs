@@ -17,7 +17,8 @@ use mssf_com::{
         FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION, FABRIC_SERVICE_PARTITION_KIND,
         FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE, FABRIC_SERVICE_PARTITION_KIND_INVALID,
         FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
-        FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
+        FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_AUXILIARY,
+        FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY_AUXILIARY,
         FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS,
         FABRIC_SERVICE_UPDATE_DESCRIPTION, FABRIC_URI,
     },
@@ -541,7 +542,9 @@ impl PartialOrd for ResolvedServicePartition {
 pub enum ServiceEndpointRole {
     Invalid,
     StatefulPrimary,
+    StatefulPrimaryAuxiliary,
     StatefulSecondary,
+    StatefulAuxiliary,
     Stateless,
 }
 
@@ -550,7 +553,11 @@ impl From<FABRIC_SERVICE_ENDPOINT_ROLE> for ServiceEndpointRole {
         match value {
             FABRIC_SERVICE_ROLE_INVALID => ServiceEndpointRole::Invalid,
             FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY => ServiceEndpointRole::StatefulPrimary,
+            FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY_AUXILIARY => {
+                ServiceEndpointRole::StatefulPrimaryAuxiliary
+            }
             FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY => ServiceEndpointRole::StatefulSecondary,
+            FABRIC_SERVICE_ROLE_STATEFUL_AUXILIARY => ServiceEndpointRole::StatefulAuxiliary,
             FABRIC_SERVICE_ROLE_STATELESS => ServiceEndpointRole::Stateless,
             _ => {
                 if cfg!(debug_assertions) {

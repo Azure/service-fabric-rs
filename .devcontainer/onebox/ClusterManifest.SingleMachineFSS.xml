@@ -54,6 +54,9 @@
     <Section Name="Federation">
       <Parameter Name="NodeIdGeneratorVersion" Value="V3" />
     </Section>
+    <Section Name="Common">
+      <Parameter Name="EnableAuxiliaryReplicas" Value="True" />
+    </Section>
     <Section Name="ClusterManager">
       <Parameter Name="TargetReplicaSetSize" Value="3" />
       <Parameter Name="MinReplicaSetSize" Value="1" />

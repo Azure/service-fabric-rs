@@ -17,7 +17,13 @@ use mssf_com::{
         FABRIC_SERVICE_QUERY_RESULT_ITEM, FABRIC_SERVICE_UPDATE_DESCRIPTION,
         FABRIC_STATEFUL_SERVICE_DESCRIPTION, FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX1,
         FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2, FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3,
-        FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4, FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION,
+        FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4, FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS,
+        FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX1,
+        FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX2,
+        FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX3,
+        FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX4,
+        FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX5,
+        FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX6, FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION,
         FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX1,
         FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX2,
         FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3,
@@ -74,9 +80,8 @@ pub struct StatefulServiceDescription {
     _metrics: Vec<WString>,      // TODO: FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION
     has_persistent_state: bool,
     // ex1
-    // TODO: Auxiliary setting is in the failover settings.
     _policy_list: Vec<WString>, // TODO: FABRIC_SERVICE_PLACEMENT_POLICY_DESCRIPTION
-    _failover_settings: WString, // TODO: FABRIC_SERVICE_PARTITION_KIND
+    failover_settings: StatefulServiceFailoverSettings,
     // ex2
     default_move_cost: Option<MoveCost>, // TODO: FABRIC_MOVE_COST
     // ex3
@@ -108,7 +113,7 @@ impl StatefulServiceDescription {
             _metrics: Vec::new(),
             has_persistent_state: false,
             _policy_list: Vec::new(),
-            _failover_settings: WString::default(),
+            failover_settings: StatefulServiceFailoverSettings::default(),
             default_move_cost: None,
             service_package_activation_mode: ServicePackageActivationMode::default(),
             _service_dns_name: None,
@@ -147,6 +152,56 @@ impl StatefulServiceDescription {
         self.service_package_activation_mode = service_package_activation_mode;
         self
     }
+
+    // Failover settings setters
+
+    pub fn with_replica_restart_wait_duration_seconds(mut self, seconds: u32) -> Self {
+        self.failover_settings.replica_restart_wait_duration_seconds = Some(seconds);
+        self
+    }
+
+    pub fn with_quorum_loss_wait_duration_seconds(mut self, seconds: u32) -> Self {
+        self.failover_settings.quorum_loss_wait_duration_seconds = Some(seconds);
+        self
+    }
+
+    pub fn with_stand_by_replica_keep_duration_seconds(mut self, seconds: u32) -> Self {
+        self.failover_settings
+            .stand_by_replica_keep_duration_seconds = Some(seconds);
+        self
+    }
+
+    pub fn with_service_placement_time_limit_seconds(mut self, seconds: u32) -> Self {
+        self.failover_settings.service_placement_time_limit_seconds = Some(seconds);
+        self
+    }
+
+    pub fn with_drop_source_replica_on_move(mut self, drop: bool) -> Self {
+        self.failover_settings.drop_source_replica_on_move = Some(drop);
+        self
+    }
+
+    pub fn with_is_singleton_replica_move_allowed_during_upgrade(mut self, allowed: bool) -> Self {
+        self.failover_settings
+            .is_singleton_replica_move_allowed_during_upgrade = Some(allowed);
+        self
+    }
+
+    pub fn with_restore_replica_location_after_upgrade(mut self, restore: bool) -> Self {
+        self.failover_settings
+            .restore_replica_location_after_upgrade = Some(restore);
+        self
+    }
+
+    pub fn with_auxiliary_replica_count(mut self, count: i32) -> Self {
+        self.failover_settings.auxiliary_replica_count = Some(count);
+        self
+    }
+
+    pub fn with_service_sensitivity(mut self, sensitivity: ServiceSensitivityDescription) -> Self {
+        self.failover_settings.service_sensitivity = Some(sensitivity);
+        self
+    }
 }
 
 pub(crate) struct StatefulServiceDescriptionRaw<'a> {
@@ -155,6 +210,7 @@ pub(crate) struct StatefulServiceDescriptionRaw<'a> {
     _internal_ex2: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2>,
     _internal_ex3: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3>,
     _internal_ex4: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4>,
+    _failover_settings_raw: Option<StatefulServiceFailoverSettingsRaw>,
     phantom: PhantomData<&'a StatefulServiceDescription>,
 }
 
@@ -182,9 +238,15 @@ impl StatefulServiceDescription {
             DefaultMoveCost: self.default_move_cost.unwrap_or(MoveCost::Zero).into(),
             Reserved: ex3.as_ref() as *const _ as *mut c_void,
         });
+        let failover_settings_raw = self.failover_settings.build_raw();
+        let failover_settings_ptr = failover_settings_raw
+            .as_ref()
+            .map(|r| r.as_ffi() as *const _ as *mut FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS)
+            .unwrap_or(std::ptr::null_mut());
+
         let ex1 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX1 {
-            PolicyList: std::ptr::null_mut(),       // TODO:
-            FailoverSettings: std::ptr::null_mut(), // TODO:
+            PolicyList: std::ptr::null_mut(), // TODO:
+            FailoverSettings: failover_settings_ptr,
             Reserved: ex2.as_ref() as *const _ as *mut c_void,
         });
 
@@ -219,6 +281,7 @@ impl StatefulServiceDescription {
             _internal_ex2: ex2,
             _internal_ex3: ex3,
             _internal_ex4: ex4,
+            _failover_settings_raw: failover_settings_raw,
             phantom: PhantomData,
         }
     }
@@ -485,6 +548,244 @@ impl ServiceRepartitionDescriptionRaw<'_> {
                 (FABRIC_SERVICE_PARTITION_KIND_INVALID, std::ptr::null_mut())
             }
         }
+    }
+}
+
+bitflags::bitflags! {
+    /// FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS
+    /// Indicates what fields are set in the failover settings.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct StatefulServiceFailoverSettingsFlags: u32 {
+        const NONE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_NONE.0 as u32;
+        const REPLICA_RESTART_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_REPLICA_RESTART_WAIT_DURATION.0 as u32;
+        const QUORUM_LOSS_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_QUORUM_LOSS_WAIT_DURATION.0 as u32;
+        const STANDBY_REPLICA_KEEP_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_STANDBY_REPLICA_KEEP_DURATION.0 as u32;
+        const SERVICE_PLACEMENT_TIME_LIMIT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_SERVICE_PLACEMENT_TIME_LIMIT.0 as u32;
+        const DROP_SOURCE_REPLICA_ON_MOVE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_DROP_SOURCE_REPLICA_ON_MOVE.0 as u32;
+        const IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE.0 as u32;
+        const RESTORE_REPLICA_LOCATION_AFTER_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE.0 as u32;
+        const AUXILIARY_REPLICA_COUNT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_AUXILIARY_REPLICA_COUNT.0 as u32;
+        const SERVICE_SENSITIVITY = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_SERVICE_SENSITIVITY.0 as u32;
+    }
+}
+
+impl Default for StatefulServiceFailoverSettingsFlags {
+    fn default() -> Self {
+        StatefulServiceFailoverSettingsFlags::NONE
+    }
+}
+
+/// FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS (Base + EX1..EX6)
+///
+/// Wraps the failover settings chain. Each `Option` field corresponds to a flag bit.
+/// Setting a field to `Some(...)` automatically sets the corresponding flag when building the raw type.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct StatefulServiceFailoverSettings {
+    /// Base: ReplicaRestartWaitDurationSeconds (flag bit 1)
+    pub(crate) replica_restart_wait_duration_seconds: Option<u32>,
+    /// Base: QuorumLossWaitDurationSeconds (flag bit 2)
+    pub(crate) quorum_loss_wait_duration_seconds: Option<u32>,
+    /// EX1: StandByReplicaKeepDurationSeconds (flag bit 4)
+    pub(crate) stand_by_replica_keep_duration_seconds: Option<u32>,
+    /// EX2: ServicePlacementTimeLimitSeconds (flag bit 8)
+    pub(crate) service_placement_time_limit_seconds: Option<u32>,
+    /// EX3: DropSourceReplicaOnMove (flag bit 16)
+    pub(crate) drop_source_replica_on_move: Option<bool>,
+    /// EX4 via REPLICA_LIFECYCLE_DESCRIPTION: IsSingletonReplicaMoveAllowedDuringUpgrade (flag bit 32)
+    pub(crate) is_singleton_replica_move_allowed_during_upgrade: Option<bool>,
+    /// EX4 via REPLICA_LIFECYCLE_DESCRIPTION: RestoreReplicaLocationAfterUpgrade (flag bit 64)
+    pub(crate) restore_replica_location_after_upgrade: Option<bool>,
+    /// EX5: AuxiliaryReplicaCount (flag bit 128)
+    pub(crate) auxiliary_replica_count: Option<i32>,
+    /// EX6 via SERVICE_SENSITIVITY_DESCRIPTION (flag bit 256)
+    pub(crate) service_sensitivity: Option<ServiceSensitivityDescription>,
+}
+
+/// Wrapper for SERVICE_SENSITIVITY_DESCRIPTION
+#[derive(Debug, Clone, Default)]
+pub struct ServiceSensitivityDescription {
+    pub primary_default_sensitivity: u32,
+    pub secondary_default_sensitivity: u32,
+    pub auxiliary_default_sensitivity: u32,
+    pub is_maximum_sensitivity: bool,
+}
+
+impl StatefulServiceFailoverSettings {
+    /// Compute the flags bitmask from which fields are set.
+    fn compute_flags(&self) -> StatefulServiceFailoverSettingsFlags {
+        let mut flags = StatefulServiceFailoverSettingsFlags::NONE;
+        if self.replica_restart_wait_duration_seconds.is_some() {
+            flags |= StatefulServiceFailoverSettingsFlags::REPLICA_RESTART_WAIT_DURATION;
+        }
+        if self.quorum_loss_wait_duration_seconds.is_some() {
+            flags |= StatefulServiceFailoverSettingsFlags::QUORUM_LOSS_WAIT_DURATION;
+        }
+        if self.stand_by_replica_keep_duration_seconds.is_some() {
+            flags |= StatefulServiceFailoverSettingsFlags::STANDBY_REPLICA_KEEP_DURATION;
+        }
+        if self.service_placement_time_limit_seconds.is_some() {
+            flags |= StatefulServiceFailoverSettingsFlags::SERVICE_PLACEMENT_TIME_LIMIT;
+        }
+        if self.drop_source_replica_on_move.is_some() {
+            flags |= StatefulServiceFailoverSettingsFlags::DROP_SOURCE_REPLICA_ON_MOVE;
+        }
+        if self
+            .is_singleton_replica_move_allowed_during_upgrade
+            .is_some()
+        {
+            flags |= StatefulServiceFailoverSettingsFlags::IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE;
+        }
+        if self.restore_replica_location_after_upgrade.is_some() {
+            flags |= StatefulServiceFailoverSettingsFlags::RESTORE_REPLICA_LOCATION_AFTER_UPGRADE;
+        }
+        if self.auxiliary_replica_count.is_some() {
+            flags |= StatefulServiceFailoverSettingsFlags::AUXILIARY_REPLICA_COUNT;
+        }
+        if self.service_sensitivity.is_some() {
+            flags |= StatefulServiceFailoverSettingsFlags::SERVICE_SENSITIVITY;
+        }
+        flags
+    }
+}
+
+/// Holds the heap-allocated FFI structs for the failover settings chain.
+/// Keeps all Box-ed structs alive so the pointers remain valid.
+pub(crate) struct StatefulServiceFailoverSettingsRaw {
+    internal: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS>,
+    _internal_ex1: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX1>,
+    _internal_ex2: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX2>,
+    _internal_ex3: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX3>,
+    _internal_ex4: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX4>,
+    _internal_ex5: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX5>,
+    _internal_ex6: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX6>,
+    _replica_lifecycle: Box<mssf_com::FabricTypes::REPLICA_LIFECYCLE_DESCRIPTION>,
+    _service_sensitivity: Box<mssf_com::FabricTypes::SERVICE_SENSITIVITY_DESCRIPTION>,
+}
+
+impl StatefulServiceFailoverSettingsRaw {
+    pub fn as_ffi(&self) -> &FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS {
+        self.internal.as_ref()
+    }
+}
+
+impl StatefulServiceFailoverSettings {
+    /// Returns `None` if no failover setting fields are set.
+    pub(crate) fn build_raw(&self) -> Option<StatefulServiceFailoverSettingsRaw> {
+        let flags = self.compute_flags();
+        if flags == StatefulServiceFailoverSettingsFlags::NONE {
+            return None;
+        }
+
+        // EX6: ServiceSensitivityDescription
+        let service_sensitivity =
+            Box::new(mssf_com::FabricTypes::SERVICE_SENSITIVITY_DESCRIPTION {
+                PrimaryDefaultSensitivity: self
+                    .service_sensitivity
+                    .as_ref()
+                    .map_or(0, |s| s.primary_default_sensitivity),
+                SecondaryDefaultSensitivity: self
+                    .service_sensitivity
+                    .as_ref()
+                    .map_or(0, |s| s.secondary_default_sensitivity),
+                AuxiliaryDefaultSensitivity: self
+                    .service_sensitivity
+                    .as_ref()
+                    .map_or(0, |s| s.auxiliary_default_sensitivity),
+                IsMaximumSensitivity: self
+                    .service_sensitivity
+                    .as_ref()
+                    .is_some_and(|s| s.is_maximum_sensitivity),
+                Reserved: std::ptr::null_mut(),
+            });
+        let service_sensitivity_ptr = if self.service_sensitivity.is_some() {
+            service_sensitivity.as_ref() as *const _ as *mut _
+        } else {
+            std::ptr::null_mut()
+        };
+        let ex6 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX6 {
+            ServiceSensitivityDescription: service_sensitivity_ptr,
+            Reserved: std::ptr::null_mut(),
+        });
+
+        // EX5: AuxiliaryReplicaCount
+        let ex5 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX5 {
+            AuxiliaryReplicaCount: self.auxiliary_replica_count.unwrap_or(0),
+            Reserved: ex6.as_ref() as *const _ as *mut c_void,
+        });
+
+        // EX4: ReplicaLifecycleDescription
+        let replica_lifecycle = Box::new(mssf_com::FabricTypes::REPLICA_LIFECYCLE_DESCRIPTION {
+            IsIsSingletonReplicaMoveAllowedDuringUpgradeSpecified: self
+                .is_singleton_replica_move_allowed_during_upgrade
+                .is_some(),
+            IsSingletonReplicaMoveAllowedDuringUpgrade: self
+                .is_singleton_replica_move_allowed_during_upgrade
+                .unwrap_or(false),
+            IsRestoreReplicaLocationAfterUpgradeSpecified: self
+                .restore_replica_location_after_upgrade
+                .is_some(),
+            RestoreReplicaLocationAfterUpgrade: self
+                .restore_replica_location_after_upgrade
+                .unwrap_or(false),
+            Reserved: std::ptr::null_mut(),
+        });
+        let replica_lifecycle_ptr = if self
+            .is_singleton_replica_move_allowed_during_upgrade
+            .is_some()
+            || self.restore_replica_location_after_upgrade.is_some()
+        {
+            replica_lifecycle.as_ref() as *const _ as *mut _
+        } else {
+            std::ptr::null_mut()
+        };
+        let ex4 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX4 {
+            ReplicaLifecycleDescription: replica_lifecycle_ptr,
+            Reserved: ex5.as_ref() as *const _ as *mut c_void,
+        });
+
+        // EX3: DropSourceReplicaOnMove
+        let ex3 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX3 {
+            DropSourceReplicaOnMove: self.drop_source_replica_on_move.unwrap_or(false),
+            Reserved: ex4.as_ref() as *const _ as *mut c_void,
+        });
+
+        // EX2: ServicePlacementTimeLimitSeconds
+        let ex2 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX2 {
+            ServicePlacementTimeLimitSeconds: self
+                .service_placement_time_limit_seconds
+                .unwrap_or(0),
+            Reserved: ex3.as_ref() as *const _ as *mut c_void,
+        });
+
+        // EX1: StandByReplicaKeepDurationSeconds
+        let ex1 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX1 {
+            StandByReplicaKeepDurationSeconds: self
+                .stand_by_replica_keep_duration_seconds
+                .unwrap_or(0),
+            Reserved: ex2.as_ref() as *const _ as *mut c_void,
+        });
+
+        // Base
+        let internal = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS {
+            Flags: flags.bits(),
+            ReplicaRestartWaitDurationSeconds: self
+                .replica_restart_wait_duration_seconds
+                .unwrap_or(0),
+            QuorumLossWaitDurationSeconds: self.quorum_loss_wait_duration_seconds.unwrap_or(0),
+            Reserved: ex1.as_ref() as *const _ as *mut c_void,
+        });
+
+        Some(StatefulServiceFailoverSettingsRaw {
+            internal,
+            _internal_ex1: ex1,
+            _internal_ex2: ex2,
+            _internal_ex3: ex3,
+            _internal_ex4: ex4,
+            _internal_ex5: ex5,
+            _internal_ex6: ex6,
+            _replica_lifecycle: replica_lifecycle,
+            _service_sensitivity: service_sensitivity,
+        })
     }
 }
 

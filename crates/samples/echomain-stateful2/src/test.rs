@@ -441,6 +441,21 @@ pub struct TestCreateUpdateClient {
     pub(crate) timeout: Duration,
 }
 
+#[derive(Debug, Clone)]
+pub enum TestPartitionReplicaLayout {
+    Target1Min1,                 // target 1 replica, min 1 replica, no aux replica
+    TargetMinAux(i32, i32, i32), // target, min and aux replica count
+}
+
+impl TestPartitionReplicaLayout {
+    pub fn tuple(&self) -> (i32, i32, i32) {
+        match self {
+            TestPartitionReplicaLayout::Target1Min1 => (1, 1, 0),
+            TestPartitionReplicaLayout::TargetMinAux(target, min, aux) => (*target, *min, *aux),
+        }
+    }
+}
+
 impl TestCreateUpdateClient {
     pub(crate) fn new(fc: FabricClient) -> Self {
         Self {
@@ -453,8 +468,9 @@ impl TestCreateUpdateClient {
         &self,
         service_name: &Uri,
         partition_scheme: &mssf_core::types::PartitionSchemeDescription,
-        replica_count: Option<i32>,
+        layout: TestPartitionReplicaLayout,
     ) {
+        let (target, min, aux) = layout.tuple();
         // TODO: get service first
         let desc = ServiceDescription::Stateful(
             StatefulServiceDescription::new(
@@ -467,8 +483,9 @@ impl TestCreateUpdateClient {
             .with_service_activation_mode(
                 mssf_core::types::ServicePackageActivationMode::SharedProcess,
             )
-            .with_min_replica_set_size(replica_count.unwrap_or(1))
-            .with_target_replica_set_size(replica_count.unwrap_or(1)),
+            .with_min_replica_set_size(min)
+            .with_target_replica_set_size(target)
+            .with_auxiliary_replica_count(aux),
         );
         // Run client operation on separate task to ensure that the api is task safe.
         println!("creating service {service_name:?}");
@@ -518,7 +535,7 @@ impl TestCreateUpdateClient {
         }
     }
 
-    async fn update_service(
+    pub(crate) async fn update_service_named_partitions(
         &self,
         service_name: &Uri,
         names_to_add: Vec<WString>,
@@ -541,7 +558,29 @@ impl TestCreateUpdateClient {
         tokio::spawn(async move { sm.update_service(&service_name, &desc, timeout, None).await })
             .await
             .expect("task panicked")
-            .expect("delete failed");
+            .expect("update failed");
+    }
+
+    pub(crate) async fn update_service_replica_layout(
+        &self,
+        service_name: &Uri,
+        layout: TestPartitionReplicaLayout,
+    ) {
+        let (target, min, aux) = layout.tuple();
+        let desc = ServiceUpdateDescription::Stateful(
+            StatefulServiceUpdateDescription::new()
+                .with_target_replica_set_size(target)
+                .with_min_replica_set_size(min)
+                .with_auxiliary_replica_count(aux),
+        );
+        println!("updating service replica layout {service_name:?} - {layout:?}");
+        let sm = self.fc.get_service_manager().clone();
+        let timeout = self.timeout;
+        let service_name = service_name.clone();
+        tokio::spawn(async move { sm.update_service(&service_name, &desc, timeout, None).await })
+            .await
+            .expect("task panicked")
+            .expect("update failed");
     }
 }
 
@@ -553,8 +592,12 @@ async fn test_service_create_delete(
     // TODO: get service first
     let tc = TestCreateUpdateClient::new(fc.clone());
     // create service
-    tc.create_service(service_name, partition_scheme, None)
-        .await;
+    tc.create_service(
+        service_name,
+        partition_scheme,
+        TestPartitionReplicaLayout::Target1Min1,
+    )
+    .await;
 
     let key_type = match partition_scheme {
         mssf_core::types::PartitionSchemeDescription::Singleton => PartitionKeyType::None,
@@ -626,8 +669,12 @@ async fn test_service_reparition() {
     let service_name = Uri::from("fabric:/StatefulEchoApp/RepartitionTest");
 
     // create service
-    tc.create_service(&service_name, &partition_scheme, None)
-        .await;
+    tc.create_service(
+        &service_name,
+        &partition_scheme,
+        TestPartitionReplicaLayout::Target1Min1,
+    )
+    .await;
 
     // resolve until the service is ready
     {
@@ -641,7 +688,7 @@ async fn test_service_reparition() {
         println!("adding partition 2: {service_name:?}");
         let names_to_add = vec![WString::from("2")];
         let names_to_remove = vec![];
-        tc.update_service(&service_name, names_to_add, names_to_remove)
+        tc.update_service_named_partitions(&service_name, names_to_add, names_to_remove)
             .await;
     }
 
@@ -656,7 +703,7 @@ async fn test_service_reparition() {
         println!("removing partition 1: {service_name:?}");
         let names_to_add = vec![];
         let names_to_remove = vec![WString::from("1")];
-        tc.update_service(&service_name, names_to_add, names_to_remove)
+        tc.update_service_named_partitions(&service_name, names_to_add, names_to_remove)
             .await;
     }
 

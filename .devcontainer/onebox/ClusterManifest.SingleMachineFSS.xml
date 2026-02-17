@@ -34,6 +34,28 @@
         <ApplicationEndpoints StartPort="24001" EndPort="25000" />
       </Endpoints>
     </NodeType>
+    <NodeType Name="N0040Ref">
+      <Endpoints>
+        <ClientConnectionEndpoint Port="19030" />
+        <LeaseDriverEndpoint Port="19031" />
+        <ClusterConnectionEndpoint Port="19032" />
+        <HttpGatewayEndpoint Port="19086" Protocol="http" />
+        <ServiceConnectionEndpoint Port="19036" />
+        <HttpApplicationGatewayEndpoint Port="19087" Protocol="http" />
+        <ApplicationEndpoints StartPort="25001" EndPort="26000" />
+      </Endpoints>
+    </NodeType>
+    <NodeType Name="N0050Ref">
+      <Endpoints>
+        <ClientConnectionEndpoint Port="19040" />
+        <LeaseDriverEndpoint Port="19041" />
+        <ClusterConnectionEndpoint Port="19042" />
+        <HttpGatewayEndpoint Port="19088" Protocol="http" />
+        <ServiceConnectionEndpoint Port="19046" />
+        <HttpApplicationGatewayEndpoint Port="19089" Protocol="http" />
+        <ApplicationEndpoints StartPort="26001" EndPort="27000" />
+      </Endpoints>
+    </NodeType>
   </NodeTypes>
   <Infrastructure>
     <Linux IsScaleMin="true">
@@ -41,6 +63,8 @@
         <Node NodeName="N0010" IPAddressOrFQDN="REPLACE_IP_1" IsSeedNode="true" NodeTypeRef="N0010Ref" />
         <Node NodeName="N0020" IPAddressOrFQDN="REPLACE_IP_1" IsSeedNode="true" NodeTypeRef="N0020Ref" />
         <Node NodeName="N0030" IPAddressOrFQDN="REPLACE_IP_1" IsSeedNode="true" NodeTypeRef="N0030Ref" />
+        <Node NodeName="N0040" IPAddressOrFQDN="REPLACE_IP_1" IsSeedNode="true" NodeTypeRef="N0040Ref" />
+        <Node NodeName="N0050" IPAddressOrFQDN="REPLACE_IP_1" IsSeedNode="true" NodeTypeRef="N0050Ref" />
       </NodeList>
     </Linux>
   </Infrastructure>

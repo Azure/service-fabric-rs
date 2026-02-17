@@ -143,9 +143,8 @@ async fn resolve_until_change(
 /// Remove-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/ResolveNotificationTest
 /// Resolve-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/ResolveNotificationTest -PartitionKindSingleton
 #[tokio::test]
+#[test_log::test]
 async fn test_resolve_notification() {
-    // set up tracing
-    let _ = tracing_subscriber::fmt().try_init();
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
         .build()
@@ -156,7 +155,8 @@ async fn test_resolve_notification() {
     sm.create_service(
         &uri,
         &mssf_core::types::PartitionSchemeDescription::Singleton,
-        Some(3), // replica count
+        // target 3, min 3 and aux 0.
+        crate::test::TestPartitionReplicaLayout::TargetMinAux(3, 3, 0),
     )
     .await;
 
@@ -218,6 +218,112 @@ async fn test_resolve_notification() {
     tokio::time::sleep(std::time::Duration::from_secs(5)).await;
     drop(fc);
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+}
+
+#[tokio::test]
+#[test_log::test]
+async fn test_aux_replicas() {
+    let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
+    let uri = Uri::from("fabric:/StatefulEchoApp/AuxiliaryReplicaTest");
+    // Create the service
+    let sm = TestCreateUpdateClient::new(fc.clone());
+    sm.create_service(
+        &uri,
+        &mssf_core::types::PartitionSchemeDescription::Singleton,
+        // target 3, min 2 and aux 1.
+        crate::test::TestPartitionReplicaLayout::TargetMinAux(3, 2, 1),
+    )
+    .await;
+
+    let retryer = mssf_util::retry::OperationRetryer::builder().build();
+    let srv = ServicePartitionResolver::new(fc.clone(), retryer);
+
+    async fn resolve_until_condition(
+        srv: &ServicePartitionResolver,
+        uri: &Uri,
+        prev: Option<ResolvedServicePartition>,
+        condition: impl Fn(&ResolvedServicePartition) -> bool,
+    ) -> ResolvedServicePartition {
+        let mut prev = prev;
+        let max_retry = 60; // retry for 1 minutes
+        let mut retry_count = 0;
+        loop {
+            let rsp = srv
+                .resolve(uri, &PartitionKeyType::None, prev.as_ref(), None, None)
+                .await
+                .unwrap();
+            if condition(&rsp) {
+                break rsp;
+            } else {
+                prev = Some(rsp);
+            }
+            tracing::debug!("Waiting for condition to be met...");
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            retry_count += 1;
+            if retry_count >= max_retry {
+                panic!("Condition not met within the maximum retry limit");
+            }
+        }
+    }
+
+    fn get_replica_counts(rsp: &ResolvedServicePartition) -> (usize, usize, usize) {
+        // Check there is 1 primary, 1 secondary and 1 aux replica.
+        let primary_count = rsp
+            .endpoints
+            .iter()
+            .filter(|ep| ep.role == ServiceEndpointRole::StatefulPrimary)
+            .count();
+        let secondary_count = rsp
+            .endpoints
+            .iter()
+            .filter(|ep| ep.role == ServiceEndpointRole::StatefulSecondary)
+            .count();
+        let aux_count = rsp
+            .endpoints
+            .iter()
+            .filter(|ep| ep.role == ServiceEndpointRole::StatefulAuxiliary)
+            .count();
+        (primary_count, secondary_count, aux_count)
+    }
+
+    // Resolve the service until all replicas are ready.
+    let rsp = resolve_until_condition(&srv, &uri, None, |rsp| rsp.endpoints.len() >= 3).await;
+
+    let (primary_count, secondary_count, aux_count) = get_replica_counts(&rsp);
+    assert_eq!(primary_count, 1);
+    assert_eq!(secondary_count, 1);
+    assert_eq!(aux_count, 1);
+
+    // Update the service to have 0 aux replica.
+    sm.update_service_replica_layout(
+        &uri,
+        crate::test::TestPartitionReplicaLayout::TargetMinAux(3, 3, 0),
+    )
+    .await;
+
+    let rsp = resolve_until_condition(&srv, &uri, Some(rsp), |rsp| {
+        let (primary_count, secondary_count, aux_count) = get_replica_counts(rsp);
+        primary_count == 1 && secondary_count == 2 && aux_count == 0
+    })
+    .await;
+
+    // Update the service to have 1 aux replica again.
+    sm.update_service_replica_layout(
+        &uri,
+        crate::test::TestPartitionReplicaLayout::TargetMinAux(3, 2, 1),
+    )
+    .await;
+
+    let _rsp = resolve_until_condition(&srv, &uri, Some(rsp), |rsp| {
+        let (primary_count, secondary_count, aux_count) = get_replica_counts(rsp);
+        primary_count == 1 && secondary_count == 1 && aux_count == 1
+    })
+    .await;
+
+    sm.delete_service(&uri).await;
 }
 
 async fn test_replica_mock(replica_count: usize) {

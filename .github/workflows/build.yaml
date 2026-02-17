@@ -10,7 +10,7 @@ on:
 
 env:
   # Define Rust versions to test in a single place
-  RUST_VERSIONS: '["1.90.0", "1.93.0"]'
+  RUST_VERSIONS: '["1.90.0", "1.93.1"]'
 
 jobs:
   # The 'env' context is not available in strategy/matrix definitions.

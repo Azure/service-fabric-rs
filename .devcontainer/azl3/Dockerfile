@@ -10,7 +10,7 @@ RUN tdnf install --noplugins --skipsignature -y \
 # install sf
 RUN mkdir -p /var/opt/microsoft/servicefabric/ && echo "Accepted" | tee /var/opt/microsoft/servicefabric/accepted-eula-ga
 
-ENV SF_VERSION=11.2.298.5
+ENV SF_VERSION=11.4.211.5
 RUN wget https://download.microsoft.com/download/3/1/F/31F3FEEB-F073-4E27-A98B-8E691FF74F40/ServiceFabric.AL.${SF_VERSION}.rpm
 RUN tdnf install -y ./ServiceFabric.AL.${SF_VERSION}.rpm
 RUN rm ServiceFabric.AL.${SF_VERSION}.rpm

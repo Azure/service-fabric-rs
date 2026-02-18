@@ -204,7 +204,7 @@ jobs:
             cmake . -DCMAKE_BUILD_TYPE=Debug -B build
             cmake --build build --config Debug
             echo "Preparing test apps"
-            bash ./scripts/prepare_test_apps.sh
+            bash ./scripts/prepare_test_apps.sh || { echo "Fail to prepare test apps"; exit 1; }
             echo "Running tests"
             cargo test --all -- --nocapture
 

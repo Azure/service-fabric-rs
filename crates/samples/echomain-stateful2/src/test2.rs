@@ -139,6 +139,16 @@ async fn resolve_until_change(
     rsp_final.unwrap()
 }
 
+/// Invalid memory access https://github.com/Azure/service-fabric-rs/issues/184 happens when this test finishes.
+/// Delay the process clean up is helping with the issue.
+/// It seems like FabricClient cleanup has some background tasks that need to finish.
+/// This is a bug in FabricClient.
+async fn fabric_client_drop_hack(fc: FabricClient) {
+    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+    drop(fc);
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+}
+
 /// For manual clean up:
 /// Remove-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/ResolveNotificationTest
 /// Resolve-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/ResolveNotificationTest -PartitionKindSingleton
@@ -211,13 +221,7 @@ async fn test_resolve_notification() {
         .unwrap();
     sm.delete_service(&uri).await;
 
-    // Invalid memory access https://github.com/Azure/service-fabric-rs/issues/184 happens when this test finishes.
-    // Delay the process clean up is helping with the issue.
-    // It seems like FabricClient cleanup has some background tasks that need to finish.
-    // This is a bug in FabricClient.
-    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-    drop(fc);
-    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    fabric_client_drop_hack(fc).await;
 }
 
 #[tokio::test]
@@ -324,6 +328,8 @@ async fn test_aux_replicas() {
     .await;
 
     sm.delete_service(&uri).await;
+
+    fabric_client_drop_hack(fc).await;
 }
 
 async fn test_replica_mock(replica_count: usize) {

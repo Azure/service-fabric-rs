@@ -48,7 +48,7 @@ windows-bindgen = "0.66"
 windows-core = "0.62"
 
 # crates in this repo
-mssf-com = { version = "0.5", path = "./crates/libs/com", default-features = false }
+mssf-com = { version = "0.6", path = "./crates/libs/com", default-features = false }
 mssf-core = { version = "0.6", path = "./crates/libs/core", default-features = false }
 mssf-pal = { version = "0.5", path = "./crates/libs/pal", default-features = true }
 mssf-util = { version = "0.6", path = "./crates/libs/util", default-features = true }

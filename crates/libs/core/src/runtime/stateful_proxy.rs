@@ -10,8 +10,8 @@ use std::{ffi::c_void, sync::Arc};
 
 use crate::{Interface, WString, runtime::executor::BoxedCancelToken, strings::StringResult};
 use mssf_com::FabricRuntime::{
-    IFabricPrimaryReplicator, IFabricReplicator, IFabricReplicatorCatchupSpecificQuorum,
-    IFabricStatefulServicePartition3, IFabricStatefulServiceReplica,
+    IFabricKeyValueStoreReplica8, IFabricPrimaryReplicator, IFabricReplicator,
+    IFabricReplicatorCatchupSpecificQuorum, IFabricStatefulServicePartition3,
 };
 
 use crate::{
@@ -27,11 +27,11 @@ use super::{IPrimaryReplicator, IReplicator, IStatefulServiceReplica};
 use crate::types::{Epoch, OpenMode, ReplicaInformation, ReplicaSetConfig, ReplicaSetQuorumMode};
 
 pub struct StatefulServiceReplicaProxy {
-    com_impl: IFabricStatefulServiceReplica,
+    com_impl: IFabricKeyValueStoreReplica8,
 }
 
 impl StatefulServiceReplicaProxy {
-    pub fn new(com_impl: IFabricStatefulServiceReplica) -> StatefulServiceReplicaProxy {
+    pub fn new(com_impl: IFabricKeyValueStoreReplica8) -> StatefulServiceReplicaProxy {
         StatefulServiceReplicaProxy { com_impl }
     }
 }

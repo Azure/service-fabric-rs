@@ -5,10 +5,10 @@
 
 use std::time::Duration;
 
+use crate::WString;
 use crate::runtime::executor::BoxedCancelToken;
 use crate::strings::StringResult;
-use crate::{Interface, WString};
-use mssf_com::FabricRuntime::{IFabricNodeContextResult, IFabricNodeContextResult2};
+use mssf_com::FabricRuntime::IFabricNodeContextResult2;
 
 use crate::sync::fabric_begin_end_proxy;
 use crate::types::NodeId;
@@ -16,7 +16,7 @@ use crate::types::NodeId;
 pub fn get_com_node_context(
     timeout_milliseconds: u32,
     cancellation_token: Option<BoxedCancelToken>,
-) -> crate::sync::FabricReceiver<crate::WinResult<IFabricNodeContextResult>> {
+) -> crate::sync::FabricReceiver<crate::WinResult<IFabricNodeContextResult2>> {
     fabric_begin_end_proxy(
         move |callback| {
             crate::API_TABLE.fabric_begin_get_node_context(timeout_milliseconds, callback)
@@ -28,7 +28,7 @@ pub fn get_com_node_context(
 
 #[derive(Debug)]
 pub struct NodeContext {
-    com: IFabricNodeContextResult,
+    com: IFabricNodeContextResult2,
     pub node_name: WString,
     pub node_type: WString,
     pub ip_address_or_fqdn: WString,
@@ -57,14 +57,13 @@ impl NodeContext {
 
     // Retrieves the directory path for the directory at node level.
     pub fn get_directory(&self, logical_directory_name: &WString) -> crate::Result<WString> {
-        let com2 = self.com.cast::<IFabricNodeContextResult2>()?;
-        let dir = unsafe { com2.GetDirectory(logical_directory_name.as_pcwstr()) }?;
+        let dir = unsafe { self.com.GetDirectory(logical_directory_name.as_pcwstr()) }?;
         Ok(StringResult::from(&dir).into_inner())
     }
 }
 
-impl From<&IFabricNodeContextResult> for NodeContext {
-    fn from(value: &IFabricNodeContextResult) -> Self {
+impl From<&IFabricNodeContextResult2> for NodeContext {
+    fn from(value: &IFabricNodeContextResult2) -> Self {
         let raw = unsafe { value.get_NodeContext() };
         assert!(!raw.is_null());
         let raw_ref = unsafe { raw.as_ref() }.unwrap();

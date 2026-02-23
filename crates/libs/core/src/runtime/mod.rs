@@ -6,7 +6,7 @@
 use crate::Interface;
 
 use mssf_com::FabricCommon::{IFabricAsyncOperationCallback, IFabricAsyncOperationContext};
-use mssf_com::FabricRuntime::IFabricRuntime;
+use mssf_com::FabricRuntime::IFabricRuntime2;
 
 pub use self::runtime_wrapper::Runtime;
 
@@ -46,9 +46,9 @@ mod activation_context;
 pub use activation_context::{CodePackageActivationContext, CodePackageInfo};
 
 // creates fabric runtime
-pub fn create_com_runtime() -> crate::Result<IFabricRuntime> {
+pub fn create_com_runtime() -> crate::Result<IFabricRuntime2> {
     crate::API_TABLE
-        .fabric_create_runtime()
+        .fabric_create_runtime::<IFabricRuntime2>()
         .map_err(crate::Error::from)
 }
 

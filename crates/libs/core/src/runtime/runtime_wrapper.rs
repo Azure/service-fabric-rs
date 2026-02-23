@@ -1,7 +1,7 @@
 use crate::WString;
 /// safe wrapping for runtime
 use mssf_com::FabricRuntime::{
-    IFabricRuntime, IFabricStatefulServiceFactory, IFabricStatelessServiceFactory,
+    IFabricRuntime2, IFabricStatefulServiceFactory, IFabricStatelessServiceFactory,
 };
 
 use super::{
@@ -13,7 +13,7 @@ pub struct Runtime<E>
 where
     E: Executor,
 {
-    com_impl: IFabricRuntime,
+    com_impl: IFabricRuntime2,
     rt: E,
 }
 

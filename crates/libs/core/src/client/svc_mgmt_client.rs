@@ -7,7 +7,7 @@ use std::{ffi::c_void, time::Duration};
 
 use crate::{PCWSTR, WString, runtime::executor::BoxedCancelToken, types::Uri};
 use mssf_com::{
-    FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient6},
+    FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient8},
     FabricTypes::{
         FABRIC_PARTITION_KEY_TYPE, FABRIC_PARTITION_KEY_TYPE_INT64,
         FABRIC_PARTITION_KEY_TYPE_INVALID, FABRIC_PARTITION_KEY_TYPE_NONE,
@@ -33,11 +33,11 @@ use crate::types::{
 // Service Management Client
 #[derive(Debug, Clone)]
 pub struct ServiceManagementClient {
-    com: IFabricServiceManagementClient6,
+    com: IFabricServiceManagementClient8,
 }
 
 impl ServiceManagementClient {
-    pub fn get_com(&self) -> IFabricServiceManagementClient6 {
+    pub fn get_com(&self) -> IFabricServiceManagementClient8 {
         self.com.clone()
     }
 }
@@ -196,13 +196,13 @@ impl ServiceManagementClient {
     }
 }
 
-impl From<IFabricServiceManagementClient6> for ServiceManagementClient {
-    fn from(com: IFabricServiceManagementClient6) -> Self {
+impl From<IFabricServiceManagementClient8> for ServiceManagementClient {
+    fn from(com: IFabricServiceManagementClient8) -> Self {
         Self { com }
     }
 }
 
-impl From<ServiceManagementClient> for IFabricServiceManagementClient6 {
+impl From<ServiceManagementClient> for IFabricServiceManagementClient8 {
     fn from(value: ServiceManagementClient) -> Self {
         value.com
     }

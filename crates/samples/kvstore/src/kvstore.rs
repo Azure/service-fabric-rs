@@ -4,9 +4,7 @@ use std::{
 };
 
 use mssf_com::{
-    FabricRuntime::{
-        IFabricKeyValueStoreReplica2, IFabricStatefulServiceReplica, IFabricStoreEventHandler,
-    },
+    FabricRuntime::{IFabricKeyValueStoreReplica8, IFabricStoreEventHandler},
     FabricTypes::FABRIC_REPLICATOR_ADDRESS,
 };
 use mssf_core::{
@@ -27,7 +25,6 @@ use tokio::{
     sync::oneshot::{self, Sender},
 };
 use tracing::info;
-use windows_core::Interface;
 
 pub struct Factory {
     replication_port: u32,
@@ -87,7 +84,7 @@ impl IStatefulServiceFactory for Factory {
             None,
             &handler,
         )?;
-        let kv_replica: IFabricStatefulServiceReplica = kv.clone().cast().unwrap();
+        let kv_replica: IFabricKeyValueStoreReplica8 = kv.clone();
         let proxy = StatefulServiceReplicaProxy::new(kv_replica);
 
         let svc = Service::new(kv, self.rt.clone());
@@ -116,7 +113,7 @@ pub struct Service {
 }
 
 impl Service {
-    pub fn new(com: IFabricKeyValueStoreReplica2, rt: TokioExecutor) -> Service {
+    pub fn new(com: IFabricKeyValueStoreReplica8, rt: TokioExecutor) -> Service {
         Service {
             kvproxy: KVStoreProxy::new(com),
             rt,

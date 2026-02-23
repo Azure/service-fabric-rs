@@ -8,11 +8,13 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 if(WIN32)
 message(STATUS "fetching fabric_metadata")
 include(FetchContent)
-FetchContent_Populate(fabric_metadata
+FetchContent_Declare(fabric_metadata
     GIT_REPOSITORY https://github.com/Azure/service-fabric-metadata.git
     GIT_TAG        3a93258ffd1e24f83de1559d83bf133060791331 # v0.0.4
     GIT_SHALLOW    TRUE
+    SOURCE_SUBDIR  _none   # prevent add_subdirectory on the fetched repo
 )
+FetchContent_MakeAvailable(fabric_metadata)
 endif(WIN32)
 
 # generate rust code

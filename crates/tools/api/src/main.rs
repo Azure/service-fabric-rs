@@ -7,7 +7,7 @@ use std::fs::{self};
 use windows_bindgen::bindgen;
 
 fn main() {
-    let winmd = "./build/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd";
+    let winmd = "./build/_deps/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd";
     // create output dir if not exist
     fs::create_dir_all("crates/libs/com/src/Microsoft/ServiceFabric/").unwrap();
 

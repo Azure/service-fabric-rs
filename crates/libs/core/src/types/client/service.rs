@@ -47,7 +47,7 @@ use mssf_com::{
 use windows_core::{PCWSTR, WString};
 
 use crate::{
-    mem::GetRaw,
+    mem::{BoxPool, GetRaw, GetRawWithBoxPool},
     types::{
         ApplicationHealthPolicy, HealthEvent, HealthEventsFilter, HealthState,
         HealthStateFilterFlags, MoveCost, PagingStatus, PartitionSchemeDescription,
@@ -204,51 +204,34 @@ impl StatefulServiceDescription {
     }
 }
 
-pub(crate) struct StatefulServiceDescriptionRaw<'a> {
-    internal: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION>,
-    _internal_ex1: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX1>,
-    _internal_ex2: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2>,
-    _internal_ex3: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3>,
-    _internal_ex4: Box<FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4>,
-    _failover_settings_raw: Option<StatefulServiceFailoverSettingsRaw>,
-    phantom: PhantomData<&'a StatefulServiceDescription>,
-}
-
-impl StatefulServiceDescriptionRaw<'_> {
-    pub fn as_ffi(&self) -> &FABRIC_STATEFUL_SERVICE_DESCRIPTION {
-        self.internal.as_ref()
-    }
-}
-
-impl StatefulServiceDescription {
-    // Initializes the internal struct
-    fn build_raw(&self) -> StatefulServiceDescriptionRaw<'_> {
-        let ex4 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4 {
+impl GetRawWithBoxPool<FABRIC_STATEFUL_SERVICE_DESCRIPTION> for StatefulServiceDescription {
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_STATEFUL_SERVICE_DESCRIPTION {
+        let ex4 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4 {
             ServiceScalingPolicies: std::ptr::null_mut(), // TODO: support scaling policies
             ScalingPolicyCount: 0,
             Reserved: std::ptr::null_mut(),
-        });
-        let ex3 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3 {
+        }));
+        let ex3 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3 {
             ServiceDnsName: windows_core::PCWSTR::null(), // TODO: FABRIC_SERVICE_DNS_NAME
             ServicePackageActivationMode: self.service_package_activation_mode.into(),
-            Reserved: ex4.as_ref() as *const _ as *mut c_void,
-        });
-        let ex2 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2 {
+            Reserved: ex4 as *const _ as *mut c_void,
+        }));
+        let ex2 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2 {
             IsDefaultMoveCostSpecified: self.default_move_cost.is_some(),
             DefaultMoveCost: self.default_move_cost.unwrap_or(MoveCost::Zero).into(),
-            Reserved: ex3.as_ref() as *const _ as *mut c_void,
-        });
-        let failover_settings_raw = self.failover_settings.build_raw();
+            Reserved: ex3 as *const _ as *mut c_void,
+        }));
+
+        let failover_settings_raw = self.failover_settings.get_raw_with_pool(pool);
         let failover_settings_ptr = failover_settings_raw
-            .as_ref()
-            .map(|r| r.as_ffi() as *const _ as *mut FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS)
+            .map(|s| pool.push(Box::new(s)) as *const _ as *mut _)
             .unwrap_or(std::ptr::null_mut());
 
-        let ex1 = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX1 {
+        let ex1 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX1 {
             PolicyList: std::ptr::null_mut(), // TODO:
             FailoverSettings: failover_settings_ptr,
-            Reserved: ex2.as_ref() as *const _ as *mut c_void,
-        });
+            Reserved: ex2 as *const _ as *mut c_void,
+        }));
 
         let (init_data, init_data_len) = self
             .initialization_data
@@ -256,7 +239,7 @@ impl StatefulServiceDescription {
             .map(|v| (v.as_ptr() as *mut u8, v.len() as u32))
             .unwrap_or((std::ptr::null_mut(), 0));
 
-        let internal = Box::new(FABRIC_STATEFUL_SERVICE_DESCRIPTION {
+        FABRIC_STATEFUL_SERVICE_DESCRIPTION {
             ApplicationName: self.application_name.as_raw(),
             ServiceName: self.service_name.as_raw(),
             ServiceTypeName: self.service_type_name.as_pcwstr(),
@@ -272,17 +255,7 @@ impl StatefulServiceDescription {
             Metrics: std::ptr::null_mut(),      // TODO:
             MetricCount: 0,
             HasPersistedState: self.has_persistent_state,
-            Reserved: ex1.as_ref() as *const _ as *mut c_void,
-        });
-
-        StatefulServiceDescriptionRaw {
-            internal,
-            _internal_ex1: ex1,
-            _internal_ex2: ex2,
-            _internal_ex3: ex3,
-            _internal_ex4: ex4,
-            _failover_settings_raw: failover_settings_raw,
-            phantom: PhantomData,
+            Reserved: ex1 as *const _ as *mut c_void,
         }
     }
 }
@@ -359,41 +332,27 @@ impl StatelessServiceDescription {
         self
     }
 }
-pub(crate) struct StatelessServiceDescriptionRaw<'a> {
-    internal: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION>,
-    _internal_ex1: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION_EX1>,
-    _internal_ex2: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2>,
-    _internal_ex3: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3>,
-    _internal_ex4: Box<FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4>,
-    phantom: PhantomData<&'a StatelessServiceDescription>,
-}
-impl StatelessServiceDescriptionRaw<'_> {
-    pub fn as_ffi(&self) -> &FABRIC_STATELESS_SERVICE_DESCRIPTION {
-        self.internal.as_ref()
-    }
-}
-
-impl StatelessServiceDescription {
-    fn build_raw(&self) -> StatelessServiceDescriptionRaw<'_> {
-        let ex4 = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4 {
+impl GetRawWithBoxPool<FABRIC_STATELESS_SERVICE_DESCRIPTION> for StatelessServiceDescription {
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_STATELESS_SERVICE_DESCRIPTION {
+        let ex4 = pool.push(Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4 {
             ServiceScalingPolicies: std::ptr::null_mut(), // TODO: support scaling policies
             ScalingPolicyCount: 0,
             Reserved: std::ptr::null_mut(),
-        });
-        let ex3 = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3 {
+        }));
+        let ex3 = pool.push(Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3 {
             ServiceDnsName: windows_core::PCWSTR::null(), // TODO: FABRIC_SERVICE_DNS_NAME
             ServicePackageActivationMode: self.service_package_activation_mode.into(),
-            Reserved: ex4.as_ref() as *const _ as *mut c_void,
-        });
-        let ex2 = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2 {
+            Reserved: ex4 as *const _ as *mut c_void,
+        }));
+        let ex2 = pool.push(Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2 {
             IsDefaultMoveCostSpecified: self.default_move_cost.is_some(),
             DefaultMoveCost: self.default_move_cost.unwrap_or(MoveCost::Zero).into(),
-            Reserved: ex3.as_ref() as *const _ as *mut c_void,
-        });
-        let ex1 = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX1 {
+            Reserved: ex3 as *const _ as *mut c_void,
+        }));
+        let ex1 = pool.push(Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION_EX1 {
             PolicyList: std::ptr::null_mut(), // TODO:
-            Reserved: ex2.as_ref() as *const _ as *mut c_void,
-        });
+            Reserved: ex2 as *const _ as *mut c_void,
+        }));
 
         let (init_data, init_data_len) = self
             .initialization_data
@@ -401,7 +360,7 @@ impl StatelessServiceDescription {
             .map(|v| (v.as_ptr() as *mut u8, v.len() as u32))
             .unwrap_or((std::ptr::null_mut(), 0));
 
-        let internal = Box::new(FABRIC_STATELESS_SERVICE_DESCRIPTION {
+        FABRIC_STATELESS_SERVICE_DESCRIPTION {
             ApplicationName: self.application_name.as_raw(),
             ServiceName: self.service_name.as_raw(),
             ServiceTypeName: self.service_type_name.as_pcwstr(),
@@ -415,47 +374,29 @@ impl StatelessServiceDescription {
             Correlations: std::ptr::null_mut(), // TODO: FABRIC_SERVICE_CORRELATION_DESCRIPTION
             Metrics: std::ptr::null_mut(),      // TODO:
             MetricCount: 0,
-            Reserved: ex1.as_ref() as *const _ as *mut c_void,
-        });
-        StatelessServiceDescriptionRaw {
-            internal,
-            _internal_ex1: ex1,
-            _internal_ex2: ex2,
-            _internal_ex3: ex3,
-            _internal_ex4: ex4,
-            phantom: PhantomData,
+            Reserved: ex1 as *const _ as *mut c_void,
         }
     }
 }
 
-pub(crate) enum ServiceDescriptionRaw<'a> {
-    Stateful(StatefulServiceDescriptionRaw<'a>),
-    Stateless(StatelessServiceDescriptionRaw<'a>),
-}
-
-impl ServiceDescriptionRaw<'_> {
-    pub(crate) fn as_ffi(&self) -> FABRIC_SERVICE_DESCRIPTION {
+impl GetRawWithBoxPool<FABRIC_SERVICE_DESCRIPTION> for ServiceDescription {
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_SERVICE_DESCRIPTION {
         match self {
-            ServiceDescriptionRaw::Stateful(desc) => FABRIC_SERVICE_DESCRIPTION {
-                Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
-                Value: desc.as_ffi() as *const _ as *mut c_void,
-            },
-            ServiceDescriptionRaw::Stateless(desc) => FABRIC_SERVICE_DESCRIPTION {
-                Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
-                Value: desc.as_ffi() as *const _ as *mut c_void,
-            },
-        }
-    }
-}
-
-impl ServiceDescription {
-    /// The raw type contains the ffi pointers on heap to be used by SF.
-    /// mssf build the raw type on the stack and call the SF API with it.
-    pub(crate) fn build_raw(&self) -> ServiceDescriptionRaw<'_> {
-        match self {
-            ServiceDescription::Stateful(desc) => ServiceDescriptionRaw::Stateful(desc.build_raw()),
+            ServiceDescription::Stateful(desc) => {
+                let raw = desc.get_raw_with_pool(pool);
+                let raw_ptr = pool.push(Box::new(raw));
+                FABRIC_SERVICE_DESCRIPTION {
+                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
+                    Value: raw_ptr as *const _ as *mut c_void,
+                }
+            }
             ServiceDescription::Stateless(desc) => {
-                ServiceDescriptionRaw::Stateless(desc.build_raw())
+                let raw = desc.get_raw_with_pool(pool);
+                let raw_ptr = pool.push(Box::new(raw));
+                FABRIC_SERVICE_DESCRIPTION {
+                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
+                    Value: raw_ptr as *const _ as *mut c_void,
+                }
             }
         }
     }
@@ -648,143 +589,106 @@ impl StatefulServiceFailoverSettings {
     }
 }
 
-/// Holds the heap-allocated FFI structs for the failover settings chain.
-/// Keeps all Box-ed structs alive so the pointers remain valid.
-pub(crate) struct StatefulServiceFailoverSettingsRaw {
-    internal: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS>,
-    _internal_ex1: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX1>,
-    _internal_ex2: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX2>,
-    _internal_ex3: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX3>,
-    _internal_ex4: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX4>,
-    _internal_ex5: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX5>,
-    _internal_ex6: Box<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX6>,
-    _replica_lifecycle: Box<mssf_com::FabricTypes::REPLICA_LIFECYCLE_DESCRIPTION>,
-    _service_sensitivity: Box<mssf_com::FabricTypes::SERVICE_SENSITIVITY_DESCRIPTION>,
-}
-
-impl StatefulServiceFailoverSettingsRaw {
-    pub fn as_ffi(&self) -> &FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS {
-        self.internal.as_ref()
-    }
-}
-
-impl StatefulServiceFailoverSettings {
-    /// Returns `None` if no failover setting fields are set.
-    pub(crate) fn build_raw(&self) -> Option<StatefulServiceFailoverSettingsRaw> {
+impl GetRawWithBoxPool<Option<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS>>
+    for StatefulServiceFailoverSettings
+{
+    /// Returns `Some` with the failover settings struct if any fields are set, or `None` otherwise.
+    /// All allocations are placed in the provided `pool`.
+    fn get_raw_with_pool(
+        &self,
+        pool: &mut BoxPool,
+    ) -> Option<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS> {
         let flags = self.compute_flags();
         if flags == StatefulServiceFailoverSettingsFlags::NONE {
             return None;
         }
 
         // EX6: ServiceSensitivityDescription
-        let service_sensitivity =
-            Box::new(mssf_com::FabricTypes::SERVICE_SENSITIVITY_DESCRIPTION {
-                PrimaryDefaultSensitivity: self
-                    .service_sensitivity
-                    .as_ref()
-                    .map_or(0, |s| s.primary_default_sensitivity),
-                SecondaryDefaultSensitivity: self
-                    .service_sensitivity
-                    .as_ref()
-                    .map_or(0, |s| s.secondary_default_sensitivity),
-                AuxiliaryDefaultSensitivity: self
-                    .service_sensitivity
-                    .as_ref()
-                    .map_or(0, |s| s.auxiliary_default_sensitivity),
-                IsMaximumSensitivity: self
-                    .service_sensitivity
-                    .as_ref()
-                    .is_some_and(|s| s.is_maximum_sensitivity),
-                Reserved: std::ptr::null_mut(),
-            });
-        let service_sensitivity_ptr = if self.service_sensitivity.is_some() {
-            service_sensitivity.as_ref() as *const _ as *mut _
+        let service_sensitivity_ptr = if let Some(s) = &self.service_sensitivity {
+            pool.push(Box::new(
+                mssf_com::FabricTypes::SERVICE_SENSITIVITY_DESCRIPTION {
+                    PrimaryDefaultSensitivity: s.primary_default_sensitivity,
+                    SecondaryDefaultSensitivity: s.secondary_default_sensitivity,
+                    AuxiliaryDefaultSensitivity: s.auxiliary_default_sensitivity,
+                    IsMaximumSensitivity: s.is_maximum_sensitivity,
+                    Reserved: std::ptr::null_mut(),
+                },
+            )) as *const _ as *mut _
         } else {
             std::ptr::null_mut()
         };
-        let ex6 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX6 {
+        let ex6 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX6 {
             ServiceSensitivityDescription: service_sensitivity_ptr,
             Reserved: std::ptr::null_mut(),
-        });
+        }));
 
         // EX5: AuxiliaryReplicaCount
-        let ex5 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX5 {
+        let ex5 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX5 {
             AuxiliaryReplicaCount: self.auxiliary_replica_count.unwrap_or(0),
-            Reserved: ex6.as_ref() as *const _ as *mut c_void,
-        });
+            Reserved: ex6 as *const _ as *mut c_void,
+        }));
 
         // EX4: ReplicaLifecycleDescription
-        let replica_lifecycle = Box::new(mssf_com::FabricTypes::REPLICA_LIFECYCLE_DESCRIPTION {
-            IsIsSingletonReplicaMoveAllowedDuringUpgradeSpecified: self
-                .is_singleton_replica_move_allowed_during_upgrade
-                .is_some(),
-            IsSingletonReplicaMoveAllowedDuringUpgrade: self
-                .is_singleton_replica_move_allowed_during_upgrade
-                .unwrap_or(false),
-            IsRestoreReplicaLocationAfterUpgradeSpecified: self
-                .restore_replica_location_after_upgrade
-                .is_some(),
-            RestoreReplicaLocationAfterUpgrade: self
-                .restore_replica_location_after_upgrade
-                .unwrap_or(false),
-            Reserved: std::ptr::null_mut(),
-        });
         let replica_lifecycle_ptr = if self
             .is_singleton_replica_move_allowed_during_upgrade
             .is_some()
             || self.restore_replica_location_after_upgrade.is_some()
         {
-            replica_lifecycle.as_ref() as *const _ as *mut _
+            pool.push(Box::new(
+                mssf_com::FabricTypes::REPLICA_LIFECYCLE_DESCRIPTION {
+                    IsIsSingletonReplicaMoveAllowedDuringUpgradeSpecified: self
+                        .is_singleton_replica_move_allowed_during_upgrade
+                        .is_some(),
+                    IsSingletonReplicaMoveAllowedDuringUpgrade: self
+                        .is_singleton_replica_move_allowed_during_upgrade
+                        .unwrap_or(false),
+                    IsRestoreReplicaLocationAfterUpgradeSpecified: self
+                        .restore_replica_location_after_upgrade
+                        .is_some(),
+                    RestoreReplicaLocationAfterUpgrade: self
+                        .restore_replica_location_after_upgrade
+                        .unwrap_or(false),
+                    Reserved: std::ptr::null_mut(),
+                },
+            )) as *const _ as *mut _
         } else {
             std::ptr::null_mut()
         };
-        let ex4 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX4 {
+        let ex4 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX4 {
             ReplicaLifecycleDescription: replica_lifecycle_ptr,
-            Reserved: ex5.as_ref() as *const _ as *mut c_void,
-        });
+            Reserved: ex5 as *const _ as *mut c_void,
+        }));
 
         // EX3: DropSourceReplicaOnMove
-        let ex3 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX3 {
+        let ex3 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX3 {
             DropSourceReplicaOnMove: self.drop_source_replica_on_move.unwrap_or(false),
-            Reserved: ex4.as_ref() as *const _ as *mut c_void,
-        });
+            Reserved: ex4 as *const _ as *mut c_void,
+        }));
 
         // EX2: ServicePlacementTimeLimitSeconds
-        let ex2 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX2 {
+        let ex2 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX2 {
             ServicePlacementTimeLimitSeconds: self
                 .service_placement_time_limit_seconds
                 .unwrap_or(0),
-            Reserved: ex3.as_ref() as *const _ as *mut c_void,
-        });
+            Reserved: ex3 as *const _ as *mut c_void,
+        }));
 
         // EX1: StandByReplicaKeepDurationSeconds
-        let ex1 = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX1 {
+        let ex1 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX1 {
             StandByReplicaKeepDurationSeconds: self
                 .stand_by_replica_keep_duration_seconds
                 .unwrap_or(0),
-            Reserved: ex2.as_ref() as *const _ as *mut c_void,
-        });
+            Reserved: ex2 as *const _ as *mut c_void,
+        }));
 
         // Base
-        let internal = Box::new(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS {
+        Some(FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS {
             Flags: flags.bits(),
             ReplicaRestartWaitDurationSeconds: self
                 .replica_restart_wait_duration_seconds
                 .unwrap_or(0),
             QuorumLossWaitDurationSeconds: self.quorum_loss_wait_duration_seconds.unwrap_or(0),
-            Reserved: ex1.as_ref() as *const _ as *mut c_void,
-        });
-
-        Some(StatefulServiceFailoverSettingsRaw {
-            internal,
-            _internal_ex1: ex1,
-            _internal_ex2: ex2,
-            _internal_ex3: ex3,
-            _internal_ex4: ex4,
-            _internal_ex5: ex5,
-            _internal_ex6: ex6,
-            _replica_lifecycle: replica_lifecycle,
-            _service_sensitivity: service_sensitivity,
+            Reserved: ex1 as *const _ as *mut c_void,
         })
     }
 }

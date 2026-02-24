@@ -5,7 +5,12 @@
 
 use std::{ffi::c_void, time::Duration};
 
-use crate::{PCWSTR, WString, runtime::executor::BoxedCancelToken, types::Uri};
+use crate::{
+    PCWSTR, WString,
+    mem::{BoxPool, GetRawWithBoxPool},
+    runtime::executor::BoxedCancelToken,
+    types::Uri,
+};
 use mssf_com::{
     FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient8},
     FabricTypes::{
@@ -335,8 +340,8 @@ impl ServiceManagementClient {
         cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<()> {
         {
-            let desc_raw = desc.build_raw();
-            let ffi_raw = desc_raw.as_ffi();
+            let mut pool = BoxPool::new();
+            let ffi_raw = desc.get_raw_with_pool(&mut pool);
             self.create_service_internal(&ffi_raw, timeout.as_millis() as u32, cancellation_token)
         }
         .await?

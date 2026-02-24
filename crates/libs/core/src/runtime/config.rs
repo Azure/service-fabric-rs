@@ -5,16 +5,17 @@
 
 use crate::{WString, error::ErrorCode, strings::StringResult};
 use mssf_com::{
-    FabricRuntime::IFabricConfigurationPackage,
+    FabricRuntime::{IFabricConfigurationPackage, IFabricConfigurationPackage2},
     FabricTypes::{
         FABRIC_CONFIGURATION_PARAMETER, FABRIC_CONFIGURATION_PARAMETER_EX1,
         FABRIC_CONFIGURATION_SECTION,
     },
 };
+use windows_core::Interface;
 
 #[derive(Debug, Clone)]
 pub struct ConfigurationPackage {
-    com: IFabricConfigurationPackage,
+    com: IFabricConfigurationPackage2,
 }
 
 pub struct ConfigurationPackageDesc {
@@ -28,13 +29,20 @@ pub struct ConfigurationSettings {
     pub sections: Vec<ConfigurationSection>,
 }
 
-impl From<IFabricConfigurationPackage> for ConfigurationPackage {
-    fn from(com: IFabricConfigurationPackage) -> Self {
+impl From<IFabricConfigurationPackage2> for ConfigurationPackage {
+    fn from(com: IFabricConfigurationPackage2) -> Self {
         Self { com }
     }
 }
 
-impl From<ConfigurationPackage> for IFabricConfigurationPackage {
+impl From<IFabricConfigurationPackage> for ConfigurationPackage {
+    fn from(value: IFabricConfigurationPackage) -> Self {
+        let com = value.cast::<IFabricConfigurationPackage2>().unwrap();
+        Self::from(com)
+    }
+}
+
+impl From<ConfigurationPackage> for IFabricConfigurationPackage2 {
     fn from(value: ConfigurationPackage) -> Self {
         value.com
     }

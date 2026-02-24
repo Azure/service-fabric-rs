@@ -6,7 +6,7 @@
 use crate::{PCWSTR, runtime::executor::BoxedCancelToken};
 use mssf_com::{
     FabricRuntime::{
-        IFabricKeyValueStoreItemResult, IFabricKeyValueStoreReplica2, IFabricTransaction,
+        IFabricKeyValueStoreItemResult, IFabricKeyValueStoreReplica8, IFabricTransaction,
     },
     FabricTypes::{FABRIC_KEY_VALUE_STORE_ITEM, FABRIC_KEY_VALUE_STORE_ITEM_METADATA},
 };
@@ -18,7 +18,7 @@ use crate::types::TransactionIsolationLevel;
 // wrapp for kv store
 #[derive(Clone)]
 pub struct KVStoreProxy {
-    com_impl: IFabricKeyValueStoreReplica2,
+    com_impl: IFabricKeyValueStoreReplica8,
 }
 
 pub struct TransactionProxy {
@@ -51,7 +51,7 @@ impl KVStoreItemProxy {
 }
 
 impl KVStoreProxy {
-    pub fn new(com_impl: IFabricKeyValueStoreReplica2) -> KVStoreProxy {
+    pub fn new(com_impl: IFabricKeyValueStoreReplica8) -> KVStoreProxy {
         KVStoreProxy { com_impl }
     }
 

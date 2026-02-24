@@ -16,6 +16,10 @@
 //! * ** Tokio **  -
 //!   A lot of the sophoisticated functionality in this crate requires Tokio.
 //!   However, even without tokio, some of the higher level wrappers over COM types have utility.
+//!
+//! # SF COM API Versions
+//! The minimum supported SF version for mssf is 10.1. mssf can be used on newer versions of SF,
+//! but some APIs are not available.
 
 // lib that contains all common extensions for the raw fabric apis.
 

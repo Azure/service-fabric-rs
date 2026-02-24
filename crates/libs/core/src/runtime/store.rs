@@ -8,7 +8,7 @@ use std::ffi::c_void;
 use crate::{PCWSTR, WString};
 use mssf_com::{
     FabricRuntime::{
-        IFabricKeyValueStoreReplica2, IFabricStoreEventHandler, IFabricStoreEventHandler_Impl,
+        IFabricKeyValueStoreReplica8, IFabricStoreEventHandler, IFabricStoreEventHandler_Impl,
     },
     FabricTypes::{FABRIC_ESE_LOCAL_STORE_SETTINGS, FABRIC_LOCAL_STORE_KIND},
 };
@@ -35,7 +35,7 @@ pub fn create_com_key_value_store_replica(
     localstorekind: LocalStoreKind,
     localstoresettings: Option<&EseLocalStoreSettings>,
     storeeventhandler: &IFabricStoreEventHandler,
-) -> crate::Result<IFabricKeyValueStoreReplica2> {
+) -> crate::Result<IFabricKeyValueStoreReplica8> {
     let kind: FABRIC_LOCAL_STORE_KIND = localstorekind.into();
     let local_settings: Option<FABRIC_ESE_LOCAL_STORE_SETTINGS> =
         localstoresettings.map(|x| x.get_raw());
@@ -45,7 +45,7 @@ pub fn create_com_key_value_store_replica(
         None => std::ptr::null(),
     };
     crate::API_TABLE
-        .fabric_create_key_value_store_replica::<IFabricKeyValueStoreReplica2>(
+        .fabric_create_key_value_store_replica::<IFabricKeyValueStoreReplica8>(
             PCWSTR::from_raw(storename.as_ptr()),
             partitionid,
             replicaid,

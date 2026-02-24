@@ -9,7 +9,7 @@ use mssf_com::{
         IFabricGetApplicationListResult2, IFabricGetDeployedServiceReplicaDetailResult,
         IFabricGetNodeListResult2, IFabricGetPartitionListResult2,
         IFabricGetPartitionLoadInformationResult, IFabricGetReplicaListResult2,
-        IFabricQueryClient10,
+        IFabricQueryClient13,
     },
     FabricTypes::{
         FABRIC_APPLICATION_QUERY_DESCRIPTION,
@@ -35,7 +35,7 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub struct QueryClient {
-    com: IFabricQueryClient10,
+    com: IFabricQueryClient13,
 }
 
 // Internal implementation block
@@ -165,13 +165,13 @@ impl QueryClient {
     }
 }
 
-impl From<IFabricQueryClient10> for QueryClient {
-    fn from(com: IFabricQueryClient10) -> Self {
+impl From<IFabricQueryClient13> for QueryClient {
+    fn from(com: IFabricQueryClient13) -> Self {
         Self { com }
     }
 }
 
-impl From<QueryClient> for IFabricQueryClient10 {
+impl From<QueryClient> for IFabricQueryClient13 {
     fn from(value: QueryClient) -> Self {
         value.com
     }

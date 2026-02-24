@@ -11,7 +11,7 @@ use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotif
 use health_client::HealthClient;
 use mssf_com::FabricClient::{
     IFabricClientConnectionEventHandler, IFabricClientSettings2, IFabricHealthClient4,
-    IFabricPropertyManagementClient2, IFabricQueryClient10, IFabricServiceManagementClient6,
+    IFabricPropertyManagementClient2, IFabricQueryClient13, IFabricServiceManagementClient8,
     IFabricServiceNotificationEventHandler,
 };
 use notification::{
@@ -304,9 +304,9 @@ impl FabricClient {
         let com_property_client = com.clone();
         let com_service_client = com
             .clone()
-            .cast::<IFabricServiceManagementClient6>()
+            .cast::<IFabricServiceManagementClient8>()
             .unwrap();
-        let com_query_client = com.clone().cast::<IFabricQueryClient10>().unwrap();
+        let com_query_client = com.clone().cast::<IFabricQueryClient13>().unwrap();
         let com_health_client = com.clone().cast::<IFabricHealthClient4>().unwrap();
         Self {
             property_client: PropertyManagementClient::from(com_property_client),

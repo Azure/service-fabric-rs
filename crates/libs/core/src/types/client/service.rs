@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use std::{ffi::c_void, marker::PhantomData};
+use std::ffi::c_void;
 
 use mssf_com::{
     FabricClient::IFabricGetServiceListResult2,
@@ -39,9 +39,6 @@ use mssf_com::{
         FABRIC_STATELESS_SERVICE_DESCRIPTION_EX1, FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2,
         FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3, FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4,
         FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION,
-        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX1,
-        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX2,
-        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX3,
     },
 };
 use windows_core::{PCWSTR, WString};
@@ -419,74 +416,38 @@ pub struct NamedRepartitionDescription {
     pub names_to_remove: Vec<WString>,
 }
 
-/// Holder for memories passed to the FFI
-pub(crate) struct NamedRepartitionDescriptionRaw<'a> {
-    _names_to_add: Vec<PCWSTR>,
-    _names_to_remove: Vec<PCWSTR>,
-    internal: Box<FABRIC_NAMED_REPARTITION_DESCRIPTION>,
-    phantom: PhantomData<&'a NamedRepartitionDescription>,
-}
-
-impl NamedRepartitionDescription {
-    pub(crate) fn as_raw(&self) -> NamedRepartitionDescriptionRaw<'_> {
-        let names_to_add = self
-            .names_to_add
-            .iter()
-            .map(|s| s.as_pcwstr())
-            .collect::<Vec<_>>();
-        let names_to_remove = self
-            .names_to_remove
-            .iter()
-            .map(|s| s.as_pcwstr())
-            .collect::<Vec<_>>();
-        let internal = Box::new(FABRIC_NAMED_REPARTITION_DESCRIPTION {
-            NamesToAddCount: names_to_add.len() as u32,
-            NamesToAdd: names_to_add.as_ptr(),
-            NamesToRemoveCount: names_to_remove.len() as u32,
-            NamesToRemove: names_to_remove.as_ptr(),
+impl GetRawWithBoxPool<FABRIC_NAMED_REPARTITION_DESCRIPTION> for NamedRepartitionDescription {
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_NAMED_REPARTITION_DESCRIPTION {
+        let names_to_add: Vec<PCWSTR> = self.names_to_add.iter().map(|s| s.as_pcwstr()).collect();
+        let names_to_remove: Vec<PCWSTR> =
+            self.names_to_remove.iter().map(|s| s.as_pcwstr()).collect();
+        let (add_count, add_ptr) = pool.push_vec(names_to_add);
+        let (remove_count, remove_ptr) = pool.push_vec(names_to_remove);
+        FABRIC_NAMED_REPARTITION_DESCRIPTION {
+            NamesToAddCount: add_count as u32,
+            NamesToAdd: add_ptr,
+            NamesToRemoveCount: remove_count as u32,
+            NamesToRemove: remove_ptr,
             Reserved: std::ptr::null_mut(),
-        });
-        NamedRepartitionDescriptionRaw {
-            _names_to_add: names_to_add,
-            _names_to_remove: names_to_remove,
-            internal,
-            phantom: PhantomData,
         }
     }
 }
 
-impl NamedRepartitionDescriptionRaw<'_> {
-    pub(crate) fn as_ffi(&self) -> &FABRIC_NAMED_REPARTITION_DESCRIPTION {
-        self.internal.as_ref()
-    }
-}
-
-/// Memory holder for the repartition description passed to the FFI
-pub(crate) enum ServiceRepartitionDescriptionRaw<'a> {
-    Invalid,
-    Named(NamedRepartitionDescriptionRaw<'a>),
-}
-
-impl ServiceRepartitionDescription {
-    pub(crate) fn as_raw(&self) -> ServiceRepartitionDescriptionRaw<'_> {
+impl GetRawWithBoxPool<(FABRIC_SERVICE_PARTITION_KIND, *const c_void)>
+    for ServiceRepartitionDescription
+{
+    fn get_raw_with_pool(
+        &self,
+        pool: &mut BoxPool,
+    ) -> (FABRIC_SERVICE_PARTITION_KIND, *const c_void) {
         match self {
             ServiceRepartitionDescription::Named(desc) => {
-                ServiceRepartitionDescriptionRaw::Named(desc.as_raw())
+                let raw = desc.get_raw_with_pool(pool);
+                let raw_ptr = pool.push(Box::new(raw));
+                (FABRIC_SERVICE_PARTITION_KIND_NAMED, raw_ptr as *const _)
             }
-            ServiceRepartitionDescription::Invalid => ServiceRepartitionDescriptionRaw::Invalid,
-        }
-    }
-}
-
-impl ServiceRepartitionDescriptionRaw<'_> {
-    pub(crate) fn as_ffi(&self) -> (FABRIC_SERVICE_PARTITION_KIND, *const c_void) {
-        match self {
-            ServiceRepartitionDescriptionRaw::Named(desc) => (
-                FABRIC_SERVICE_PARTITION_KIND_NAMED,
-                desc.as_ffi() as *const _ as *const _,
-            ),
-            ServiceRepartitionDescriptionRaw::Invalid => {
-                (FABRIC_SERVICE_PARTITION_KIND_INVALID, std::ptr::null_mut())
+            ServiceRepartitionDescription::Invalid => {
+                (FABRIC_SERVICE_PARTITION_KIND_INVALID, std::ptr::null())
             }
         }
     }
@@ -733,16 +694,24 @@ pub enum ServiceUpdateDescription {
     Stateless(StatelessServiceUpdateDescription), // FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION
 }
 
-impl ServiceUpdateDescription {
-    /// The raw type contains the ffi pointers on heap to be used by SF.
-    /// mssf build the raw type on the stack and call the SF API with it.
-    pub(crate) fn build_raw(&self) -> ServiceUpdateDescriptionRaw<'_> {
+impl GetRawWithBoxPool<FABRIC_SERVICE_UPDATE_DESCRIPTION> for ServiceUpdateDescription {
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_SERVICE_UPDATE_DESCRIPTION {
         match self {
             ServiceUpdateDescription::Stateful(desc) => {
-                ServiceUpdateDescriptionRaw::Stateful(desc.build_raw())
+                let raw = desc.get_raw_with_pool(pool);
+                let raw_ptr = pool.push(Box::new(raw));
+                FABRIC_SERVICE_UPDATE_DESCRIPTION {
+                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
+                    Value: raw_ptr as *const _ as *mut c_void,
+                }
             }
             ServiceUpdateDescription::Stateless(desc) => {
-                ServiceUpdateDescriptionRaw::Stateless(desc.build_raw())
+                let raw = desc.get_raw_with_pool(pool);
+                let raw_ptr = pool.push(Box::new(raw));
+                FABRIC_SERVICE_UPDATE_DESCRIPTION {
+                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
+                    Value: raw_ptr as *const _ as *mut c_void,
+                }
             }
         }
     }
@@ -901,176 +870,105 @@ pub struct StatelessServiceUpdateDescription {
     pub scaling_policys: Vec<WString>,                       // TODO: FABRIC_SERVICE_SCALING_POLICY
 }
 
-impl StatelessServiceUpdateDescription {
-    fn build_raw(&self) -> StatelessServiceUpdateDescriptionRaw {
+impl GetRawWithBoxPool<FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION>
+    for StatelessServiceUpdateDescription
+{
+    fn get_raw_with_pool(
+        &self,
+        _pool: &mut BoxPool,
+    ) -> FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION {
         unimplemented!()
     }
 }
 
-/// Temp enum to hold the raw data
-pub(crate) enum ServiceUpdateDescriptionRaw<'a> {
-    Stateful(StatefulServiceUpdateDescriptionRaw<'a>),
-    Stateless(StatelessServiceUpdateDescriptionRaw),
-}
-
-/// Raw type
-pub(crate) struct StatefulServiceUpdateDescriptionRaw<'a> {
-    internal: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION>,
-    _internal_ex1: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX1>,
-    _internal_ex2: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX2>,
-    _internal_ex3: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3>,
-    _internal_ex4: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX4>,
-    _internal_ex5: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5>,
-    _internal_ex6: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX6>,
-    _internal_ex7: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX7>,
-    _internal_ex8: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX8>,
-    _internal_ex9: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX9>,
-    _internal_ex10: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX10>,
-    _internal_ex11: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX11>,
-    _internal_ex12: Box<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX12>,
-    _repartition_owner: ServiceRepartitionDescriptionRaw<'a>,
-    _replica_lifecycle_owner: Box<mssf_com::FabricTypes::REPLICA_LIFECYCLE_DESCRIPTION>,
-}
-
-impl StatefulServiceUpdateDescriptionRaw<'_> {
-    pub(crate) fn as_ffi(&self) -> &FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION {
-        self.internal.as_ref()
-    }
-}
-
-pub(crate) struct StatelessServiceUpdateDescriptionRaw {
-    _internal: Box<FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION>,
-    _internal_ex1: Box<FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX1>,
-    _internal_ex2: Box<FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX2>,
-    _internal_ex3: Box<FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION_EX3>,
-}
-
-impl StatelessServiceUpdateDescriptionRaw {
-    // TODO:
-    pub(crate) fn as_ffi(&self) -> &FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION {
-        unimplemented!()
-        //self.internal.as_ref()
-    }
-}
-
-impl ServiceUpdateDescriptionRaw<'_> {
-    /// Must have the same lifetime as the original struct
-    pub(crate) fn as_ffi(&self) -> FABRIC_SERVICE_UPDATE_DESCRIPTION {
-        match self {
-            ServiceUpdateDescriptionRaw::Stateful(desc) => FABRIC_SERVICE_UPDATE_DESCRIPTION {
-                Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
-                Value: desc.as_ffi() as *const _ as *mut c_void,
-            },
-            ServiceUpdateDescriptionRaw::Stateless(desc) => FABRIC_SERVICE_UPDATE_DESCRIPTION {
-                Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
-                Value: desc.as_ffi() as *const _ as *mut c_void,
-            },
-        }
-    }
-}
-
-impl StatefulServiceUpdateDescription {
-    pub(crate) fn build_raw(&self) -> StatefulServiceUpdateDescriptionRaw<'_> {
-        let repartition_raw = self.repartition_description.as_raw();
-
+impl GetRawWithBoxPool<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION>
+    for StatefulServiceUpdateDescription
+{
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION {
         // Build replica lifecycle description for ex9
-        let replica_lifecycle = Box::new(mssf_com::FabricTypes::REPLICA_LIFECYCLE_DESCRIPTION {
-            IsIsSingletonReplicaMoveAllowedDuringUpgradeSpecified: self
-                .is_singleton_replica_move_allowed_during_upgrade
-                .is_some(),
-            IsSingletonReplicaMoveAllowedDuringUpgrade: self
-                .is_singleton_replica_move_allowed_during_upgrade
-                .unwrap_or(false),
-            IsRestoreReplicaLocationAfterUpgradeSpecified: self
-                .restore_replica_location_after_upgrade
-                .is_some(),
-            RestoreReplicaLocationAfterUpgrade: self
-                .restore_replica_location_after_upgrade
-                .unwrap_or(false),
-            Reserved: std::ptr::null_mut(),
-        });
+        let replica_lifecycle = pool.push(Box::new(
+            mssf_com::FabricTypes::REPLICA_LIFECYCLE_DESCRIPTION {
+                IsIsSingletonReplicaMoveAllowedDuringUpgradeSpecified: self
+                    .is_singleton_replica_move_allowed_during_upgrade
+                    .is_some(),
+                IsSingletonReplicaMoveAllowedDuringUpgrade: self
+                    .is_singleton_replica_move_allowed_during_upgrade
+                    .unwrap_or(false),
+                IsRestoreReplicaLocationAfterUpgradeSpecified: self
+                    .restore_replica_location_after_upgrade
+                    .is_some(),
+                RestoreReplicaLocationAfterUpgrade: self
+                    .restore_replica_location_after_upgrade
+                    .unwrap_or(false),
+                Reserved: std::ptr::null_mut(),
+            },
+        ));
 
-        let ex12 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX12 {
+        let ex12 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX12 {
             ServiceSensitivityDescription: std::ptr::null_mut(), // TODO: complex type
             Reserved: std::ptr::null_mut(),
-        });
-        let ex11 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX11 {
+        }));
+        let ex11 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX11 {
             AuxiliaryReplicaCount: self.auxiliary_replica_count,
-            Reserved: ex12.as_ref() as *const _ as *mut c_void,
-        });
-        let ex10 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX10 {
+            Reserved: ex12 as *const _ as *mut c_void,
+        }));
+        let ex10 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX10 {
             TagsDescription: std::ptr::null_mut(), // TODO: complex type
-            Reserved: ex11.as_ref() as *const _ as *mut c_void,
-        });
-        let ex9 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX9 {
-            ReplicaLifecycleDescription: replica_lifecycle.as_ref() as *const _ as *mut _,
-            Reserved: ex10.as_ref() as *const _ as *mut c_void,
-        });
-        let ex8 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX8 {
+            Reserved: ex11 as *const _ as *mut c_void,
+        }));
+        let ex9 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX9 {
+            ReplicaLifecycleDescription: replica_lifecycle as *const _ as *mut _,
+            Reserved: ex10 as *const _ as *mut c_void,
+        }));
+        let ex8 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX8 {
             ServiceDnsName: self.service_dns_name.as_pcwstr(),
-            Reserved: ex9.as_ref() as *const _ as *mut c_void,
-        });
-        let ex7 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX7 {
+            Reserved: ex9 as *const _ as *mut c_void,
+        }));
+        let ex7 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX7 {
             DropSourceReplicaOnMove: self.drop_source_replica_on_move,
-            Reserved: ex8.as_ref() as *const _ as *mut c_void,
-        });
-        let ex6 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX6 {
+            Reserved: ex8 as *const _ as *mut c_void,
+        }));
+        let ex6 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX6 {
             ServicePlacementTimeLimitSeconds: self.service_placement_time_limit_seconds,
-            Reserved: ex7.as_ref() as *const _ as *mut c_void,
-        });
-        let ex5 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5 {
-            RepartitionDescription: repartition_raw.as_ffi().1 as *const _ as *mut _,
-            RepartitionKind: repartition_raw.as_ffi().0,
+            Reserved: ex7 as *const _ as *mut c_void,
+        }));
+
+        let repartition_raw = self.repartition_description.get_raw_with_pool(pool);
+        let ex5 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX5 {
+            RepartitionDescription: repartition_raw.1 as *mut _,
+            RepartitionKind: repartition_raw.0,
             ScalingPolicyCount: 0,
             ServiceScalingPolicies: std::ptr::null_mut(), // TODO: FABRIC_SERVICE_SCALING_POLICY
-            Reserved: ex6.as_ref() as *const _ as *mut c_void,
-        });
-        let ex4 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX4 {
+            Reserved: ex6 as *const _ as *mut c_void,
+        }));
+        let ex4 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX4 {
             DefaultMoveCost: self.default_move_cost.into(),
-            Reserved: ex5.as_ref() as *const _ as *mut c_void,
-        });
-        let ex3 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3 {
+            Reserved: ex5 as *const _ as *mut c_void,
+        }));
+        let ex3 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3 {
             PlacementConstraints: self.placement_contraints.as_pcwstr(), // TODO:
             PolicyList: std::ptr::null_mut(),                            // TODO:
             CorrelationCount: 0,
             Correlations: std::ptr::null_mut(), // TODO: FABRIC_SERVICE_CORRELATION_DESCRIPTION
             Metrics: std::ptr::null_mut(),      // TODO:
             MetricCount: 0,
-            Reserved: ex4.as_ref() as *const _ as *mut c_void,
-        });
-        let ex2 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX2 {
+            Reserved: ex4 as *const _ as *mut c_void,
+        }));
+        let ex2 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX2 {
             MinReplicaSetSize: self.min_replica_set_size,
-            Reserved: ex3.as_ref() as *const _ as *mut c_void,
-        });
-        let ex1 = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX1 {
+            Reserved: ex3 as *const _ as *mut c_void,
+        }));
+        let ex1 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX1 {
             StandByReplicaKeepDurationSeconds: self.stand_by_replica_keep_duration_seconds,
-            Reserved: ex2.as_ref() as *const _ as *mut c_void,
-        });
+            Reserved: ex2 as *const _ as *mut c_void,
+        }));
 
-        let internal = Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION {
+        FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION {
             Flags: self.flags.bits(),
             TargetReplicaSetSize: self.target_replica_set_size,
             ReplicaRestartWaitDurationSeconds: self.replica_restart_wait_duration_seconds,
             QuorumLossWaitDurationSeconds: self.quorum_loss_wait_duration_seconds,
-            Reserved: ex1.as_ref() as *const _ as *mut c_void,
-        });
-
-        StatefulServiceUpdateDescriptionRaw {
-            internal,
-            _internal_ex1: ex1,
-            _internal_ex2: ex2,
-            _internal_ex3: ex3,
-            _internal_ex4: ex4,
-            _internal_ex5: ex5,
-            _internal_ex6: ex6,
-            _internal_ex7: ex7,
-            _internal_ex8: ex8,
-            _internal_ex9: ex9,
-            _internal_ex10: ex10,
-            _internal_ex11: ex11,
-            _internal_ex12: ex12,
-            _repartition_owner: repartition_raw,
-            _replica_lifecycle_owner: replica_lifecycle,
+            Reserved: ex1 as *const _ as *mut c_void,
         }
     }
 }

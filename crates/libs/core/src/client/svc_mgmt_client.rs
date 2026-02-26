@@ -356,8 +356,8 @@ impl ServiceManagementClient {
         cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<()> {
         {
-            let desc_raw = desc.build_raw();
-            let ffi_raw = desc_raw.as_ffi();
+            let mut pool = BoxPool::new();
+            let ffi_raw = desc.get_raw_with_pool(&mut pool);
             self.update_service_internal(
                 name.as_raw(),
                 &ffi_raw,

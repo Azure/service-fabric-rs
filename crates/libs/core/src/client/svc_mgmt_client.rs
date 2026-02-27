@@ -53,7 +53,7 @@ impl ServiceManagementClient {
         &self,
         name: FABRIC_URI,
         partition_key_type: FABRIC_PARTITION_KEY_TYPE,
-        partition_key: Option<*const ::core::ffi::c_void>,
+        partition_key: *const ::core::ffi::c_void,
         previous_result: Option<&IFabricResolvedServicePartitionResult>, // This is different from generated code
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
@@ -65,7 +65,7 @@ impl ServiceManagementClient {
                 com1.BeginResolveServicePartition(
                     name,
                     partition_key_type,
-                    partition_key.unwrap_or(std::ptr::null()),
+                    partition_key,
                     previous_result,
                     timeout_milliseconds,
                     callback,
@@ -230,12 +230,12 @@ impl ServiceManagementClient {
             // supply prev as null if not present
             let prev_opt = prev.map(|x| &x.com);
 
-            let part_key_opt = key_type.get_raw_opt();
+            let (key_type, key) = key_type.as_raw_parts();
 
             self.resolve_service_partition_internal(
                 uri,
-                key_type.into(),
-                part_key_opt,
+                key_type,
+                key,
                 prev_opt,
                 timeout.as_millis().try_into().unwrap(),
                 cancellation_token,
@@ -402,7 +402,9 @@ pub enum PartitionKeyType {
 }
 
 impl PartitionKeyType {
-    fn from_raw_svc_part(svc: ServicePartitionKind, data: *const c_void) -> PartitionKeyType {
+    /// # Safety
+    /// Data must be valid for the given partition kind.
+    unsafe fn from_raw_parts(svc: ServicePartitionKind, data: *const c_void) -> PartitionKeyType {
         match svc {
             ServicePartitionKind::Int64Range => {
                 let x = unsafe { (data as *mut i64).as_ref().unwrap() };
@@ -420,28 +422,21 @@ impl PartitionKeyType {
     }
 }
 
-impl From<&PartitionKeyType> for FABRIC_PARTITION_KEY_TYPE {
-    fn from(value: &PartitionKeyType) -> Self {
-        match value {
-            PartitionKeyType::Int64(_) => FABRIC_PARTITION_KEY_TYPE_INT64,
-            PartitionKeyType::Invalid => FABRIC_PARTITION_KEY_TYPE_INVALID,
-            PartitionKeyType::None => FABRIC_PARTITION_KEY_TYPE_NONE,
-            PartitionKeyType::String(_) => FABRIC_PARTITION_KEY_TYPE_STRING,
-        }
-    }
-}
-
 impl PartitionKeyType {
-    // get raw ptr to pass in com api
-    fn get_raw_opt(&self) -> Option<*const c_void> {
+    // Get raw parts to pass in com api
+    fn as_raw_parts(&self) -> (FABRIC_PARTITION_KEY_TYPE, *const c_void) {
         match self {
             // Not sure if this is ok for i64
-            PartitionKeyType::Int64(x) => Some(x as *const i64 as *const c_void),
-            PartitionKeyType::Invalid => None,
-            PartitionKeyType::None => None,
-            PartitionKeyType::String(x) => {
-                Some(PCWSTR::from_raw(x.as_ptr()).as_ptr() as *const c_void)
-            }
+            PartitionKeyType::Int64(x) => (
+                FABRIC_PARTITION_KEY_TYPE_INT64,
+                x as *const i64 as *const c_void,
+            ),
+            PartitionKeyType::Invalid => (FABRIC_PARTITION_KEY_TYPE_INVALID, std::ptr::null()),
+            PartitionKeyType::None => (FABRIC_PARTITION_KEY_TYPE_NONE, std::ptr::null()),
+            PartitionKeyType::String(x) => (
+                FABRIC_PARTITION_KEY_TYPE_STRING,
+                x.as_pcwstr().as_ptr() as *const c_void,
+            ),
         }
     }
 }
@@ -499,7 +494,8 @@ impl From<IFabricResolvedServicePartitionResult> for ResolvedServicePartition {
         let kind_raw = raw.Info.Kind;
         let val = raw.Info.Value;
         let service_partition_kind: ServicePartitionKind = kind_raw.into();
-        let partition_key_type = PartitionKeyType::from_raw_svc_part(service_partition_kind, val);
+        let partition_key_type =
+            unsafe { PartitionKeyType::from_raw_parts(service_partition_kind, val) };
         let endpoints = crate::iter::vec_from_raw_com(raw.EndpointCount as usize, raw.Endpoints);
         Self {
             com,
@@ -601,13 +597,17 @@ mod tests {
     fn test_conversion_int() {
         let k = PartitionKeyType::Int64(99);
         // check the raw ptr is ok
-        let raw = k.get_raw_opt();
-        let i = unsafe { (raw.unwrap() as *const i64).as_ref().unwrap() };
+        let (key_type, raw) = k.as_raw_parts();
+        assert_eq!(
+            key_type,
+            mssf_com::FabricTypes::FABRIC_PARTITION_KEY_TYPE_INT64
+        );
+        let i = unsafe { (raw as *const i64).as_ref().unwrap() };
         assert_eq!(*i, 99);
 
         let service_type = ServicePartitionKind::Int64Range;
         // restore the key
-        let k2 = PartitionKeyType::from_raw_svc_part(service_type, raw.unwrap());
+        let k2 = unsafe { PartitionKeyType::from_raw_parts(service_type, raw) };
         assert_eq!(k, k2);
     }
 
@@ -616,13 +616,17 @@ mod tests {
         let src = WString::from("mystr");
         let k = PartitionKeyType::String(src.clone());
         // check the raw ptr is ok
-        let raw = k.get_raw_opt();
-        let s = WString::from(PCWSTR::from_raw(raw.unwrap() as *const u16));
+        let (key_type, raw) = k.as_raw_parts();
+        assert_eq!(
+            key_type,
+            mssf_com::FabricTypes::FABRIC_PARTITION_KEY_TYPE_STRING
+        );
+        let s = WString::from(PCWSTR::from_raw(raw as *const u16));
         assert_eq!(s, src);
 
         let service_type = ServicePartitionKind::Named;
         // restore the key
-        let k2 = PartitionKeyType::from_raw_svc_part(service_type, raw.unwrap());
+        let k2 = unsafe { PartitionKeyType::from_raw_parts(service_type, raw) };
         assert_eq!(k, k2);
     }
 }

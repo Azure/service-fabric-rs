@@ -266,8 +266,17 @@ jobs:
         toolchain: ${{ needs.setup.outputs.rust-max-version }}
         components: rustfmt, clippy
 
-    - name: Remove rust toolchain file to avoid conflict
-      run: rm rust-toolchain.toml
+    - name: Verify rust-toolchain.toml matches expected version
+      shell: bash
+      run: |
+        TOOLCHAIN_VERSION=$(grep '^channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')
+        EXPECTED_VERSION="${{ needs.setup.outputs.rust-max-version }}"
+        echo "rust-toolchain.toml version: $TOOLCHAIN_VERSION"
+        echo "Expected version: $EXPECTED_VERSION"
+        if [ "$TOOLCHAIN_VERSION" != "$EXPECTED_VERSION" ]; then
+          echo "ERROR: Version mismatch!"
+          exit 1
+        fi
 
     - name: cmake configure
       run: > 

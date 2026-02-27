@@ -9,8 +9,8 @@ on:
     - cron: '0 */6 * * *'  # Runs every 6 hours
 
 env:
-  # Define Rust versions to test in a single place
-  RUST_VERSIONS: '["1.90.0", "1.93.1"]'
+  # Define the minimum Rust version to test
+  RUST_MIN_VERSION: '1.90.0'
 
 jobs:
   # The 'env' context is not available in strategy/matrix definitions.
@@ -19,9 +19,20 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      rust-versions: ${{ env.RUST_VERSIONS }}
+      rust-versions: ${{ steps.set-versions.outputs.rust-versions }}
+      rust-max-version: ${{ steps.set-versions.outputs.rust-max-version }}
     steps:
-      - run: echo "Rust versions = ${{ env.RUST_VERSIONS }}"
+      - uses: actions/checkout@v6
+
+      - name: Read max Rust version from rust-toolchain.toml
+        id: set-versions
+        run: |
+          RUST_MAX_VERSION=$(grep '^channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')
+          echo "RUST_MAX_VERSION=$RUST_MAX_VERSION"
+          RUST_VERSIONS='["${{ env.RUST_MIN_VERSION }}", "'"$RUST_MAX_VERSION"'"]'
+          echo "rust-versions=$RUST_VERSIONS" >> $GITHUB_OUTPUT
+          echo "rust-max-version=$RUST_MAX_VERSION" >> $GITHUB_OUTPUT
+          echo "Rust versions = $RUST_VERSIONS"
 
   build:
     needs: setup
@@ -239,3 +250,49 @@ jobs:
           name: artifacts-${{ matrix.devcontainer-type }}-rust${{ matrix.rust-version }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
           path: artifacts.tar.gz
           if-no-files-found: ignore
+
+  generate:
+    needs: setup
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Show cmake version
+      run: cmake --version
+
+    - name: Install rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ needs.setup.outputs.rust-max-version }}
+        components: rustfmt, clippy
+
+    - name: Verify rust-toolchain.toml matches expected version
+      shell: bash
+      run: |
+        TOOLCHAIN_VERSION=$(grep '^channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')
+        EXPECTED_VERSION="${{ needs.setup.outputs.rust-max-version }}"
+        echo "rust-toolchain.toml version: $TOOLCHAIN_VERSION"
+        echo "Expected version: $EXPECTED_VERSION"
+        if [ "$TOOLCHAIN_VERSION" != "$EXPECTED_VERSION" ]; then
+          echo "ERROR: Version mismatch!"
+          exit 1
+        fi
+
+    - name: cmake configure
+      run: > 
+        cmake . -DCMAKE_BUILD_TYPE=Debug -B build
+
+    - name: remove generated com code
+      run: cmake --build build --config Debug --target force_clean
+
+    - name: generate rust code
+      run: cmake --build build --config Debug --target generate_rust
+
+    - name: check all generated files are checked in git
+      run: git diff --exit-code
+
+    - name: build rust code
+      run: cmake --build build --config Debug
+
+    - name: check crate packaging
+      run: cargo package -p mssf-pal -p mssf-com -p mssf-core -p mssf-util --allow-dirty

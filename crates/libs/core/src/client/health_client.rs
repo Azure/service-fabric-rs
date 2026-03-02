@@ -8,10 +8,10 @@ use std::time::Duration;
 use mssf_com::{
     FabricClient::{IFabricHealthClient4, IFabricNodeHealthResult},
     FabricTypes::{
-        FABRIC_APPLICATION_HEALTH_REPORT, FABRIC_CLUSTER_HEALTH_POLICY,
-        FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION, FABRIC_CLUSTER_HEALTH_REPORT,
-        FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT, FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT,
-        FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT, FABRIC_HEALTH_REPORT_KIND_APPLICATION,
+        FABRIC_APPLICATION_HEALTH_REPORT, FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION,
+        FABRIC_CLUSTER_HEALTH_REPORT, FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT,
+        FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT, FABRIC_HEALTH_INFORMATION,
+        FABRIC_HEALTH_REPORT, FABRIC_HEALTH_REPORT_KIND_APPLICATION,
         FABRIC_HEALTH_REPORT_KIND_CLUSTER, FABRIC_HEALTH_REPORT_KIND_DEPLOYED_APPLICATION,
         FABRIC_HEALTH_REPORT_KIND_DEPLOYED_SERVICE_PACKAGE, FABRIC_HEALTH_REPORT_KIND_INVALID,
         FABRIC_HEALTH_REPORT_KIND_NODE, FABRIC_HEALTH_REPORT_KIND_PARTITION,
@@ -316,31 +316,8 @@ impl HealthClient {
         cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<NodeHealthResult> {
         let com = {
-            let health_policy_raw =
-                desc.health_policy
-                    .as_ref()
-                    .map(|h| FABRIC_CLUSTER_HEALTH_POLICY {
-                        ConsiderWarningAsError: h.consider_warning_as_error,
-                        MaxPercentUnhealthyNodes: h.max_percent_unhealthy_nodes,
-                        MaxPercentUnhealthyApplications: h.max_percent_unhealthy_applications,
-                        Reserved: std::ptr::null_mut(),
-                    });
-            let event_filter_raw = desc.events_filter.as_ref().map(|f| {
-                mssf_com::FabricTypes::FABRIC_HEALTH_EVENTS_FILTER {
-                    HealthStateFilter: f.health_state_filter.bits() as u32,
-                    Reserved: std::ptr::null_mut(),
-                }
-            });
-            let desc_raw = mssf_com::FabricTypes::FABRIC_NODE_HEALTH_QUERY_DESCRIPTION {
-                NodeName: desc.node_name.as_pcwstr(),
-                HealthPolicy: health_policy_raw
-                    .as_ref()
-                    .map_or(std::ptr::null_mut(), |h| h as *const _ as *mut _),
-                EventsFilter: event_filter_raw
-                    .as_ref()
-                    .map_or(std::ptr::null_mut(), |f| f as *const _ as *mut _),
-                Reserved: std::ptr::null_mut(),
-            };
+            let mut pool = BoxPool::new();
+            let desc_raw = desc.get_raw_with_pool(&mut pool);
             self.get_node_health_internal(&desc_raw, timeout.as_millis() as u32, cancellation_token)
         }
         .await??;

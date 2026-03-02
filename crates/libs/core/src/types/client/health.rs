@@ -8,9 +8,9 @@ use mssf_com::FabricTypes::{
     FABRIC_APPLICATION_HEALTH_POLICY, FABRIC_APPLICATION_HEALTH_POLICY_MAP,
     FABRIC_APPLICATION_HEALTH_POLICY_MAP_ITEM, FABRIC_APPLICATION_HEALTH_STATES_FILTER,
     FABRIC_CLUSTER_HEALTH, FABRIC_CLUSTER_HEALTH_POLICY, FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION,
-    FABRIC_HEALTH_EVENT, FABRIC_HEALTH_EVENTS_FILTER, FABRIC_NODE_HEALTH_STATES_FILTER,
-    FABRIC_SERVICE_TYPE_HEALTH_POLICY, FABRIC_SERVICE_TYPE_HEALTH_POLICY_MAP,
-    FABRIC_SERVICE_TYPE_HEALTH_POLICY_MAP_ITEM,
+    FABRIC_HEALTH_EVENT, FABRIC_HEALTH_EVENTS_FILTER, FABRIC_NODE_HEALTH_QUERY_DESCRIPTION,
+    FABRIC_NODE_HEALTH_STATES_FILTER, FABRIC_SERVICE_TYPE_HEALTH_POLICY,
+    FABRIC_SERVICE_TYPE_HEALTH_POLICY_MAP, FABRIC_SERVICE_TYPE_HEALTH_POLICY_MAP_ITEM,
 };
 use windows_core::Win32::Foundation::FILETIME;
 
@@ -127,6 +127,17 @@ pub struct ClusterHealthPolicy {
     pub max_percent_unhealthy_applications: u8,
 }
 
+impl GetRaw<FABRIC_CLUSTER_HEALTH_POLICY> for ClusterHealthPolicy {
+    fn get_raw(&self) -> FABRIC_CLUSTER_HEALTH_POLICY {
+        FABRIC_CLUSTER_HEALTH_POLICY {
+            ConsiderWarningAsError: self.consider_warning_as_error,
+            MaxPercentUnhealthyNodes: self.max_percent_unhealthy_nodes,
+            MaxPercentUnhealthyApplications: self.max_percent_unhealthy_applications,
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
 /// FABRIC_HEALTH_EVENTS_FILTER
 #[derive(Debug, Clone)]
 pub struct HealthEventsFilter {
@@ -161,6 +172,25 @@ pub struct NodeHealthQueryDescription {
     pub node_name: WString,
     pub health_policy: Option<ClusterHealthPolicy>,
     pub events_filter: Option<HealthEventsFilter>,
+}
+
+impl GetRawWithBoxPool<FABRIC_NODE_HEALTH_QUERY_DESCRIPTION> for NodeHealthQueryDescription {
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_NODE_HEALTH_QUERY_DESCRIPTION {
+        FABRIC_NODE_HEALTH_QUERY_DESCRIPTION {
+            NodeName: self.node_name.as_pcwstr(),
+            HealthPolicy: self
+                .health_policy
+                .as_ref()
+                .map(|h| pool.push(Box::new(h.get_raw())))
+                .unwrap_or(std::ptr::null()),
+            EventsFilter: self
+                .events_filter
+                .as_ref()
+                .map(|f| pool.push(Box::new(f.get_raw())))
+                .unwrap_or(std::ptr::null()),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
 }
 
 /// IFabricNodeHealthResult and FABRIC_NODE_HEALTH
@@ -347,15 +377,10 @@ pub struct ClusterHealthQueryDescription {
 
 impl GetRawWithBoxPool<FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION> for ClusterHealthQueryDescription {
     fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION {
-        let health_policy = self.health_policy.as_ref().map(|policy| {
-            let raw = Box::new(FABRIC_CLUSTER_HEALTH_POLICY {
-                ConsiderWarningAsError: policy.consider_warning_as_error,
-                MaxPercentUnhealthyNodes: policy.max_percent_unhealthy_nodes,
-                MaxPercentUnhealthyApplications: policy.max_percent_unhealthy_applications,
-                Reserved: std::ptr::null_mut(),
-            });
-            pool.push(raw)
-        });
+        let health_policy = self
+            .health_policy
+            .as_ref()
+            .map(|policy| pool.push(Box::new(policy.get_raw())));
         let application_health_policy_map =
             self.application_health_policy_map.as_ref().map(|policies| {
                 let mut items = Vec::new();

@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
-use std::{ffi::c_void, time::Duration};
+use std::time::Duration;
 
 use mssf_com::{
     FabricClient::{
@@ -14,12 +14,13 @@ use mssf_com::{
     FabricTypes::{
         FABRIC_APPLICATION_QUERY_DESCRIPTION,
         FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION,
-        FABRIC_NODE_QUERY_DESCRIPTION_EX1, FABRIC_NODE_QUERY_DESCRIPTION_EX2,
-        FABRIC_NODE_QUERY_DESCRIPTION_EX3, FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
+        FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
         FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION, FABRIC_SERVICE_QUERY_DESCRIPTION,
         FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
     },
 };
+
+use crate::mem::{BoxPool, GetRawWithBoxPool};
 
 use crate::types::{
     DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
@@ -185,28 +186,9 @@ impl QueryClient {
         timeout: Duration,
         cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<NodeListResult> {
-        // Note that the SF raw structs are scoped to avoid having them across await points.
-        // This makes api Send. All FabricClient api should follow this pattern.
         let com = {
-            let ex3 = FABRIC_NODE_QUERY_DESCRIPTION_EX3 {
-                MaxResults: desc.paged_query.max_results.unwrap_or(0),
-                Reserved: std::ptr::null_mut(),
-            };
-
-            let ex2 = FABRIC_NODE_QUERY_DESCRIPTION_EX2 {
-                NodeStatusFilter: desc.node_status_filter.bits(),
-                Reserved: std::ptr::addr_of!(ex3) as *mut c_void,
-            };
-
-            let ex1 = FABRIC_NODE_QUERY_DESCRIPTION_EX1 {
-                ContinuationToken: desc.paged_query.continuation_token.as_ref().into(),
-                Reserved: std::ptr::addr_of!(ex2) as *mut c_void,
-            };
-
-            let arg = FABRIC_NODE_QUERY_DESCRIPTION {
-                NodeNameFilter: desc.node_name_filter.as_ref().into(),
-                Reserved: std::ptr::addr_of!(ex1) as *mut c_void,
-            };
+            let mut pool = BoxPool::new();
+            let arg = desc.get_raw_with_pool(&mut pool);
             self.get_node_list_internal(
                 &arg,
                 timeout.as_millis().try_into().unwrap(),
@@ -224,16 +206,10 @@ impl QueryClient {
         cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<crate::types::ApplicationListResult> {
         let com = {
-            let (mut base, mut ex1, mut ex2, mut ex3, ex4) = desc.get_raw_parts();
-            base.Reserved = std::ptr::addr_of!(ex1) as *mut c_void;
-            #[allow(unused_assignments)]
-            {
-                ex1.Reserved = std::ptr::addr_of!(ex2) as *mut c_void;
-                ex2.Reserved = std::ptr::addr_of!(ex3) as *mut c_void;
-                ex3.Reserved = std::ptr::addr_of!(ex4) as *mut c_void;
-            }
+            let mut pool = BoxPool::new();
+            let arg = desc.get_raw_with_pool(&mut pool);
             self.get_application_list_internal(
-                &base,
+                &arg,
                 timeout.as_millis().try_into().unwrap(),
                 cancellation_token,
             )
@@ -248,15 +224,9 @@ impl QueryClient {
         cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<crate::types::ServiceListResult> {
         let com = {
-            let (mut base, mut ex1, mut ex2, ex3) = desc.get_raw_parts();
-            base.Reserved = &ex1 as *const _ as *mut c_void;
-            #[allow(unused_assignments)]
-            {
-                ex1.Reserved = &ex2 as *const _ as *mut c_void;
-                ex2.Reserved = &ex3 as *const _ as *mut c_void;
-            }
-
-            self.get_service_list_internal(&base, timeout.as_millis() as u32, cancellation_token)
+            let mut pool = BoxPool::new();
+            let arg = desc.get_raw_with_pool(&mut pool);
+            self.get_service_list_internal(&arg, timeout.as_millis() as u32, cancellation_token)
         }
         .await??;
         Ok(crate::types::ServiceListResult::from(&com))

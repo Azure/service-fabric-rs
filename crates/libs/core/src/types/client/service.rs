@@ -1000,42 +1000,34 @@ pub struct ServiceQueryDescription {
     pub max_results: Option<i32>,
 }
 
-impl ServiceQueryDescription {
-    pub fn get_raw_parts(
-        &self,
-    ) -> (
-        FABRIC_SERVICE_QUERY_DESCRIPTION,
-        FABRIC_SERVICE_QUERY_DESCRIPTION_EX1,
-        FABRIC_SERVICE_QUERY_DESCRIPTION_EX2,
-        FABRIC_SERVICE_QUERY_DESCRIPTION_EX3,
-    ) {
-        let base = FABRIC_SERVICE_QUERY_DESCRIPTION {
+impl GetRawWithBoxPool<FABRIC_SERVICE_QUERY_DESCRIPTION> for ServiceQueryDescription {
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_SERVICE_QUERY_DESCRIPTION {
+        let ex3 = pool.push(Box::new(FABRIC_SERVICE_QUERY_DESCRIPTION_EX3 {
+            MaxResults: self.max_results.unwrap_or(0), // 0 means no limit
+            Reserved: std::ptr::null_mut(),
+        }));
+        let ex2 = pool.push(Box::new(FABRIC_SERVICE_QUERY_DESCRIPTION_EX2 {
+            ServiceTypeNameFilter: self
+                .service_type_name_filter
+                .as_ref()
+                .map_or(PCWSTR::null(), |s| s.as_pcwstr()),
+            Reserved: ex3 as *const _ as *mut c_void,
+        }));
+        let ex1 = pool.push(Box::new(FABRIC_SERVICE_QUERY_DESCRIPTION_EX1 {
+            ContinuationToken: self
+                .continuation_token
+                .as_ref()
+                .map_or(PCWSTR::null(), |s| s.as_pcwstr()),
+            Reserved: ex2 as *const _ as *mut c_void,
+        }));
+        FABRIC_SERVICE_QUERY_DESCRIPTION {
             ApplicationName: self.application_name.as_raw(),
             ServiceNameFilter: self
                 .service_name_filter
                 .as_ref()
                 .map_or(Uri::default().as_raw(), |uri| uri.as_raw()),
-            Reserved: std::ptr::null_mut(),
-        };
-        let ex1 = FABRIC_SERVICE_QUERY_DESCRIPTION_EX1 {
-            ContinuationToken: self
-                .continuation_token
-                .as_ref()
-                .map_or(PCWSTR::null(), |s| s.as_pcwstr()),
-            Reserved: std::ptr::null_mut(),
-        };
-        let ex2 = FABRIC_SERVICE_QUERY_DESCRIPTION_EX2 {
-            ServiceTypeNameFilter: self
-                .service_type_name_filter
-                .as_ref()
-                .map_or(PCWSTR::null(), |s| s.as_pcwstr()),
-            Reserved: std::ptr::null_mut(),
-        };
-        let ex3 = FABRIC_SERVICE_QUERY_DESCRIPTION_EX3 {
-            MaxResults: self.max_results.unwrap_or(0), // 0 means no limit
-            Reserved: std::ptr::null_mut(),
-        };
-        (base, ex1, ex2, ex3)
+            Reserved: ex1 as *const _ as *mut c_void,
+        }
     }
 }
 

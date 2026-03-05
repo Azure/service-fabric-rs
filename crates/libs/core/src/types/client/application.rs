@@ -17,12 +17,13 @@ use mssf_com::{
 use windows_core::{PCWSTR, WString};
 
 use crate::{
-    mem::{GetRaw, GetRawWithBoxPool},
+    mem::{BoxPool, GetRaw, GetRawWithBoxPool},
     types::{
         ApplicationHealthPolicy, HealthEventsFilter, HealthState, HealthStateFilterFlags,
         PagingStatus, Uri,
     },
 };
+use std::ffi::c_void;
 
 // FABRIC_APPLICATION_QUERY_DESCRIPTION
 #[derive(Debug, Clone, Default)]
@@ -115,49 +116,39 @@ impl From<FABRIC_APPLICATION_STATUS> for ApplicationStatus {
     }
 }
 
-impl ApplicationQueryDescription {
-    /// Caller is responsible for stitching the reserved parts together
-    pub fn get_raw_parts(
-        &self,
-    ) -> (
-        FABRIC_APPLICATION_QUERY_DESCRIPTION,
-        FABRIC_APPLICATION_QUERY_DESCRIPTION_EX1,
-        FABRIC_APPLICATION_QUERY_DESCRIPTION_EX2,
-        FABRIC_APPLICATION_QUERY_DESCRIPTION_EX3,
-        FABRIC_APPLICATION_QUERY_DESCRIPTION_EX4,
-    ) {
-        let base = FABRIC_APPLICATION_QUERY_DESCRIPTION {
-            ApplicationNameFilter: self
-                .application_name_filter
-                .as_ref()
-                .map_or(mssf_com::FabricTypes::FABRIC_URI::default(), |u| u.as_raw()),
+impl GetRawWithBoxPool<FABRIC_APPLICATION_QUERY_DESCRIPTION> for ApplicationQueryDescription {
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_APPLICATION_QUERY_DESCRIPTION {
+        let ex4 = pool.push(Box::new(FABRIC_APPLICATION_QUERY_DESCRIPTION_EX4 {
+            MaxResults: self.max_results.unwrap_or(0), // 0 means no limit
             Reserved: std::ptr::null_mut(),
-        };
-        let ex1 = FABRIC_APPLICATION_QUERY_DESCRIPTION_EX1 {
-            ContinuationToken: self
-                .continuation_token
-                .as_ref()
-                .map_or(PCWSTR::null(), |u| u.as_pcwstr()),
-            Reserved: std::ptr::null_mut(),
-        };
-        let ex2 = FABRIC_APPLICATION_QUERY_DESCRIPTION_EX2 {
+        }));
+        let ex3 = pool.push(Box::new(FABRIC_APPLICATION_QUERY_DESCRIPTION_EX3 {
+            ApplicationDefinitionKindFilter: self.application_definition_kind_filter.bits() as u32,
+            Reserved: ex4 as *const _ as *mut c_void,
+        }));
+        let ex2 = pool.push(Box::new(FABRIC_APPLICATION_QUERY_DESCRIPTION_EX2 {
             ApplicationTypeNameFilter: self
                 .application_type_name_filter
                 .as_ref()
                 .map_or(PCWSTR::null(), |u| u.as_pcwstr()),
             // by default do not include application parameters
             ExcludeApplicationParameters: self.exclude_application_parameters.unwrap_or(true),
-            Reserved: std::ptr::null_mut(),
-        };
-        let ex3 = FABRIC_APPLICATION_QUERY_DESCRIPTION_EX3 {
-            ApplicationDefinitionKindFilter: self.application_definition_kind_filter.bits() as u32,
-            Reserved: std::ptr::null_mut(),
-        };
-        let ex4 = FABRIC_APPLICATION_QUERY_DESCRIPTION_EX4 {
-            MaxResults: self.max_results.unwrap_or(0), // 0 means no limit
-            Reserved: std::ptr::null_mut(),
-        };
-        (base, ex1, ex2, ex3, ex4)
+            Reserved: ex3 as *const _ as *mut c_void,
+        }));
+        let ex1 = pool.push(Box::new(FABRIC_APPLICATION_QUERY_DESCRIPTION_EX1 {
+            ContinuationToken: self
+                .continuation_token
+                .as_ref()
+                .map_or(PCWSTR::null(), |u| u.as_pcwstr()),
+            Reserved: ex2 as *const _ as *mut c_void,
+        }));
+        FABRIC_APPLICATION_QUERY_DESCRIPTION {
+            ApplicationNameFilter: self
+                .application_name_filter
+                .as_ref()
+                .map_or(mssf_com::FabricTypes::FABRIC_URI::default(), |u| u.as_raw()),
+            Reserved: ex1 as *const _ as *mut c_void,
+        }
     }
 }
 

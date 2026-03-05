@@ -3,12 +3,15 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use crate::mem::{BoxPool, GetRawWithBoxPool};
 use crate::{WString, types::Uri};
 use bitflags::bitflags;
 use mssf_com::{
     FabricClient::IFabricGetNodeListResult2,
     FabricTypes::{
-        FABRIC_NODE_ID, FABRIC_NODE_QUERY_RESULT_ITEM, FABRIC_NODE_QUERY_RESULT_ITEM_EX1,
+        FABRIC_NODE_ID, FABRIC_NODE_QUERY_DESCRIPTION, FABRIC_NODE_QUERY_DESCRIPTION_EX1,
+        FABRIC_NODE_QUERY_DESCRIPTION_EX2, FABRIC_NODE_QUERY_DESCRIPTION_EX3,
+        FABRIC_NODE_QUERY_RESULT_ITEM, FABRIC_NODE_QUERY_RESULT_ITEM_EX1,
         FABRIC_NODE_QUERY_RESULT_ITEM_EX2, FABRIC_PAGING_STATUS,
         FABRIC_QUERY_NODE_STATUS_FILTER_ALL, FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT,
         FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED, FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING,
@@ -17,6 +20,7 @@ use mssf_com::{
         FABRIC_QUERY_NODE_STATUS_FILTER_UP,
     },
 };
+use std::ffi::c_void;
 
 #[derive(Debug, Default, Clone)]
 pub struct PagingStatus {
@@ -63,6 +67,27 @@ pub struct NodeQueryDescription {
     pub node_name_filter: Option<WString>,
     pub node_status_filter: NodeStatusFilter,
     pub paged_query: PagedQueryDescription,
+}
+
+impl GetRawWithBoxPool<FABRIC_NODE_QUERY_DESCRIPTION> for NodeQueryDescription {
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_NODE_QUERY_DESCRIPTION {
+        let ex3 = pool.push(Box::new(FABRIC_NODE_QUERY_DESCRIPTION_EX3 {
+            MaxResults: self.paged_query.max_results.unwrap_or(0),
+            Reserved: std::ptr::null_mut(),
+        }));
+        let ex2 = pool.push(Box::new(FABRIC_NODE_QUERY_DESCRIPTION_EX2 {
+            NodeStatusFilter: self.node_status_filter.bits(),
+            Reserved: ex3 as *const _ as *mut c_void,
+        }));
+        let ex1 = pool.push(Box::new(FABRIC_NODE_QUERY_DESCRIPTION_EX1 {
+            ContinuationToken: self.paged_query.continuation_token.as_ref().into(),
+            Reserved: ex2 as *const _ as *mut c_void,
+        }));
+        FABRIC_NODE_QUERY_DESCRIPTION {
+            NodeNameFilter: self.node_name_filter.as_ref().into(),
+            Reserved: ex1 as *const _ as *mut c_void,
+        }
+    }
 }
 
 #[derive(Debug)]

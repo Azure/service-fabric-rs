@@ -18,7 +18,7 @@ mod test;
 #[cfg(test)]
 mod test2;
 
-const SERVICE_TYPE_NAME: &str = "StatefulEchoAppService";
+const SERVICE_TYPE_NAME: &str = "ReflectionAppService";
 
 fn main() -> mssf_core::Result<()> {
     tracing_subscriber::fmt().init();

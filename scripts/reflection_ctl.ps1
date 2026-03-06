@@ -8,7 +8,7 @@ param(
 )
 $ErrorActionPreference = "Stop";
 
-$path = "build\sf_apps\samples_echomain_stateful2"
+$path = "build\sf_apps\samples_reflection"
 Write-Host "path: $path"
 if($Action -eq "Connect"){
     Connect-ServiceFabricCluster
@@ -19,18 +19,18 @@ if($Action -eq "Connect"){
     Copy-ServiceFabricApplicationPackage -ApplicationPackagePath $path -ApplicationPackagePathInImageStore MyApplicationV1 -TimeoutSec 1800
     
     Register-ServiceFabricApplicationType -ApplicationPathInImageStore MyApplicationV1
-    New-ServiceFabricApplication fabric:/StatefulEchoApp StatefulEchoApp 0.0.1
+    New-ServiceFabricApplication fabric:/ReflectionApp ReflectionApp 0.0.1
 }elseif($Action -eq "Remove"){
     Connect-ServiceFabricCluster
-    Remove-ServiceFabricApplication fabric:/StatefulEchoApp -Force
-    Unregister-ServiceFabricApplicationType StatefulEchoApp 0.0.1 -Force
+    Remove-ServiceFabricApplication fabric:/ReflectionApp -Force
+    Unregister-ServiceFabricApplicationType ReflectionApp 0.0.1 -Force
     Remove-ServiceFabricApplicationPackage -ApplicationPackagePathInImageStore MyApplicationV1 -Force
 }elseif($Action -eq "Resolve"){
     Connect-ServiceFabricCluster
-    Resolve-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/StatefulEchoAppService -PartitionKindUniformInt64 -ForceRefresh
+    Resolve-ServiceFabricService -ServiceName fabric:/ReflectionApp/ReflectionAppService -PartitionKindUniformInt64 -ForceRefresh
 }elseif($Action -eq "Echo"){
     Connect-ServiceFabricCluster
-    $resolve = Resolve-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/StatefulEchoAppService -PartitionKindUniformInt64 -ForceRefresh
+    $resolve = Resolve-ServiceFabricService -ServiceName fabric:/ReflectionApp/ReflectionAppService -PartitionKindUniformInt64 -ForceRefresh
     Write-Host $resolve
     $addr = $resolve.Endpoints.Address
     $pair = $addr.Split(":")

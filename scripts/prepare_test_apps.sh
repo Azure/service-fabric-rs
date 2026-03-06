@@ -58,17 +58,17 @@ retry $MAX_RETRY $RETRY_INTERVAL "provision echomain" \
     sfctl application provision --application-type-build-path samples_echomain
 sfctl application create --app-name fabric:/EchoApp --app-type EchoApp --app-version 0.0.1
 
-retry $MAX_RETRY $RETRY_INTERVAL "upload stateful2" \
-    sfctl application upload --path build/sf_apps/samples_echomain_stateful2 --show-progress
-retry $MAX_RETRY $RETRY_INTERVAL "provision stateful2" \
-    sfctl application provision --application-type-build-path samples_echomain_stateful2
-sfctl application create --app-name fabric:/StatefulEchoApp --app-type StatefulEchoApp --app-version 0.0.1
+retry $MAX_RETRY $RETRY_INTERVAL "upload reflection" \
+    sfctl application upload --path build/sf_apps/samples_reflection --show-progress
+retry $MAX_RETRY $RETRY_INTERVAL "provision reflection" \
+    sfctl application provision --application-type-build-path samples_reflection
+sfctl application create --app-name fabric:/ReflectionApp --app-type ReflectionApp --app-version 0.0.1
 
 # --- Step 4: Wait for services to be resolvable ---
 echo "Waiting for services to be resolvable..."
 retry $MAX_RETRY $RETRY_INTERVAL "resolve EchoAppService" \
     sfctl service resolve --service-id EchoApp/EchoAppService
-retry $MAX_RETRY $RETRY_INTERVAL "resolve StatefulEchoAppService" \
-    sfctl service resolve --service-id StatefulEchoApp/StatefulEchoAppService
+retry $MAX_RETRY $RETRY_INTERVAL "resolve ReflectionAppService" \
+    sfctl service resolve --service-id ReflectionApp/ReflectionAppService
 
 echo "All applications deployed and services resolved successfully"

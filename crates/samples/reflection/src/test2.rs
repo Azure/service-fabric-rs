@@ -150,8 +150,8 @@ async fn fabric_client_drop_hack(fc: FabricClient) {
 }
 
 /// For manual clean up:
-/// Remove-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/ResolveNotificationTest
-/// Resolve-ServiceFabricService -ServiceName fabric:/StatefulEchoApp/ResolveNotificationTest -PartitionKindSingleton
+/// Remove-ServiceFabricService -ServiceName fabric:/ReflectionApp/ResolveNotificationTest
+/// Resolve-ServiceFabricService -ServiceName fabric:/ReflectionApp/ResolveNotificationTest -PartitionKindSingleton
 #[tokio::test]
 #[test_log::test]
 async fn test_resolve_notification() {
@@ -159,7 +159,7 @@ async fn test_resolve_notification() {
         .with_connection_strings(vec![WString::from("localhost:19000")])
         .build()
         .unwrap();
-    let uri = Uri::from("fabric:/StatefulEchoApp/ResolveNotificationTest");
+    let uri = Uri::from("fabric:/ReflectionApp/ResolveNotificationTest");
     // Create the service
     let sm = TestCreateUpdateClient::new(fc.clone());
     sm.create_service(
@@ -231,7 +231,7 @@ async fn test_aux_replicas() {
         .with_connection_strings(vec![WString::from("localhost:19000")])
         .build()
         .unwrap();
-    let uri = Uri::from("fabric:/StatefulEchoApp/AuxiliaryReplicaTest");
+    let uri = Uri::from("fabric:/ReflectionApp/AuxiliaryReplicaTest");
     // Create the service
     let sm = TestCreateUpdateClient::new(fc.clone());
     sm.create_service(
@@ -343,7 +343,7 @@ async fn test_replica_mock(replica_count: usize) {
         partition_id: 1.into(),
         replica_count,
         service_type_name: crate::SERVICE_TYPE_NAME.into(),
-        service_name: "fabric:/StatefulEchoApp/DummyTest".into(),
+        service_name: "fabric:/ReflectionApp/DummyTest".into(),
         init_data: vec![],
     };
     driver.create_service_partition(&args).await.unwrap();

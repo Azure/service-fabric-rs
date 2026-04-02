@@ -29,7 +29,7 @@ use mssf_core::{
     },
 };
 
-static SVC_URI: &str = "fabric:/StatefulEchoApp/StatefulEchoAppService";
+static SVC_URI: &str = "fabric:/ReflectionApp/ReflectionAppService";
 
 /// Test client for the stateful service
 pub struct TestClient {
@@ -474,9 +474,9 @@ impl TestCreateUpdateClient {
         // TODO: get service first
         let desc = ServiceDescription::Stateful(
             StatefulServiceDescription::new(
-                Uri::from("fabric:/StatefulEchoApp"),
+                Uri::from("fabric:/ReflectionApp"),
                 service_name.clone(),
-                WString::from("StatefulEchoAppService"),
+                WString::from("ReflectionAppService"),
                 partition_scheme.clone(),
             )
             .with_has_persistent_state(true)
@@ -625,7 +625,7 @@ async fn test_service_curd_singleton() {
         .build()
         .unwrap();
     let partition_scheme = mssf_core::types::PartitionSchemeDescription::Singleton;
-    let service_name = Uri::from("fabric:/StatefulEchoApp/CurdTestServiceSingleton");
+    let service_name = Uri::from("fabric:/ReflectionApp/CurdTestServiceSingleton");
     test_service_create_delete(&fc, &partition_scheme, &service_name).await;
 }
 
@@ -638,7 +638,7 @@ async fn test_service_curd_named() {
     let partition_scheme = mssf_core::types::PartitionSchemeDescription::Named(
         NamedPartitionSchemeDescription::new(vec![WString::from("test")]),
     );
-    let service_name = Uri::from("fabric:/StatefulEchoApp/CurdTestServiceNamed");
+    let service_name = Uri::from("fabric:/ReflectionApp/CurdTestServiceNamed");
     test_service_create_delete(&fc, &partition_scheme, &service_name).await;
 }
 
@@ -651,7 +651,7 @@ async fn test_service_curd_range() {
     let partition_scheme = mssf_core::types::PartitionSchemeDescription::Int64Range(
         mssf_core::types::UniformIn64PartitionSchemeDescription::new(1, 10, 100),
     );
-    let service_name = Uri::from("fabric:/StatefulEchoApp/CurdTestServiceRange");
+    let service_name = Uri::from("fabric:/ReflectionApp/CurdTestServiceRange");
     test_service_create_delete(&fc, &partition_scheme, &service_name).await;
 }
 
@@ -666,7 +666,7 @@ async fn test_service_reparition() {
     let partition_scheme = mssf_core::types::PartitionSchemeDescription::Named(
         NamedPartitionSchemeDescription::new(vec![WString::from("1")]),
     );
-    let service_name = Uri::from("fabric:/StatefulEchoApp/RepartitionTest");
+    let service_name = Uri::from("fabric:/ReflectionApp/RepartitionTest");
 
     // create service
     tc.create_service(

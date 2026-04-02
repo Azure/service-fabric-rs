@@ -1,5 +1,5 @@
 [package]
-name = "samples_echomain_stateful2"
+name = "samples_reflection"
 version = "0.1.0"
 edition.workspace = true
 publish = false

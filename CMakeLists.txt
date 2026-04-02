@@ -68,12 +68,12 @@ add_custom_target(format
     COMMAND ${cargo_exe} fmt -p samples_client
     COMMAND ${cargo_exe} fmt -p samples_echomain
     COMMAND ${cargo_exe} fmt -p samples_echomain_stateful
-    COMMAND ${cargo_exe} fmt -p samples_echomain_stateful2
+    COMMAND ${cargo_exe} fmt -p samples_reflection
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_subdirectory(crates/samples/echomain)
-add_subdirectory(crates/samples/echomain-stateful2)
+add_subdirectory(crates/samples/reflection)
 add_subdirectory(crates/samples/echomain-stateful)
 add_subdirectory(crates/samples/no_default_features)
 

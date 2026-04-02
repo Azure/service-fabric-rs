@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationManifest ApplicationTypeName="ReflectionApp" ApplicationTypeVersion="0.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Description>
+  Reflection app
+  </Description>
+  <Parameters>
+  </Parameters>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="ReflectionAppServicePackage" ServiceManifestVersion="1.0" />
+  </ServiceManifestImport>
+  <DefaultServices>
+    <Service Name="ReflectionAppService">
+      <StatefulService ServiceTypeName="ReflectionAppService" TargetReplicaSetSize="3" MinReplicaSetSize="2" AuxiliaryReplicaCount="1" >
+        <SingletonPartition />
+      </StatefulService>
+    </Service>
+  </DefaultServices>
+</ApplicationManifest>

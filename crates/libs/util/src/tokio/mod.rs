@@ -25,6 +25,11 @@ pub struct TokioExecutor {
 
 impl TokioExecutor {
     pub fn new(rt: Handle) -> TokioExecutor {
+        assert_eq!(
+            rt.runtime_flavor(),
+            tokio::runtime::RuntimeFlavor::MultiThread,
+            "TokioExecutor requires a multi-threaded tokio runtime"
+        );
         TokioExecutor { rt }
     }
 

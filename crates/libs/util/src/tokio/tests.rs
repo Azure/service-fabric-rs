@@ -278,7 +278,7 @@ mod proxy_test {
     /// Constructs various test trait objects of different
     /// Bridge and Proxy nested wrapping and run cancellation tests
     /// for each of them.
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_cancel() {
         let h = tokio::runtime::Handle::current();
         let expected_data1 = "mydata1";
@@ -375,7 +375,7 @@ mod proxy_test {
     const TEST_DATA: &str = "data";
     /// Very simple benchmark to check the bridge layer performance.
     /// Adding a bridge layer should not introduce much perf degradation.
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn small_bench_test() {
         // Run get data function for IMyObj with different layers of wrapping.
         // All wrappings are run in parallel to reduce test run time.
@@ -437,7 +437,7 @@ mod proxy_test {
         count
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_user_code_panic() {
         let h = tokio::runtime::Handle::current();
         let expected_data1 = "mydata1";

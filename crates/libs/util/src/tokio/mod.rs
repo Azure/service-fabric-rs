@@ -68,6 +68,14 @@ impl Executor for TokioExecutor {
     {
         self.rt.spawn(future);
     }
+
+    fn spawn_blocking<F, R>(&self, func: F)
+    where
+        F: FnOnce() -> R + Send + 'static,
+        R: Send + 'static,
+    {
+        self.rt.spawn_blocking(func);
+    }
 }
 
 /// Sleep timer implementation for tokio

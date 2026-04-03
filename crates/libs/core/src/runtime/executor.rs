@@ -10,16 +10,19 @@ use std::{fmt::Debug, future::Future, pin::Pin};
 pub trait Executor: Clone + Sync + Send + 'static {
     // Required functions
 
-    /// spawns the task to run in background, and returns a join handle
-    /// where the future's result can be awaited.
-    /// If the future panics, the join handle should return an error code.
+    /// spawns the task to run in background.
     /// This is primarily used by mssf Bridge to execute user app async callbacks/notifications.
-    /// User app impl future may panic, and mssf propagates panic as an error in JoinHandle
-    /// to SF.
     fn spawn<F>(&self, future: F)
     where
         F: Future + Send + 'static,
         F::Output: Send;
+
+    /// Runs the provided function on an executor dedicated to blocking
+    /// operations.
+    fn spawn_blocking<F, R>(&self, func: F)
+    where
+        F: FnOnce() -> R + Send + 'static,
+        R: Send + 'static;
 }
 
 /// Runtime independent sleep trait.

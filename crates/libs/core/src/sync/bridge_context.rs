@@ -106,7 +106,12 @@ where
             let self_impl: &BridgeContext<T> = unsafe { self_cp.as_impl() };
             self_impl.set_content(task_res);
             let cb = unsafe { self_cp.Callback().unwrap() };
-            unsafe { cb.Invoke(&self_cp) };
+
+            // We move the callback invocation off of the tokio I/O thread as they take locks
+            // and may block.
+            rt_cp.spawn_blocking(move || {
+                unsafe { cb.Invoke(&self_cp) };
+            })
         };
         /// Propagate the span so that the executor has the right trace.
         /// The trace would likely have BeginXXX as the function where spawn()

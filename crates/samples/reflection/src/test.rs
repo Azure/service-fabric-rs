@@ -17,7 +17,7 @@ use mssf_core::{
     types::{
         DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
         DeployedServiceReplicaDetailQueryResultValue, GetPartitionLoadInformationResult,
-        NamedPartitionSchemeDescription, NamedRepartitionDescription,
+        NamedPartitionInfomation, NamedPartitionSchemeDescription, NamedRepartitionDescription,
         PartitionLoadInformationQueryDescription, QueryServiceReplicaStatus, ReplicaRole,
         RestartReplicaDescription, ServiceDescription, ServiceNotificationFilterDescription,
         ServiceNotificationFilterFlags, ServicePartitionAccessStatus, ServicePartitionInformation,
@@ -535,6 +535,80 @@ impl TestCreateUpdateClient {
         }
     }
 
+    /// Returns the ready stateful partitions.
+    async fn query_service_partition(
+        &self,
+        service_name: &Uri,
+    ) -> Vec<StatefulServicePartitionQueryResult> {
+        let qc = self.fc.get_query_manager();
+        let desc = ServicePartitionQueryDescription {
+            service_name: service_name.clone(),
+            partition_id_filter: None,
+        };
+        let list = qc
+            .get_partition_list(&desc, self.timeout, None)
+            .await
+            .unwrap();
+
+        list.service_partitions
+            .iter()
+            .filter_map(|p| match p {
+                ServicePartitionQueryResultItem::Stateful(s) => {
+                    if s.partition_status == ServicePartitionStatus::Ready {
+                        Some(s.clone())
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+    }
+
+    /// Wait until the queried named partitions contain all the expected names.
+    /// During convergence, extra names are allowed (e.g. partitions being removed
+    /// may still be present). The check succeeds once every expected name is present
+    /// and no unexpected names remain.
+    /// Panics after `max_retry` attempts.
+    async fn wait_for_named_partitions(
+        &self,
+        service_name: &Uri,
+        expected_names: &[&str],
+        max_retry: u32,
+    ) {
+        let expected: Vec<WString> = expected_names.iter().map(|n| WString::from(*n)).collect();
+        for retry in 0..max_retry {
+            let ready = self.query_service_partition(service_name).await;
+            let names: Vec<WString> = ready
+                .iter()
+                .map(|p| match &p.partition_information {
+                    ServicePartitionInformation::Named(NamedPartitionInfomation {
+                        name, ..
+                    }) => name.clone(),
+                    other => panic!("expected named partition, got {:?}", other),
+                })
+                .collect();
+            // All expected names must be present.
+            let all_expected_present = expected.iter().all(|n| names.contains(n));
+            // No extra names beyond what we expect.
+            let no_extra = names.iter().all(|n| expected.contains(n));
+            if all_expected_present && no_extra {
+                println!("partitions matched {expected:?} after {retry} retries");
+                return;
+            }
+            if all_expected_present {
+                // Expected names present but extra partitions still exist; keep waiting.
+                println!(
+                    "retry {retry}: expected {expected:?}, got {names:?} (extra partitions still present)"
+                );
+            } else {
+                println!("retry {retry}: expected {expected:?}, got {names:?}");
+            }
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+        panic!("partitions did not converge to {expected:?} after {max_retry} retries");
+    }
+
     pub(crate) async fn update_service_named_partitions(
         &self,
         service_name: &Uri,
@@ -708,5 +782,103 @@ async fn test_service_reparition() {
     }
 
     // delete service
+    tc.delete_service(&service_name).await;
+}
+
+#[tokio::test]
+async fn test_service_repartition_and_query() {
+    let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
+    let tc = TestCreateUpdateClient::new(fc.clone());
+    // Note: SF does not support 0 named partitions.
+    let partition_scheme = mssf_core::types::PartitionSchemeDescription::Named(
+        NamedPartitionSchemeDescription::new(vec![WString::from("1")]),
+    );
+    let service_name = Uri::from("fabric:/ReflectionApp/RepartitionQueryTest");
+
+    // create service
+    tc.create_service(
+        &service_name,
+        &partition_scheme,
+        TestPartitionReplicaLayout::Target1Min1,
+    )
+    .await;
+
+    const MAX_RETRY: u32 = 30;
+
+    // Wait for partition "1" to be ready
+    tc.wait_for_named_partitions(&service_name, &["1"], MAX_RETRY)
+        .await;
+
+    // Add partition "2"
+    println!("adding partition 2: {service_name:?}");
+    tc.update_service_named_partitions(&service_name, vec![WString::from("2")], vec![])
+        .await;
+
+    // Wait for both partitions "1" and "2" to be ready
+    tc.wait_for_named_partitions(&service_name, &["1", "2"], MAX_RETRY)
+        .await;
+
+    // Remove partition "1"
+    println!("removing partition 1: {service_name:?}");
+    tc.update_service_named_partitions(&service_name, vec![], vec![WString::from("1")])
+        .await;
+
+    // Wait for only partition "2" to remain
+    tc.wait_for_named_partitions(&service_name, &["2"], MAX_RETRY)
+        .await;
+
+    // Run add-5/remove-1 cycle 5 times.
+    // Each iteration starts with 1 partition and ends with 5 new ones,
+    // then the next iteration removes 4 to get back to 1 before repeating.
+    let mut current_base = 2u32; // the single partition we start with
+    for round in 0..5 {
+        let new_start = current_base + 1;
+        let new_names: Vec<WString> = (new_start..new_start + 5)
+            .map(|i| WString::from(i.to_string()))
+            .collect();
+        let new_name_strs: Vec<String> = new_names.iter().map(|n| n.to_string()).collect();
+
+        // Add 5 partitions
+        println!(
+            "round {round}: adding partitions {new_start}..{}: {service_name:?}",
+            new_start + 4
+        );
+        tc.update_service_named_partitions(&service_name, new_names, vec![])
+            .await;
+
+        // Remove the old single partition
+        let remove_name = current_base.to_string();
+        println!("round {round}: removing partition {remove_name}: {service_name:?}");
+        tc.update_service_named_partitions(&service_name, vec![], vec![WString::from(remove_name)])
+            .await;
+
+        // Wait for the 5 new partitions
+        let expected_strs: Vec<&str> = new_name_strs.iter().map(|s| s.as_str()).collect();
+        tc.wait_for_named_partitions(&service_name, &expected_strs, MAX_RETRY)
+            .await;
+
+        // Remove 4 partitions to leave only the last one for the next round
+        let to_remove: Vec<WString> = (new_start..new_start + 4)
+            .map(|i| WString::from(i.to_string()))
+            .collect();
+        println!(
+            "round {round}: removing partitions {new_start}..{}: {service_name:?}",
+            new_start + 3
+        );
+        tc.update_service_named_partitions(&service_name, vec![], to_remove)
+            .await;
+
+        current_base = new_start + 4;
+        let remaining = current_base.to_string();
+        tc.wait_for_named_partitions(&service_name, &[remaining.as_str()], MAX_RETRY)
+            .await;
+
+        println!("round {round}: completed, remaining partition: {remaining}");
+    }
+
+    // Cleanup
     tc.delete_service(&service_name).await;
 }

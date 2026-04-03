@@ -410,6 +410,8 @@ pub enum ServiceRepartitionDescription {
 }
 
 // FABRIC_NAMED_REPARTITION_DESCRIPTION
+// Note: Adding and removing partitions in the same call is not supported
+// by Service Fabric and will result in E_INVALIDARG.
 #[derive(Debug)]
 pub struct NamedRepartitionDescription {
     pub names_to_add: Vec<WString>,

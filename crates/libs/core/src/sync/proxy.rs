@@ -29,13 +29,16 @@ use super::{FabricReceiver, oneshot_channel};
 /// and such callback is passed to SF begin api and is invoked when
 /// the (begin) initiated operation completes.
 ///
-/// Cancelling the token will in turn cancalling the fabric operation. Caller needs to
-/// poll/run the receiver future to completion (even if operation intends to cancel),
-/// or else cancellation signal might not propagate to SF.
+/// If receiver is dropped before the result is ready, the token will be auto cancelled (if it exists).
+/// Cancelling the token will in turn cancel the fabric operation.
 /// After cancellation is triggered, the receiver future should finish in a short time,
-/// with an error code opeartion cancelled, or other code if cancel failed.
+/// with an error code operation cancelled, or other code if cancel failed.
 /// If the result is ready before the cancellation is triggered, the success result will
 /// be the output of the receiver future.
+///
+/// Cancellation best practice:
+/// User should always poll the receiver future to completion even after cancellation is triggered,
+/// to ensure the cancellation signal is properly propagated to SF and resources are cleaned up in a timely manner.
 pub fn fabric_begin_end_proxy<BEGIN, END, T>(
     begin: BEGIN,
     end: END,

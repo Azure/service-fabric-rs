@@ -167,7 +167,7 @@ impl<T> Drop for FabricReceiver<T> {
     fn drop(&mut self) {
         // Note that there is a chance that SF operation is not cancelled when user cancelled the token
         // and drop the receiver immediately without polling the receiver future.
-        // because the cancellation signal is only propergated when polling the receiver future.
+        // because the cancellation signal is only propagated when polling the receiver future.
         // However this very uncommon and violate the best practice that user should always poll
         // the receiver future to completion even after the cancellation is triggered.
         // SF operation will be left in the background and eventually finish.

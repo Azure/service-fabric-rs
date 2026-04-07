@@ -4,7 +4,7 @@
 // ------------------------------------------------------------
 
 use std::{
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     sync::{Arc, Mutex},
 };
 
@@ -283,12 +283,12 @@ impl StatefulServicePartitionDriver {
         assert!(desc.replica_count > 0);
         assert!(self.partition_state.replica_states.is_empty());
 
-        let mut replicas = HashMap::new();
-        let mut replicators = HashMap::new();
-        let mut replica_addresses = HashMap::new();
-        let mut replicator_addresses = HashMap::new();
-        let mut replica_infos = HashMap::new();
-        let mut partitions = HashMap::new();
+        let mut replicas = BTreeMap::new();
+        let mut replicators = BTreeMap::new();
+        let mut replica_addresses = BTreeMap::new();
+        let mut replicator_addresses = BTreeMap::new();
+        let mut replica_infos = BTreeMap::new();
+        let mut partitions = BTreeMap::new();
 
         for _ in 0..desc.replica_count {
             let id = self.next_replica_index();
@@ -413,7 +413,16 @@ impl StatefulServicePartitionDriver {
             primary
                 .build_replica(replica_info, cancellation_token)
                 .await?;
-            // change role to active secondary after successful build.
+            // change replicator role to active secondary after successful build.
+            let rplctr = replicators.get(id).unwrap();
+            rplctr
+                .change_role(
+                    epoch.clone(),
+                    mssf_core::types::ReplicaRole::ActiveSecondary,
+                    SimpleCancelToken::new_boxed(),
+                )
+                .await?;
+            // change replica role to active secondary after successful build.
             replica
                 .change_role(
                     mssf_core::types::ReplicaRole::ActiveSecondary,
@@ -511,17 +520,10 @@ impl StatefulServicePartitionDriver {
         let primary = self
             .partition_state
             .replica_states
-            .get_mut(&1)
+            .get_mut(&self.partition_state.primary_index)
             .expect("Primary replica not found");
 
-        let cancellation_token = mssf_core::sync::SimpleCancelToken::new_boxed();
-        primary
-            .replica
-            .change_role(
-                mssf_core::types::ReplicaRole::ActiveSecondary,
-                cancellation_token,
-            )
-            .await?;
+        // Replicator change_role is called before Replica change_role.
         primary
             .replicator
             .change_role(
@@ -530,18 +532,28 @@ impl StatefulServicePartitionDriver {
                 SimpleCancelToken::new_boxed(),
             )
             .await?;
+        primary
+            .replica
+            .change_role(
+                mssf_core::types::ReplicaRole::ActiveSecondary,
+                SimpleCancelToken::new_boxed(),
+            )
+            .await?;
 
         // change role to none for all replicas
+        // Replicator change_role is called before Replica change_role.
         for state in self.partition_state.replica_states.values_mut() {
-            let cancellation_token = mssf_core::sync::SimpleCancelToken::new_boxed();
-            state
-                .replica
-                .change_role(mssf_core::types::ReplicaRole::None, cancellation_token)
-                .await?;
             state
                 .replicator
                 .change_role(
                     self.partition_state.epoch.clone(), // Epoch is unchanged.
+                    mssf_core::types::ReplicaRole::None,
+                    SimpleCancelToken::new_boxed(),
+                )
+                .await?;
+            state
+                .replica
+                .change_role(
                     mssf_core::types::ReplicaRole::None,
                     SimpleCancelToken::new_boxed(),
                 )
@@ -616,11 +628,14 @@ impl StatefulServicePartitionDriver {
             .remove(&replica_id)
             .unwrap();
         let factory_index = prev_state.factory_index;
-        // Close the Secondary, and cleanup.
+        // Close the Secondary, and cleanup. No change_role(None) since this is a restart (data is preserved).
         {
             let cancellation_token = mssf_core::sync::SimpleCancelToken::new_boxed();
-            prev_state.replica.close(cancellation_token.clone()).await?;
-            prev_state.replicator.close(cancellation_token).await?;
+            prev_state
+                .replicator
+                .close(cancellation_token.clone())
+                .await?;
+            prev_state.replica.close(cancellation_token).await?;
             drop(prev_state);
         }
 
@@ -706,6 +721,14 @@ impl StatefulServicePartitionDriver {
             .await?;
 
         // change role to active secondary after successful build.
+        // Replicator change_role is called before Replica change_role.
+        replctr
+            .change_role(
+                self.partition_state.epoch.clone(),
+                mssf_core::types::ReplicaRole::ActiveSecondary,
+                SimpleCancelToken::new_boxed(),
+            )
+            .await?;
         replica
             .change_role(
                 mssf_core::types::ReplicaRole::ActiveSecondary,

@@ -19,14 +19,15 @@ use crate::{
 pub use futures_channel::oneshot::{self, Receiver, Sender};
 
 // Token that wraps oneshot receiver.
-// The future recieve does not have error. This is designed for the use
-// case where SF guarantees that sender will be called.
+// SF guarantees that the sender callback will be invoked, but the receiver
+// may be dropped before that (e.g. tokio::select! cancellation), in which
+// case the send is silently ignored.
 pub struct FabricReceiver<T> {
     rx: Receiver<T>,
     token: Option<BoxedCancelToken>,
-    // event for cancelling
+    // event from the token, this is needed to poll the cancellation in the receiver future.
     cancel_event: Option<Pin<Box<dyn EventFuture + 'static>>>,
-    // saved ctx from SF Begin COM api for cancalling.
+    // saved ctx from SF Begin COM api for cancelling.
     ctx: Option<IFabricAsyncOperationContext>,
 }
 
@@ -74,6 +75,12 @@ impl<T> FabricReceiver<T> {
         }
         Ok(())
     }
+
+    // Cancel token no longer needed.
+    fn clear_cancel_fields(&mut self) {
+        self.token.take();
+        self.cancel_event.take();
+    }
 }
 
 // Returns error if cancelled.
@@ -86,7 +93,7 @@ impl<T> Future for FabricReceiver<T> {
     type Output = crate::WinResult<T>;
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         // Poll the receiver first, if ready then return the output,
-        // else poll the cancellation token, if cancelled propergate the cancel to SF ctx,
+        // else poll the cancellation token, if cancelled propagate the cancel to SF ctx,
         // and return pending. SF task should continue finish execute in the background,
         // and finish with error code OperationCancelled
         // and send the error code from FabricSender.
@@ -100,12 +107,16 @@ impl<T> Future for FabricReceiver<T> {
         // Try to receive the value from the sender
         let inner = <Receiver<T> as Future>::poll(Pin::new(&mut this.rx), cx);
         match (inner, this.token.as_ref()) {
-            (Poll::Ready(Ok(data)), _) => Poll::Ready(Ok(data)),
+            (Poll::Ready(Ok(data)), _) => {
+                // Result received successfully; clear the token so Drop
+                // does not cancel the operation.
+                this.clear_cancel_fields();
+                Poll::Ready(Ok(data))
+            }
             (Poll::Ready(Err(_)), Some(t)) => {
                 if t.is_cancelled() {
-                    // clear the token since we only propergate the signal once.
-                    this.token.take();
-                    this.cancel_event.take();
+                    // clear the token since we only propagate the signal once.
+                    this.clear_cancel_fields();
                     // cancel the SF ctx and clear it.
                     if let Err(e) = this.cancel_inner_ctx() {
                         Poll::Ready(Err(e))
@@ -129,14 +140,13 @@ impl<T> Future for FabricReceiver<T> {
                 let inner = std::pin::pin!(event).poll(cx);
                 match inner {
                     Poll::Ready(_) => {
-                        // clear the token since we only propergate the signal once.
-                        this.cancel_event.take();
-                        this.cancel_event.take();
-                        // operation cancelled. Propergate to inner sf ctx.
+                        // clear the token since we only propagate the signal once.
+                        this.clear_cancel_fields();
+                        // operation cancelled. propagate to inner sf ctx.
                         if let Err(e) = this.cancel_inner_ctx() {
                             Poll::Ready(Err(e))
                         } else {
-                            // The cancellation is propergated to sf task,
+                            // The cancellation is propagated to sf task,
                             // the receiver from now on should wait for the
                             // final result from the sf task. (as we have cleared the token)
                             // Most likely the task finishes with OperationCancelled error code.
@@ -151,31 +161,40 @@ impl<T> Future for FabricReceiver<T> {
     }
 }
 
+// If nobody is waiting for the result, the inner SF operation should be cancelled.
+// We intentionally do not cancel the user-passed token here,
+// as it is user-owned and cancelling it could have unintended side effects.
+impl<T> Drop for FabricReceiver<T> {
+    fn drop(&mut self) {
+        // Note: when the token is already cancelled but the receiver was never polled,
+        // the cancellation signal has not been propagated to the inner SF ctx,
+        // because propagation only happens during poll.
+        // In this case we skip cancel_inner_ctx; the SF operation will be left
+        // in the background and eventually finish on its own.
+        if let Some(t) = &self.token
+            && !t.is_cancelled()
+            && let Err(_e) = self.cancel_inner_ctx()
+        {
+            #[cfg(feature = "tracing")]
+            tracing::debug!("FabricReceiver::drop: cancel_inner_ctx failed: {_e}");
+        }
+    }
+}
+
 pub struct FabricSender<T> {
     tx: Sender<T>,
-    token: Option<BoxedCancelToken>,
 }
 
 impl<T> FabricSender<T> {
-    fn new(tx: Sender<T>, token: Option<BoxedCancelToken>) -> FabricSender<T> {
-        FabricSender { tx, token }
+    fn new(tx: Sender<T>) -> FabricSender<T> {
+        FabricSender { tx }
     }
 
     pub fn send(self, data: T) {
-        let e = self.tx.send(data);
-        if e.is_err() {
-            // In SF use case receiver should not be dropped by user.
-            // If it acctually dropped by user, it is ok to ignore because user
-            // does not want to want the value any more. But too bad SF has done
-            // the work to get the value.
-
-            // receiver should never be dropped if operation is not cancelled.
-            if let Some(t) = self.token {
-                debug_assert!(
-                    t.is_cancelled(),
-                    "task should be cancelled when receiver dropped."
-                );
-            }
+        // Ignore send error: receiver may have been dropped (e.g. tokio::select! cancellation).
+        if self.tx.send(data).is_err() {
+            #[cfg(feature = "tracing")]
+            tracing::debug!("FabricSender::send: receiver already dropped, ignoring send error");
         }
     }
 }
@@ -184,10 +203,7 @@ impl<T> FabricSender<T> {
 /// Operation can be cancelled by cancelling the token.
 pub fn oneshot_channel<T>(token: Option<BoxedCancelToken>) -> (FabricSender<T>, FabricReceiver<T>) {
     let (tx, rx) = oneshot::channel::<T>();
-    (
-        FabricSender::new(tx, token.clone()),
-        FabricReceiver::new(rx, token),
-    )
+    (FabricSender::new(tx), FabricReceiver::new(rx, token))
 }
 
 #[cfg(test)]

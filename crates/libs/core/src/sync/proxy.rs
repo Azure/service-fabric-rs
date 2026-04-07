@@ -29,8 +29,10 @@ use super::{FabricReceiver, oneshot_channel};
 /// and such callback is passed to SF begin api and is invoked when
 /// the (begin) initiated operation completes.
 ///
-/// If receiver is dropped before the result is ready, the token will be auto cancelled (if it exists).
-/// Cancelling the token will in turn cancel the fabric operation.
+/// If receiver is dropped before the result is ready, the inner SF operation will be
+/// auto cancelled (if the token is not already cancelled).
+/// The user-passed token is not cancelled by the receiver's Drop, as it is user-owned.
+/// Cancelling the token will propagate to the inner SF operation during polling.
 /// After cancellation is triggered, the receiver future should finish in a short time,
 /// with an error code operation cancelled, or other code if cancel failed.
 /// If the result is ready before the cancellation is triggered, the success result will

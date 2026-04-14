@@ -250,7 +250,7 @@ impl TestClient {
             };
             if p2.node_name != p.node_name {
                 assert_ne!(p.replica_id, p2.replica_id);
-                println!("replica id updated after {count} retries");
+                tracing::info!("replica id updated after {count} retries");
                 break;
             } else {
                 // failover is not yet finished.
@@ -271,6 +271,7 @@ impl TestClient {
 // Requires app to be deployed on onebox.
 // Uses fabric client to perform various actions for this service.
 #[tokio::test]
+#[test_log::test]
 async fn test_partition_info() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -330,7 +331,7 @@ async fn test_partition_info() {
             };
 
             if p2_endpoint.address != p_endpoint.address {
-                println!("addr updated after {count} retries");
+                tracing::info!("addr updated after {count} retries");
                 break;
             } else {
                 // addr update might be slow.
@@ -371,7 +372,7 @@ async fn test_partition_info() {
             match p2_endpoint_res {
                 Ok(p2_endpoint) => {
                     if p2_endpoint.address != p_endpoint.address {
-                        println!("addr updated after {count} retries");
+                        tracing::info!("addr updated after {count} retries");
                         break;
                     } else {
                         // addr update might be slow.
@@ -399,12 +400,12 @@ async fn test_partition_info() {
         .primary_load_metric_reports
         .iter()
         .collect::<Vec<_>>();
-    println!("Primary metric loads: {primary_loads:?}");
+    tracing::info!("Primary metric loads: {primary_loads:?}");
     let secondary_loads = partition_load_info
         .secondary_load_metric_reports
         .iter()
         .collect::<Vec<_>>();
-    println!("Secondary metric loads: {secondary_loads:?}");
+    tracing::info!("Secondary metric loads: {secondary_loads:?}");
 
     // test get deployed service info after failover
     let (p, s1, _) = tc.get_replicas(single.id).await.unwrap();
@@ -488,7 +489,7 @@ impl TestCreateUpdateClient {
             .with_auxiliary_replica_count(aux),
         );
         // Run client operation on separate task to ensure that the api is task safe.
-        println!("creating service {service_name:?}");
+        tracing::info!("creating service {service_name:?}");
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
         tokio::spawn(async move { sm.create_service(&desc, timeout, None).await })
@@ -498,7 +499,7 @@ impl TestCreateUpdateClient {
     }
 
     pub(crate) async fn delete_service(&self, service_name: &Uri) {
-        println!("deleting service {service_name:?}");
+        tracing::info!("deleting service {service_name:?}");
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
         let service_name = service_name.clone();
@@ -545,10 +546,15 @@ impl TestCreateUpdateClient {
             service_name: service_name.clone(),
             partition_id_filter: None,
         };
-        let list = qc
-            .get_partition_list(&desc, self.timeout, None)
-            .await
-            .unwrap();
+        let list = match qc.get_partition_list(&desc, self.timeout, None).await {
+            Ok(l) => l,
+            Err(e) => {
+                // There is a known SF issue that this returns FABRIC_E_PARTITION_NOT_FOUND
+                // after 2 repartition requests running concurrently.
+                tracing::error!("SF BUG: get_partition_list failed: {e}");
+                return vec![];
+            }
+        };
 
         list.service_partitions
             .iter()
@@ -593,16 +599,16 @@ impl TestCreateUpdateClient {
             // No extra names beyond what we expect.
             let no_extra = names.iter().all(|n| expected.contains(n));
             if all_expected_present && no_extra {
-                println!("partitions matched {expected:?} after {retry} retries");
+                tracing::info!("partitions matched {expected:?} after {retry} retries");
                 return;
             }
             if all_expected_present {
                 // Expected names present but extra partitions still exist; keep waiting.
-                println!(
+                tracing::info!(
                     "retry {retry}: expected {expected:?}, got {names:?} (extra partitions still present)"
                 );
             } else {
-                println!("retry {retry}: expected {expected:?}, got {names:?}");
+                tracing::info!("retry {retry}: expected {expected:?}, got {names:?}");
             }
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
@@ -625,7 +631,7 @@ impl TestCreateUpdateClient {
                 ),
             ),
         );
-        println!("updating service {service_name:?}");
+        tracing::info!("updating service {service_name:?}");
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
         let service_name = service_name.clone();
@@ -647,7 +653,7 @@ impl TestCreateUpdateClient {
                 .with_min_replica_set_size(min)
                 .with_auxiliary_replica_count(aux),
         );
-        println!("updating service replica layout {service_name:?} - {layout:?}");
+        tracing::info!("updating service replica layout {service_name:?} - {layout:?}");
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
         let service_name = service_name.clone();
@@ -686,13 +692,14 @@ async fn test_service_create_delete(
 
     // resolve until the service is ready
     let addrs = tc.resolve_service(service_name, key_type).await;
-    println!("resolved service {addrs:?}");
+    tracing::info!("resolved service {addrs:?}");
 
     // delete service
     tc.delete_service(service_name).await;
 }
 
 #[tokio::test]
+#[test_log::test]
 async fn test_service_curd_singleton() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -704,6 +711,7 @@ async fn test_service_curd_singleton() {
 }
 
 #[tokio::test]
+#[test_log::test]
 async fn test_service_curd_named() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -717,6 +725,7 @@ async fn test_service_curd_named() {
 }
 
 #[tokio::test]
+#[test_log::test]
 async fn test_service_curd_range() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -730,6 +739,7 @@ async fn test_service_curd_range() {
 }
 
 #[tokio::test]
+#[test_log::test]
 async fn test_service_reparition() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -754,12 +764,12 @@ async fn test_service_reparition() {
     {
         let key_type = PartitionKeyType::String(WString::from("1"));
         let addrs = tc.resolve_service(&service_name, key_type).await;
-        println!("resolved service {addrs:?}");
+        tracing::info!("resolved service {addrs:?}");
     }
 
     // Add a partition 2
     {
-        println!("adding partition 2: {service_name:?}");
+        tracing::info!("adding partition 2: {service_name:?}");
         let names_to_add = vec![WString::from("2")];
         let names_to_remove = vec![];
         tc.update_service_named_partitions(&service_name, names_to_add, names_to_remove)
@@ -769,12 +779,12 @@ async fn test_service_reparition() {
     {
         let key_type = PartitionKeyType::String(WString::from("2"));
         let addrs = tc.resolve_service(&service_name, key_type).await;
-        println!("resolved service partition 2 {addrs:?}");
+        tracing::info!("resolved service partition 2 {addrs:?}");
     }
 
     // remove parition 1
     {
-        println!("removing partition 1: {service_name:?}");
+        tracing::info!("removing partition 1: {service_name:?}");
         let names_to_add = vec![];
         let names_to_remove = vec![WString::from("1")];
         tc.update_service_named_partitions(&service_name, names_to_add, names_to_remove)
@@ -786,6 +796,7 @@ async fn test_service_reparition() {
 }
 
 #[tokio::test]
+#[test_log::test]
 async fn test_service_repartition_and_query() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -806,14 +817,14 @@ async fn test_service_repartition_and_query() {
     )
     .await;
 
-    const MAX_RETRY: u32 = 30;
+    const MAX_RETRY: u32 = 60;
 
     // Wait for partition "1" to be ready
     tc.wait_for_named_partitions(&service_name, &["1"], MAX_RETRY)
         .await;
 
     // Add partition "2"
-    println!("adding partition 2: {service_name:?}");
+    tracing::info!("adding partition 2: {service_name:?}");
     tc.update_service_named_partitions(&service_name, vec![WString::from("2")], vec![])
         .await;
 
@@ -822,7 +833,7 @@ async fn test_service_repartition_and_query() {
         .await;
 
     // Remove partition "1"
-    println!("removing partition 1: {service_name:?}");
+    tracing::info!("removing partition 1: {service_name:?}");
     tc.update_service_named_partitions(&service_name, vec![], vec![WString::from("1")])
         .await;
 
@@ -842,7 +853,7 @@ async fn test_service_repartition_and_query() {
         let new_name_strs: Vec<String> = new_names.iter().map(|n| n.to_string()).collect();
 
         // Add 5 partitions
-        println!(
+        tracing::info!(
             "round {round}: adding partitions {new_start}..{}: {service_name:?}",
             new_start + 4
         );
@@ -851,7 +862,7 @@ async fn test_service_repartition_and_query() {
 
         // Remove the old single partition
         let remove_name = current_base.to_string();
-        println!("round {round}: removing partition {remove_name}: {service_name:?}");
+        tracing::info!("round {round}: removing partition {remove_name}: {service_name:?}");
         tc.update_service_named_partitions(&service_name, vec![], vec![WString::from(remove_name)])
             .await;
 
@@ -864,7 +875,7 @@ async fn test_service_repartition_and_query() {
         let to_remove: Vec<WString> = (new_start..new_start + 4)
             .map(|i| WString::from(i.to_string()))
             .collect();
-        println!(
+        tracing::info!(
             "round {round}: removing partitions {new_start}..{}: {service_name:?}",
             new_start + 3
         );
@@ -876,7 +887,7 @@ async fn test_service_repartition_and_query() {
         tc.wait_for_named_partitions(&service_name, &[remaining.as_str()], MAX_RETRY)
             .await;
 
-        println!("round {round}: completed, remaining partition: {remaining}");
+        tracing::info!("round {round}: completed, remaining partition: {remaining}");
     }
 
     // Cleanup

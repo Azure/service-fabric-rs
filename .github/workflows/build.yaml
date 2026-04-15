@@ -56,6 +56,8 @@ jobs:
     - name: Remove rust toolchain file to avoid conflict
       run: rm rust-toolchain.toml
 
+    - uses: Swatinem/rust-cache@v2
+
     - name: Run cargo check
       run: cargo +${{ matrix.rust-version }} check --all-targets
 
@@ -125,6 +127,8 @@ jobs:
         with:
           toolchain: ${{ matrix.rust-version }}
           components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
 
       - name: Install cmake
         uses: lukka/get-cmake@latest
@@ -265,6 +269,8 @@ jobs:
       with:
         toolchain: ${{ needs.setup.outputs.rust-max-version }}
         components: rustfmt, clippy
+
+    - uses: Swatinem/rust-cache@v2
 
     - name: Verify rust-toolchain.toml matches expected version
       shell: bash

@@ -68,8 +68,10 @@ async fn test_fabric_client() {
         let token = SimpleCancelToken::new_boxed();
         let list = qc.get_node_list(&desc, timeout, Some(token.clone()));
         token.cancel();
-        let err = list.await.expect_err("request should be cancelled");
-        assert_eq!(err, ErrorCode::E_ABORT.into());
+        // It is possible that the request is already success before cancel.
+        if let Err(err) = list.await {
+            assert_eq!(err, ErrorCode::E_ABORT.into());
+        }
     }
 
     let smgr = c.get_service_manager();

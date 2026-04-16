@@ -334,8 +334,17 @@ async fn test_aux_replicas() {
 
 async fn test_replica_mock(replica_count: usize) {
     use crate::Factory;
+    use crate::grpc::ReplicaRegistry;
     let rt = TokioExecutor::new(tokio::runtime::Handle::current());
-    let factory = Box::new(Factory::create(12312, "localhost".into(), rt));
+    let grpc_addr: std::net::SocketAddr = "127.0.0.1:0".parse().unwrap();
+    let registry = ReplicaRegistry::new();
+    let factory = Box::new(Factory::create(
+        12312,
+        "localhost".into(),
+        rt,
+        grpc_addr,
+        registry,
+    ));
 
     let mut driver = mssf_util::mock::StatefulServicePartitionDriver::new();
     driver.register_service_factory(factory);

@@ -10,10 +10,18 @@ publish = false
 tracing.workspace = true
 tracing-subscriber.workspace = true
 tokio.workspace = true
-tokio-util.workspace = true
+tokio-util = { workspace = true, features = ["rt"] }
 trait-variant.workspace = true
+tonic.workspace = true
+tonic-prost.workspace = true
+prost.workspace = true
+url.workspace = true
+uuid.workspace = true
 mssf-core = { workspace = true, default-features = true }
 mssf-util = { workspace = true, default-features = true }
+
+[build-dependencies]
+tonic-prost-build.workspace = true
 
 [dev-dependencies]
 test-log.workspace = true

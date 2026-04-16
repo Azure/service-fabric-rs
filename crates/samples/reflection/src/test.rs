@@ -387,6 +387,77 @@ async fn test_partition_info() {
     // resolve the service
     let (p_endpoint, _, _) = tc.resolve().await.unwrap();
 
+    // Test gRPC connection to the service
+    {
+        use crate::grpc::ReflectionUrl;
+        use crate::grpc::hello_world::greeter_client::GreeterClient;
+        use crate::grpc::hello_world::{
+            GetReplicasRequest, HelloRequest, ReplicaRole as ProtoRole,
+        };
+
+        // The endpoint address is the gRPC URL with query params
+        let grpc_url = p_endpoint.address.to_string();
+        let reflection_url =
+            ReflectionUrl::parse(&grpc_url).expect("failed to parse reflection URL");
+        assert_eq!(
+            reflection_url.partition_id, single.id,
+            "partition ID in endpoint URL should match SF partition"
+        );
+        let base_url = reflection_url.grpc_connect_url();
+
+        let mut client = GreeterClient::connect(base_url.clone())
+            .await
+            .expect("failed to connect to gRPC server");
+
+        // Test SayHello
+        let response = client
+            .say_hello(HelloRequest {
+                name: "ServiceFabric".into(),
+            })
+            .await
+            .expect("SayHello failed");
+        assert_eq!(response.into_inner().message, "Hello ServiceFabric!");
+        tracing::info!("SayHello succeeded");
+
+        // Test GetReplicas - get all
+        let response = client
+            .get_replicas(GetReplicasRequest {
+                partition_id: String::new(),
+            })
+            .await
+            .expect("GetReplicas failed");
+        let replicas = response.into_inner().replicas;
+        tracing::info!("GetReplicas returned {} replicas", replicas.len());
+        assert!(!replicas.is_empty(), "expected at least one replica");
+
+        // Test GetReplicas - filter by partition ID
+        let partition_id_str = format!("{:?}", single.id);
+        let response = client
+            .get_replicas(GetReplicasRequest {
+                partition_id: partition_id_str,
+            })
+            .await
+            .expect("GetReplicas with partition filter failed");
+        let filtered = response.into_inner().replicas;
+        tracing::info!(
+            "GetReplicas (filtered) returned {} replicas",
+            filtered.len()
+        );
+        assert!(
+            !filtered.is_empty(),
+            "expected at least one replica for partition"
+        );
+        // The primary endpoint was resolved, so there must be exactly one primary replica
+        let primary_count = filtered
+            .iter()
+            .filter(|r| r.role == ProtoRole::Primary as i32)
+            .count();
+        assert_eq!(
+            primary_count, 1,
+            "expected exactly one primary replica in partition"
+        );
+    }
+
     // restart primary
     tc.restart_primary_wait_for_replica_id_change(single.id)
         .await;

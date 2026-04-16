@@ -20,29 +20,32 @@ use tokio_util::sync::CancellationToken;
 use tracing::info;
 
 use crate::echo;
+use crate::grpc::{ReflectionUrl, ReplicaRegistry};
 
 pub struct Factory {
     replication_port: u32,
     hostname: WString,
     rt: TokioExecutor,
+    grpc_addr: std::net::SocketAddr,
+    registry: ReplicaRegistry,
 }
 
 impl Factory {
-    pub fn create(replication_port: u32, hostname: WString, rt: TokioExecutor) -> Factory {
+    pub fn create(
+        replication_port: u32,
+        hostname: WString,
+        rt: TokioExecutor,
+        grpc_addr: std::net::SocketAddr,
+        registry: ReplicaRegistry,
+    ) -> Factory {
         Factory {
             replication_port,
             hostname,
             rt,
+            grpc_addr,
+            registry,
         }
     }
-}
-
-fn get_addr(port: u32, hostname: WString) -> String {
-    let mut addr = String::new();
-    addr.push_str(&hostname.to_string());
-    addr.push(':');
-    addr.push_str(&port.to_string());
-    addr
 }
 
 #[mssf_core::async_trait]
@@ -69,9 +72,12 @@ impl IStatefulServiceFactory for Factory {
             self.replication_port,
             self.hostname.clone(),
         );
+        self.registry.add(partitionid, replicaid);
         let replica = Box::new(Replica::new(
-            self.replication_port,
-            self.hostname.clone(),
+            self.grpc_addr,
+            partitionid,
+            replicaid,
+            self.registry.clone(),
             svc,
         ));
         Ok(replica)
@@ -79,17 +85,27 @@ impl IStatefulServiceFactory for Factory {
 }
 
 pub struct Replica {
-    port_: u32,
-    hostname_: WString,
+    grpc_addr: std::net::SocketAddr,
+    partition_id: mssf_core::GUID,
+    replica_id: i64,
+    registry: ReplicaRegistry,
     svc: Service,
     ctx: ReplicaCtx,
 }
 
 impl Replica {
-    pub fn new(port: u32, hostname: WString, svc: Service) -> Replica {
+    pub fn new(
+        grpc_addr: std::net::SocketAddr,
+        partition_id: mssf_core::GUID,
+        replica_id: i64,
+        registry: ReplicaRegistry,
+        svc: Service,
+    ) -> Replica {
         Replica {
-            port_: port,
-            hostname_: hostname,
+            grpc_addr,
+            partition_id,
+            replica_id,
+            registry,
             svc,
             ctx: ReplicaCtx::empty(),
         }
@@ -156,22 +172,25 @@ impl IStatefulServiceReplica for Replica {
     #[tracing::instrument(skip(self,_token), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()), err, ret)]
     async fn change_role(
         &self,
-        _newrole: ReplicaRole,
+        newrole: ReplicaRole,
         _token: BoxedCancelToken,
     ) -> mssf_core::Result<WString> {
-        // return the address
-        let addr = get_addr(self.port_, self.hostname_.clone());
-        let str_res = WString::from(addr);
-        Ok(str_res)
+        self.registry
+            .update_role(self.partition_id, self.replica_id, newrole);
+        // return the gRPC address with partition and replica id as query params
+        let reflection_url = ReflectionUrl::new(self.grpc_addr, self.partition_id, self.replica_id);
+        Ok(WString::from(reflection_url.to_url_string()))
     }
     #[tracing::instrument(skip(self,_token), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()), err, ret)]
     async fn close(&self, _token: BoxedCancelToken) -> mssf_core::Result<()> {
+        self.registry.remove(self.partition_id, self.replica_id);
         self.svc.stop();
         Ok(())
     }
     #[tracing::instrument(skip(self), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()))]
     fn abort(&self) {
         info!("abort",);
+        self.registry.remove(self.partition_id, self.replica_id);
         self.svc.stop();
     }
 }

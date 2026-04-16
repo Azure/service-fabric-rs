@@ -296,6 +296,82 @@ async fn test_partition_info() {
     assert_ne!(p.node_name, WString::new());
 
     let mgmt = fc.get_service_manager();
+
+    // Test registering service notification filter with different names and flags.
+    // It turns out the SF accepts any fabric uri and does not validate the existence of app or services.
+    enum ExpectedResult {
+        Success,
+        Fail,
+    }
+    let test_table = vec![
+        // Non-existing app with none existing servie should succeed.
+        (
+            "fabric:/NonExistenceApp/NonExistingService",
+            ServiceNotificationFilterFlags::NamePrefix,
+            ExpectedResult::Success,
+        ),
+        // Non-existing service for existing app should succeed, since service can be created later.
+        (
+            "fabric:/ReflectionApp/NonExistingService",
+            ServiceNotificationFilterFlags::NamePrefix,
+            ExpectedResult::Success,
+        ),
+        (
+            "fabric:/ReflectionApp/NonExistingService",
+            ServiceNotificationFilterFlags::None,
+            ExpectedResult::Success,
+        ),
+        // App prefix should succeed.
+        (
+            "fabric:/ReflectionApp",
+            ServiceNotificationFilterFlags::NamePrefix,
+            ExpectedResult::Success,
+        ),
+        // App non-prefix should succeed.
+        (
+            "fabric:/ReflectionApp",
+            ServiceNotificationFilterFlags::PrimaryOnly,
+            ExpectedResult::Success,
+        ),
+        // Invalid app name should succeed.
+        (
+            "fabric:/Invalid!*App()",
+            ServiceNotificationFilterFlags::NamePrefix,
+            ExpectedResult::Success,
+        ),
+        // Not a fabric uri should fail
+        (
+            "InvalidUri",
+            ServiceNotificationFilterFlags::NamePrefix,
+            ExpectedResult::Fail,
+        ),
+    ];
+
+    for (service_name, flags, expected) in test_table {
+        let desc = ServiceNotificationFilterDescription {
+            name: Uri::from(service_name),
+            flags,
+        };
+        let res = mgmt
+            .register_service_notification_filter(&desc, Duration::from_secs(5), None)
+            .await;
+        match expected {
+            ExpectedResult::Success => {
+                let filter_handle = res.unwrap_or_else(|_| {
+                    panic!("registering filter for {service_name} should succeed")
+                });
+                mgmt.unregister_service_notification_filter(filter_handle, timeout, None)
+                    .await
+                    .unwrap();
+            }
+            ExpectedResult::Fail => {
+                res.expect_err(&format!(
+                    "registering filter for {service_name} should fail"
+                ));
+            }
+        }
+    }
+
     // register service notification filter
     let filter_handle = {
         let desc = ServiceNotificationFilterDescription {

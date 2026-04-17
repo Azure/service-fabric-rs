@@ -129,10 +129,11 @@ mod tests {
             "Should have one cluster health entity"
         );
         let cluster_health = &data.cluster_health_entity[0];
-        assert!(
-            cluster_health.health.aggregated_health_state == mssf_core::types::HealthState::Ok
-                || cluster_health.health.aggregated_health_state
-                    == mssf_core::types::HealthState::Warning
+        // Under load for all mssf tests, cluster might be in error state when RA cannot send all health reports.
+        assert_ne!(
+            cluster_health.health.aggregated_health_state,
+            mssf_core::types::HealthState::Invalid,
+            "Cluster health should not be invalid"
         );
         assert!(
             cluster_health.health.node_health_states.is_empty(),

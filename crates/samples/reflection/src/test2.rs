@@ -154,6 +154,7 @@ async fn fabric_client_drop_hack(fc: FabricClient) {
 /// Resolve-ServiceFabricService -ServiceName fabric:/ReflectionApp/ResolveNotificationTest -PartitionKindSingleton
 #[tokio::test]
 #[test_log::test]
+#[serial_test::serial]
 async fn test_resolve_notification() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -226,6 +227,7 @@ async fn test_resolve_notification() {
 
 #[tokio::test]
 #[test_log::test]
+#[serial_test::serial]
 async fn test_aux_replicas() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -382,18 +384,21 @@ async fn test_replica_mock(replica_count: usize) {
 // Test logs are too verbose. Uncomment to enable logs.
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 // #[test_log::test]
+#[serial_test::serial]
 async fn test_replica_mock_1_replica() {
     test_replica_mock(1).await;
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 // #[test_log::test]
+#[serial_test::serial]
 async fn test_replica_mock_2_replicas() {
     test_replica_mock(2).await;
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test_log::test]
+#[serial_test::serial]
 async fn test_replica_mock_3_replicas() {
     test_replica_mock(3).await;
 }

@@ -26,6 +26,7 @@ libloading = "0.9"
 lazy_static = "1.5"
 serde = "1"
 serde_derive = "1"
+serial_test = "3"
 tokio = { version = "1", features = [
     "sync",
     "rt-multi-thread",

@@ -272,6 +272,7 @@ impl TestClient {
 // Uses fabric client to perform various actions for this service.
 #[tokio::test]
 #[test_log::test]
+#[serial_test::serial]
 async fn test_partition_info() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -847,6 +848,7 @@ async fn test_service_create_delete(
 
 #[tokio::test]
 #[test_log::test]
+#[serial_test::serial]
 async fn test_service_curd_singleton() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -859,6 +861,7 @@ async fn test_service_curd_singleton() {
 
 #[tokio::test]
 #[test_log::test]
+#[serial_test::serial]
 async fn test_service_curd_named() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -873,6 +876,7 @@ async fn test_service_curd_named() {
 
 #[tokio::test]
 #[test_log::test]
+#[serial_test::serial]
 async fn test_service_curd_range() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -887,6 +891,7 @@ async fn test_service_curd_range() {
 
 #[tokio::test]
 #[test_log::test]
+#[serial_test::serial]
 async fn test_service_reparition() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])
@@ -944,6 +949,7 @@ async fn test_service_reparition() {
 
 #[tokio::test]
 #[test_log::test]
+#[serial_test::serial]
 async fn test_service_repartition_and_query() {
     let fc = FabricClient::builder()
         .with_connection_strings(vec![WString::from("localhost:19000")])

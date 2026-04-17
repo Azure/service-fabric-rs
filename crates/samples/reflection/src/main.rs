@@ -36,8 +36,8 @@ fn main() -> mssf_core::Result<()> {
         .unwrap();
     let hostname = get_hostname().expect("cannot get hostname");
 
-    // Bind gRPC listener on localhost port 0 to let OS assign a port
-    let grpc_bind_addr: std::net::SocketAddr = ([127, 0, 0, 1], 0).into();
+    // Bind gRPC listener on all interfaces, port 0 to let OS assign a port
+    let grpc_bind_addr: std::net::SocketAddr = ([0, 0, 0, 0], 0).into();
     let std_listener =
         std::net::TcpListener::bind(grpc_bind_addr).expect("failed to bind gRPC listener");
     std_listener

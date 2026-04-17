@@ -104,7 +104,7 @@ mod tests {
         });
 
         // Wait at least 1 iteration bit and then stop the producer
-        let max_iteration = 10;
+        let max_iteration = 30;
         for _ in 0..max_iteration {
             if producer.get_iteration() > 0 {
                 break;

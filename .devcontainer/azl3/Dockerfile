@@ -5,7 +5,8 @@ RUN tdnf update -y && tdnf upgrade -y
 # install tools for sf
 RUN tdnf install --noplugins --skipsignature -y \
     tar unzip ca-certificates gcc glibc-devel binutils \
-    make curl wget awk net-tools python3-pip git socat cmake sudo
+    make curl wget awk net-tools python3-pip git socat cmake sudo \
+    protobuf-compiler
 
 # install sf
 RUN mkdir -p /var/opt/microsoft/servicefabric/ && echo "Accepted" | tee /var/opt/microsoft/servicefabric/accepted-eula-ga

@@ -58,6 +58,8 @@ jobs:
 
     - uses: Swatinem/rust-cache@v2
 
+    - uses: taiki-e/install-action@protoc
+
     - name: Run cargo check
       run: cargo +${{ matrix.rust-version }} check --all-targets
 
@@ -129,6 +131,8 @@ jobs:
           components: rustfmt, clippy
 
       - uses: Swatinem/rust-cache@v2
+
+      - uses: taiki-e/install-action@protoc
 
       - name: Install cmake
         uses: lukka/get-cmake@latest

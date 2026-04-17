@@ -275,6 +275,8 @@ jobs:
 
     - uses: Swatinem/rust-cache@v2
 
+    - uses: taiki-e/install-action@protoc
+
     - name: Verify rust-toolchain.toml matches expected version
       shell: bash
       run: |

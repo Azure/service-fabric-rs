@@ -8,7 +8,6 @@ use crate::statefulstore::Factory;
 use mssf_core::WString;
 use mssf_core::runtime::CodePackageActivationContext;
 use mssf_util::tokio::TokioExecutor;
-use std::net::ToSocketAddrs;
 use tokio_util::sync::CancellationToken;
 use tracing::info;
 
@@ -37,12 +36,8 @@ fn main() -> mssf_core::Result<()> {
         .unwrap();
     let hostname = get_hostname().expect("cannot get hostname");
 
-    // Bind gRPC listener on port 0 to let OS assign a port
-    let grpc_bind_addr: std::net::SocketAddr = format!("{}:0", hostname)
-        .to_socket_addrs()
-        .expect("failed to resolve gRPC bind address")
-        .next()
-        .expect("no addresses resolved for gRPC bind");
+    // Bind gRPC listener on localhost port 0 to let OS assign a port
+    let grpc_bind_addr: std::net::SocketAddr = ([127, 0, 0, 1], 0).into();
     let std_listener =
         std::net::TcpListener::bind(grpc_bind_addr).expect("failed to bind gRPC listener");
     std_listener

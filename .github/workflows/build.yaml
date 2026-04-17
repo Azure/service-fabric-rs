@@ -117,7 +117,8 @@ jobs:
       - name: tdnf install
         run: |
           tdnf update --noplugins --skipsignature -y
-          tdnf install --noplugins --skipsignature -y tar unzip ca-certificates gcc glibc-devel binutils make
+          tdnf install --noplugins --skipsignature -y \
+            tar unzip ca-certificates gcc glibc-devel binutils make protobuf-compiler
 
       - uses: actions/checkout@v6
 
@@ -131,8 +132,6 @@ jobs:
           components: rustfmt, clippy
 
       - uses: Swatinem/rust-cache@v2
-
-      - uses: taiki-e/install-action@protoc
 
       - name: Install cmake
         uses: lukka/get-cmake@latest

@@ -58,6 +58,8 @@ jobs:
 
     - uses: Swatinem/rust-cache@v2
 
+    - uses: taiki-e/install-action@protoc
+
     - name: Run cargo check
       run: cargo +${{ matrix.rust-version }} check --all-targets
 
@@ -115,7 +117,8 @@ jobs:
       - name: tdnf install
         run: |
           tdnf update --noplugins --skipsignature -y
-          tdnf install --noplugins --skipsignature -y tar unzip ca-certificates gcc glibc-devel binutils make
+          tdnf install --noplugins --skipsignature -y \
+            tar unzip ca-certificates gcc glibc-devel binutils make protobuf-compiler
 
       - uses: actions/checkout@v6
 
@@ -271,6 +274,8 @@ jobs:
         components: rustfmt, clippy
 
     - uses: Swatinem/rust-cache@v2
+
+    - uses: taiki-e/install-action@protoc
 
     - name: Verify rust-toolchain.toml matches expected version
       shell: bash

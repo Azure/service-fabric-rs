@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package helloworld;
+
+service Greeter {
+  rpc SayHello (HelloRequest) returns (HelloReply);
+  // Get all replicas, optionally filtered by partition ID
+  rpc GetReplicas (GetReplicasRequest) returns (GetReplicasResponse);
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}
+
+message GetReplicasRequest {
+  // Optional: filter by partition ID. Empty means return all.
+  string partition_id = 1;
+}
+
+message GetReplicasResponse {
+  repeated ReplicaInfo replicas = 1;
+}
+
+enum ReplicaRole {
+  REPLICA_ROLE_UNKNOWN = 0;
+  REPLICA_ROLE_NONE = 1;
+  REPLICA_ROLE_PRIMARY = 2;
+  REPLICA_ROLE_IDLE_SECONDARY = 3;
+  REPLICA_ROLE_ACTIVE_SECONDARY = 4;
+  REPLICA_ROLE_IDLE_AUXILIARY = 5;
+  REPLICA_ROLE_ACTIVE_AUXILIARY = 6;
+  REPLICA_ROLE_PRIMARY_AUXILIARY = 7;
+}
+
+message ReplicaInfo {
+  string partition_id = 1;
+  int64 replica_id = 2;
+  ReplicaRole role = 3;
+}

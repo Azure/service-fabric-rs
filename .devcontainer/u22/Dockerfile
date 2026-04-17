@@ -3,8 +3,9 @@ FROM mcr.microsoft.com/mirror/docker/library/ubuntu:22.04 as base
 RUN apt-get update -y && apt-get upgrade -y
 
 # install tools for sf
-RUN apt-get install -y apt-transport-https curl lsb-release wget gnupg2 software-properties-common debconf-utils \
-    git socat sudo python3-pip
+RUN apt-get install -y apt-transport-https curl lsb-release wget gnupg2 \
+    software-properties-common debconf-utils \
+    git socat sudo python3-pip protobuf-compiler
 
 # more tools for dev
 RUN pip install cmake --upgrade

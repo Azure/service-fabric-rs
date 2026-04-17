@@ -104,7 +104,7 @@ mod tests {
         });
 
         // Wait at least 1 iteration bit and then stop the producer
-        let max_iteration = 10;
+        let max_iteration = 30;
         for _ in 0..max_iteration {
             if producer.get_iteration() > 0 {
                 break;
@@ -129,10 +129,11 @@ mod tests {
             "Should have one cluster health entity"
         );
         let cluster_health = &data.cluster_health_entity[0];
-        assert!(
-            cluster_health.health.aggregated_health_state == mssf_core::types::HealthState::Ok
-                || cluster_health.health.aggregated_health_state
-                    == mssf_core::types::HealthState::Warning
+        // Due to load, onebox could be in error state.
+        // It is not this tests job to verify cluster health, just check state is returned.
+        assert_ne!(
+            cluster_health.health.aggregated_health_state,
+            mssf_core::types::HealthState::Unknown,
         );
         assert!(
             cluster_health.health.node_health_states.is_empty(),

@@ -44,6 +44,7 @@ fn main() -> mssf_core::Result<()> {
         .set_nonblocking(true)
         .expect("failed to set non-blocking");
     let grpc_local_addr = std_listener.local_addr().expect("failed to get local addr");
+    let grpc_port = grpc_local_addr.port();
     info!("gRPC server listening on {}", grpc_local_addr);
 
     // Shared state between gRPC and Service Fabric
@@ -71,7 +72,7 @@ fn main() -> mssf_core::Result<()> {
         endpoint.port,
         hostname,
         e.clone(),
-        grpc_local_addr,
+        grpc_port,
         registry,
     ));
     runtime

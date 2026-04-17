@@ -163,13 +163,9 @@ pub struct ReflectionUrl {
 
 impl ReflectionUrl {
     /// Build a reflection URL from components.
-    pub fn new(
-        grpc_addr: std::net::SocketAddr,
-        partition_id: mssf_core::GUID,
-        replica_id: i64,
-    ) -> Self {
-        let base_url =
-            url::Url::parse(&format!("http://{}", grpc_addr)).expect("failed to parse gRPC URL");
+    pub fn new(hostname: &str, port: u16, partition_id: mssf_core::GUID, replica_id: i64) -> Self {
+        let base_url = url::Url::parse(&format!("http://{}:{}", hostname, port))
+            .expect("failed to parse gRPC URL");
         Self {
             base_url,
             partition_id,

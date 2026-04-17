@@ -26,7 +26,7 @@ pub struct Factory {
     replication_port: u32,
     hostname: WString,
     rt: TokioExecutor,
-    grpc_addr: std::net::SocketAddr,
+    grpc_port: u16,
     registry: ReplicaRegistry,
 }
 
@@ -35,14 +35,14 @@ impl Factory {
         replication_port: u32,
         hostname: WString,
         rt: TokioExecutor,
-        grpc_addr: std::net::SocketAddr,
+        grpc_port: u16,
         registry: ReplicaRegistry,
     ) -> Factory {
         Factory {
             replication_port,
             hostname,
             rt,
-            grpc_addr,
+            grpc_port,
             registry,
         }
     }
@@ -74,7 +74,8 @@ impl IStatefulServiceFactory for Factory {
         );
         self.registry.add(partitionid, replicaid);
         let replica = Box::new(Replica::new(
-            self.grpc_addr,
+            self.hostname.to_string(),
+            self.grpc_port,
             partitionid,
             replicaid,
             self.registry.clone(),
@@ -85,7 +86,8 @@ impl IStatefulServiceFactory for Factory {
 }
 
 pub struct Replica {
-    grpc_addr: std::net::SocketAddr,
+    grpc_hostname: String,
+    grpc_port: u16,
     partition_id: mssf_core::GUID,
     replica_id: i64,
     registry: ReplicaRegistry,
@@ -95,14 +97,16 @@ pub struct Replica {
 
 impl Replica {
     pub fn new(
-        grpc_addr: std::net::SocketAddr,
+        grpc_hostname: String,
+        grpc_port: u16,
         partition_id: mssf_core::GUID,
         replica_id: i64,
         registry: ReplicaRegistry,
         svc: Service,
     ) -> Replica {
         Replica {
-            grpc_addr,
+            grpc_hostname,
+            grpc_port,
             partition_id,
             replica_id,
             registry,
@@ -178,7 +182,12 @@ impl IStatefulServiceReplica for Replica {
         self.registry
             .update_role(self.partition_id, self.replica_id, newrole);
         // return the gRPC address with partition and replica id as query params
-        let reflection_url = ReflectionUrl::new(self.grpc_addr, self.partition_id, self.replica_id);
+        let reflection_url = ReflectionUrl::new(
+            &self.grpc_hostname,
+            self.grpc_port,
+            self.partition_id,
+            self.replica_id,
+        );
         Ok(WString::from(reflection_url.to_url_string()))
     }
     #[tracing::instrument(skip(self,_token), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()), err, ret)]

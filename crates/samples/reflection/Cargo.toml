@@ -24,5 +24,4 @@ mssf-util = { workspace = true, default-features = true }
 tonic-prost-build.workspace = true
 
 [dev-dependencies]
-serial_test.workspace = true
 test-log.workspace = true

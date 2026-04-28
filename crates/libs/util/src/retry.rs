@@ -139,17 +139,13 @@ impl OperationRetryer {
             match res {
                 Ok(r) => return Ok(r),
                 Err(e) => match e.try_as_fabric_error_code() {
-                    Ok(ec) => {
-                        if ec == ErrorCode::FABRIC_E_TIMEOUT || ec.is_transient() {
-                            #[cfg(feature = "tracing")]
-                            tracing::debug!(
-                                "Operation transient error {ec}. Remaining time {:?}. Retrying...",
-                                timer.remaining()?
-                            );
-                            // do nothing, retry.
-                        } else {
-                            return Err(e);
-                        }
+                    Ok(ec) if ec == ErrorCode::FABRIC_E_TIMEOUT || ec.is_transient() => {
+                        #[cfg(feature = "tracing")]
+                        tracing::debug!(
+                            "Operation transient error {ec}. Remaining time {:?}. Retrying...",
+                            timer.remaining()?
+                        );
+                        // do nothing, retry.
                     }
                     _ => return Err(e),
                 },

@@ -22,10 +22,13 @@
 //! [`tests/control_e2e.rs`](../../tests/control_e2e.rs) and changing
 //! only the gate sequence at the bottom.
 //!
-//! The cluster's hostname comes from `$REFLECTION_CLUSTER_HOST`,
-//! defaulting to `"onebox"` (the sibling-container DNS name in the
-//! Linux devcontainer). Override the env var for non-devcontainer
-//! topologies.
+//! The cluster's hostname comes from `$REFLECTION_CLUSTER_HOST`. The
+//! compile-time default is platform-specific:
+//! - Windows → `"localhost"` (SF onebox runs on the same host).
+//! - Unix → `"onebox"` (the sibling-container DNS name in the
+//!   `.devcontainer/*` docker-compose setup).
+//!
+//! Override the env var for any other topology.
 
 use std::time::Duration;
 
@@ -50,11 +53,19 @@ pub const POLL_BUDGET: Duration = Duration::from_secs(30);
 /// gRPC `WaitForApproval` deadline sent to the server.
 pub const WAIT_FOR_APPROVAL_TIMEOUT_MS: u32 = 30_000;
 
-/// Hostname-or-IP that resolves to the cluster. Defaults to `"onebox"`
-/// (the docker-compose / devcontainer hostname). Override with
-/// `REFLECTION_CLUSTER_HOST` for non-devcontainer setups.
+/// Hostname-or-IP that resolves to the cluster.
+///
+/// Compile-time default:
+/// - Windows → `"localhost"` (SF onebox runs on the same host).
+/// - Unix → `"onebox"` (the docker-compose / devcontainer hostname).
+///
+/// Override at runtime with `REFLECTION_CLUSTER_HOST`.
 pub fn cluster_host() -> String {
-    std::env::var("REFLECTION_CLUSTER_HOST").unwrap_or_else(|_| "onebox".to_string())
+    #[cfg(windows)]
+    const DEFAULT_HOST: &str = "localhost";
+    #[cfg(not(windows))]
+    const DEFAULT_HOST: &str = "onebox";
+    std::env::var("REFLECTION_CLUSTER_HOST").unwrap_or_else(|_| DEFAULT_HOST.to_string())
 }
 
 /// Holds one connection slot per candidate `ReplicaControl` port.

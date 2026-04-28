@@ -1,6 +1,6 @@
 ---
 name: reflection-app-testing
-description: 'Run, gate, inspect, and clean up reflection-sample integration tests against the local Linux onebox. Use when the user asks to "run the reflection e2e test", "approve a stuck gate", "list pending replica gates", "detach a controller", "clean up test apps", "redeploy the reflection sample after a code change", or after touching crates/samples/reflection/src/control.rs / grpc_control.rs / proto/control.proto / proto/initdata.proto. Wraps the reflection_ctl operator CLI, the e2e test in tests/control_e2e.rs, prepare_test_apps.sh, and remove_test_apps.sh.'
+description: 'Run, gate, inspect, and clean up reflection-sample integration tests against the local onebox (Linux devcontainer or Windows host). Use when the user asks to "run the reflection e2e test", "approve a stuck gate", "list pending replica gates", "detach a controller", "clean up test apps", "redeploy the reflection sample after a code change", or after touching crates/samples/reflection/src/control.rs / grpc_control.rs / proto/control.proto / proto/initdata.proto. Wraps the reflection_ctl operator CLI, the e2e tests in tests/control_e2e.rs and tests/fail_change_role.rs, prepare_test_apps.sh / remove_test_apps.sh (Linux), and the *_ctl.ps1 scripts (Windows).'
 ---
 
 # Reflection App Testing
@@ -29,6 +29,8 @@ Trigger phrases:
   - `crates/samples/reflection/proto/initdata.proto`
   - `crates/samples/reflection/reflection_ctl/main.rs`
   - `crates/samples/reflection/tests/control_e2e.rs`
+  - `crates/samples/reflection/tests/fail_change_role.rs`
+  - `crates/samples/reflection/src/test_cluster.rs`
 
 ## When NOT to Use
 
@@ -37,9 +39,26 @@ Trigger phrases:
   and doesn't need a cluster.
 - Cluster bring-up or non-reflection samples — use
   [`onebox-deploy-test`](../onebox-deploy-test/SKILL.md).
-- Windows onebox — this skill assumes the Linux devcontainer setup.
+
+## Cluster host defaulting
+
+The test harness ([src/test_cluster.rs](../../../crates/samples/reflection/src/test_cluster.rs))
+and the `reflection_ctl` CLI use a `cfg`-gated default for the
+cluster hostname:
+
+- **Windows** → `localhost` (SF onebox runs on the same host; the
+  reflection server binds `0.0.0.0` so `localhost` reaches every node).
+- **Unix** → `onebox` (sibling-container DNS in the devcontainer
+  setup).
+
+Override at runtime with `REFLECTION_CLUSTER_HOST=<host>` (env var)
+or `--host <host>` for `reflection_ctl`. Do **not** set the env var
+on a normal Windows or Linux-devcontainer run — the cfg default
+already matches.
 
 ## Preconditions
+
+### Linux devcontainer
 
 Inside the devcontainer (`/etc/os-release` shows Ubuntu/AzureLinux):
 
@@ -53,6 +72,20 @@ If `sfctl cluster select` fails with `connection refused`, the
 `onebox` sibling container hasn't started — wait 10 s and retry up
 to 3 times. Cannot restart it from inside the devcontainer; ask the
 user to do so from a host shell.
+
+### Windows host
+
+In PowerShell (`$env:OS -eq 'Windows_NT'`):
+
+```powershell
+Get-Service FabricHostSvc           # must be Running (StartOnebox.ps1 starts it)
+Test-Path .\target\debug\reflection_ctl.exe   # operator CLI; built by cmake or `cargo build -p samples_reflection --bin reflection_ctl`
+```
+
+For cluster bring-up + initial provisioning of `EchoApp` and
+`ReflectionApp`, see the [`onebox-deploy-test`](../onebox-deploy-test/SKILL.md)
+skill's **Procedure (Windows)** section. This skill assumes the
+cluster is already up and `fabric:/ReflectionApp` is deployed.
 
 ## Procedure
 
@@ -75,12 +108,24 @@ Pick the smallest applicable subset; you don't always need to redeploy.
 `build/sf_apps/` — *both* are required for SF to pick up new
 binaries. `cargo build` alone is not enough.
 
+**Linux**:
+
 ```bash
 [ -f build/CMakeCache.txt ] || cmake . -DCMAKE_BUILD_TYPE=Debug -B build
 cmake --build build --config Debug
 ```
 
-After success: `build/sf_apps/samples_reflection/` should exist with
+**Windows** (PowerShell, repo root):
+
+```powershell
+if (-not (Test-Path build\CMakeCache.txt)) {
+    cmake . -DCMAKE_BUILD_TYPE=Debug -B build
+}
+cmake --build build --config Debug
+```
+
+After success: `build/sf_apps/samples_reflection/` (Linux) or
+`build\sf_apps\samples_reflection\` (Windows) should exist with
 fresh `ApplicationManifest.xml` and `ServicePackage/`.
 
 If you only changed the operator CLI, build just that:
@@ -89,29 +134,40 @@ If you only changed the operator CLI, build just that:
 cargo build -p samples_reflection --bin reflection_ctl
 ```
 
-### Step 2 — Clean cluster state ([scripts/remove_test_apps.sh](../../../scripts/remove_test_apps.sh))
+### Step 2 — Clean cluster state
 
 Required when the *deployed* `samples_reflection.exe` is stale and
-SF won't reactivate it without a clean reprovision. Idempotent:
+SF won't reactivate it without a clean reprovision, or when a prior
+test crash left `ApprovalE2e_*` / `FailCrE2e_*` services parked.
+
+**Linux** — [scripts/remove_test_apps.sh](../../../scripts/remove_test_apps.sh)
+is idempotent and tolerates "doesn't exist" at every step:
 
 ```bash
 bash ./scripts/remove_test_apps.sh
 ```
 
-Sequence the script runs:
-1. `reflection_ctl detach --all` (best-effort; release any parked
-   gates so close can complete).
-2. `reflection_ctl approve-all --yes` (fallback for pre-Detach
-   binaries).
-3. Delete every sub-service under each app (catches per-test
-   `ApprovalE2e_*` services from prior runs).
-4. Delete app instances (`fabric:/EchoApp`, `fabric:/ReflectionApp`).
-5. Unprovision app types.
-6. Delete uploaded packages from the image store.
+**Windows** — no equivalent script. Do the same sequence by hand
+(only run the parts that apply):
 
-Tolerates "doesn't exist" at every step. Always safe to run.
+```powershell
+# 1. Release any parked gates so SF can finish closing replicas.
+.\target\debug\reflection_ctl.exe detach --all
 
-### Step 3 — Provision ([scripts/prepare_test_apps.sh](../../../scripts/prepare_test_apps.sh))
+# 2. Force-remove any leftover per-test sub-services.
+Get-ServiceFabricService -ApplicationName fabric:/ReflectionApp |
+    Where-Object { $_.ServiceName.AbsolutePath -match '/(ApprovalE2e_|FailCrE2e_)' } |
+    ForEach-Object { Remove-ServiceFabricService -ServiceName $_.ServiceName -Force }
+
+# 3. Full app reset (mirrors what reflection_ctl.ps1 -Action Remove does).
+.\scripts\reflection_ctl.ps1 -Action Remove
+```
+
+Then re-run `*_ctl.ps1 -Action Add` (Step 3 below).
+
+### Step 3 — Provision
+
+**Linux** — [scripts/prepare_test_apps.sh](../../../scripts/prepare_test_apps.sh):
 
 ```bash
 bash ./scripts/prepare_test_apps.sh
@@ -122,6 +178,20 @@ and `ReflectionApp`, then waits for both services to resolve.
 Output ends with the resolved `ReflectionAppService` endpoint at
 `http://172.18.0.2:28000+i/...` (ports 28000–28004). If you see
 that line, the new binary is live.
+
+**Windows** — use the per-app PowerShell controllers (no combined
+script):
+
+```powershell
+.\scripts\reflection_ctl.ps1 -Action Add
+# Optional, only if your tests touch echomain too:
+.\scripts\echomain_ctl.ps1 -Action Add
+```
+
+Verify with `Get-ServiceFabricApplication` — status should be
+`Ready` / `Ok`. Replicas advertise `http://<machine>:28000+i/...`,
+but the test harness uses `localhost` on Windows and the server
+binds `0.0.0.0`, so this works without configuration.
 
 ### Step 4 — Run tests
 
@@ -152,9 +222,20 @@ cluster to be up and `fabric:/ReflectionApp` provisioned. The test:
 5. Drains teardown gates (`ChangeRole(None)` + `Close`).
 6. Verifies the registry no longer contains the replica.
 
-Expected runtime: ~2 seconds. If it hangs at "waiting for OPEN
+Expected runtime: ~2–4 seconds. If it hangs at "waiting for OPEN
 gate", the deployed binary is stale (skipped Step 1 + 3) — see
 Common Pitfalls.
+
+#### 4b¹. The fail-change-role e2e test ([tests/fail_change_role.rs](../../../crates/samples/reflection/tests/fail_change_role.rs))
+
+```bash
+cargo test -p samples_reflection --test fail_change_role -- --nocapture
+```
+
+Verifies the failure-recovery path: OPEN → CHANGE_ROLE(fail) →
+ABORT(approve to recover) → OPEN (retry) → CHANGE_ROLE(approve) →
+teardown. Expected runtime: ~20–25 s (SF reactivation between
+attempts dominates).
 
 #### 4c. Run all reflection sample tests
 
@@ -170,13 +251,17 @@ all require the cluster to be up.
 
 The operator CLI is built by Step 1 (`cmake --build`) or
 explicitly via `cargo build -p samples_reflection --bin reflection_ctl`.
+Binary path: `./target/debug/reflection_ctl` (Linux) or
+`.\target\debug\reflection_ctl.exe` (Windows). The `--host` default
+is cfg-gated (see [Cluster host defaulting](#cluster-host-defaulting));
+add `--host <hostname>` to override.
 
 #### 5a. Inspect
 
 ```bash
-./target/debug/reflection_ctl ping     # which nodes are reachable
-./target/debug/reflection_ctl list     # what gates are pending
-./target/debug/reflection_ctl list --partition <GUID>  # filter
+reflection_ctl ping     # which nodes are reachable
+reflection_ctl list     # what gates are pending
+reflection_ctl list --partition <GUID>  # filter
 ```
 
 `ping` shows ports `28000..=28004`. Some "unreachable: transport
@@ -186,11 +271,11 @@ where SF placed it.
 #### 5b. Approve a stuck gate
 
 ```bash
-./target/debug/reflection_ctl approve \
+reflection_ctl approve \
   --partition 92A2B906-B26C-774F-8FCA-E04CCD254142 \
   --replica   134218820574294250
 # Or to fail it instead:
-./target/debug/reflection_ctl approve --partition X --replica Y --fail-message "boom"
+reflection_ctl approve --partition X --replica Y --fail-message "boom"
 ```
 
 Auto-discovers the `gate_id` via `ListPending`. If no gate is
@@ -199,8 +284,8 @@ pending for that replica → exit code 1.
 #### 5c. Bulk unblock
 
 ```bash
-./target/debug/reflection_ctl approve-all --yes   # release every pending gate
-./target/debug/reflection_ctl detach   --all      # proceed-forever for every controller
+reflection_ctl approve-all --yes   # release every pending gate
+reflection_ctl detach   --all      # proceed-forever for every controller
 ```
 
 `detach --all` is the bigger hammer — once detached, a controller
@@ -214,7 +299,7 @@ arriving after will park again.
 #### 5d. Detach a single replica
 
 ```bash
-./target/debug/reflection_ctl detach \
+reflection_ctl detach \
   --partition 92A2B906-... \
   --replica   134218820574294250
 ```
@@ -224,24 +309,36 @@ arriving after will park again.
 - **Deployed binary is stale.** If e2e hangs at OPEN or `Detach`
   returns `Unimplemented`, you skipped Step 1 + Step 3 after
   changing reflection-sample code. Run them in order.
-- **`--force-remove` syntax.** sfctl 11.x requires
+- **(Linux) `--force-remove` syntax.** sfctl 11.x requires
   `--force-remove true`, not bare `--force-remove`.
   `remove_test_apps.sh` already handles this; ad-hoc `sfctl service
   delete` calls don't.
 - **Test panics leave gates parked.** Run
-  `./target/debug/reflection_ctl list` to see them, then
-  `approve-all --yes` or `detach --all` to clear before the next
-  run. `remove_test_apps.sh` does this automatically.
+  `reflection_ctl list` to see them, then `approve-all --yes` or
+  `detach --all` to clear before the next run. On Linux,
+  `remove_test_apps.sh` does this automatically; on Windows, follow
+  the manual sequence in Step 2.
+- **Stuck `Active`/Error sub-service after a panic (Windows).**
+  `Remove-ServiceFabricService -ServiceName ... -Force` is the
+  PowerShell equivalent of the Linux script's `--force-remove true`.
 - **`cmake --build` skips a sample after editing only `Cargo.toml`.**
   Force re-package with `cmake --build build --config Debug --target
   build_rust_sample_reflection` or `force_clean` then full rebuild.
-- **`onebox` hostname doesn't resolve from a fresh shell.** Inside
-  the devcontainer, `getent hosts onebox` should return `172.18.0.2`.
-  If not, the sibling container isn't running.
+- **(Linux) `onebox` hostname doesn't resolve from a fresh shell.**
+  Inside the devcontainer, `getent hosts onebox` should return
+  `172.18.0.2`. If not, the sibling container isn't running.
+- **Don't set `REFLECTION_CLUSTER_HOST` casually.** The cfg-gated
+  default already picks `localhost` (Windows) or `onebox` (Unix).
+  Only override for non-standard topologies.
 
 ## What CI Does
 
-[`.github/workflows/build.yaml`](../../workflows/build.yaml)'s
-`build-devcontainer` job runs steps 1 + 3 + 4c via
-`devcontainers/ci@v0.3`. Since the e2e test is now default-on, it
-is included automatically — no additional CI changes needed.
+- **Linux** — [`.github/workflows/build.yaml`](../../workflows/build.yaml)'s
+  `build-devcontainer` job runs steps 1 + 3 + 4c via
+  `devcontainers/ci@v0.3`.
+- **Windows** — the `build` job (`runs-on: windows-latest`) runs
+  the cmake build, `StartOnebox.ps1 -Auto`, the per-sample
+  `*_ctl.ps1 -Action Add` scripts, and `cargo test --all -- --nocapture`.
+
+Since both e2e tests are default-on, they are included automatically
+on both platforms — no extra CI changes needed.

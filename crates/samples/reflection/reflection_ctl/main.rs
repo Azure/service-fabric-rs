@@ -38,7 +38,8 @@ const NODE_COUNT: u16 = 5;
     long_about = None,
 )]
 struct Cli {
-    /// Hostname or IP of the cluster (default: $REFLECTION_CLUSTER_HOST or "onebox").
+    /// Hostname or IP of the cluster (default: $REFLECTION_CLUSTER_HOST,
+    /// otherwise "localhost" on Windows and "onebox" on Unix).
     #[arg(long, global = true)]
     host: Option<String>,
 
@@ -99,10 +100,14 @@ enum Command {
 }
 
 fn cluster_host(cli: &Cli) -> String {
+    #[cfg(windows)]
+    const DEFAULT_HOST: &str = "localhost";
+    #[cfg(not(windows))]
+    const DEFAULT_HOST: &str = "onebox";
     cli.host
         .clone()
         .or_else(|| std::env::var("REFLECTION_CLUSTER_HOST").ok())
-        .unwrap_or_else(|| "onebox".to_string())
+        .unwrap_or_else(|| DEFAULT_HOST.to_string())
 }
 
 #[tokio::main(flavor = "multi_thread")]

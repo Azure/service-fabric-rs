@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+// Test-driven control plane for the reflection sample's stateful
+// replicas. See docs/design/ReflectionReplicaTestControl.md for the
+// full design (gate semantics, drop semantics, RPC error model).
+
+package reflection.control.v1;
+
+service ReplicaControl {
+  // Block until the named replica reaches an approval gate, or until
+  // `timeout_ms` elapses (server-capped: 0 -> 30s default, max 5min).
+  // On expiry: returns DEADLINE_EXCEEDED; the replica stays parked;
+  // clients may reissue.
+  rpc WaitForApproval (WaitForApprovalRequest) returns (ApprovalEvent);
+
+  // Release a currently-pending approval gate with the supplied
+  // decision. The `gate_id` must equal the value from the matching
+  // ApprovalEvent; mismatches return FailedPrecondition with detail
+  // GateIdMismatch.
+  rpc Approve (ApproveRequest) returns (Empty);
+
+  // Snapshot of in-flight approval gates. Optional filter by
+  // partition_id and/or replica_id. Setting `replica_filter` while
+  // `partition_id` is empty returns InvalidArgument.
+  rpc ListPending (ListPendingRequest) returns (ListPendingResponse);
+
+  // Switch a single replica into proceed-forever mode. After this
+  // call the replica's GrpcController auto-approves every future
+  // gate (Open, ChangeRole, Close, Abort) without parking, and any
+  // currently-pending gate is released with Proceed. Irreversible
+  // for the lifetime of that controller. NotFound if the replica
+  // is not registered (or already removed).
+  rpc Detach (ReplicaRef) returns (Empty);
+
+  // Detach every controllable replica known to this server. Returns
+  // the count of replicas that transitioned (excludes replicas that
+  // were already detached).
+  rpc DetachAll (Empty) returns (DetachAllResponse);
+}
+
+message ReplicaRef {
+  // GUID string in mssf-core's debug format (matches helloworld.proto's
+  // ReplicaInfo.partition_id).
+  string partition_id = 1;
+  int64  replica_id   = 2;
+}
+
+message WaitForApprovalRequest {
+  ReplicaRef target = 1;
+  // Server-side wait timeout. 0 means "use the default" (30 seconds).
+  // Capped at 300_000 (5 minutes); larger values are clamped silently.
+  uint32 timeout_ms = 2;
+  // Optional filter; APPROVAL_UNSPECIFIED matches any pending gate.
+  ApprovalKind expected = 3;
+}
+
+enum ApprovalKind {
+  APPROVAL_UNSPECIFIED = 0;
+  APPROVAL_OPEN        = 1;
+  APPROVAL_CHANGE_ROLE = 2;
+  APPROVAL_CLOSE       = 3;
+  APPROVAL_ABORT       = 4; // approved synchronously; decision payload is ignored
+}
+
+// Lifecycle role for the replica, matching mssf_core::types::ReplicaRole.
+// Duplicated here to keep the control plane proto self-contained.
+enum ReplicaRole {
+  REPLICA_ROLE_UNKNOWN           = 0;
+  REPLICA_ROLE_NONE              = 1;
+  REPLICA_ROLE_PRIMARY           = 2;
+  REPLICA_ROLE_IDLE_SECONDARY    = 3;
+  REPLICA_ROLE_ACTIVE_SECONDARY  = 4;
+  REPLICA_ROLE_IDLE_AUXILIARY    = 5;
+  REPLICA_ROLE_ACTIVE_AUXILIARY  = 6;
+  REPLICA_ROLE_PRIMARY_AUXILIARY = 7;
+}
+
+message ApprovalEvent {
+  ReplicaRef   target   = 1;
+  ApprovalKind kind     = 2;
+  // Populated when kind == APPROVAL_CHANGE_ROLE; otherwise REPLICA_ROLE_UNKNOWN.
+  ReplicaRole  new_role = 3;
+  // Opaque per-gate token (UUID v4 string). Must be echoed back on
+  // Approve. A mismatch means the gate has already been released and
+  // likely replaced by a fresh one; the Approve is rejected with
+  // FailedPrecondition + GateIdMismatch.
+  string       gate_id  = 4;
+}
+
+message ApproveRequest {
+  ReplicaRef target  = 1;
+  string     gate_id = 2;
+  oneof decision {
+    Empty   proceed      = 3;
+    string  fail_message = 4; // returned to SF as Error; ignored for ABORT gates
+  }
+  // Tests that want to delay the approval just sleep before sending
+  // Approve; there is no server-side delay variant.
+}
+
+message ListPendingRequest {
+  // Optional filter. Empty = all partitions.
+  string partition_id = 1;
+  // Optional replica filter. Unset = all replicas in the partition(s)
+  // selected by partition_id. Setting `specific_replica_id` while
+  // `partition_id` is empty returns InvalidArgument because replica
+  // ids are not unique across partitions.
+  oneof replica_filter {
+    int64 specific_replica_id = 2;
+  }
+}
+
+message ListPendingResponse {
+  repeated ApprovalEvent events = 1;
+}
+
+message DetachAllResponse {
+  // Number of replicas this call actually detached (does not count
+  // replicas that were already in proceed-forever mode).
+  uint32 detached = 1;
+}
+
+message Empty {}

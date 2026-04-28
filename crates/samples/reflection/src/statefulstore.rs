@@ -19,6 +19,9 @@ use std::{
 use tokio_util::sync::CancellationToken;
 use tracing::info;
 
+use crate::control::{
+    Approval, ControlMode, Decision, ReplicaController, decode_init_data, make_controller,
+};
 use crate::echo;
 use crate::grpc::{ReflectionUrl, ReplicaRegistry};
 
@@ -58,13 +61,21 @@ impl IStatefulServiceFactory for Factory {
         partitionid: mssf_core::GUID,
         replicaid: i64,
     ) -> Result<Box<dyn IStatefulServiceReplica>, Error> {
+        // Decide test-control mode from the bytes SF passes us. Empty
+        // initdata or decode failure -> NoControl, preserving the
+        // current production behavior.
+        let init = decode_init_data(initializationdata);
+        let mode = ControlMode::from_init_data(&init);
+        let controller = make_controller(mode);
+
         info!(
-            "Factory::create_replica type {}, service {}, init data size {}, partition {:?}, replica {}",
+            "Factory::create_replica type {}, service {}, init data size {}, partition {:?}, replica {}, mode {:?}",
             servicetypename,
             servicename,
             initializationdata.len(),
             partitionid,
-            replicaid
+            replicaid,
+            mode,
         );
 
         let svc = Service::new(
@@ -72,7 +83,14 @@ impl IStatefulServiceFactory for Factory {
             self.replication_port,
             self.hostname.clone(),
         );
-        self.registry.add(partitionid, replicaid);
+
+        if controller.is_controllable() {
+            self.registry
+                .add_controller(partitionid, replicaid, controller.clone());
+        } else {
+            self.registry.add(partitionid, replicaid);
+        }
+
         let replica = Box::new(Replica::new(
             self.hostname.to_string(),
             self.grpc_port,
@@ -80,6 +98,8 @@ impl IStatefulServiceFactory for Factory {
             replicaid,
             self.registry.clone(),
             svc,
+            controller,
+            self.rt.clone(),
         ));
         Ok(replica)
     }
@@ -93,9 +113,16 @@ pub struct Replica {
     registry: ReplicaRegistry,
     svc: Service,
     ctx: ReplicaCtx,
+    /// Per-replica controller. `NoopController` for production-mode
+    /// replicas (one inline `Decision::Proceed` per gate);
+    /// `GrpcController` for test-driven replicas.
+    controller: Arc<dyn ReplicaController>,
+    /// Used by `abort` to bridge sync->async into `await_approval`.
+    exec: TokioExecutor,
 }
 
 impl Replica {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         grpc_hostname: String,
         grpc_port: u16,
@@ -103,6 +130,8 @@ impl Replica {
         replica_id: i64,
         registry: ReplicaRegistry,
         svc: Service,
+        controller: Arc<dyn ReplicaController>,
+        exec: TokioExecutor,
     ) -> Replica {
         Replica {
             grpc_hostname,
@@ -112,6 +141,8 @@ impl Replica {
             registry,
             svc,
             ctx: ReplicaCtx::empty(),
+            controller,
+            exec,
         }
     }
 }
@@ -165,6 +196,10 @@ impl IStatefulServiceReplica for Replica {
         partition: Arc<dyn IStatefulServicePartition>,
         _token: BoxedCancelToken,
     ) -> mssf_core::Result<Box<dyn IPrimaryReplicator>> {
+        match self.controller.await_approval(Approval::Open).await {
+            Decision::Proceed => {}
+            Decision::Fail(e) => return Err(e),
+        }
         self.ctx.init(partition.clone());
         self.svc.start_loop_in_background(&partition);
         // Use empty replicator
@@ -179,6 +214,14 @@ impl IStatefulServiceReplica for Replica {
         newrole: ReplicaRole,
         _token: BoxedCancelToken,
     ) -> mssf_core::Result<WString> {
+        match self
+            .controller
+            .await_approval(Approval::ChangeRole(newrole))
+            .await
+        {
+            Decision::Proceed => {}
+            Decision::Fail(e) => return Err(e),
+        }
         self.registry
             .update_role(self.partition_id, self.replica_id, newrole);
         // return the gRPC address with partition and replica id as query params
@@ -192,6 +235,10 @@ impl IStatefulServiceReplica for Replica {
     }
     #[tracing::instrument(skip(self,_token), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()), err, ret)]
     async fn close(&self, _token: BoxedCancelToken) -> mssf_core::Result<()> {
+        match self.controller.await_approval(Approval::Close).await {
+            Decision::Proceed => {}
+            Decision::Fail(e) => return Err(e),
+        }
         self.registry.remove(self.partition_id, self.replica_id);
         self.svc.stop();
         Ok(())
@@ -199,6 +246,16 @@ impl IStatefulServiceReplica for Replica {
     #[tracing::instrument(skip(self), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()))]
     fn abort(&self) {
         info!("abort",);
+        // Sync->async bridge for the abort gate. Decision is
+        // intentionally ignored: IStatefulServiceReplica::abort
+        // returns () and cannot propagate an error. Under
+        // NoopController this resolves immediately; under
+        // GrpcController this may queue at gate_lock if a previous
+        // lifecycle method (e.g. close) is still parked.
+        let controller = self.controller.clone();
+        self.exec.block_on_any(async move {
+            let _ = controller.await_approval(Approval::Abort).await;
+        });
         self.registry.remove(self.partition_id, self.replica_id);
         self.svc.stop();
     }

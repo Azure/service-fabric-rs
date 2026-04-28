@@ -6,7 +6,20 @@ publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "samples_reflection"
+path = "src/lib.rs"
+
+[[bin]]
+name = "samples_reflection"
+path = "src/main.rs"
+
+[[bin]]
+name = "reflection_ctl"
+path = "reflection_ctl/main.rs"
+
 [dependencies]
+clap = { workspace = true }
 tracing.workspace = true
 tracing-subscriber.workspace = true
 tokio.workspace = true
@@ -16,7 +29,7 @@ tonic.workspace = true
 tonic-prost.workspace = true
 prost.workspace = true
 url.workspace = true
-uuid.workspace = true
+uuid = { workspace = true, features = ["v4"] }
 mssf-core = { workspace = true, default-features = true }
 mssf-util = { workspace = true, default-features = true }
 

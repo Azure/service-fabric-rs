@@ -14,6 +14,18 @@ description = "mssf utilites and extensions for tokio and more"
 default = ["tokio", "tracing"]
 tokio = ["dep:tokio", "dep:tokio-util"]
 tracing = ["dep:tracing"]
+tonic = [
+    "tokio",
+    "dep:tonic",
+    "dep:tower",
+    "dep:hyper",
+    "dep:hyper-util",
+    "dep:http",
+    "dep:http-body",
+    "dep:arc-swap",
+    "dep:futures",
+    "dep:bytes",
+]
 
 [dependencies]
 tokio = { workspace = true, features = ["rt", "signal"], optional = true, default-features = false }
@@ -22,6 +34,18 @@ tracing = { workspace = true, optional = true }
 mssf-core = { workspace = true, default-features = false }
 mssf-com = { workspace = true }
 
+# `tonic` feature deps
+tonic = { workspace = true, optional = true }
+tower = { workspace = true, optional = true }
+hyper = { workspace = true, optional = true }
+hyper-util = { workspace = true, optional = true }
+http = { workspace = true, optional = true }
+http-body = { workspace = true, optional = true }
+arc-swap = { workspace = true, optional = true }
+futures = { workspace = true, optional = true }
+bytes = { workspace = true, optional = true }
+
 [dev-dependencies]
 trait-variant.workspace = true
 tracing-subscriber.workspace = true
+tokio = { workspace = true, features = ["rt", "signal", "macros", "rt-multi-thread", "io-util", "net", "time"], default-features = false }

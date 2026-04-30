@@ -7,6 +7,7 @@ members = [
     "crates/libs/core",
     "crates/libs/pal",
     "crates/libs/util",
+    "tests/mssf-tests",
 ]
 package.edition = "2024"
 package.authors = [ "youyuanwu@outlook.com" ]
@@ -47,6 +48,15 @@ tonic-prost = "0.14"
 tonic-prost-build = "0.14"
 prost = "0.14"
 trait-variant = "0.1"
+arc-swap = "1"
+futures = { version = "0.3", default-features = false, features = ["std"] }
+http = "1"
+http-body = "1"
+http-body-util = "0.1"
+hyper = "1"
+hyper-util = { version = "0.1", default-features = false, features = ["tokio"] }
+tower = { version = "0.5", default-features = false, features = ["util"] }
+bytes = "1"
 url = "2"
 uuid = { version = "1", default-features = false }
 windows = { version = "0.62", default-features = false }
@@ -57,4 +67,4 @@ windows-core = "0.62"
 mssf-com = { version = "0.6", path = "./crates/libs/com", default-features = false }
 mssf-core = { version = "0.7", path = "./crates/libs/core", default-features = false }
 mssf-pal = { version = "0.5", path = "./crates/libs/pal", default-features = true }
-mssf-util = { version = "0.7", path = "./crates/libs/util", default-features = true }
+mssf-util = { version = "0.7", path = "./crates/libs/util", default-features = true, features = ["tonic"] }

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+// Per-service initialization data for the reflection sample.
+//
+// Test drivers encode a `ReplicaInitData` and pass the resulting bytes
+// through `StatefulServiceDescription::with_initialization_data` when
+// calling `CreateService`. Service Fabric persists those bytes with
+// the service registration and re-passes them verbatim to every
+// `IStatefulServiceFactory::create_replica` call for that service
+// instance, across failovers, application upgrades, and cluster
+// restarts. The reflection sample's `Factory` decodes them via prost
+// and selects between `NoopController` (production-style, no-op gates)
+// and `GrpcController` (test-driven gates over `ReplicaControl`).
+//
+// Empty initdata bytes and decode failures both map to the
+// default-valued message (`control = false` -> `NoopController`),
+// preserving current behavior for services that don't set initdata.
+//
+// SCHEMA POLICY: this proto is FORWARD-ADDITIVE ONLY. Do not change
+// existing field numbers or types. Breaking changes warrant a new
+// package (`reflection.initdata.v2`) and a separate decoder.
+//
+// `ReplicaInitData` is reserved for test-control purposes. If a
+// future feature needs operator-supplied initdata (region tags,
+// feature flags), introduce a wrapper message such as
+// `ServiceInitData { oneof payload { ReplicaInitData test_control = 1;
+// OperatorConfig op = 2; } }` and update the design doc.
+
+package reflection.initdata.v1;
+
+message ReplicaInitData {
+  // When true, the Factory builds a GrpcController for this replica
+  // and registers it with the ReplicaControl gRPC service. When false
+  // (or when the message is absent / fails to decode), a
+  // NoopController is used and the replica is invisible to
+  // ReplicaControl.
+  bool control = 1;
+
+  // Reserved for future tunables such as preloaded approval decisions,
+  // a per-service tag for tests to filter on, or simulated open delays.
+  // New fields must be additive and tolerate the prost default value.
+  // reserved 2 to 15;
+}

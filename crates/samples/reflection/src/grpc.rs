@@ -10,6 +10,8 @@ use tonic::{Request, Response, Status};
 
 use mssf_core::types::ReplicaRole;
 
+use crate::control::ReplicaController;
+
 pub mod hello_world {
     tonic::include_proto!("helloworld");
 }
@@ -36,6 +38,10 @@ pub struct ReplicaEntry {
     pub partition_id: mssf_core::GUID,
     pub replica_id: i64,
     pub role: ReplicaRole,
+    /// `None` for `NoopController` replicas (production path); `Some` for
+    /// `GrpcController` replicas (test-driven). gRPC handlers that need
+    /// the controller use [`ReplicaRegistry::get_controller`].
+    pub controller: Option<Arc<dyn ReplicaController>>,
 }
 
 /// Shared state between gRPC server and Service Fabric service factory.
@@ -51,6 +57,26 @@ impl ReplicaRegistry {
     }
 
     pub fn add(&self, partition_id: mssf_core::GUID, replica_id: i64) {
+        self.add_with_controller(partition_id, replica_id, None);
+    }
+
+    /// Register a controllable replica. Only called for `GrpcController`
+    /// replicas (i.e., when the decoded `ReplicaInitData` had `control = true`).
+    pub fn add_controller(
+        &self,
+        partition_id: mssf_core::GUID,
+        replica_id: i64,
+        controller: Arc<dyn ReplicaController>,
+    ) {
+        self.add_with_controller(partition_id, replica_id, Some(controller));
+    }
+
+    fn add_with_controller(
+        &self,
+        partition_id: mssf_core::GUID,
+        replica_id: i64,
+        controller: Option<Arc<dyn ReplicaController>>,
+    ) {
         self.inner
             .lock()
             .unwrap()
@@ -60,7 +86,35 @@ impl ReplicaRegistry {
                 partition_id,
                 replica_id,
                 role: ReplicaRole::Unknown,
+                controller,
             });
+    }
+
+    /// Look up a replica's controller (if any).
+    pub fn get_controller(
+        &self,
+        partition_id: mssf_core::GUID,
+        replica_id: i64,
+    ) -> Option<Arc<dyn ReplicaController>> {
+        self.inner
+            .lock()
+            .unwrap()
+            .get(&partition_id)?
+            .iter()
+            .find(|e| e.replica_id == replica_id)?
+            .controller
+            .clone()
+    }
+
+    /// Snapshot of all registered entries (used by ListPending).
+    pub fn snapshot(&self) -> Vec<ReplicaEntry> {
+        self.inner
+            .lock()
+            .unwrap()
+            .values()
+            .flatten()
+            .cloned()
+            .collect()
     }
 
     pub fn update_role(&self, partition_id: mssf_core::GUID, replica_id: i64, role: ReplicaRole) {

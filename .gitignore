@@ -3,6 +3,7 @@ build
 bin
 obj
 .windows
+.paw
 
 # cargo stuff
 target

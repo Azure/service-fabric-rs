@@ -17,6 +17,7 @@ package.license = "MIT"
 [workspace.dependencies]
 async-trait = "0.1"
 bitflags = "2"
+clap = { version = "4", features = ["derive"] }
 config = { version = "0.15", default-features = false }
 ctrlc = { version = "3.5", features = [
     "termination",

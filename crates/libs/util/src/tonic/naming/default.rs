@@ -45,20 +45,32 @@ impl TargetResolver for FabricTargetResolver {
                 .resolve(&self.uri, &self.key, prev.as_deref(), self.timeout, None)
                 .await
                 .map_err(|e| Box::new(e) as BoxError)?;
-            // Same-version reply: keep cached Arc identity (avoids
-            // pointer churn under steady-state always-complain).
+            // Reconcile the new reply against the cache. The
+            // cache only advances when SF returns a strictly
+            // *newer* RSP — never moves backward to an older
+            // version — so a stale or out-of-order reply doesn't
+            // poison subsequent dials.
+            //
+            // `ResolvedServicePartition: PartialOrd` per
+            // `svc_mgmt_client.rs`: `a > b` ⇔ `a` is newer;
+            // `partial_cmp == None` ⇔ different service /
+            // partition (treat as a hard cache reset).
             let rsp = match prev.as_deref() {
-                Some(p) => match p.compare_version(&new_rsp) {
-                    Ok(0) => prev.unwrap(),
-                    Ok(_) => {
+                Some(p) => match p.partial_cmp(&new_rsp) {
+                    Some(std::cmp::Ordering::Less) => {
+                        // prev < new_rsp → new_rsp is newer → advance.
                         let arc = Arc::new(new_rsp);
                         self.cached.store(Some(arc.clone()));
                         arc
                     }
-                    // compare_version returns Err only when the two
-                    // RSPs refer to different services / partitions.
-                    // Treat as "newer view," replace cache.
-                    Err(_) => {
+                    Some(_) => {
+                        // Equal or prev > new_rsp: keep cached
+                        // Arc identity, drop new_rsp.
+                        prev.unwrap()
+                    }
+                    None => {
+                        // Different service / partition: hard
+                        // reset.
                         let arc = Arc::new(new_rsp);
                         self.cached.store(Some(arc.clone()));
                         arc

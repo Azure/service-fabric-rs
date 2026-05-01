@@ -11,10 +11,9 @@
 //! `docs/design/TonicConnectorDesign.md` ("Rebuild dedup").
 
 use std::pin::Pin;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll};
 
-use arc_swap::ArcSwapOption;
 use bytes::Bytes;
 use futures::future::BoxFuture;
 use http_body::Frame;
@@ -25,16 +24,25 @@ use tower::Service;
 /// header triggers a non-blocking rebuild of the inner Channel
 /// via the supplied rebuild handle.
 ///
-/// Stateful for dedup: tracks the last trailer value observed and
-/// only triggers `rebuild()` when the value differs (with two
-/// special signals — absent trailer resets state, empty value
-/// always rebuilds without affecting state).
+/// Stateful for dedup: tracks the last trailer value observed
+/// and only triggers `rebuild()` when the value differs (with
+/// two special signals — absent trailer resets state, empty
+/// value always rebuilds without affecting state).
+///
+/// **Concurrency.** The dedup decision
+/// (load → classify → store) is serialized under a
+/// `std::sync::Mutex`, so concurrent in-flight RPCs that
+/// complete with the **same** trailer value collapse to one
+/// `rebuild()` call. Distinct values still produce one rebuild
+/// each. The mutex is held only across the decision; the
+/// rebuild closure runs outside the lock so back-to-back
+/// `connect_with_connector_lazy` calls don't serialize.
 #[derive(Clone)]
 pub struct ResolveStatusMiddleware<S> {
     inner: S,
     rebuild: Arc<dyn Fn() + Send + Sync>,
     header_name: http::HeaderName,
-    last_seen: Arc<ArcSwapOption<String>>,
+    last_seen: Arc<Mutex<Option<String>>>,
 }
 
 impl<S> ResolveStatusMiddleware<S> {
@@ -50,7 +58,7 @@ impl<S> ResolveStatusMiddleware<S> {
             inner,
             rebuild: Arc::new(rebuild),
             header_name,
-            last_seen: Arc::new(ArcSwapOption::empty()),
+            last_seen: Arc::new(Mutex::new(None)),
         }
     }
 }
@@ -137,14 +145,14 @@ where
 struct TrailerObserver {
     inner: Body,
     header: http::HeaderName,
-    last_seen: Arc<ArcSwapOption<String>>,
+    last_seen: Arc<Mutex<Option<String>>>,
     rebuild: Arc<dyn Fn() + Send + Sync>,
     /// Set once we observe a trailer frame; if the body ends
     /// without one we apply the "no trailer" branch.
     saw_trailers: bool,
     /// Set once we've applied the dedup decision (either via a
     /// trailer frame or via the end-of-stream reset). Prevents
-    /// double-firing.
+    /// double-firing within a single response body.
     fired: bool,
 }
 
@@ -152,7 +160,7 @@ impl TrailerObserver {
     fn new(
         inner: Body,
         header: http::HeaderName,
-        last_seen: Arc<ArcSwapOption<String>>,
+        last_seen: Arc<Mutex<Option<String>>>,
         rebuild: Arc<dyn Fn() + Send + Sync>,
     ) -> Self {
         Self {
@@ -170,21 +178,33 @@ impl TrailerObserver {
             return;
         }
         self.fired = true;
-        let prev = self.last_seen.load_full();
-        let prev_str: Option<&str> = prev.as_deref().map(|s| s.as_str());
-        let action = classify(observed, prev_str);
-        match action {
-            DedupAction::None => {}
-            DedupAction::Reset => {
-                self.last_seen.store(None);
+
+        // Hold the lock across load + classify + store so
+        // concurrent observers of the same value collapse to a
+        // single decision. Drop the guard *before* invoking the
+        // rebuild closure: rebuild does its own lazy work
+        // (connect_with_connector_lazy + ArcSwap::store) and
+        // doesn't need to be serialized; we only need the
+        // decision step itself to be atomic.
+        let should_rebuild = {
+            let mut guard = self.last_seen.lock().expect("middleware mutex poisoned");
+            let prev_str: Option<&str> = guard.as_deref();
+            let action = classify(observed, prev_str);
+            match action {
+                DedupAction::None => false,
+                DedupAction::Reset => {
+                    *guard = None;
+                    false
+                }
+                DedupAction::RebuildKeepLast => true,
+                DedupAction::StoreAndRebuild(v) => {
+                    *guard = Some(v);
+                    true
+                }
             }
-            DedupAction::RebuildKeepLast => {
-                (self.rebuild)();
-            }
-            DedupAction::StoreAndRebuild(v) => {
-                self.last_seen.store(Some(Arc::new(v)));
-                (self.rebuild)();
-            }
+        };
+        if should_rebuild {
+            (self.rebuild)();
         }
     }
 }

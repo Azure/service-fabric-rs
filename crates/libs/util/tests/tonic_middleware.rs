@@ -232,3 +232,36 @@ async fn unrelated_header_does_not_trigger_rebuild() {
     dispatch(&mut mw).await;
     assert_eq!(counter.count(), 0);
 }
+
+/// Concurrent dispatch with the same trailer value must collapse to
+/// exactly one rebuild. Regression test for a race where each
+/// observer of the same value would independently classify
+/// `last_seen=None`, store the value, and call `rebuild()`,
+/// producing N rebuilds instead of 1.
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn concurrent_same_value_dedups() {
+    use mssf_util::tonic::ResolveStatusMiddleware;
+
+    const N: usize = 32;
+    let counter = RebuildCounter::default();
+    let svc =
+        ScriptedService::new((0..N).map(|_| Body::new(ScriptedBody::with_trailer(&header(), "v"))));
+    // Construct a single middleware shared across N concurrent
+    // dispatches. Cloning is cheap (Arc-shared `last_seen` +
+    // `rebuild` handle); each clone holds its own `inner`
+    // service-clone re-arming pattern.
+    let mw: ResolveStatusMiddleware<ScriptedService> = build(svc, counter.clone());
+    let mut handles = Vec::with_capacity(N);
+    for _ in 0..N {
+        let mut mw = mw.clone();
+        handles.push(tokio::spawn(async move { dispatch(&mut mw).await }));
+    }
+    for h in handles {
+        h.await.unwrap();
+    }
+    assert_eq!(
+        counter.count(),
+        1,
+        "same-value dedup must collapse N concurrent observers to 1 rebuild"
+    );
+}

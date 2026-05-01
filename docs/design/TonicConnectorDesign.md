@@ -44,9 +44,11 @@ resolve API.
    secondaries, etc.). No fixed
    [`ServiceEndpointRole`](../../crates/libs/core/src/client/svc_mgmt_client.rs#L425)
    filter is baked in.
-5. Compose cleanly with TLS via
-   [tonic-tls](https://github.com/youyuanwu/tonic-tls). See
-   [Composition with tonic-tls](#composition-with-tonic-tls).
+5. Compose cleanly with TLS — deferred. v1 ships plain TCP
+   only. The TLS extension requires generalizing
+   [`SwapChannel`](#public-surface) over its inner IO type;
+   today the type is fixed at `TokioIo<TcpStream>`. See
+   [TLS (deferred)](#tls-deferred) and Future Work.
 
 ## Non-Goals
 
@@ -56,8 +58,8 @@ resolve API.
 - **Killing in-flight requests from the client side.** Once
   dispatched, a request's lifecycle belongs to the server.
 - Cross-partition routing.
-- Bundled TLS — composed via tonic-tls, not built into
-  `TargetConnector`.
+- **TLS in v1.** Plain TCP only. See
+  [TLS (deferred)](#tls-deferred).
 
 ## Where this lives
 
@@ -77,12 +79,11 @@ tonic = [
 ]
 ```
 
-The optional sub-feature `tonic-tls` for the `tonic_tls::Transport`
-impl on `TargetConnector` is **deferred** — the recipe in
-[Composition with tonic-tls](#composition-with-tonic-tls) works
-today because `TargetConnector` already implements
-`Service<http::Uri>`; the `tonic_tls::Transport` adapter is a
-small follow-on.
+**TLS is not yet supported.** v1's `SwapChannel` fixes the
+connector IO type at `TokioIo<TcpStream>`, which is incompatible
+with TLS connectors that wrap the stream as
+`TokioIo<TlsStream<...>>`. Adding TLS requires generalizing the
+IO bound — see [TLS (deferred)](#tls-deferred) and Future work.
 
 ### File layout
 
@@ -141,10 +142,6 @@ see the signals it needs to act on:
 +--------------------------+------------------------+
                            v
 +---------------------------------------------------+
-|     (optional) tonic-tls TlsConnector wrapper      |
-+--------------------------+------------------------+
-                           v
-+---------------------------------------------------+
 |                  TargetConnector                   |
 |  - Service<Uri>: ask resolver, TCP dial            |
 |  - holds Arc<dyn TargetResolver>                   |
@@ -167,12 +164,10 @@ Each failure mode is naturally observable at exactly one layer.
 | TCP RST / `GOAWAY` / hyper IO error | hyper pool eviction | next dial → `TargetConnector` re-resolves; failing call surfaces to caller's outer retry |
 | Trailer on response (success or error) | `Frame::trailers()` above the channel | `ResolveStatusMiddleware` calls `swap_channel.rebuild()`; response delivered unchanged |
 | Plain `Code::Unavailable` (no trailer) | gRPC response | propagated unchanged; **no rebuild** (could be a downstream flake, not a role change) |
-| TLS handshake failure | `Service<Uri>` error from tonic-tls | propagated as transport error |
 
 Cross-layer coupling is exactly one `Arc<SwapChannel>` clone held by
 the middleware so it can call `rebuild()`. The connector knows
-nothing about channels; the channel knows nothing about middleware;
-the TLS layer knows nothing about any of them.
+nothing about channels; the channel knows nothing about middleware.
 
 ### Why each layer is the way it is
 
@@ -197,10 +192,10 @@ the TLS layer knows nothing about any of them.
   Channel via `Endpoint::connect_with_connector_lazy` and storing
   it via `ArcSwap`. In-flight requests keep their own Channel
   clones and run to completion.
-- **Connector below tonic-tls.** tonic-tls's `TlsConnector::new`
-  wraps an inner `Transport` whose input is a `Uri`; SF resolution
-  must happen inside that `Transport`. So `TargetConnector` is the
-  inner; the TLS connector wraps it.
+
+(A planned third design point — "connector lives below the TLS
+wrapper" — is deferred along with TLS itself; see
+[TLS (deferred)](#tls-deferred).)
 
 ### Why not `tower::reconnect::Reconnect`?
 
@@ -300,8 +295,8 @@ let mut client = GreeterClient::new(channel);
 
 ### Manual composition
 
-When the convenience builder isn't enough (custom layer ordering,
-manual TLS):
+When the convenience builder isn't enough (custom layer
+ordering, custom endpoint template):
 
 ```rust
 let connector = TargetConnectorBuilder::new().resolver(resolver).build();
@@ -324,8 +319,9 @@ let channel = ResolveStatusMiddleware::new(
 
 `fabric.invalid` uses the [reserved `.invalid`
 TLD](https://datatracker.ietf.org/doc/html/rfc2606#section-2) so a
-misconfigured TLS connector that accidentally resolves the
-placeholder fails loudly with NXDOMAIN.
+misconfigured layer that accidentally resolves the placeholder
+authority fails loudly with NXDOMAIN rather than escaping to the
+public internet.
 
 ### Writing a selector
 
@@ -449,7 +445,7 @@ server that keeps a stream open across a role change is declaring
 ## Rebuild dedup
 
 The dedup state machine has one piece of state — `last_seen:
-ArcSwapOption<String>` — and four transitions. Implemented in
+Mutex<Option<String>>` — and four transitions. Implemented in
 [`middleware.rs::classify`](../../crates/libs/util/src/tonic/middleware.rs)
 and exhaustively unit-tested.
 
@@ -464,6 +460,15 @@ last_seen = Some(_)         (no trailer)                     last_seen = None; n
 
 independent (any state):    mssf-status: (empty value)       rebuild; last_seen UNCHANGED
 ```
+
+**Concurrency.** The load → classify → store sequence runs under
+a `std::sync::Mutex`, so concurrent in-flight RPCs that complete
+with the **same** trailer value collapse to one `rebuild()`
+call. Distinct values still produce one rebuild each. The mutex
+is released **before** invoking the rebuild closure so back-to-back
+`connect_with_connector_lazy` calls don't serialize. The critical
+section is a string comparison + an `Option` write (microseconds);
+contention is bounded by concurrent trailer arrivals.
 
 Why each transition matters:
 
@@ -538,33 +543,60 @@ missed/out-of-order notifications, and a small steady-state
 latency win on a *failover-recovery* path don't justify the
 complexity. See [Future work](#future-work) for the opt-in mode.
 
-## Composition with tonic-tls
+## TLS (deferred)
 
-`TargetConnector` is intentionally plain TCP. TLS is supplied by
-composition: tonic-tls's `TlsConnector::new(transport, ssl, sni)`
-wraps any inner `tonic_tls::Transport` and produces a
-`Service<Uri>` that performs TLS on top.
+v1 ships **plain TCP only**. The `TargetChannelBuilder` has no
+`with_tls(...)` setter and `SwapChannel` fixes its connector slot
+at `BoxCloneSyncService<Uri, TokioIo<TcpStream>, BoxError>`,
+which is incompatible with any TLS wrapper that returns
+`TokioIo<TlsStream<...>>`.
 
-To plug `TargetConnector` straight in, it needs to implement
-`tonic_tls::Transport`. **v1 does not ship that adapter** — the
-`tonic-tls` cargo sub-feature mentioned in [Where this
-lives](#where-this-lives) is a future addition. Until then, users
-who want TLS can write a tiny `tonic_tls::Transport` shim that
-calls a `TargetConnector` and unwraps the `TokioIo` to the bare
-`TcpStream`, or use the manual composition route via
-`SwapChannel::with_connector` with a `Service<Uri>` they assemble
-themselves.
+This was a deliberate scope cut once an earlier `with_tls` API
+was found to be unusable: the bound matched only plain TCP, so
+no real TLS connector — `tonic_tls::*::TlsConnector<...>`,
+rustls, openssl, native-tls, schannel — actually fit. Shipping
+an API whose type bounds reject every realistic implementation
+is worse than not shipping the API.
 
-When `SwapChannel::rebuild()` runs over a TLS-wrapped connector:
-new `tonic::Channel` → empty pool → next request triggers
-`tls_conn.call(uri)` → `target_conn.call(uri)` (fresh TCP via SF
-resolve) → TLS handshake on the new TCP stream → HTTP/2 connection.
-The old TLS connections close along with the rest of the old
-hyper pool.
+### What enabling TLS will require
 
-SNI is taken as an explicit parameter by tonic-tls; the connector
-does not auto-derive it from the resolved endpoint. SF endpoints
-are arbitrary user-defined strings.
+1. **Generalize `SwapChannel`'s IO bound.** Replace the fixed
+   `TokioIo<TcpStream>` with whatever
+   [`Endpoint::connect_with_connector_lazy`](https://docs.rs/tonic/0.14/tonic/transport/struct.Endpoint.html#method.connect_with_connector_lazy)
+   actually requires (`hyper::rt::Read + hyper::rt::Write +
+   Send + Unpin + 'static`). Two implementation shapes:
+   - **Erase further:** store the IO behind a
+     `Box<dyn AsyncRead + AsyncWrite + ...>` so `SwapChannel`
+     stays non-generic. Adds a vtable hop per byte; probably
+     fine.
+   - **Re-generic:** add a type parameter `<S, IO>` to
+     `SwapChannel`. Loses the type-erasure benefit; users have
+     to thread a connector type parameter through their
+     wiring.
+2. **Add a TLS composition seam.** Either ship a
+   `tonic-tls` cargo sub-feature with a
+   [`tonic_tls::Transport`](https://github.com/youyuanwu/tonic-tls)
+   impl on `TargetConnector` (so `TlsConnector::new(target,
+   ssl, sni)` slots straight in), or document the manual
+   composition pattern with the generalized `SwapChannel`.
+3. **Decide the SNI policy.** tonic-tls takes SNI as an
+   explicit parameter; SF endpoint addresses are arbitrary
+   user-defined strings, so we can't auto-derive SNI from the
+   resolved endpoint. v1's selector returns only host+port;
+   passing SNI through requires either widening `DialTarget`
+   (breaking change for existing selectors) or making SNI a
+   builder-time configuration on the TLS layer.
+
+None of the above is hard — the trailer + rebuild + dedup
+plumbing is already TLS-agnostic. It just hasn't been done yet,
+and was scoped out so v1 ships with an honest API surface.
+
+When `SwapChannel::rebuild()` eventually runs over a
+TLS-wrapped connector, it composes naturally: new `tonic::Channel`
+→ empty pool → next request triggers `tls_conn.call(uri)` →
+`target_conn.call(uri)` (fresh TCP via SF resolve) → TLS
+handshake on the new TCP stream → HTTP/2 connection. Old TLS
+connections close along with the rest of the old hyper pool.
 
 ## Refresh path
 
@@ -645,7 +677,9 @@ invalidation path that SF naming exposes via the trailer.
   *written* on a successful resolve.
 - `SwapChannel::rebuild()` is non-blocking and always produces a
   new Channel. Storm dedup is the middleware's job; concurrent
-  same-value trailer arrivals collapse there.
+  same-value trailer arrivals serialize through the middleware's
+  `Mutex<Option<String>>` (see [Rebuild dedup](#rebuild-dedup))
+  and collapse to a single `rebuild()` call.
 - Concurrent failing requests on one Channel are deduplicated by
   hyper's pool checkout (one `MakeConnection` per pool key).
 - `TargetResolver::resolve()` takes no arguments in v1. The
@@ -660,9 +694,8 @@ A few small differences between this doc and what shipped:
 - **Type erasure uses `BoxCloneSyncService`, not `BoxCloneService`.**
   `SwapChannel` is shared via `Arc<Inner>` between the user-facing
   service and the rebuild closure captured by the middleware, so
-  the inner connector slot must be `Sync`. tonic-tls's
-  `TlsConnector` is already `Sync`; user-supplied connectors must
-  be too.
+  the inner connector slot must be `Sync`. `TargetConnector`
+  satisfies this; any user-supplied connector must too.
 - **`ResolveStatusMiddleware::new` is the only constructor.** The
   earlier draft showed `layer` / `layer_with_rebuild`
   factory-style `tower::Layer` helpers; the impl ships only
@@ -756,10 +789,15 @@ Genuinely open:
 
 ## Future work
 
-- **`tonic-tls` adapter.** Ship the `tonic_tls::Transport` impl on
-  `TargetConnector` behind a `tonic-tls` cargo sub-feature, so the
-  recipe in [Composition with tonic-tls](#composition-with-tonic-tls)
-  becomes a one-liner.
+- **TLS support.** See [TLS (deferred)](#tls-deferred). Requires
+  generalizing `SwapChannel`'s IO bound, plus either a
+  `tonic_tls::Transport` adapter on `TargetConnector` (behind a
+  `tonic-tls` cargo sub-feature) or a documented manual recipe.
+  An earlier `TargetChannelBuilder::with_tls` API and the
+  matching `SwapChannel::with_connector` TLS framing were
+  removed before the v1 commit because their type bounds (fixed
+  at `TokioIo<TcpStream>`) rejected every realistic TLS
+  connector.
 - **Live-cluster failover sample / test.** See
   [Testing](#testing).
 - **Trailer-aware caller retry recipe.** A worked
@@ -797,4 +835,3 @@ Genuinely open:
 - [`crates/samples/reflection/src/test.rs`](../../crates/samples/reflection/src/test.rs) — current tonic usage and manual failover handling.
 - [`crates/samples/reflection/src/test2.rs`](../../crates/samples/reflection/src/test2.rs) — `resolve_until_change(.., complain=true)` (prior art).
 - [`ResolveServicePartitionAsync` remarks](https://learn.microsoft.com/en-us/dotnet/api/system.fabric.fabricclient.servicemanagementclient.resolveservicepartitionasync) — complaint protocol semantics.
-- [tonic-tls](https://github.com/youyuanwu/tonic-tls) — `Service<Uri>`-based TLS connectors for tonic.

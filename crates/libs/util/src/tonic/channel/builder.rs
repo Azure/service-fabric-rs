@@ -5,14 +5,11 @@
 
 use std::sync::Arc;
 
-use hyper_util::rt::TokioIo;
-use tokio::net::TcpStream;
 use tonic::transport::Endpoint;
-use tower::Service;
 
-use crate::tonic::connector::{TargetConnector, TargetConnectorBuilder};
+use crate::tonic::connector::TargetConnectorBuilder;
 use crate::tonic::middleware::ResolveStatusMiddleware;
-use crate::tonic::naming::{BoxError, TargetResolver};
+use crate::tonic::naming::TargetResolver;
 
 use super::swap::SwapChannel;
 
@@ -22,17 +19,20 @@ use super::swap::SwapChannel;
 /// generated tonic clients.
 pub type TargetChannel = ResolveStatusMiddleware<SwapChannel>;
 
-type TlsWrapper = Box<dyn FnOnce(TargetConnector, Endpoint) -> SwapChannel + Send>;
-
 /// Builder for [`TargetChannel`].
 ///
 /// The resolver embeds the target selector; the channel builder
 /// has no selector setter of its own.
+///
+/// **TLS is not yet supported.** v1 ships plain TCP only via
+/// [`TargetConnector`]. The TLS recipe sketched in the design
+/// doc requires generalizing `SwapChannel` over its inner IO
+/// type (today fixed at `TokioIo<TcpStream>`); see Future work
+/// in `docs/design/TonicConnectorDesign.md`.
 pub struct TargetChannelBuilder {
     resolver: Option<Arc<dyn TargetResolver>>,
     endpoint_template: Option<Endpoint>,
     trailer_header: Option<http::HeaderName>,
-    tls: Option<TlsWrapper>,
 }
 
 impl TargetChannelBuilder {
@@ -41,7 +41,6 @@ impl TargetChannelBuilder {
             resolver: None,
             endpoint_template: None,
             trailer_header: None,
-            tls: None,
         }
     }
 
@@ -72,31 +71,6 @@ impl TargetChannelBuilder {
         self
     }
 
-    /// Wrap the connector with a user-supplied TLS layer before
-    /// building the inner `tonic::Channel`. The closure receives
-    /// the [`TargetConnector`] and must return a `Service<Uri>`
-    /// that performs TLS on top of it (typical:
-    /// `tonic_tls::*::TlsConnector::new`). The returned service's
-    /// bounds match [`SwapChannel::with_connector`].
-    pub fn with_tls<F, T>(mut self, f: F) -> Self
-    where
-        F: FnOnce(TargetConnector) -> T + Send + 'static,
-        T: Service<http::Uri, Response = TokioIo<TcpStream>, Error = BoxError>
-            + Clone
-            + Send
-            + Sync
-            + 'static,
-        T::Future: Send + 'static,
-    {
-        // Deferred so the user can call `endpoint_template(...)`
-        // either before or after `with_tls(...)`.
-        self.tls = Some(Box::new(move |conn: TargetConnector, ep: Endpoint| {
-            let tls = f(conn);
-            SwapChannel::with_connector(ep, tls)
-        }));
-        self
-    }
-
     /// Build a ready-to-use service. Sync; no IO until the first
     /// request.
     pub fn build(self) -> TargetChannel {
@@ -108,10 +82,7 @@ impl TargetChannelBuilder {
             .expect("TargetChannelBuilder::trailer_header is required");
         let connector = TargetConnectorBuilder::new().resolver(resolver).build();
         let ep = self.endpoint_template.unwrap_or_else(default_endpoint);
-        let swap = match self.tls {
-            Some(wrapper) => wrapper(connector, ep),
-            None => SwapChannel::new(ep, connector),
-        };
+        let swap = SwapChannel::new(ep, connector);
         ResolveStatusMiddleware::new(swap.clone(), trailer_header, move || swap.rebuild())
     }
 }

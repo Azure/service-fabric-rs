@@ -27,10 +27,15 @@ type ErasedConnector = BoxCloneSyncService<http::Uri, TokioIo<TcpStream>, BoxErr
 ///
 /// `SwapChannel` is **type-erased over the inner connector**: it
 /// stores a `BoxCloneSyncService<Uri, TokioIo<TcpStream>, BoxError>`
-/// internally, so the same `SwapChannel` type can hold a plain
-/// [`TargetConnector`] or any other user-supplied `Service<Uri>`
-/// (e.g. tonic-tls). The cost is one `Box::pin` per dial — minor
-/// against TCP connect + TLS handshake.
+/// internally. The cost is one `Box::pin` per dial — negligible
+/// against TCP connect.
+///
+/// **The IO type is fixed at `TokioIo<TcpStream>`**, so any
+/// connector other than [`TargetConnector`] must also produce
+/// `TokioIo<TcpStream>` (i.e. plain TCP). TLS-wrapped connectors
+/// (which return `TokioIo<TlsStream<...>>`) do not fit. Generalizing
+/// the IO bound to support TLS is Future Work — see
+/// `docs/design/TonicConnectorDesign.md`.
 ///
 /// Readiness is driven inside the response future rather than
 /// across separate `poll_ready` / `call` invocations, so cloning
@@ -64,9 +69,12 @@ impl SwapChannel {
     }
 
     /// Build a `SwapChannel` from any `Service<Uri>` that produces
-    /// a hyper-compatible IO. Used for TLS composition: pass the
-    /// `tonic_tls::*::TlsConnector<TargetConnector>` returned by
-    /// `TlsConnector::new(...)`.
+    /// a plain `TokioIo<TcpStream>`. Useful for tests with a mock
+    /// connector or for users who want to wrap [`TargetConnector`]
+    /// in additional non-TLS tower middleware.
+    ///
+    /// **Does not support TLS** — see the type-level note on
+    /// [`SwapChannel`].
     pub fn with_connector<S>(endpoint_template: Endpoint, connector: S) -> Self
     where
         S: Service<http::Uri, Response = TokioIo<TcpStream>, Error = BoxError>

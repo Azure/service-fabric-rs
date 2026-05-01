@@ -5,7 +5,7 @@ edition.workspace = true
 publish = false
 
 [dev-dependencies]
-mssf-util = { workspace = true, default-features = true }
+mssf-util = { workspace = true, default-features = true, features = ["tonic"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "net", "time", "sync"] }
 tokio-util = { workspace = true }
 hyper = { workspace = true, features = ["server", "http2"] }

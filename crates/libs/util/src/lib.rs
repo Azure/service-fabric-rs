@@ -21,3 +21,6 @@ pub mod monitoring;
 pub mod data;
 
 pub mod mock;
+
+#[cfg(feature = "tonic")]
+pub mod tonic;

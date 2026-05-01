@@ -1,0 +1,20 @@
+[package]
+name = "mssf-tests"
+version = "0.0.0"
+edition.workspace = true
+publish = false
+
+[dev-dependencies]
+mssf-util = { workspace = true, default-features = true, features = ["tonic"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "net", "time", "sync"] }
+tokio-util = { workspace = true }
+hyper = { workspace = true, features = ["server", "http2"] }
+hyper-util = { workspace = true, features = ["server", "tokio"] }
+http.workspace = true
+http-body.workspace = true
+http-body-util.workspace = true
+tonic.workspace = true
+tower.workspace = true
+arc-swap.workspace = true
+futures.workspace = true
+bytes.workspace = true

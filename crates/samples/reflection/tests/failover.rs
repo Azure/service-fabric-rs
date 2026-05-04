@@ -3,7 +3,10 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::test::TestCreateUpdateClient;
+//! Integration tests covering failover detection through the
+//! complaint-based resolve API plus the in-process replica-mock
+//! tests for the stateful service factory.
+
 use mssf_core::{
     WString,
     client::{
@@ -13,6 +16,8 @@ use mssf_core::{
     types::{ReplicaRole, ServicePartitionInformation, ServicePartitionQueryResultItem, Uri},
 };
 use mssf_util::{resolve::ServicePartitionResolver, tokio::TokioExecutor};
+
+use samples_reflection::test_admin::{TestCreateUpdateClient, TestPartitionReplicaLayout};
 
 async fn restart_primary(uri: &Uri, fc: &FabricClient) {
     let sm = TestCreateUpdateClient::new(fc.clone());
@@ -72,7 +77,7 @@ async fn restart_primary(uri: &Uri, fc: &FabricClient) {
         .unwrap();
 }
 
-// returns the new rsp.
+/// Returns the new rsp.
 async fn resolve_until_change(
     srv: &ServicePartitionResolver,
     uri: &Uri,
@@ -166,7 +171,7 @@ async fn test_resolve_notification() {
         &uri,
         &mssf_core::types::PartitionSchemeDescription::Singleton,
         // target 3, min 3 and aux 0.
-        crate::test::TestPartitionReplicaLayout::TargetMinAux(3, 3, 0),
+        TestPartitionReplicaLayout::TargetMinAux(3, 3, 0),
     )
     .await;
 
@@ -238,7 +243,7 @@ async fn test_aux_replicas() {
         &uri,
         &mssf_core::types::PartitionSchemeDescription::Singleton,
         // target 3, min 2 and aux 1.
-        crate::test::TestPartitionReplicaLayout::TargetMinAux(3, 2, 1),
+        TestPartitionReplicaLayout::TargetMinAux(3, 2, 1),
     )
     .await;
 
@@ -302,11 +307,8 @@ async fn test_aux_replicas() {
     assert_eq!(aux_count, 1);
 
     // Update the service to have 0 aux replica.
-    sm.update_service_replica_layout(
-        &uri,
-        crate::test::TestPartitionReplicaLayout::TargetMinAux(3, 3, 0),
-    )
-    .await;
+    sm.update_service_replica_layout(&uri, TestPartitionReplicaLayout::TargetMinAux(3, 3, 0))
+        .await;
 
     let rsp = resolve_until_condition(&srv, &uri, Some(rsp), |rsp| {
         let (primary_count, secondary_count, aux_count) = get_replica_counts(rsp);
@@ -315,11 +317,8 @@ async fn test_aux_replicas() {
     .await;
 
     // Update the service to have 1 aux replica again.
-    sm.update_service_replica_layout(
-        &uri,
-        crate::test::TestPartitionReplicaLayout::TargetMinAux(3, 2, 1),
-    )
-    .await;
+    sm.update_service_replica_layout(&uri, TestPartitionReplicaLayout::TargetMinAux(3, 2, 1))
+        .await;
 
     let _rsp = resolve_until_condition(&srv, &uri, Some(rsp), |rsp| {
         let (primary_count, secondary_count, aux_count) = get_replica_counts(rsp);
@@ -333,8 +332,8 @@ async fn test_aux_replicas() {
 }
 
 async fn test_replica_mock(replica_count: usize) {
-    use crate::Factory;
-    use crate::grpc::ReplicaRegistry;
+    use samples_reflection::Factory;
+    use samples_reflection::grpc::ReplicaRegistry;
     let rt = TokioExecutor::new(tokio::runtime::Handle::current());
     let registry = ReplicaRegistry::new();
     let factory = Box::new(Factory::create(12312, "localhost".into(), rt, 0, registry));
@@ -344,7 +343,7 @@ async fn test_replica_mock(replica_count: usize) {
     let args = mssf_util::mock::CreateStatefulServicePartitionArg {
         partition_id: 1.into(),
         replica_count,
-        service_type_name: crate::SERVICE_TYPE_NAME.into(),
+        service_type_name: samples_reflection::SERVICE_TYPE_NAME.into(),
         service_name: "fabric:/ReflectionApp/DummyTest".into(),
         init_data: vec![],
     };

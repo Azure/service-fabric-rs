@@ -16,6 +16,7 @@ pub mod control;
 pub mod echo;
 pub mod grpc;
 pub mod grpc_control;
+pub mod lifecycle;
 pub mod statefulstore;
 pub mod test_admin;
 pub mod test_cluster;

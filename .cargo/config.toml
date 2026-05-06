@@ -1,0 +1,12 @@
+# Workspace-level cargo config.
+#
+# Integration tests under crates/samples/reflection/tests/ talk to a
+# single shared onebox SF cluster. Running them in parallel within the
+# same test binary leads to gate-routing races and onebox load spikes,
+# so libtest is told to use a single thread per process.
+#
+# This affects layer 2 only (within one test binary). Layer 1 (running
+# multiple test binaries concurrently) is still parallel; we'll add
+# cargo-nextest if/when that becomes a problem.
+[env]
+RUST_TEST_THREADS = "1"

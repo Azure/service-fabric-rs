@@ -242,9 +242,7 @@ impl ReplicaControl for ReplicaControlImpl {
                 // message is logged server-side for diagnostics but
                 // SF itself only sees the code.
                 tracing::info!("Approve(FailMessage): {} (returned to SF as E_FAIL)", msg);
-                Decision::Fail(mssf_core::Error::new(mssf_core::HRESULT(
-                    0x80004005u32 as i32, // E_FAIL
-                )))
+                Decision::Fail(mssf_core::ErrorCode::E_FAIL.into())
             }
         };
 

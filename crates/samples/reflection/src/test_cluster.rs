@@ -30,8 +30,10 @@
 //!
 //! Override the env var for any other topology.
 
+use std::sync::OnceLock;
 use std::time::Duration;
 
+use mssf_core::WString;
 use mssf_core::client::FabricClient;
 use mssf_core::types::{
     ServicePartitionInformation, ServicePartitionQueryDescription, ServicePartitionQueryResultItem,
@@ -68,6 +70,55 @@ pub fn cluster_host() -> String {
     #[cfg(not(windows))]
     const DEFAULT_HOST: &str = "onebox";
     std::env::var("REFLECTION_CLUSTER_HOST").unwrap_or_else(|_| DEFAULT_HOST.to_string())
+}
+
+/// Process-wide [`FabricClient`] connection string.
+///
+/// Tests connect to the SF gateway via the `localhost:19000` client
+/// endpoint. In the devcontainer this is forwarded to the `onebox`
+/// sibling container's gateway. Override with `SF_CLIENT_ENDPOINT`
+/// for non-default topologies.
+pub fn fabric_client_endpoint() -> WString {
+    WString::from(
+        std::env::var("SF_CLIENT_ENDPOINT")
+            .unwrap_or_else(|_| "localhost:19000".to_string())
+            .as_str(),
+    )
+}
+
+/// Process-wide [`FabricClient`] cached on first use.
+///
+/// Constructing a `FabricClient` does a non-trivial COM dance and
+/// blocks until the gateway is reachable; constructing one per test
+/// adds noticeable overhead when many tests run in parallel against
+/// the same onebox cluster. Tests should call [`fabric_client`] (or
+/// [`fabric_client_clone`]) instead of building their own.
+///
+/// `FabricClient` is `Clone` and the COM handles inside are reference
+/// counted, so cloning the cached instance is cheap.
+static FABRIC_CLIENT: OnceLock<FabricClient> = OnceLock::new();
+
+/// Borrow the process-wide [`FabricClient`], building it on first call.
+///
+/// Builds the client with the connection string from
+/// [`fabric_client_endpoint`]. Panics if the build fails — the SF
+/// runtime is a hard prerequisite for any test that uses this
+/// helper, so a failure to build is not a recoverable test
+/// condition.
+pub fn fabric_client() -> &'static FabricClient {
+    FABRIC_CLIENT.get_or_init(|| {
+        FabricClient::builder()
+            .with_connection_strings(vec![fabric_client_endpoint()])
+            .build()
+            .expect("failed to build FabricClient")
+    })
+}
+
+/// Clone of the process-wide [`FabricClient`]. Equivalent to
+/// `fabric_client().clone()` but reads more naturally at call sites
+/// that want owned values (e.g. moving into a tokio task).
+pub fn fabric_client_clone() -> FabricClient {
+    fabric_client().clone()
 }
 
 /// Look up the (Singleton) `partition_id` for `service_name` via the

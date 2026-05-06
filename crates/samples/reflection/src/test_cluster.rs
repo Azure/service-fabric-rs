@@ -32,12 +32,17 @@
 
 use std::time::Duration;
 
+use mssf_core::client::FabricClient;
+use mssf_core::types::{
+    ServicePartitionInformation, ServicePartitionQueryDescription, ServicePartitionQueryResultItem,
+    Uri,
+};
 use tonic::transport::{Channel, Endpoint};
 
 use crate::grpc_control::REFLECTION_CONTROL_BASE_PORT;
 use crate::grpc_control::proto::{
     ApprovalEvent, ApprovalKind, ApproveRequest, Empty, ListPendingRequest, ReplicaRef,
-    WaitForApprovalRequest, approve_request::Decision as ApproveDecisionOneof,
+    approve_request::Decision as ApproveDecisionOneof, list_pending_request::ReplicaFilter,
     replica_control_client::ReplicaControlClient,
 };
 
@@ -49,9 +54,6 @@ pub const POLL_INTERVAL: Duration = Duration::from_millis(250);
 
 /// Default total time `poll_for_pending` will wait before panicking.
 pub const POLL_BUDGET: Duration = Duration::from_secs(30);
-
-/// gRPC `WaitForApproval` deadline sent to the server.
-pub const WAIT_FOR_APPROVAL_TIMEOUT_MS: u32 = 30_000;
 
 /// Hostname-or-IP that resolves to the cluster.
 ///
@@ -66,6 +68,63 @@ pub fn cluster_host() -> String {
     #[cfg(not(windows))]
     const DEFAULT_HOST: &str = "onebox";
     std::env::var("REFLECTION_CLUSTER_HOST").unwrap_or_else(|_| DEFAULT_HOST.to_string())
+}
+
+/// Look up the (Singleton) `partition_id` for `service_name` via the
+/// SF query manager, retrying until SF surfaces the partition (it is
+/// not necessarily visible the instant `create_service` returns).
+///
+/// Returns the partition_id formatted exactly as the
+/// `ReplicaControl` proto expects (`{:?}` of `mssf_core::GUID`,
+/// uppercase dashed, no braces) so the result can be passed straight
+/// into [`Cluster::partition_driver`].
+///
+/// Tests must use this instead of [`Cluster::poll_for_pending`] when
+/// they may run in parallel with other tests on the same cluster:
+/// cluster-wide polling can otherwise grab another test's `Open`
+/// gate by mistake.
+pub async fn discover_partition_id(fc: &FabricClient, service_name: &Uri) -> String {
+    const QUERY_TIMEOUT: Duration = Duration::from_secs(10);
+    const POLL_BACKOFF: Duration = Duration::from_millis(250);
+    const POLL_BUDGET: Duration = Duration::from_secs(30);
+
+    let q = fc.get_query_manager();
+    let desc = ServicePartitionQueryDescription {
+        service_name: service_name.clone(),
+        partition_id_filter: None,
+    };
+
+    let deadline = std::time::Instant::now() + POLL_BUDGET;
+    loop {
+        match q.get_partition_list(&desc, QUERY_TIMEOUT, None).await {
+            Ok(list) => {
+                let pid = list
+                    .service_partitions
+                    .into_iter()
+                    .filter_map(|p| match p {
+                        ServicePartitionQueryResultItem::Stateful(s) => {
+                            match s.partition_information {
+                                ServicePartitionInformation::Singleton(info) => Some(info.id),
+                                _ => None,
+                            }
+                        }
+                        _ => None,
+                    })
+                    .next();
+                if let Some(guid) = pid {
+                    return format!("{guid:?}");
+                }
+            }
+            Err(e) => tracing::debug!("get_partition_list({service_name}): {e}; retrying"),
+        }
+        if std::time::Instant::now() >= deadline {
+            panic!(
+                "no Singleton partition for {service_name} within {POLL_BUDGET:?}: \
+                 service may not have been created or is not stateful Singleton"
+            );
+        }
+        tokio::time::sleep(POLL_BACKOFF).await;
+    }
 }
 
 /// Holds one connection slot per candidate `ReplicaControl` port.
@@ -164,32 +223,13 @@ impl Cluster {
     /// placed on a previously-idle node is discovered without extra
     /// retry logic in the caller.
     ///
+    /// Cluster-wide (no partition filter); use this for the very
+    /// first OPEN before the partition_id is known. After that, build
+    /// a [`PartitionDriver`] and use its `wait_*` methods.
+    ///
     /// Panics if no matching gate appears within [`POLL_BUDGET`].
     pub async fn poll_for_pending(
         &mut self,
-        expected_kind: Option<ApprovalKind>,
-    ) -> (usize, ApprovalEvent) {
-        self.poll_for_pending_inner(None, expected_kind).await
-    }
-
-    /// Like [`Cluster::poll_for_pending`] but only matches gates whose
-    /// target's `partition_id` equals `partition_id`. Useful when SF
-    /// rebuilds a replica after a failed `change_role` (the
-    /// `replica_id` changes but the partition does not), or when the
-    /// test must coexist with parallel test runs in the same cluster
-    /// (each test scopes its polling to its own partition).
-    pub async fn poll_for_pending_in_partition(
-        &mut self,
-        partition_id: &str,
-        expected_kind: Option<ApprovalKind>,
-    ) -> (usize, ApprovalEvent) {
-        self.poll_for_pending_inner(Some(partition_id), expected_kind)
-            .await
-    }
-
-    async fn poll_for_pending_inner(
-        &mut self,
-        partition_id: Option<&str>,
         expected_kind: Option<ApprovalKind>,
     ) -> (usize, ApprovalEvent) {
         let deadline = std::time::Instant::now() + POLL_BUDGET;
@@ -199,7 +239,7 @@ impl Cluster {
             for (i, client) in self.iter_connected_mut() {
                 let resp = match client
                     .list_pending(ListPendingRequest {
-                        partition_id: partition_id.unwrap_or("").to_string(),
+                        partition_id: String::new(),
                         replica_filter: None,
                     })
                     .await
@@ -226,7 +266,7 @@ impl Cluster {
             if std::time::Instant::now() >= deadline {
                 panic!(
                     "no pending gate of kind {expected_kind:?} found within {POLL_BUDGET:?} \
-                     (partition_filter={partition_id:?}, connected_nodes={})",
+                     (connected_nodes={})",
                     self.connected_count(),
                 );
             }
@@ -295,96 +335,127 @@ impl Default for Cluster {
 }
 
 impl Cluster {
-    /// Build a [`ReplicaClient`] handle pointing at one specific
-    /// replica. The returned handle borrows the cluster mutably; it
-    /// owns the `(node_idx, target)` pair and exposes every per-replica
-    /// operation (`wait_for_gate`, `approve_proceed`, etc.) as methods.
+    /// Build a [`PartitionDriver`] for the given partition. The driver
+    /// exposes manual primitives (`wait_next`, `wait_next_kind`,
+    /// `wait_new_replica`, `wait_for_replica`, `approve_proceed`,
+    /// `approve_fail`) that the test composes explicitly.
     ///
-    /// Typical flow after [`Cluster::poll_for_pending`]:
-    ///
-    /// ```ignore
-    /// let (node_idx, ev) = cluster.poll_for_pending(Some(ApprovalKind::ApprovalOpen)).await;
-    /// let target = ev.target.clone().unwrap();
-    /// let mut replica = cluster.replica_client(node_idx, target);
-    /// replica.approve_proceed(ev.gate_id).await;
-    /// let cr = replica.observe_and_approve(ApprovalKind::ApprovalChangeRole).await;
-    /// ```
-    pub fn replica_client(&mut self, node_idx: usize, target: ReplicaRef) -> ReplicaClient<'_> {
-        ReplicaClient {
+    /// The driver does **not** assume a single linear gate stream per
+    /// partition. SF brings replicas up serially, but later gates from
+    /// different replicas in the same partition interleave. The test
+    /// is responsible for routing each gate to the appropriate
+    /// per-replica logic.
+    pub fn partition_driver(&mut self, partition_id: impl Into<String>) -> PartitionDriver<'_> {
+        PartitionDriver {
             cluster: self,
-            node_idx,
-            target,
+            partition_id: partition_id.into(),
         }
     }
 }
 
 // ----------------------------------------------------------------------
-// ReplicaClient — per-replica handle borrowing the cluster.
+// PartitionDriver — partition-scoped manual primitives
 // ----------------------------------------------------------------------
 
-/// Borrowing handle that pins a single `(node_idx, replica_target)` and
-/// exposes every per-replica operation as a method, so tests don't
-/// have to thread `node_idx` and `target` through every call.
+/// Partition-scoped handle for waiting on and approving gates within
+/// one partition. Provides both manual primitives and a per-replica
+/// sequence helper.
 ///
-/// One `ReplicaClient` may exist at a time per `Cluster` (it holds an
-/// exclusive borrow). Tests that need to drive multiple replicas
-/// concurrently should keep `(node_idx, target)` pairs and re-acquire
-/// the handle via [`Cluster::replica_client`] for each operation.
-pub struct ReplicaClient<'a> {
+/// ## Single replica
+///
+/// After discovering the replica's first gate via `wait_*` (or via
+/// the cluster-wide [`Cluster::poll_for_pending`]), drive the rest of
+/// its lifecycle with [`PartitionDriver::drive_replica_sequence`] or
+/// [`PartitionDriver::approve_replica_sequence`].
+///
+/// ## Multiple replicas
+///
+/// SF brings replicas up serially (replica 1's Open parks before SF
+/// starts replica 2), but **post-Open lifecycle gates can interleave
+/// across replicas** with no SF-guaranteed order. Sequences are
+/// per-replica precisely so the test does not bake a cross-replica
+/// race into its expectations.
+///
+/// ```ignore
+/// // 1. Discover replica 1.
+/// let (n, ev1) = driver.wait_next_kind(ApprovalKind::ApprovalOpen).await;
+/// let r1 = ev1.target.as_ref().unwrap().replica_id;
+/// driver.approve_proceed(n, ev1.target.clone().unwrap(), ev1.gate_id.clone()).await;
+///
+/// // 2. Discover replica 2 (any open from a different replica).
+/// let (n, ev2) = driver.wait_new_replica(&[r1], Some(ApprovalKind::ApprovalOpen)).await;
+/// let r2 = ev2.target.as_ref().unwrap().replica_id;
+/// driver.approve_proceed(n, ev2.target.clone().unwrap(), ev2.gate_id.clone()).await;
+///
+/// // 3. Drive the rest concurrently. Two PartitionDrivers built from
+/// //    the same cluster cannot coexist (mutable borrow); use two
+/// //    cluster handles, or drive sequentially when ordering is OK.
+/// driver.drive_replica_sequence(r1, &[
+///     TestStep::proceed(ApprovalKind::ApprovalChangeRole), // -> Primary
+///     TestStep::proceed(ApprovalKind::ApprovalClose),
+/// ]).await;
+/// driver.drive_replica_sequence(r2, &[
+///     TestStep::proceed(ApprovalKind::ApprovalChangeRole), // -> Secondary
+///     TestStep::proceed(ApprovalKind::ApprovalClose),
+/// ]).await;
+/// ```
+///
+/// ## Rebuild handling
+///
+/// SF may rebuild a replica with a different `replica_id` (e.g. after
+/// `change_role` returns Err — see `tests/fail_change_role.rs`).
+/// `drive_replica_sequence` is pinned to a single `replica_id`, so a
+/// rebuild ends the sequence; the test re-discovers the new
+/// `replica_id` via `wait_*` and starts a fresh sequence against it.
+pub struct PartitionDriver<'a> {
     cluster: &'a mut Cluster,
-    node_idx: usize,
-    target: ReplicaRef,
+    partition_id: String,
 }
 
-impl<'a> ReplicaClient<'a> {
-    pub fn node_idx(&self) -> usize {
-        self.node_idx
+impl<'a> PartitionDriver<'a> {
+    pub fn partition_id(&self) -> &str {
+        &self.partition_id
     }
 
-    pub fn target(&self) -> &ReplicaRef {
-        &self.target
+    /// Wait for any pending gate in this partition (any replica, any kind).
+    pub async fn wait_next(&mut self) -> (usize, ApprovalEvent) {
+        self.poll_partition(None, &[], None).await
     }
 
-    fn client(&mut self) -> &mut ReplicaControlClient<Channel> {
-        self.cluster.client_mut(self.node_idx)
+    /// Wait for the next pending gate of `kind` in this partition (any replica).
+    pub async fn wait_next_kind(&mut self, kind: ApprovalKind) -> (usize, ApprovalEvent) {
+        self.poll_partition(Some(kind), &[], None).await
     }
 
-    /// Wait for a *specific* gate kind on this replica.
-    pub async fn wait_for_gate(&mut self, expected_kind: ApprovalKind) -> ApprovalEvent {
-        let target = self.target.clone();
-        let resp = self
-            .client()
-            .wait_for_approval(WaitForApprovalRequest {
-                target: Some(target),
-                timeout_ms: WAIT_FOR_APPROVAL_TIMEOUT_MS,
-                expected: expected_kind as i32,
-            })
-            .await
-            .unwrap_or_else(|s| panic!("WaitForApproval({expected_kind:?}) failed: {s}"));
-        resp.into_inner()
+    /// Wait for a pending gate from a replica whose `replica_id` is
+    /// *not* in `seen`. Use this to discover the next replica that SF
+    /// brings up after the previously-known ones; pass
+    /// `Some(ApprovalKind::ApprovalOpen)` when waiting for a fresh
+    /// activation.
+    pub async fn wait_new_replica(
+        &mut self,
+        seen: &[i64],
+        kind: Option<ApprovalKind>,
+    ) -> (usize, ApprovalEvent) {
+        self.poll_partition(kind, seen, None).await
     }
 
-    /// Wait for the *next* gate of any kind on this replica. Useful
-    /// during teardown where SF may issue `change_role(None)` before
-    /// `close` and the test wants to drain whatever comes next.
-    pub async fn wait_for_any_gate(&mut self) -> ApprovalEvent {
-        let target = self.target.clone();
-        let resp = self
-            .client()
-            .wait_for_approval(WaitForApprovalRequest {
-                target: Some(target),
-                timeout_ms: WAIT_FOR_APPROVAL_TIMEOUT_MS,
-                expected: ApprovalKind::ApprovalUnspecified as i32,
-            })
-            .await
-            .unwrap_or_else(|s| panic!("WaitForApproval(any) failed: {s}"));
-        resp.into_inner()
+    /// Wait for a pending gate from a specific `replica_id`. `kind`
+    /// filters the gate kind; `None` accepts any kind.
+    pub async fn wait_for_replica(
+        &mut self,
+        replica_id: i64,
+        kind: Option<ApprovalKind>,
+    ) -> (usize, ApprovalEvent) {
+        self.poll_partition(kind, &[], Some(replica_id)).await
     }
 
-    /// Approve a specific gate with `Decision::Proceed`.
-    pub async fn approve_proceed(&mut self, gate_id: String) {
-        let target = self.target.clone();
-        self.client()
+    /// Approve a previously-discovered gate with `Decision::Proceed`.
+    /// `node_idx`, `target` and `gate_id` come from the matching
+    /// `wait_*` return value.
+    pub async fn approve_proceed(&mut self, node_idx: usize, target: ReplicaRef, gate_id: String) {
+        self.cluster
+            .client_mut(node_idx)
             .approve(ApproveRequest {
                 target: Some(target),
                 gate_id: gate_id.clone(),
@@ -394,12 +465,18 @@ impl<'a> ReplicaClient<'a> {
             .unwrap_or_else(|s| panic!("Approve(gate_id={gate_id}) failed: {s}"));
     }
 
-    /// Approve a specific gate with `Decision::Fail(message)`. Note:
-    /// `fail_message` is rejected with `InvalidArgument` for an
-    /// `Approval::Abort` gate (SF's `abort` cannot fail).
-    pub async fn approve_fail(&mut self, gate_id: String, message: String) {
-        let target = self.target.clone();
-        self.client()
+    /// Approve a previously-discovered gate with `Decision::Fail(message)`.
+    /// Note: `Approval::Abort` rejects `fail_message` with
+    /// `InvalidArgument` (SF's `abort` cannot fail).
+    pub async fn approve_fail(
+        &mut self,
+        node_idx: usize,
+        target: ReplicaRef,
+        gate_id: String,
+        message: String,
+    ) {
+        self.cluster
+            .client_mut(node_idx)
             .approve(ApproveRequest {
                 target: Some(target),
                 gate_id: gate_id.clone(),
@@ -411,38 +488,180 @@ impl<'a> ReplicaClient<'a> {
             });
     }
 
-    /// Wait for a gate of `expected_kind`, then approve it with
-    /// `Decision::Proceed`. Returns the observed event so the test
-    /// can inspect `new_role` etc.
-    pub async fn observe_and_approve(&mut self, expected_kind: ApprovalKind) -> ApprovalEvent {
-        let ev = self.wait_for_gate(expected_kind).await;
-        let gate_id = ev.gate_id.clone();
-        self.approve_proceed(gate_id).await;
-        ev
+    /// Snapshot of every pending gate in this partition across all
+    /// reachable nodes. Useful for assertions like "no replica is
+    /// parked after teardown".
+    pub async fn list_pending(&mut self) -> Vec<ApprovalEvent> {
+        let mut out = Vec::new();
+        let mut to_invalidate = Vec::new();
+        let pid = self.partition_id.clone();
+        for (i, client) in self.cluster.iter_connected_mut() {
+            match client
+                .list_pending(ListPendingRequest {
+                    partition_id: pid.clone(),
+                    replica_filter: None,
+                })
+                .await
+            {
+                Ok(r) => out.extend(r.into_inner().events),
+                Err(_) => to_invalidate.push(i),
+            }
+        }
+        for i in to_invalidate {
+            self.cluster.invalidate(i);
+        }
+        out
     }
 
-    /// Wait for the next gate of any kind, then approve with
-    /// `Decision::Proceed`. Used during teardown loops where the
-    /// caller doesn't care which gate fires next.
-    pub async fn drain_next_gate(&mut self) -> ApprovalEvent {
-        let ev = self.wait_for_any_gate().await;
-        let gate_id = ev.gate_id.clone();
-        self.approve_proceed(gate_id).await;
-        ev
+    /// Drive a fixed sequence of gates against one specific replica.
+    /// Each step polls `ListPending` with the server-side
+    /// `replica_filter` so it only matches gates from `replica_id`,
+    /// then approves with the step's decision.
+    ///
+    /// Per-replica (not partition-wide) by design: SF makes no
+    /// guarantees about cross-replica ordering once both replicas in
+    /// a partition are open, so a single tagged sequence covering
+    /// multiple replicas would bake a race into the test. To drive
+    /// two replicas concurrently, run two `drive_replica_sequence`
+    /// futures from separate `PartitionDriver`s and `tokio::join!`
+    /// them.
+    ///
+    /// Strict on kind matching — panics with actual vs. expected if
+    /// SF's lifecycle changes shape.
+    pub async fn drive_replica_sequence(
+        &mut self,
+        replica_id: i64,
+        steps: &[TestStep],
+    ) -> Vec<ApprovalEvent> {
+        let mut observed = Vec::with_capacity(steps.len());
+        for (i, step) in steps.iter().enumerate() {
+            let (node_idx, ev) = self
+                .poll_partition(Some(step.expected), &[], Some(replica_id))
+                .await;
+            let actual =
+                ApprovalKind::try_from(ev.kind).unwrap_or(ApprovalKind::ApprovalUnspecified);
+            assert_eq!(
+                actual, step.expected,
+                "drive_replica_sequence step {i} (replica={replica_id}): \
+                 expected {:?}, got {actual:?} (gate_id={})",
+                step.expected, ev.gate_id,
+            );
+            let target = ev
+                .target
+                .clone()
+                .expect("ApprovalEvent.target on partition-scoped poll");
+            let gate_id = ev.gate_id.clone();
+            match &step.decision {
+                TestDecision::Proceed => self.approve_proceed(node_idx, target, gate_id).await,
+                TestDecision::Fail(msg) => {
+                    self.approve_fail(node_idx, target, gate_id, msg.clone())
+                        .await
+                }
+            }
+            observed.push(ev);
+        }
+        observed
     }
 
-    /// `ListPending` filtered to this replica's partition. Useful for
-    /// "is the replica gone?" assertions after `Close` is approved.
-    pub async fn list_pending_in_partition(&mut self) -> Vec<ApprovalEvent> {
-        let partition_id = self.target.partition_id.clone();
-        self.client()
-            .list_pending(ListPendingRequest {
-                partition_id,
-                replica_filter: None,
-            })
-            .await
-            .expect("ListPending failed")
-            .into_inner()
-            .events
+    /// Convenience for the all-`Proceed` case of
+    /// [`PartitionDriver::drive_replica_sequence`].
+    pub async fn approve_replica_sequence(
+        &mut self,
+        replica_id: i64,
+        kinds: &[ApprovalKind],
+    ) -> Vec<ApprovalEvent> {
+        let steps: Vec<TestStep> = kinds
+            .iter()
+            .map(|k| TestStep::new(*k, TestDecision::Proceed))
+            .collect();
+        self.drive_replica_sequence(replica_id, &steps).await
+    }
+
+    /// Internal polling loop with combined filters. Polls
+    /// `ListPending` across every reachable node with backoff up to
+    /// [`POLL_BUDGET`].
+    async fn poll_partition(
+        &mut self,
+        kind_filter: Option<ApprovalKind>,
+        exclude_replicas: &[i64],
+        require_replica: Option<i64>,
+    ) -> (usize, ApprovalEvent) {
+        let pid = self.partition_id.clone();
+        let deadline = std::time::Instant::now() + POLL_BUDGET;
+        // Server-side replica_filter when we know the exact id.
+        let replica_filter = require_replica.map(ReplicaFilter::SpecificReplicaId);
+        loop {
+            self.cluster.ensure().await;
+            let mut to_invalidate = Vec::new();
+            for (i, client) in self.cluster.iter_connected_mut() {
+                let resp = match client
+                    .list_pending(ListPendingRequest {
+                        partition_id: pid.clone(),
+                        replica_filter,
+                    })
+                    .await
+                {
+                    Ok(r) => r,
+                    Err(_) => {
+                        to_invalidate.push(i);
+                        continue;
+                    }
+                };
+                for ev in resp.into_inner().events {
+                    if let Some(k) = kind_filter
+                        && ev.kind != k as i32
+                    {
+                        continue;
+                    }
+                    let rid = ev.target.as_ref().map(|t| t.replica_id).unwrap_or(0);
+                    if exclude_replicas.contains(&rid) {
+                        continue;
+                    }
+                    return (i, ev);
+                }
+            }
+            for i in to_invalidate {
+                self.cluster.invalidate(i);
+            }
+            if std::time::Instant::now() >= deadline {
+                panic!(
+                    "no pending gate (partition={pid}, kind={kind_filter:?}, \
+                     exclude={exclude_replicas:?}, require={require_replica:?}) \
+                     within {POLL_BUDGET:?} (connected_nodes={})",
+                    self.cluster.connected_count(),
+                );
+            }
+            tokio::time::sleep(POLL_INTERVAL).await;
+        }
+    }
+}
+
+/// Decision passed to [`PartitionDriver::drive_replica_sequence`]. A
+/// test-side mirror of the proto `Decision` oneof so callers don't
+/// have to import generated types.
+#[derive(Debug, Clone)]
+pub enum TestDecision {
+    Proceed,
+    Fail(String),
+}
+
+/// One entry in a [`PartitionDriver::drive_replica_sequence`] step list.
+#[derive(Debug, Clone)]
+pub struct TestStep {
+    pub expected: ApprovalKind,
+    pub decision: TestDecision,
+}
+
+impl TestStep {
+    pub fn new(expected: ApprovalKind, decision: TestDecision) -> Self {
+        Self { expected, decision }
+    }
+
+    pub fn proceed(expected: ApprovalKind) -> Self {
+        Self::new(expected, TestDecision::Proceed)
+    }
+
+    pub fn fail(expected: ApprovalKind, message: impl Into<String>) -> Self {
+        Self::new(expected, TestDecision::Fail(message.into()))
     }
 }

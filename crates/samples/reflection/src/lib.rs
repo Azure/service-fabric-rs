@@ -17,6 +17,7 @@ pub mod echo;
 pub mod grpc;
 pub mod grpc_control;
 pub mod statefulstore;
+pub mod test_admin;
 pub mod test_cluster;
 
 pub use statefulstore::Factory;
@@ -24,9 +25,3 @@ pub use statefulstore::Factory;
 /// Service-type name registered by the reflection sample. Must match the
 /// value declared in `manifests/ServiceManifest.xml`.
 pub const SERVICE_TYPE_NAME: &str = "ReflectionAppService";
-
-#[cfg(test)]
-mod test;
-
-#[cfg(test)]
-mod test2;

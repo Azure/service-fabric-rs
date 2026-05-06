@@ -237,7 +237,6 @@ impl ReflectionUrl {
     }
 
     /// Parse a reflection URL string back into components.
-    #[cfg(test)]
     pub fn parse(s: &str) -> Result<Self, String> {
         let url = url::Url::parse(s).map_err(|e| format!("invalid URL: {e}"))?;
         let mut partition_id = None;
@@ -269,7 +268,6 @@ impl ReflectionUrl {
     }
 
     /// Get the base URL string (without query params) for gRPC connection.
-    #[cfg(test)]
     pub fn grpc_connect_url(&self) -> String {
         let mut url = self.base_url.clone();
         url.set_query(None);

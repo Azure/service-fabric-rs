@@ -24,7 +24,7 @@ use crate::control::{
 };
 use crate::echo;
 use crate::grpc::{ReflectionUrl, ReplicaRegistry};
-use crate::lifecycle::Lifecycle;
+use crate::lifecycle::{AbortOutcome, Lifecycle};
 
 pub struct Factory {
     replication_port: u32,
@@ -269,12 +269,14 @@ impl IStatefulServiceReplica for Replica {
     fn abort(&self) {
         info!("abort",);
         // abort() returns () and cannot propagate errors. If the
-        // instance is already terminal, Lifecycle::abort logs a
-        // warning and returns true; skip the gate and cleanup
+        // instance is already terminal, Lifecycle::abort returns
+        // NoOp (and logs a warning); skip the gate and cleanup
         // because they have already happened.
-        if self.lifecycle.abort() {
-            return;
-        }
+        let prev = match self.lifecycle.abort() {
+            AbortOutcome::NoOp => return,
+            AbortOutcome::First(prev) => prev,
+        };
+        tracing::debug!(?prev, "running abort gate from prior state");
         // Sync->async bridge for the abort gate. Decision is
         // intentionally ignored: IStatefulServiceReplica::abort
         // returns () and cannot propagate an error. Under

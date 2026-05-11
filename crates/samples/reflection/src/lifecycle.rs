@@ -65,6 +65,28 @@ pub enum LifecycleState {
     Terminal,
 }
 
+/// Outcome of [`Lifecycle::abort`].
+///
+/// Distinguishes "first abort, run the gate + cleanup" from
+/// "already-terminal, skip" without forcing the caller to read the
+/// implementation. Both variants leave the lifecycle in `Terminal`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AbortOutcome {
+    /// First abort on this `Replica`. The caller should run the
+    /// abort gate (await_approval(Approval::Abort)) and any
+    /// post-abort cleanup. The wrapped value is the prior state
+    /// (`Created`, `Opening`, `Active`, or `Closing`) — useful for
+    /// diagnostic logs that want to record what SF was doing when
+    /// it issued the abort.
+    First(LifecycleState),
+    /// `Replica` was already `Terminal` when `abort` was called
+    /// (close ran successfully, or abort was already invoked once).
+    /// The caller should skip the gate and cleanup; `Lifecycle`
+    /// has already logged a `tracing::warn!` for the unexpected
+    /// re-entry.
+    NoOp,
+}
+
 /// Owns the [`LifecycleState`] for one `Replica` and exposes the
 /// legal transitions as named methods. Each method takes the lock
 /// for the duration of the state check so the transition is atomic.
@@ -181,18 +203,24 @@ impl Lifecycle {
         }
     }
 
-    /// Force-transition to `Terminal` (the `abort` path). Returns
-    /// `true` if the swap was a no-op (already `Terminal`), so the
-    /// caller knows to skip the abort gate and cleanup. Logs a
-    /// `tracing::warn!` in the no-op case; valid swaps from
-    /// `Created`, `Opening`, `Active`, or `Closing` are silent (the
-    /// caller logs its own info-level entry).
+    /// Force-transition to `Terminal` (the `abort` path).
     ///
-    /// Note that aborting from `Closing` is the path the test
+    /// Returns an [`AbortOutcome`] that the caller pattern-matches:
+    ///
+    /// - [`AbortOutcome::First`] — first abort on this `Replica`. The
+    ///   caller should run the abort gate and any cleanup. The
+    ///   variant carries the prior state for diagnostic logging.
+    /// - [`AbortOutcome::NoOp`]  — `Replica` was already `Terminal`
+    ///   (close ran successfully or abort was already invoked). The
+    ///   caller should skip the gate and cleanup; this variant
+    ///   already logged a `tracing::warn!` for the unexpected
+    ///   re-entry.
+    ///
+    /// Aborting from `Closing` is the path the test
     /// `fail_close_during_delete_*` exercises: a failed `close`
     /// leaves the state in `Closing`, so SF's subsequent `abort()`
     /// finds a non-terminal state and the abort gate fires.
-    pub fn abort(&self) -> bool {
+    pub fn abort(&self) -> AbortOutcome {
         let mut s = self.state.lock().unwrap();
         let prev = *s;
         *s = LifecycleState::Terminal;
@@ -202,9 +230,9 @@ impl Lifecycle {
                 replica = self.replica_id,
                 "abort called on already-terminal Replica; ignoring"
             );
-            true
+            AbortOutcome::NoOp
         } else {
-            false
+            AbortOutcome::First(prev)
         }
     }
 
@@ -224,7 +252,7 @@ impl Lifecycle {
 
 #[cfg(test)]
 mod lifecycle_tests {
-    use super::{Lifecycle, LifecycleState};
+    use super::{AbortOutcome, Lifecycle, LifecycleState};
 
     fn lc() -> Lifecycle {
         // partition / replica context only feeds tracing fields,
@@ -375,8 +403,9 @@ mod lifecycle_tests {
     #[test]
     fn abort_from_created_runs_gate() {
         let lc = lc();
-        assert!(
-            !lc.abort(),
+        assert_eq!(
+            lc.abort(),
+            AbortOutcome::First(LifecycleState::Created),
             "abort from Created is a real abort, not a no-op"
         );
         assert_eq!(lc.current(), LifecycleState::Terminal);
@@ -387,8 +416,9 @@ mod lifecycle_tests {
     fn abort_from_opening_runs_gate() {
         let lc = lc();
         lc.enter_opening().unwrap();
-        assert!(
-            !lc.abort(),
+        assert_eq!(
+            lc.abort(),
+            AbortOutcome::First(LifecycleState::Opening),
             "abort from Opening (failed open) is a real abort"
         );
         assert_eq!(lc.current(), LifecycleState::Terminal);
@@ -399,7 +429,11 @@ mod lifecycle_tests {
         let lc = lc();
         lc.enter_opening().unwrap();
         lc.complete_open().unwrap();
-        assert!(!lc.abort(), "abort from Active is a real abort");
+        assert_eq!(
+            lc.abort(),
+            AbortOutcome::First(LifecycleState::Active),
+            "abort from Active is a real abort",
+        );
         assert_eq!(lc.current(), LifecycleState::Terminal);
     }
 
@@ -413,8 +447,9 @@ mod lifecycle_tests {
         lc.enter_opening().unwrap();
         lc.complete_open().unwrap();
         lc.enter_closing().unwrap();
-        assert!(
-            !lc.abort(),
+        assert_eq!(
+            lc.abort(),
+            AbortOutcome::First(LifecycleState::Closing),
             "abort after a failed close (state Closing) must run the gate"
         );
         assert_eq!(lc.current(), LifecycleState::Terminal);
@@ -424,7 +459,15 @@ mod lifecycle_tests {
     fn abort_from_terminal_is_idempotent_no_op() {
         let lc = lc();
         drive_happy_path(&lc);
-        assert!(lc.abort(), "abort after Terminal is a no-op");
-        assert!(lc.abort(), "second abort is also a no-op");
+        assert_eq!(
+            lc.abort(),
+            AbortOutcome::NoOp,
+            "abort after Terminal is a no-op"
+        );
+        assert_eq!(
+            lc.abort(),
+            AbortOutcome::NoOp,
+            "second abort is also a no-op"
+        );
     }
 }

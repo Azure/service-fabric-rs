@@ -24,6 +24,7 @@ use crate::control::{
 };
 use crate::echo;
 use crate::grpc::{ReflectionUrl, ReplicaRegistry};
+use crate::lifecycle::{AbortOutcome, Lifecycle};
 
 pub struct Factory {
     replication_port: u32,
@@ -119,6 +120,9 @@ pub struct Replica {
     controller: Arc<dyn ReplicaController>,
     /// Used by `abort` to bridge sync->async into `await_approval`.
     exec: TokioExecutor,
+    /// Lifecycle invariant guard. Owns the per-instance state
+    /// machine `Created -> Active -> Terminal`.
+    lifecycle: Lifecycle,
 }
 
 impl Replica {
@@ -143,6 +147,7 @@ impl Replica {
             ctx: ReplicaCtx::empty(),
             controller,
             exec,
+            lifecycle: Lifecycle::new(partition_id, replica_id),
         }
     }
 }
@@ -196,10 +201,17 @@ impl IStatefulServiceReplica for Replica {
         partition: Arc<dyn IStatefulServicePartition>,
         _token: BoxedCancelToken,
     ) -> mssf_core::Result<Box<dyn IPrimaryReplicator>> {
+        // Lifecycle invariant: SF must call `open` exactly once per
+        // `Replica` instance. Lifecycle logs and returns E_UNEXPECTED
+        // if the contract is violated.
+        self.lifecycle.enter_opening()?;
         match self.controller.await_approval(Approval::Open).await {
             Decision::Proceed => {}
+            // State stays `Opening`; SF will typically follow up
+            // with abort, which transitions Opening -> Terminal.
             Decision::Fail(e) => return Err(e),
         }
+        self.lifecycle.complete_open()?;
         self.ctx.init(partition.clone());
         self.svc.start_loop_in_background(&partition);
         // Use empty replicator
@@ -214,6 +226,9 @@ impl IStatefulServiceReplica for Replica {
         newrole: ReplicaRole,
         _token: BoxedCancelToken,
     ) -> mssf_core::Result<WString> {
+        // Lifecycle invariant: change_role is only valid between
+        // open() and close()/abort().
+        self.lifecycle.require_active()?;
         match self
             .controller
             .await_approval(Approval::ChangeRole(newrole))
@@ -235,10 +250,17 @@ impl IStatefulServiceReplica for Replica {
     }
     #[tracing::instrument(skip(self,_token), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()), err, ret)]
     async fn close(&self, _token: BoxedCancelToken) -> mssf_core::Result<()> {
+        // Lifecycle invariant: close transitions Active -> Closing
+        // when invoked, and Closing -> Terminal only when the close
+        // gate succeeds. A fail decision leaves the replica in
+        // `Closing`, so a follow-up SF abort still publishes its
+        // gate (Lifecycle::abort sees a non-Terminal state).
+        self.lifecycle.enter_closing()?;
         match self.controller.await_approval(Approval::Close).await {
             Decision::Proceed => {}
             Decision::Fail(e) => return Err(e),
         }
+        self.lifecycle.complete_close()?;
         self.registry.remove(self.partition_id, self.replica_id);
         self.svc.stop();
         Ok(())
@@ -246,6 +268,15 @@ impl IStatefulServiceReplica for Replica {
     #[tracing::instrument(skip(self), fields(read_status = ?self.ctx.read_status(), write_status = ?self.ctx.write_status()))]
     fn abort(&self) {
         info!("abort",);
+        // abort() returns () and cannot propagate errors. If the
+        // instance is already terminal, Lifecycle::abort returns
+        // NoOp (and logs a warning); skip the gate and cleanup
+        // because they have already happened.
+        let prev = match self.lifecycle.abort() {
+            AbortOutcome::NoOp => return,
+            AbortOutcome::First(prev) => prev,
+        };
+        tracing::debug!(?prev, "running abort gate from prior state");
         // Sync->async bridge for the abort gate. Decision is
         // intentionally ignored: IStatefulServiceReplica::abort
         // returns () and cannot propagate an error. Under
@@ -258,6 +289,29 @@ impl IStatefulServiceReplica for Replica {
         });
         self.registry.remove(self.partition_id, self.replica_id);
         self.svc.stop();
+    }
+}
+
+impl Drop for Replica {
+    fn drop(&mut self) {
+        // Records the lifecycle endpoint of every Replica instance.
+        // Useful for distinguishing SF behaviours that the wire
+        // control plane cannot observe directly:
+        //
+        // - dropped from `Terminal`: clean shutdown — `close` ran or
+        //   `abort` was called (and the abort gate either fired or
+        //   was short-circuited because state was already terminal).
+        // - dropped from `Active`:   SF dropped the box without ever
+        //   calling `close` or `abort` — this is what we observe
+        //   after a failed `close` during service deletion.
+        // - dropped from `Created`:  SF discarded a never-opened
+        //   replica.
+        info!(
+            partition = ?self.partition_id,
+            replica = self.replica_id,
+            state = ?self.lifecycle.current(),
+            "Replica dropped"
+        );
     }
 }
 

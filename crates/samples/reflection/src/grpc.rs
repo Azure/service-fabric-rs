@@ -77,17 +77,27 @@ impl ReplicaRegistry {
         replica_id: i64,
         controller: Option<Arc<dyn ReplicaController>>,
     ) {
-        self.inner
-            .lock()
-            .unwrap()
-            .entry(partition_id)
-            .or_default()
-            .push(ReplicaEntry {
-                partition_id,
-                replica_id,
-                role: ReplicaRole::Unknown,
-                controller,
-            });
+        let mut map = self.inner.lock().unwrap();
+        let entries = map.entry(partition_id).or_default();
+        // SF can call Factory::create_replica again with the same
+        // (partition_id, replica_id) after a failed Open or
+        // change_role (the failed replica is dropped, a fresh one
+        // is constructed in its place — see fail_open / fail_change_role
+        // tests). Replace any pre-existing entry so the registry
+        // always points at the live replica's controller; otherwise
+        // ListPending and get_controller would dispatch to a stale
+        // controller whose pending slot has been drained.
+        let new_entry = ReplicaEntry {
+            partition_id,
+            replica_id,
+            role: ReplicaRole::Unknown,
+            controller,
+        };
+        if let Some(existing) = entries.iter_mut().find(|e| e.replica_id == replica_id) {
+            *existing = new_entry;
+        } else {
+            entries.push(new_entry);
+        }
     }
 
     /// Look up a replica's controller (if any).

@@ -29,14 +29,15 @@
 use std::time::Duration;
 
 use mssf_core::WString;
-use mssf_core::client::FabricClient;
 use mssf_core::types::{
     PartitionSchemeDescription, ServiceDescription, StatefulServiceDescription, Uri,
 };
+use mssf_util::tokio::TokioCancelToken;
 use prost::Message;
 use samples_reflection::control::ReplicaInitData;
 use samples_reflection::grpc_control::proto::{ApprovalKind, ReplicaRole as ProtoReplicaRole};
-use samples_reflection::test_cluster::{Cluster, TestStep, discover_partition_id};
+use samples_reflection::test_cluster::{Cluster, TestStep, discover_partition_id, fabric_client};
+use tokio_util::sync::CancellationToken;
 use uuid::Uuid;
 
 const APP_NAME: &str = "fabric:/ReflectionApp";
@@ -80,10 +81,7 @@ async fn five_stuck_at_close_then_create_delete_sixth() {
     let suffix = Uuid::new_v4().simple().to_string();
     let mut cluster = Cluster::new();
 
-    let fc = FabricClient::builder()
-        .with_connection_strings(vec![WString::from("localhost:19000")])
-        .build()
-        .unwrap();
+    let fc = fabric_client();
     let sm = fc.get_service_manager().clone();
 
     // ---- Phase 1: bring up STUCK_COUNT services to Up state ----
@@ -100,7 +98,7 @@ async fn five_stuck_at_close_then_create_delete_sixth() {
             .unwrap_or_else(|e| panic!("create_service[{i}] failed: {e}"));
         tracing::info!("svc[{i}] created: {name_str}");
 
-        let pid = discover_partition_id(&fc, &name).await;
+        let pid = discover_partition_id(fc, &name).await;
         let mut driver = cluster.partition_driver(pid.clone());
         let (n, open_ev) = driver.wait_next_kind(ApprovalKind::ApprovalOpen).await;
         let target = open_ev.target.clone().expect("ApprovalEvent.target");
@@ -196,7 +194,7 @@ async fn five_stuck_at_close_then_create_delete_sixth() {
     // services still have *Close* gates pending in their own
     // partitions and we don't want to confuse them with the 6th's
     // gates (and protects against parallel test runs too).
-    let sixth_pid = discover_partition_id(&fc, &sixth_name).await;
+    let sixth_pid = discover_partition_id(fc, &sixth_name).await;
     assert!(
         !stuck.iter().any(|s| s.partition_id == sixth_pid),
         "6th partition_id {sixth_pid} unexpectedly matched a stuck service"
@@ -278,4 +276,218 @@ async fn five_stuck_at_close_then_create_delete_sixth() {
     tracing::info!(
         "concurrent-close e2e complete: {STUCK_COUNT} parked-then-released, plus 1 in-between"
     );
+}
+
+/// Three-delete e2e: a single controlled service is brought up
+/// and driven to its parked `Close` gate (same setup as the
+/// multi-service test above), then three back-to-back
+/// `delete_service` calls exercise three different
+/// client-cancellation paths against the same parked Close:
+///
+/// 1. **Delete with a short timeout.** First call uses a 3 s
+///    timeout (much shorter than the test-wide `SF_TIMEOUT`). Since
+///    Close is never approved, SF times out the operation and the
+///    call returns `FABRIC_E_TIMEOUT`. The cluster-side delete
+///    remains in flight.
+///
+/// 2. **Delete with explicit token cancel.** Second call uses
+///    `SF_TIMEOUT` and a SF cancellation token. Once the call is
+///    in flight, the token is cancelled; per the
+///    `fabric_begin_end_proxy` contract the receiver is awaited to
+///    completion so SF flushes the cancel. The call returns
+///    `E_ABORT` / `OperationCanceled`.
+///
+/// 3. **Plain delete + approve Close.** Third call uses
+///    `SF_TIMEOUT` and no token. The parked `Close` gate is then
+///    approved; SF tears the replica down and the call completes.
+///    It may return `Ok` or `FABRIC_E_SERVICE_DOES_NOT_EXIST`
+///    depending on whether the cluster-side delete races ahead of
+///    the retried client call. Either way the service is gone.
+///
+/// Verifies that neither a SF-side timeout nor a client-side
+/// token cancel disturb the in-progress cluster-side delete: the
+/// Close gate stays parked across both, and a final retried
+/// delete drains correctly once Close is approved.
+///
+/// Same prerequisites as the other e2e tests in this file.
+#[tokio::test(flavor = "multi_thread")]
+#[test_log::test]
+async fn cancel_delete_then_retry_succeeds_after_close() {
+    let suffix = Uuid::new_v4().simple().to_string();
+    let mut cluster = Cluster::new();
+
+    let fc = fabric_client();
+    let sm = fc.get_service_manager().clone();
+
+    // ---- Phase 1: bring the service up to Primary ----
+    let name_str = format!("{APP_NAME}/CancelRetryDelete_{suffix}");
+    let name = Uri::from(name_str.as_str());
+    sm.create_service(&make_controlled_singleton_desc(&name), SF_TIMEOUT, None)
+        .await
+        .unwrap_or_else(|e| panic!("create_service failed: {e}"));
+    tracing::info!("svc created: {name_str}");
+
+    let pid = discover_partition_id(fc, &name).await;
+    let mut driver = cluster.partition_driver(pid.clone());
+    let (n, open_ev) = driver.wait_next_kind(ApprovalKind::ApprovalOpen).await;
+    let target = open_ev.target.clone().expect("ApprovalEvent.target");
+    let rid = target.replica_id;
+    tracing::info!("OPEN node #{n} partition={pid} replica={rid}");
+
+    driver
+        .approve_proceed(n, target, open_ev.gate_id.clone())
+        .await;
+    let cr = driver
+        .approve_replica_sequence(rid, &[ApprovalKind::ApprovalChangeRole])
+        .await;
+    assert_eq!(
+        cr[0].new_role,
+        ProtoReplicaRole::Primary as i32,
+        "first ChangeRole should be Primary, got new_role={}",
+        cr[0].new_role,
+    );
+    tracing::info!("svc -> Primary; replica is Up");
+
+    // ---- Phase 2: first delete with short timeout, expect FABRIC_E_TIMEOUT ----
+    //
+    // Spawn delete with a 3 s SF timeout. Drive ChangeRole(None) so
+    // SF emits the Close gate and confirm the Close is parked
+    // (without approving). The first delete will time out on the
+    // SF side because Close is never approved within 3 s.
+    const SHORT_TIMEOUT: Duration = Duration::from_secs(3);
+    let first_delete = {
+        let sm2 = sm.clone();
+        let svc = name.clone();
+        tokio::spawn(async move { sm2.delete_service(&svc, SHORT_TIMEOUT, None).await })
+    };
+
+    let cr_none = driver
+        .approve_replica_sequence(rid, &[ApprovalKind::ApprovalChangeRole])
+        .await;
+    assert_eq!(
+        cr_none[0].new_role,
+        ProtoReplicaRole::None as i32,
+        "teardown ChangeRole new_role should be None, got {}",
+        cr_none[0].new_role,
+    );
+
+    let (_, close_ev) = driver
+        .wait_for_replica(rid, Some(ApprovalKind::ApprovalClose))
+        .await;
+    let close_gate_id = close_ev.gate_id.clone();
+    tracing::info!(
+        "parked at Close gate_id={} (first delete blocked, will time out)",
+        close_gate_id,
+    );
+
+    let first_outcome = first_delete
+        .await
+        .expect("first delete_service task panicked");
+    let first_err =
+        first_outcome.expect_err("first delete_service should error out (timeout), not return Ok");
+    let first_code = first_err
+        .try_as_fabric_error_code()
+        .expect("first delete error should be a fabric error code");
+    assert_eq!(
+        first_code,
+        mssf_core::ErrorCode::FABRIC_E_TIMEOUT,
+        "first delete_service should fail with FABRIC_E_TIMEOUT, got: {first_err:?}",
+    );
+    tracing::info!("first delete_service timed out: {first_err:?}");
+
+    // The cluster-side delete is still in progress; Close gate must
+    // still be parked with the same gate_id.
+    let (_, close_ev_after_timeout) = driver
+        .wait_for_replica(rid, Some(ApprovalKind::ApprovalClose))
+        .await;
+    assert_eq!(
+        close_ev_after_timeout.gate_id, close_gate_id,
+        "Close gate_id should be unchanged after first delete timed out",
+    );
+
+    // ---- Phase 3: second delete with cancellation token, cancelled mid-flight ----
+    //
+    // Issue a second `delete_service` with a SF cancellation token
+    // (`BoxedCancelToken`). Cancel the token and await the task to
+    // completion. The proxy contract requires polling the receiver
+    // to completion to flush the cancel through to SF. Expected
+    // result: `E_ABORT`.
+    let second_ct = CancellationToken::new();
+    let second_delete = {
+        let sm2 = sm.clone();
+        let svc = name.clone();
+        let token = TokioCancelToken::boxed_from(second_ct.clone());
+        tokio::spawn(async move { sm2.delete_service(&svc, SF_TIMEOUT, Some(token)).await })
+    };
+
+    // Confirm the Close gate is still parked and the second delete
+    // is in flight before we cancel.
+    let (_, close_ev2) = driver
+        .wait_for_replica(rid, Some(ApprovalKind::ApprovalClose))
+        .await;
+    assert_eq!(
+        close_ev2.gate_id, close_gate_id,
+        "Close gate_id should be unchanged before token cancel",
+    );
+    assert!(
+        !second_delete.is_finished(),
+        "second delete_service should still be blocked on Close approval"
+    );
+
+    second_ct.cancel();
+    let second_outcome = second_delete
+        .await
+        .expect("second delete_service task panicked");
+    let second_err = second_outcome
+        .expect_err("second delete_service should error after token cancel, not return Ok");
+    let second_code = second_err
+        .try_as_fabric_error_code()
+        .expect("second delete error should be a fabric error code");
+    assert_eq!(
+        second_code,
+        mssf_core::ErrorCode::E_ABORT,
+        "second delete_service should fail with E_ABORT after token cancel, got: {second_err:?}",
+    );
+    tracing::info!("second delete_service cancelled: {second_err:?}");
+
+    // ---- Phase 4: third delete, approve Close, expect success ----
+    //
+    // Re-issue `delete_service` with no token and approve the
+    // parked Close. SF tears down the replica and the call
+    // completes; either `Ok` (the retried op sees its own
+    // completion) or `FABRIC_E_SERVICE_DOES_NOT_EXIST` (the
+    // cluster-side delete from earlier requests already removed
+    // the service by the time this op reaches SF). Both are
+    // correct idempotent endings.
+    let third_delete = {
+        let sm2 = sm.clone();
+        let svc = name.clone();
+        tokio::spawn(async move { sm2.delete_service(&svc, SF_TIMEOUT, None).await })
+    };
+
+    driver
+        .drive_replica_sequence(rid, &[TestStep::proceed(ApprovalKind::ApprovalClose)])
+        .await;
+    let third_outcome = third_delete
+        .await
+        .expect("third delete_service task panicked");
+    match third_outcome {
+        Ok(()) => {
+            tracing::info!("third delete_service returned Ok");
+        }
+        Err(e) => {
+            let code = e
+                .try_as_fabric_error_code()
+                .expect("third delete error should be a fabric error code");
+            assert_eq!(
+                code,
+                mssf_core::ErrorCode::FABRIC_E_SERVICE_DOES_NOT_EXIST,
+                "third delete_service should be Ok or FABRIC_E_SERVICE_DOES_NOT_EXIST, got: {e:?}",
+            );
+            tracing::info!(
+                "third delete_service returned FABRIC_E_SERVICE_DOES_NOT_EXIST (idempotent: service already deleted)"
+            );
+        }
+    }
+    tracing::info!("svc {name_str} fully deleted via re-issued delete_service");
 }

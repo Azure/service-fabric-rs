@@ -101,7 +101,7 @@ jobs:
         .\scripts\echomain_ctl.ps1 -Action Add
 
     - name: Run cargo test
-      run: cargo +${{ matrix.rust-version }} test --all -- --nocapture
+      run: cargo +${{ matrix.rust-version }} test --all
 
   build-azl3:
     needs: setup
@@ -224,7 +224,7 @@ jobs:
             echo "Preparing test apps"
             bash ./scripts/prepare_test_apps.sh || { echo "Fail to prepare test apps"; exit 1; }
             echo "Running tests"
-            cargo test --all -- --nocapture
+            cargo test --all
 
       - name: Show disk space after run
         if: always()

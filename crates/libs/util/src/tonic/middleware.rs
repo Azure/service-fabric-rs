@@ -3,8 +3,25 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-//! Trailer-aware middleware: inspects gRPC response trailers and
-//! triggers a non-blocking rebuild on the configured header.
+//! Status-aware middleware: inspects the configured header on
+//! gRPC responses and triggers a non-blocking rebuild when it
+//! appears. The header is inspected on **both** the initial
+//! response `HeaderMap` *and* any trailers frame in the body,
+//! because tonic's wire placement of user metadata differs by
+//! call shape:
+//!
+//! | Call shape                         | Where the header lands       |
+//! |------------------------------------|------------------------------|
+//! | Unary `Ok` + `metadata_mut()`      | Initial HEADERS frame        |
+//! | Unary `Err(Status::with_metadata)` | Trailers-only HEADERS frame  |
+//! | Streaming `Ok` + initial metadata  | Initial HEADERS frame        |
+//! | Streaming yielding `Err(Status..)` | Real HTTP/2 trailers frame   |
+//!
+//! Both wire locations surface to a Tower service as either
+//! `response.headers()` (the first three rows) or as a
+//! body-level `Frame::trailers()` (the last row). We classify
+//! whichever fires first and short-circuit the other; at most
+//! one rebuild signal is consumed per response.
 //!
 //! Lives **above** `SwapChannel` in the tower stack. The dedup
 //! state machine is documented in
@@ -20,19 +37,20 @@ use http_body::Frame;
 use tonic::body::Body;
 use tower::Service;
 
-/// Inspects gRPC response trailers; on the configured trailer
-/// header triggers a non-blocking rebuild of the inner Channel
-/// via the supplied rebuild handle.
+/// Inspects gRPC response headers and trailers; on the
+/// configured header (whichever surface it arrives on)
+/// triggers a non-blocking rebuild of the inner Channel via the
+/// supplied rebuild handle.
 ///
-/// Stateful for dedup: tracks the last trailer value observed
+/// Stateful for dedup: tracks the last header value observed
 /// and only triggers `rebuild()` when the value differs (with
-/// two special signals — absent trailer resets state, empty
+/// two special signals — absent header resets state, empty
 /// value always rebuilds without affecting state).
 ///
 /// **Concurrency.** The dedup decision
 /// (load → classify → store) is serialized under a
 /// `std::sync::Mutex`, so concurrent in-flight RPCs that
-/// complete with the **same** trailer value collapse to one
+/// complete with the **same** header value collapse to one
 /// `rebuild()` call. Distinct values still produce one rebuild
 /// each. The mutex is held only across the decision; the
 /// rebuild closure runs outside the lock so back-to-back
@@ -68,16 +86,16 @@ impl<S> ResolveStatusMiddleware<S> {
 /// tests trivial.
 #[derive(Debug, PartialEq, Eq)]
 enum DedupAction {
-    /// No-op; trailer absent and `last_seen` already `None`, or
-    /// trailer matched `last_seen`.
+    /// No-op; header absent and `last_seen` already `None`, or
+    /// header matched `last_seen`.
     None,
-    /// Trailer present (non-empty) with a value differing from
+    /// Header present (non-empty) with a value differing from
     /// `last_seen`; store it and rebuild.
     StoreAndRebuild(String),
-    /// Trailer present with empty value; rebuild without
+    /// Header present with empty value; rebuild without
     /// touching `last_seen`.
     RebuildKeepLast,
-    /// No trailer on the response; reset `last_seen` to `None`,
+    /// No header on the response; reset `last_seen` to `None`,
     /// no rebuild.
     Reset,
 }
@@ -98,6 +116,56 @@ fn classify(observed: Option<&str>, last_seen: Option<&str>) -> DedupAction {
             Some(prev) if prev == v => DedupAction::None,
             _ => DedupAction::StoreAndRebuild(v.to_string()),
         },
+    }
+}
+
+/// Single-shot dedup-and-rebuild. Loads `last_seen`, classifies
+/// `observed`, updates state, and (outside the lock) invokes
+/// `rebuild` if the decision called for it. Shared by the
+/// initial-headers path (in `call()`) and the trailers/EOS path
+/// (in `TrailerObserver::fire`).
+///
+/// Emits a single `tracing::info!` per actual rebuild, carrying
+/// the value that triggered it, the previous `last_seen` value
+/// (so a prod operator can tell first-ever-signal apart from
+/// failover-after-failover), and the dedup decision variant.
+/// Skipped decisions (no-op, reset) are not logged at info
+/// level to keep the channel quiet in steady state.
+fn apply_dedup(
+    observed: Option<&str>,
+    last_seen: &Mutex<Option<String>>,
+    rebuild: &(dyn Fn() + Send + Sync),
+) {
+    // Capture `prev` and the chosen action inside the lock so
+    // the trace below has accurate context; the `rebuild()`
+    // closure itself runs outside the lock (it does its own
+    // lazy reconnect work and shouldn't be serialized).
+    let (action, prev, should_rebuild) = {
+        let mut guard = last_seen.lock().expect("middleware mutex poisoned");
+        let prev: Option<String> = guard.clone();
+        let action = classify(observed, prev.as_deref());
+        let should_rebuild = match &action {
+            DedupAction::None => false,
+            DedupAction::Reset => {
+                *guard = None;
+                false
+            }
+            DedupAction::RebuildKeepLast => true,
+            DedupAction::StoreAndRebuild(v) => {
+                *guard = Some(v.clone());
+                true
+            }
+        };
+        (action, prev, should_rebuild)
+    };
+    if should_rebuild {
+        tracing::info!(
+            observed = observed.unwrap_or("<absent>"),
+            previous = prev.as_deref().unwrap_or("<none>"),
+            decision = ?action,
+            "ResolveStatusMiddleware firing channel rebuild",
+        );
+        rebuild();
     }
 }
 
@@ -131,17 +199,46 @@ where
         Box::pin(async move {
             let resp = inner.call(req).await?;
             let (parts, body) = resp.into_parts();
-            let observer = TrailerObserver::new(body, header, last_seen, rebuild);
-            let wrapped = Body::new(observer);
+            // Inspect the initial response HeaderMap first. This
+            // covers (a) unary Ok with `Response::metadata_mut()`
+            // metadata (rides on the initial HEADERS frame) and
+            // (b) unary Err via `Status::with_metadata`, which
+            // tonic emits as a gRPC "Trailers-Only" response —
+            // a single HEADERS frame with END_STREAM carrying
+            // `grpc-status` + user metadata, no DATA, no
+            // separate trailers frame. Either way the metadata
+            // surfaces on `parts.headers`.
+            //
+            // If we fire here, the body needs no observation:
+            // we've already consumed this response's at-most-one
+            // rebuild signal, so we skip wrapping it in
+            // `TrailerObserver` and let the original body flow
+            // through unchanged. That avoids one `poll_frame`
+            // indirection per body frame on the streaming hot
+            // path. Otherwise we wrap the body and let the
+            // observer watch for a trailers frame (streaming-Err
+            // path) or end-of-stream (no-signal reset).
+            let wrapped = match parts.headers.get(&header).and_then(|v| v.to_str().ok()) {
+                Some(v) => {
+                    apply_dedup(Some(v), &last_seen, &*rebuild);
+                    body
+                }
+                None => Body::new(TrailerObserver::new(body, header, last_seen, rebuild)),
+            };
             Ok(http::Response::from_parts(parts, wrapped))
         })
     }
 }
 
-/// Body wrapper that delegates `poll_frame` and inspects the
-/// final trailer frame. Apply the dedup rule before forwarding
-/// the frame downstream so the caller observes trailers
-/// unchanged.
+/// Body wrapper that delegates `poll_frame` and inspects any
+/// trailer frame the body produces. Apply the dedup rule before
+/// forwarding the frame downstream so the caller observes
+/// trailers unchanged.
+///
+/// Only installed when the initial response headers did **not**
+/// carry the configured header — if they did, `call()` fires
+/// immediately and returns the original body unwrapped (at most
+/// one rebuild signal per response).
 struct TrailerObserver {
     inner: Body,
     header: http::HeaderName,
@@ -150,9 +247,9 @@ struct TrailerObserver {
     /// Set once we observe a trailer frame; if the body ends
     /// without one we apply the "no trailer" branch.
     saw_trailers: bool,
-    /// Set once we've applied the dedup decision (either via a
-    /// trailer frame or via the end-of-stream reset). Prevents
-    /// double-firing within a single response body.
+    /// Set once we've applied the dedup decision (via a trailer
+    /// frame or the end-of-stream reset). Prevents double-firing
+    /// within a single response body.
     fired: bool,
 }
 
@@ -178,34 +275,7 @@ impl TrailerObserver {
             return;
         }
         self.fired = true;
-
-        // Hold the lock across load + classify + store so
-        // concurrent observers of the same value collapse to a
-        // single decision. Drop the guard *before* invoking the
-        // rebuild closure: rebuild does its own lazy work
-        // (connect_with_connector_lazy + ArcSwap::store) and
-        // doesn't need to be serialized; we only need the
-        // decision step itself to be atomic.
-        let should_rebuild = {
-            let mut guard = self.last_seen.lock().expect("middleware mutex poisoned");
-            let prev_str: Option<&str> = guard.as_deref();
-            let action = classify(observed, prev_str);
-            match action {
-                DedupAction::None => false,
-                DedupAction::Reset => {
-                    *guard = None;
-                    false
-                }
-                DedupAction::RebuildKeepLast => true,
-                DedupAction::StoreAndRebuild(v) => {
-                    *guard = Some(v);
-                    true
-                }
-            }
-        };
-        if should_rebuild {
-            (self.rebuild)();
-        }
+        apply_dedup(observed, &self.last_seen, &*self.rebuild);
     }
 }
 

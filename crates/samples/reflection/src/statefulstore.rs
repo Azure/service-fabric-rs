@@ -213,6 +213,11 @@ impl IStatefulServiceReplica for Replica {
         }
         self.lifecycle.complete_open()?;
         self.ctx.init(partition.clone());
+        // Make the partition handle visible to role-gated gRPC
+        // handlers (`MyGreeter::write`) via the shared registry.
+        // Unbind happens in `close` and `abort`.
+        self.registry
+            .bind_partition(self.partition_id, partition.clone());
         self.svc.start_loop_in_background(&partition);
         // Use empty replicator
         Ok(Box::new(EmptyReplicator::new(
@@ -262,6 +267,7 @@ impl IStatefulServiceReplica for Replica {
         }
         self.lifecycle.complete_close()?;
         self.registry.remove(self.partition_id, self.replica_id);
+        self.registry.unbind_partition(self.partition_id);
         self.svc.stop();
         Ok(())
     }
@@ -288,6 +294,7 @@ impl IStatefulServiceReplica for Replica {
             let _ = controller.await_approval(Approval::Abort).await;
         });
         self.registry.remove(self.partition_id, self.replica_id);
+        self.registry.unbind_partition(self.partition_id);
         self.svc.stop();
     }
 }

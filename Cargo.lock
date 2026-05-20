@@ -834,9 +834,12 @@ dependencies = [
  "hyper",
  "hyper-util",
  "mssf-util",
+ "prost",
  "tokio",
  "tokio-util",
  "tonic",
+ "tonic-prost",
+ "tonic-prost-build",
  "tower",
 ]
 
@@ -1170,6 +1173,7 @@ name = "samples_reflection"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "http",
  "mssf-core",
  "mssf-util",
  "prost",

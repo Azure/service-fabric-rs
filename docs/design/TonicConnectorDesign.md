@@ -1,6 +1,6 @@
 # Service Fabric Tonic Connector — Design
 
-Status: Implemented (v1). See [`mssf_util::tonic`](../../crates/libs/util/src/tonic).
+Status: Implemented. See [`mssf_util::tonic`](../../crates/libs/util/src/tonic).
 
 Owners: mssf-rs maintainers
 
@@ -121,8 +121,11 @@ see the signals it needs to act on:
                            v
 +---------------------------------------------------+
 |        ResolveStatusMiddleware<SwapChannel>        |
-|  - inspects gRPC trailers via http_body::Frame     |
-|  - on trailer header (default `mssf-status`):      |
+|  - inspects configured status header (default      |
+|    `mssf-status`) in BOTH:                         |
+|     * initial response headers (unary path)        |
+|     * http_body::Frame::trailers (streaming path)  |
+|  - on match:                                       |
 |      swap_channel.rebuild()  (non-blocking)        |
 |  - propagates response unchanged (no retry, no kill)|
 |  - Stateful dedup: see `Rebuild dedup`              |
@@ -162,8 +165,8 @@ Each failure mode is naturally observable at exactly one layer.
 | Failure mode | Observable at | Action |
 |---|---|---|
 | TCP RST / `GOAWAY` / hyper IO error | hyper pool eviction | next dial → `TargetConnector` re-resolves; failing call surfaces to caller's outer retry |
-| Trailer on response (success or error) | `Frame::trailers()` above the channel | `ResolveStatusMiddleware` calls `swap_channel.rebuild()`; response delivered unchanged |
-| Plain `Code::Unavailable` (no trailer) | gRPC response | propagated unchanged; **no rebuild** (could be a downstream flake, not a role change) |
+| `mssf-status` header on response (success or error) | `response.headers()` or `Frame::trailers()`, above the channel — see [Status signal wire format](#status-signal-wire-format) | `ResolveStatusMiddleware` calls `swap_channel.rebuild()`; response delivered unchanged |
+| Plain `Code::Unavailable` (no header) | gRPC response | propagated unchanged; **no rebuild** (could be a downstream flake, not a role change) |
 
 Cross-layer coupling is exactly one `Arc<SwapChannel>` clone held by
 the middleware so it can call `rebuild()`. The connector knows
@@ -171,16 +174,24 @@ nothing about channels; the channel knows nothing about middleware.
 
 ### Why each layer is the way it is
 
+
 - **Middleware above the channel.** Hyper does not expose gRPC
-  trailers to the connector; trailers live on `http_body::Frame`,
-  visible only above `tonic::Channel`. `ResolveStatusMiddleware` is
-  the only layer that can observe "the call completed at HTTP/2 but
-  the application told us we're talking to the wrong replica."
+  response metadata to the connector; both response headers and
+  body frames are visible only above `tonic::Channel`.
+  `ResolveStatusMiddleware` is the only layer that can observe
+  "the call completed at HTTP/2 but the application told us
+  we're talking to the wrong replica." That signal can ride on
+  the initial HEADERS frame (tonic's encoding for unary metadata)
+  or on an end-of-stream trailers frame (the only place a
+  streaming server can emit metadata via `Err(Status::with_metadata)`),
+  so the middleware inspects both — see
+  [Status signal wire format](#status-signal-wire-format).
 
   **Layer-ordering constraint:** the middleware MUST sit directly
-  above `SwapChannel`, with no body-transforming layers between
-  them — anything that consumes the response body before trailers
-  are read will hide them.
+  above `SwapChannel`. Anything that consumes the response body
+  before the middleware reads it will hide trailer frames
+  (initial-header inspection is unaffected because headers are
+  available on the response parts before the body is touched).
 - **`SwapChannel` as its own layer.** The middleware sees the
   trailer; the connector does the next dial. But hyper will keep
   multiplexing new requests onto the existing alive HTTP/2
@@ -249,7 +260,7 @@ All types are re-exported flat from
 | [`SwapChannel`](../../crates/libs/util/src/tonic/channel/swap.rs) | struct | `ArcSwap<tonic::Channel>` + rebuild |
 | [`TargetChannel`](../../crates/libs/util/src/tonic/channel/builder.rs) | type alias | `ResolveStatusMiddleware<SwapChannel>` |
 | `TargetChannelBuilder` | struct | Sugar that composes everything |
-| [`ResolveStatusMiddleware<S>`](../../crates/libs/util/src/tonic/middleware.rs) | struct | trailer-aware `Service` middleware |
+| [`ResolveStatusMiddleware<S>`](../../crates/libs/util/src/tonic/middleware.rs) | struct | status-header-aware `Service` middleware (inspects initial response headers + trailers frame) |
 
 Signatures, `where`-bounds, and rustdoc live next to the code. This
 doc only spells out behavior the impl can't express on its own.
@@ -371,9 +382,15 @@ Normal SF failover for stateful services with persistent replicas:
 - Existing TCP / HTTP/2 connections stay alive.
 - The server **completes** the in-flight request normally —
   success if the request was satisfiable as a secondary, or an
-  error otherwise — and attaches the trailer (default
-  `mssf-status`) to either to signal "the connection you used is
-  no longer the right one for next time."
+  error otherwise — and attaches the configured status header
+  (default `mssf-status`) to either response to signal "the
+  connection you used is no longer the right one for next time."
+  Servers attach it via the standard tonic APIs
+  (`Response::metadata_mut()` on `Ok`,
+  `Status::with_metadata(...)` on `Err`); whether the header
+  rides on initial response headers or on a trailers frame is a
+  wire-encoding detail the middleware handles transparently —
+  see [Status signal wire format](#status-signal-wire-format).
 
 Without the middleware + `SwapChannel` pair, hyper would happily
 keep multiplexing new requests onto the same alive HTTP/2
@@ -392,19 +409,46 @@ A SF gRPC service that wants graceful client recovery MUST:
 2. **Complete the request normally** — success if it can be
    satisfied (e.g. read on a secondary if allowed), or an error
    (typically `Code::Unavailable`) if it cannot.
-3. Attach the trailer (default `mssf-status`) to the response
-   (success or error) when the role state is no longer correct
-   for this client's intended target.
+3. Attach the configured status header (default `mssf-status`)
+   to the response (success or error) when the role state is no
+   longer correct for this client's intended target. Use the
+   standard tonic APIs — `Response::metadata_mut()` on the `Ok`
+   path, `Status::with_metadata(...)` on the `Err` path — the
+   middleware handles both wire placements.
 
 The server does **not** need to close the connection or send
 `GOAWAY` on role change. Client-side invalidation is the
 middleware's job.
 
-### Trailer wire format
+#### Worked example: gating a write on `ServicePartitionAccessStatus`
 
-The trailer header name is **configured at the middleware** (passed
+The reflection sample's `MyGreeter::write`
+([`crates/samples/reflection/src/grpc.rs`](../../crates/samples/reflection/src/grpc.rs))
+shows the minimum viable mapping from
+[`ServicePartitionAccessStatus`](../../crates/libs/core/src/runtime/stateful_types.rs)
+to gRPC response + `mssf-status` metadata:
+
+| `partition.get_write_status()` | gRPC response | `mssf-status` value |
+|---|---|---|
+| `Granted` | `Ok(reply)` | none |
+| `NotPrimary` | `Err(Status::unavailable("not primary"))` | `not-primary` |
+| `ReconfigurationPending` | `Err(Status::unavailable("reconfiguration pending"))` | `reconfiguration-pending` |
+| `NoWriteQuorum` | `Err(Status::unavailable("no write quorum"))` | none (transient — retry on same channel) |
+| `Invalid` | `Err(Status::internal(...))` | none |
+
+The reflection handler reads a required `mssf-partition-id`
+request metadata header to identify which partition the call
+targets (one process can host multiple partitions); see
+[`MyGreeter::write`](../../crates/samples/reflection/src/grpc.rs)
+for the parse logic. That header is a sample-specific convention,
+not part of the channel contract.
+
+### Status signal wire format
+
+The status header name is **configured at the middleware** (passed
 to `TargetChannelBuilder::trailer_header` or
-`ResolveStatusMiddleware::new`); the SDK convention is
+`ResolveStatusMiddleware::new` — the API method name is
+historical; v1.1 inspects both placements). The SDK convention is
 `mssf-status`. Values are ASCII opaque strings; the middleware
 does string equality only.
 
@@ -420,27 +464,68 @@ Any non-empty value is accepted; values are forward-compatible
 monotonic suffix (e.g. `not-primary:42`); the dedup will then
 treat each as a distinct event.
 
-Three signals the middleware distinguishes:
+#### Where the header lands on the wire
+
+The middleware inspects the configured header on **both**
+response-parts headers and any trailers frame, because tonic
+places it in different positions depending on RPC shape and
+outcome — pinned down by
+[`tests/mssf-tests/tests/tonic_server_trailers.rs::wire_level_placement_diagnostic`](../../tests/mssf-tests/tests/tonic_server_trailers.rs):
+
+| Server API used | RPC shape | Outcome | Wire placement |
+|---|---|---|---|
+| `Response::metadata_mut().insert(...)` | unary | `Ok` | **initial HEADERS frame**; trailers frame carries only `grpc-status: 0` |
+| `Status::with_metadata(...)` returned as `Err` | unary | `Err` | **trailers-only HEADERS frame** (single HEADERS with END_STREAM carrying `grpc-status`, `grpc-message`, and the user metadata; no DATA, no separate trailers frame) |
+| `Response::metadata_mut().insert(...)` | server/bidi-streaming | any | **initial HEADERS frame** |
+| Stream yields `Err(Status::with_metadata(...))` | server/bidi-streaming | `Err` after some `Ok` items | **real trailers frame** (`EncodeBody` writes `status.to_header_map()` as `Frame::trailers`) |
+| `Status::ok("")` synthesized on natural stream end | server/bidi-streaming | `Ok` | trailers frame carries only `grpc-status: 0`; user metadata never lands here |
+
+The upstream encoder is
+[`tonic-0.14.5/src/codec/encode.rs::EncodeState::trailers`](https://docs.rs/tonic/0.14.5/src/tonic/codec/encode.rs.html):
+the trailers frame is built **exclusively** from a `Status`, and
+for every non-error path that status is `Status::ok("")` with no
+user metadata. There is no public tonic API to attach arbitrary
+metadata to the trailers frame of a successful response.
+
+#### Three signals the middleware distinguishes
+
+Given the table above, "trailer present/absent" in the original
+v1 vocabulary really means "configured header present/absent in
+either location":
 
 | Signal | Meaning |
 |---|---|
-| trailer absent | "I served you and I'm still the right one" — resets dedup |
-| trailer present, value V | "switch for next time" — rebuild if V differs from last seen |
-| trailer present, **empty value** | dumb-server escape hatch: always rebuild, don't store |
+| header absent (from both headers and trailers frame) | "I served you and I'm still the right one" — resets dedup |
+| header present, value V (from either location) | "switch for next time" — rebuild if V differs from last seen |
+| header present, **empty value** | dumb-server escape hatch: always rebuild, don't store |
 
-If the trailer block contains multiple entries under the
-configured header, the first one wins. Server / client must agree
-on the header name; mismatch silently disables rebuild (no error,
-no log — the steady-state case is *supposed* to be silent).
+If the configured header appears in both the response headers
+and a trailers frame on the same response (uncommon but allowed
+by gRPC), the dedup state machine collapses identical values to
+one `rebuild()` call; distinct values fire two — both at most
+once per response. If a single block contains multiple entries
+under the configured header, the first one wins. Server / client
+must agree on the header name; mismatch silently disables rebuild
+(no error, no log — the steady-state case is *supposed* to be
+silent).
 
 ### Streaming RPCs
 
 The trailer arrives whenever the server **ends the stream**, not
 before — a direct consequence of the no-kill contract. If the
 server wants clients to switch mid-stream, it ends the stream with
-the trailer attached (typically with `Status::unavailable`). A
-server that keeps a stream open across a role change is declaring
-"this stream is still mine to serve." The client honors that.
+the header attached (typically by yielding
+`Err(Status::with_metadata(Code::Unavailable, "...", md))` where
+`md` carries `mssf-status: not-primary`; `EncodeBody` then writes
+it as a real `Frame::trailers`). A server that keeps a stream
+open across a role change is declaring "this stream is still mine
+to serve." The client honors that.
+
+For **unary** RPCs the contract is the same at the API level
+(use `Response::metadata_mut()` or `Status::with_metadata`), but
+the wire placement is HEADERS rather than trailers — see
+[Where the header lands on the wire](#where-the-header-lands-on-the-wire).
+The middleware handles both transparently.
 
 ## Rebuild dedup
 
@@ -448,6 +533,11 @@ The dedup state machine has one piece of state — `last_seen:
 Mutex<Option<String>>` — and four transitions. Implemented in
 [`middleware.rs::classify`](../../crates/libs/util/src/tonic/middleware.rs)
 and exhaustively unit-tested.
+
+In the table below "(no trailer)" is shorthand for "the
+configured status header was not observed on either the initial
+response headers or any trailers frame"; "`mssf-status: V`" means
+it was observed at either location with value `V`.
 
 ```
 state                       observed                         action
@@ -691,6 +781,20 @@ invalidation path that SF naming exposes via the trailer.
 
 A few small differences between this doc and what shipped:
 
+- **v1.0 middleware inspects only trailer frames; v1.1 will
+  inspect initial response headers too.** Necessary because
+  tonic places unary `Response::metadata_mut()` /
+  `Status::with_metadata` content in HEADERS frames, not in a
+  separate trailers frame — see
+  [Where the header lands on the wire](#where-the-header-lands-on-the-wire).
+  The dedup state machine doesn't change; the inspection just
+  runs against `response.headers()` before the body is returned,
+  in addition to the existing `Frame::is_trailers()` check.
+  Tripwire coverage already in place at
+  [`tests/mssf-tests/tests/tonic_server_trailers.rs`](../../tests/mssf-tests/tests/tonic_server_trailers.rs).
+  Builder method name `trailer_header(...)` stays as-is for v1.1
+  (rename is API churn deferred to a later major).
+
 - **Type erasure uses `BoxCloneSyncService`, not `BoxCloneService`.**
   `SwapChannel` is shared via `Arc<Inner>` between the user-facing
   service and the rebuild closure captured by the middleware, so
@@ -719,56 +823,29 @@ A few small differences between this doc and what shipped:
 
 ## Testing
 
-### Unit / integration tests (shipped)
+| Suite | Count | File | Scope |
+|---|---:|---|---|
+| Dedup state machine | 6 | [`middleware.rs`](../../crates/libs/util/src/tonic/middleware.rs) | Pure `classify()` cases |
+| Middleware E2E (scripted) | 13 | [`tonic_middleware.rs`](../../crates/libs/util/tests/tonic_middleware.rs) | Trailer-path + header-path dedup, concurrency |
+| Channel failover (mock) | 3 | [`tonic_failover.rs`](../../tests/mssf-tests/tests/tonic_failover.rs) | Two ephemeral HTTP/2 servers, resolver flip + reset |
+| Tonic-codegen wire shape | 4 | [`tonic_server_trailers.rs`](../../tests/mssf-tests/tests/tonic_server_trailers.rs) | Generated `TestSvcServer` proves header-path + trailer-path classification; one raw-HTTP/2 diagnostic |
+| Live cluster | 1 | [`reflection/tests/tonic_failover.rs`](../../crates/samples/reflection/tests/tonic_failover.rs) | `restart_replica` + concurrent writes against real onebox `ReflectionApp` |
 
-- 6 dedup state-machine tests in
-  [`middleware.rs`](../../crates/libs/util/src/tonic/middleware.rs).
-- 7 end-to-end middleware tests in
-  [`tonic_middleware.rs`](../../crates/libs/util/tests/tonic_middleware.rs)
-  using a scripted inner `Service` + scripted bodies with trailers:
-  trailer→rebuild, same-value dedup, distinct-value rebuilds,
-  no-trailer reset, empty-value escape hatch, empty-value twice,
-  unrelated-header ignored.
-- 3 e2e failover tests in
-  [`tests/mssf-tests/tests/tonic_failover.rs`](../../tests/mssf-tests/tests/tonic_failover.rs)
-  spinning up two real HTTP/2 servers on ephemeral ports with
-  graceful shutdown:
-  - `failover_via_trailer_and_resolver_flip` — A trailers always,
-    flip resolver to B between calls; assert routing landed
-    correctly and resolver call counts are exactly 2.
-  - `no_trailer_no_rebuild_pool_reused` — steady-state HTTP/2 pool
-    reuse, exactly 1 resolver call across 3 requests.
-  - `server_becomes_stable_after_one_trailer` — single server
-    starts unstable then quiesces; exercises the `Reset`
-    transition + same-target rebuild + steady state.
+The mock suites pin down everything that's deterministic
+(classification, dedup, resolver mechanics). The live suite
+covers what mocks can't:
+[`FabricTargetResolver`](../../crates/libs/util/src/tonic/naming/default.rs)
+against real SF naming, the `ReflectionUrl`-parsing
+[`primary_selector`](../../crates/samples/reflection/src/grpc.rs)
+against real endpoint strings, real role transitions, and
+end-to-end interaction with `get_write_status` from inside a
+real handler. It uses `restart_replica` rather than
+`move_primary` (`move_primary` is flaky on Linux onebox for
+persistent stateful services).
 
-### Deferred — live-cluster failover sample
-
-Originally planned as a stateful `ReflectionApp` with `MyGreeter`
-honoring the trailer contract, plus `move_primary` /
-`restart_replica` orchestration. Deferred — the e2e mock-server
-suite covers the channel layers, the dedup state machine, and the
-failover orchestration deterministically. The live-cluster test
-is most useful for validating
-[`FabricTargetResolver`](../../crates/libs/util/src/tonic/naming/default.rs)'s
-always-complain bookkeeping and address-parse selectors against
-real SF naming, neither of which is exercised by the mock tests.
-
-When it lands, the test plan is:
-
-1. Stateful service with target/min replicas (3,3,0); `MyGreeter`
-   gates on `ServicePartitionAccessStatus` and attaches
-   `mssf-status: not-primary` on writes from non-primaries.
-2. Build a `TargetChannel` for the service URI with a primary-only
-   selector.
-3. Clean failover (Case 2): `move_primary` so the former primary
-   stays up as a secondary. First call returns trailer; second
-   call lands on new primary without test-level retry.
-4. Process-restart failover (Case 1): `restart_replica`; next call
-   succeeds without test-level retry.
-5. In-flight survival under failover.
-6. TLS composition repeat once the `tonic_tls::Transport` adapter
-   ships.
+Future test work: in-flight survival under failover (open
+streaming RPC during a primary swap), and TLS composition repeat
+once the `tonic_tls::Transport` adapter ships.
 
 ## Open questions
 

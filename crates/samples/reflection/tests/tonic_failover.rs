@@ -53,27 +53,32 @@ async fn fabric_client_drop_hack(fc: FabricClient) {
 
 /// Resolve the test service until it has the full target
 /// replica set, then return the singleton partition id.
+/// Panics if the service is not ready within 60 seconds.
 async fn wait_for_ready(fc: &FabricClient, uri: &Uri) -> GUID {
-    let retryer = mssf_util::retry::OperationRetryer::builder().build();
-    let srv = ServicePartitionResolver::new(fc.clone(), retryer);
-    let mut prev = None;
-    loop {
-        let rsp = srv
-            .resolve(uri, &PartitionKeyType::None, prev.as_ref(), None, None)
-            .await
-            .unwrap();
-        if rsp.endpoints.len() >= 3 {
-            // Find the partition id by querying SF for the
-            // service partitions (RSP doesn't carry it
-            // directly).
-            let tc = TestClient::with_uri(fc.clone(), uri.clone());
-            let (_, single) = tc.get_partition().await.unwrap();
-            return single.id;
+    tokio::time::timeout(Duration::from_secs(60), async {
+        let retryer = mssf_util::retry::OperationRetryer::builder().build();
+        let srv = ServicePartitionResolver::new(fc.clone(), retryer);
+        let mut prev = None;
+        loop {
+            let rsp = srv
+                .resolve(uri, &PartitionKeyType::None, prev.as_ref(), None, None)
+                .await
+                .unwrap();
+            if rsp.endpoints.len() >= 3 {
+                // Find the partition id by querying SF for the
+                // service partitions (RSP doesn't carry it
+                // directly).
+                let tc = TestClient::with_uri(fc.clone(), uri.clone());
+                let (_, single) = tc.get_partition().await.unwrap();
+                return single.id;
+            }
+            prev = Some(rsp);
+            tracing::debug!("Waiting for service to be ready...");
+            tokio::time::sleep(Duration::from_secs(1)).await;
         }
-        prev = Some(rsp);
-        tracing::debug!("Waiting for service to be ready...");
-        tokio::time::sleep(Duration::from_secs(1)).await;
-    }
+    })
+    .await
+    .expect("service did not become ready within 60s")
 }
 
 /// Build a `Write` request with the required
@@ -98,9 +103,11 @@ fn write_request(partition_id: GUID, payload: &str) -> Request<WriteRequest> {
 }
 
 /// Try `write` up to `max_attempts` times, returning the first
-/// `Ok` ack string. Treats `Unavailable` and transport errors
-/// as retryable — those are exactly the surfaces the failover
-/// channel is supposed to recover from.
+/// `Ok` ack string. Only retries on `Unavailable` and
+/// `Unknown` (transport-level) errors — these are the surfaces
+/// the failover channel is designed to recover from. Any other
+/// gRPC status code is considered a non-retryable bug and
+/// panics immediately.
 async fn write_until_ok(
     client: &mut GreeterClient<TargetChannel>,
     partition_id: GUID,
@@ -115,10 +122,16 @@ async fn write_until_ok(
                 tracing::info!(attempt, %acked_by, "write succeeded");
                 return acked_by;
             }
-            Err(status) => {
-                tracing::info!(attempt, ?status, "write returned error; retrying");
+            Err(status)
+                if status.code() == tonic::Code::Unavailable
+                    || status.code() == tonic::Code::Unknown =>
+            {
+                tracing::info!(attempt, ?status, "write returned retryable error");
                 last_err = Some(status);
                 tokio::time::sleep(Duration::from_millis(500)).await;
+            }
+            Err(status) => {
+                panic!("write returned non-retryable error: {status:?}");
             }
         }
     }
@@ -139,8 +152,18 @@ async fn tonic_channel_recovers_after_primary_restart() {
         .unwrap();
     let uri = Uri::from(SERVICE_URI);
 
-    // Setup: create the service.
+    // Setup: best-effort cleanup of any leftover from a
+    // previous failed run, so re-runs are idempotent.
     let sm = TestCreateUpdateClient::new(fc.clone());
+    if let Err(e) = fc
+        .get_service_manager()
+        .delete_service(&uri, Duration::from_secs(10), None)
+        .await
+    {
+        tracing::debug!(?e, "pre-cleanup delete (expected if service doesn't exist)");
+    }
+
+    // Create the service.
     sm.create_service(
         &uri,
         &mssf_core::types::PartitionSchemeDescription::Singleton,

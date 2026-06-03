@@ -31,7 +31,8 @@ prost.workspace = true
 url.workspace = true
 uuid = { workspace = true, features = ["v4"] }
 mssf-core = { workspace = true, default-features = true }
-mssf-util = { workspace = true, default-features = true }
+mssf-util = { workspace = true, default-features = true, features = ["tonic"] }
+http.workspace = true
 
 [build-dependencies]
 tonic-prost-build.workspace = true

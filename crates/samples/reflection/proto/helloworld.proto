@@ -6,6 +6,13 @@ service Greeter {
   rpc SayHello (HelloRequest) returns (HelloReply);
   // Get all replicas, optionally filtered by partition ID
   rpc GetReplicas (GetReplicasRequest) returns (GetReplicasResponse);
+  // Role-gated write. Only succeeds on the primary replica; on
+  // secondaries the server returns `Status::unavailable` with
+  // an `mssf-status` metadata entry that the
+  // `ResolveStatusMiddleware` uses to trigger a channel rebuild.
+  // The client must set the `mssf-partition-id` request metadata
+  // header so the server can look up the right partition.
+  rpc Write (WriteRequest) returns (WriteReply);
 }
 
 message HelloRequest {
@@ -23,6 +30,17 @@ message GetReplicasRequest {
 
 message GetReplicasResponse {
   repeated ReplicaInfo replicas = 1;
+}
+
+message WriteRequest {
+  string payload = 1;
+}
+
+message WriteReply {
+  // Stringified `{partition_id:?}/{replica_id}` of the replica
+  // that handled the write. Lets the client correlate a
+  // post-failover ack with the new primary.
+  string acked_by = 1;
 }
 
 enum ReplicaRole {

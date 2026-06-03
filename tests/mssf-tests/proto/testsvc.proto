@@ -1,0 +1,21 @@
+// ------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+//
+// Minimal one-RPC service used by tests/tonic_server_trailers.rs to
+// pin down where tonic places response metadata on the wire.
+// Lives in this crate (not the reflection sample) because the
+// property under test is about tonic-prost code generation, not
+// Service Fabric.
+
+syntax = "proto3";
+
+package testsvc;
+
+service TestSvc {
+  rpc Ping (PingRequest) returns (PingReply);
+}
+
+message PingRequest {}
+message PingReply {}

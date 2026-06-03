@@ -76,14 +76,28 @@ impl http_body::Body for ScriptedBody {
     }
 }
 
-/// `Service` that returns scripted responses in order.
+/// `Service` that returns scripted responses in order. Each
+/// scripted response is a pair of optional initial headers and
+/// a body. The headers ride on `parts.headers` (covering the
+/// unary-Ok-with-metadata and unary-Err-Trailers-Only wire
+/// shapes); the body carries optional trailer frames (covering
+/// the streaming-Err-mid-stream wire shape).
+type ResponseQueue = Arc<std::sync::Mutex<std::collections::VecDeque<(Option<HeaderMap>, Body)>>>;
+
 #[derive(Clone)]
 struct ScriptedService {
-    queue: Arc<std::sync::Mutex<std::collections::VecDeque<Body>>>,
+    queue: ResponseQueue,
 }
 
 impl ScriptedService {
     fn new<I: IntoIterator<Item = Body>>(items: I) -> Self {
+        Self {
+            queue: Arc::new(std::sync::Mutex::new(
+                items.into_iter().map(|b| (None, b)).collect(),
+            )),
+        }
+    }
+    fn with_responses<I: IntoIterator<Item = (Option<HeaderMap>, Body)>>(items: I) -> Self {
         Self {
             queue: Arc::new(std::sync::Mutex::new(items.into_iter().collect())),
         }
@@ -100,13 +114,21 @@ impl Service<http::Request<Body>> for ScriptedService {
     }
 
     fn call(&mut self, _req: http::Request<Body>) -> Self::Future {
-        let body = self
+        let (headers, body) = self
             .queue
             .lock()
             .unwrap()
             .pop_front()
             .expect("script exhausted");
-        Box::pin(async move { Ok(http::Response::builder().body(body).unwrap()) })
+        Box::pin(async move {
+            let mut builder = http::Response::builder();
+            if let Some(map) = headers {
+                for (k, v) in map.iter() {
+                    builder = builder.header(k, v);
+                }
+            }
+            Ok(builder.body(body).unwrap())
+        })
     }
 }
 
@@ -128,6 +150,16 @@ async fn dispatch(svc: &mut ResolveStatusMiddleware<ScriptedService>) {
 
 fn header() -> HeaderName {
     HeaderName::from_static("mssf-status")
+}
+
+/// Construct an initial-header map carrying the configured
+/// status header with the given value — mirrors the wire
+/// position used by tonic for unary-Ok-with-metadata and
+/// unary-Err Trailers-Only responses.
+fn initial_headers(value: &str) -> HeaderMap {
+    let mut map = HeaderMap::new();
+    map.insert(header(), HeaderValue::from_str(value).unwrap());
+    map
 }
 
 fn build(
@@ -231,6 +263,104 @@ async fn unrelated_header_does_not_trigger_rebuild() {
     let mut mw = build(svc, counter.clone());
     dispatch(&mut mw).await;
     assert_eq!(counter.count(), 0);
+}
+
+// -- Initial-headers path (unary Ok with metadata, unary Err
+// -- Trailers-Only). These cover the wire shapes that the
+// -- trailer-frame-only v1.0 middleware missed.
+
+#[tokio::test]
+async fn header_on_initial_response_triggers_rebuild() {
+    let counter = RebuildCounter::default();
+    let svc = ScriptedService::with_responses(vec![(
+        Some(initial_headers("not-primary")),
+        Body::new(ScriptedBody::no_trailer()),
+    )]);
+    let mut mw = build(svc, counter.clone());
+    dispatch(&mut mw).await;
+    assert_eq!(counter.count(), 1);
+}
+
+#[tokio::test]
+async fn header_on_initial_response_dedups_against_same_value() {
+    let counter = RebuildCounter::default();
+    let svc = ScriptedService::with_responses(vec![
+        (
+            Some(initial_headers("v")),
+            Body::new(ScriptedBody::no_trailer()),
+        ),
+        (
+            Some(initial_headers("v")),
+            Body::new(ScriptedBody::no_trailer()),
+        ),
+        (
+            Some(initial_headers("v")),
+            Body::new(ScriptedBody::no_trailer()),
+        ),
+    ]);
+    let mut mw = build(svc, counter.clone());
+    for _ in 0..3 {
+        dispatch(&mut mw).await;
+    }
+    assert_eq!(counter.count(), 1);
+}
+
+#[tokio::test]
+async fn header_then_no_signal_resets_then_header_rebuilds_again() {
+    // Header -> rebuild #1; clean response -> reset; same
+    // header value -> rebuild #2 because state was reset.
+    let counter = RebuildCounter::default();
+    let svc = ScriptedService::with_responses(vec![
+        (
+            Some(initial_headers("v")),
+            Body::new(ScriptedBody::no_trailer()),
+        ),
+        (None, Body::new(ScriptedBody::no_trailer())),
+        (
+            Some(initial_headers("v")),
+            Body::new(ScriptedBody::no_trailer()),
+        ),
+    ]);
+    let mut mw = build(svc, counter.clone());
+    dispatch(&mut mw).await;
+    dispatch(&mut mw).await;
+    dispatch(&mut mw).await;
+    assert_eq!(counter.count(), 2);
+}
+
+#[tokio::test]
+async fn header_and_trailer_both_present_fires_once() {
+    // Pathological belt-and-braces case: same value on both
+    // surfaces. The initial-headers path fires first; the
+    // trailer-frame observation is short-circuited.
+    let counter = RebuildCounter::default();
+    let svc = ScriptedService::with_responses(vec![(
+        Some(initial_headers("v")),
+        Body::new(ScriptedBody::with_trailer(&header(), "v")),
+    )]);
+    let mut mw = build(svc, counter.clone());
+    dispatch(&mut mw).await;
+    assert_eq!(counter.count(), 1);
+}
+
+#[tokio::test]
+async fn header_dedup_state_is_shared_with_trailer_path() {
+    // First call sets state via the initial-headers path.
+    // Second call would normally dedup against the same value,
+    // but here the value arrives on the trailers frame
+    // instead. The shared `last_seen` must dedup it.
+    let counter = RebuildCounter::default();
+    let svc = ScriptedService::with_responses(vec![
+        (
+            Some(initial_headers("v")),
+            Body::new(ScriptedBody::no_trailer()),
+        ),
+        (None, Body::new(ScriptedBody::with_trailer(&header(), "v"))),
+    ]);
+    let mut mw = build(svc, counter.clone());
+    dispatch(&mut mw).await;
+    dispatch(&mut mw).await;
+    assert_eq!(counter.count(), 1);
 }
 
 /// Concurrent dispatch with the same trailer value must collapse to

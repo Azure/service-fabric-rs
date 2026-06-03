@@ -63,9 +63,16 @@ pub struct TestClient {
 
 impl TestClient {
     pub fn new(fc: FabricClient) -> Self {
+        Self::with_uri(fc, Uri::from(SVC_URI))
+    }
+
+    /// Construct against a non-default service URI. Used by
+    /// tests that create their own service (e.g.
+    /// `tonic_failover.rs`'s `fabric:/ReflectionApp/TonicFailoverTest`).
+    pub fn with_uri(fc: FabricClient, service_uri: Uri) -> Self {
         Self {
             fc,
-            service_uri: Uri::from(SVC_URI),
+            service_uri,
             timeout: Duration::from_secs(1),
         }
     }

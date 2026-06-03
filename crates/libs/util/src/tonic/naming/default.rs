@@ -40,11 +40,20 @@ impl TargetResolver for FabricTargetResolver {
     fn resolve(&self) -> BoxFuture<'_, Result<DialTarget, BoxError>> {
         Box::pin(async move {
             let prev = self.cached.load_full();
+            let had_cache = prev.is_some();
             let new_rsp = self
                 .inner
                 .resolve(&self.uri, &self.key, prev.as_deref(), self.timeout, None)
                 .await
-                .map_err(|e| Box::new(e) as BoxError)?;
+                .map_err(|e| {
+                    tracing::warn!(
+                        uri = %self.uri,
+                        had_cache,
+                        error = ?e,
+                        "FabricTargetResolver: SF resolve_service_partition failed",
+                    );
+                    Box::new(e) as BoxError
+                })?;
             // Reconcile the new reply against the cache. The
             // cache only advances when SF returns a strictly
             // *newer* RSP — never moves backward to an older
@@ -55,38 +64,67 @@ impl TargetResolver for FabricTargetResolver {
             // `svc_mgmt_client.rs`: `a > b` ⇔ `a` is newer;
             // `partial_cmp == None` ⇔ different service /
             // partition (treat as a hard cache reset).
-            let rsp = match prev.as_deref() {
+            let (rsp, cache_outcome) = match prev.as_deref() {
                 Some(p) => match p.partial_cmp(&new_rsp) {
                     Some(std::cmp::Ordering::Less) => {
                         // prev < new_rsp → new_rsp is newer → advance.
                         let arc = Arc::new(new_rsp);
                         self.cached.store(Some(arc.clone()));
-                        arc
+                        (arc, "advanced")
                     }
                     Some(_) => {
                         // Equal or prev > new_rsp: keep cached
                         // Arc identity, drop new_rsp.
-                        prev.unwrap()
+                        (prev.unwrap(), "kept")
                     }
                     None => {
                         // Different service / partition: hard
                         // reset.
                         let arc = Arc::new(new_rsp);
                         self.cached.store(Some(arc.clone()));
-                        arc
+                        (arc, "hard-reset")
                     }
                 },
                 None => {
                     let arc = Arc::new(new_rsp);
                     self.cached.store(Some(arc.clone()));
-                    arc
+                    (arc, "first")
                 }
             };
             // Run the user's role-pick + address-parse closure.
-            (self.selector)(&rsp).map_err(|e| match e {
-                SelectError::NoMatch => "no matching endpoint".into(),
-                SelectError::Fatal(b) => b,
-            })
+            match (self.selector)(&rsp) {
+                Ok(target) => {
+                    tracing::info!(
+                        uri = %self.uri,
+                        had_cache,
+                        cache = cache_outcome,
+                        host = %target.host,
+                        port = target.port,
+                        "FabricTargetResolver: resolved dial target",
+                    );
+                    Ok(target)
+                }
+                Err(SelectError::NoMatch) => {
+                    tracing::warn!(
+                        uri = %self.uri,
+                        had_cache,
+                        cache = cache_outcome,
+                        endpoint_count = rsp.endpoints.len(),
+                        "FabricTargetResolver: selector found no matching endpoint",
+                    );
+                    Err("no matching endpoint".into())
+                }
+                Err(SelectError::Fatal(b)) => {
+                    tracing::warn!(
+                        uri = %self.uri,
+                        had_cache,
+                        cache = cache_outcome,
+                        error = %b,
+                        "FabricTargetResolver: selector returned fatal error",
+                    );
+                    Err(b)
+                }
+            }
         })
     }
 }

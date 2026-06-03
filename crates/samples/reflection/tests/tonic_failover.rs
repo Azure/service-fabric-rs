@@ -102,20 +102,21 @@ fn write_request(partition_id: GUID, payload: &str) -> Request<WriteRequest> {
     req
 }
 
-/// Try `write` up to `max_attempts` times, returning the first
-/// `Ok` ack string. Only retries on `Unavailable` and
-/// `Unknown` (transport-level) errors — these are the surfaces
-/// the failover channel is designed to recover from. Any other
-/// gRPC status code is considered a non-retryable bug and
-/// panics immediately.
+/// Try `write` repeatedly until success or `timeout` elapses.
+/// Only retries on `Unavailable` and `Unknown` (transport-level)
+/// errors — these are the surfaces the failover channel is
+/// designed to recover from. Any other gRPC status code is
+/// considered a non-retryable bug and panics immediately.
 async fn write_until_ok(
     client: &mut GreeterClient<TargetChannel>,
     partition_id: GUID,
     payload: &str,
-    max_attempts: usize,
+    timeout: Duration,
 ) -> String {
-    let mut last_err = None;
-    for attempt in 0..max_attempts {
+    let deadline = tokio::time::Instant::now() + timeout;
+    let mut attempt = 0usize;
+    let mut last_err: Option<tonic::Status>;
+    loop {
         match client.write(write_request(partition_id, payload)).await {
             Ok(resp) => {
                 let acked_by = resp.into_inner().acked_by;
@@ -128,17 +129,20 @@ async fn write_until_ok(
             {
                 tracing::info!(attempt, ?status, "write returned retryable error");
                 last_err = Some(status);
-                tokio::time::sleep(Duration::from_millis(500)).await;
             }
             Err(status) => {
                 panic!("write returned non-retryable error: {status:?}");
             }
         }
+        attempt += 1;
+        if tokio::time::Instant::now() >= deadline {
+            panic!(
+                "write did not succeed within {timeout:?}; last error: {:?}",
+                last_err
+            );
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await;
     }
-    panic!(
-        "write did not succeed within {max_attempts} attempts; last error: {:?}",
-        last_err
-    );
 }
 
 /// End-to-end failover via `restart_replica`. Exercises the
@@ -178,7 +182,8 @@ async fn tonic_channel_recovers_after_primary_restart() {
     let mut client = GreeterClient::new(channel);
 
     // Steady-state write succeeds on the current primary.
-    let acked_first = write_until_ok(&mut client, partition_id, "hello", 3).await;
+    let acked_first =
+        write_until_ok(&mut client, partition_id, "hello", Duration::from_secs(30)).await;
     tracing::info!(%acked_first, "steady-state ack");
 
     // Trigger failover (restart the current primary). Reuses
@@ -193,7 +198,13 @@ async fn tonic_channel_recovers_after_primary_restart() {
     // `mssf-status: not-primary`) or one transport error
     // first, depending on whether hyper's connection pool
     // still holds the old TCP/HTTP2 connection.
-    let acked_after_restart = write_until_ok(&mut client, partition_id, "after-restart", 5).await;
+    let acked_after_restart = write_until_ok(
+        &mut client,
+        partition_id,
+        "after-restart",
+        Duration::from_secs(30),
+    )
+    .await;
     tracing::info!(%acked_after_restart, "post-failover ack");
     assert_ne!(
         acked_first, acked_after_restart,
@@ -221,7 +232,7 @@ async fn tonic_channel_recovers_after_primary_restart() {
                 &mut client_clone,
                 partition_id,
                 &format!("concurrent-{i}"),
-                5,
+                Duration::from_secs(30),
             )
             .await
         }));

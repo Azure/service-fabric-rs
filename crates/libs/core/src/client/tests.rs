@@ -116,7 +116,7 @@ async fn test_fabric_client() {
     // Test property client with error
     {
         let pc = c.get_property_manager();
-        // Create a name that is invalide to force error, and check the error message is propagated.
+        // Create a name that is invalid to force error, and check the error message is propagated.
         {
             let err = pc
                 .create_name(&Uri::from("fabric:/bad?x=1"), timeout, None)

@@ -139,14 +139,16 @@ impl From<core::num::TryFromIntError> for Error {
 // Get last error message from current thread from SF.
 // Call this after an SF API call failure.
 fn get_last_error_message() -> Option<WString> {
-    // The call returns error only when input result ptr is null:
+    // The call returns error only when input COM holder ptr is null:
     // https://github.com/microsoft/service-fabric/blob/ddfed33de371857f8fdb92287a8e0497297c8ccf/src/prod/src/retail/native/FabricCommon/FabricCommon.cpp#L233
-    let msg = crate::api::API_TABLE
-        .fabric_get_last_error_message()
-        .expect("failed to get error message");
-    // If message is not set, the returned string should be empty.
+    // Our COM layer always provides a valid pointer, so we can safely ignore here.
+    let msg = crate::api::API_TABLE.fabric_get_last_error_message().ok()?;
+    // If message is not set, the returned string is be empty c string from cpp side.
+    // We convert null or empty string to None, and non-empty string to Some.
     let smsg = crate::strings::StringResult::from(&msg).into_inner();
-    match smsg.is_empty() {
+    // Intetional check len instead of is_empty because WString can be Nul and not empty.
+    #[allow(clippy::len_zero)]
+    match smsg.len() == 0 {
         true => None,
         false => Some(smsg),
     }

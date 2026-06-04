@@ -76,7 +76,7 @@ impl From<Error> for HRESULT {
 
 impl From<crate::WinError> for Error {
     fn from(error: crate::WinError) -> Self {
-        Self::from_thread(error.code())
+        Self::from_hresult(error.code())
     }
 }
 

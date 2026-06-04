@@ -44,7 +44,7 @@ impl PropertyManagementClient {
         name: &Uri,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -61,7 +61,7 @@ impl PropertyManagementClient {
         name: &Uri,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -78,7 +78,7 @@ impl PropertyManagementClient {
         name: &Uri,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<u8>> {
+    ) -> FabricReceiver<crate::Result<u8>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -97,7 +97,7 @@ impl PropertyManagementClient {
         recursive: bool,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricNameEnumerationResult>> {
+    ) -> FabricReceiver<crate::Result<IFabricNameEnumerationResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -122,7 +122,7 @@ impl PropertyManagementClient {
         data: &[u8],
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -147,7 +147,7 @@ impl PropertyManagementClient {
         data: i64,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -172,7 +172,7 @@ impl PropertyManagementClient {
         data: f64,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -197,7 +197,7 @@ impl PropertyManagementClient {
         data: &WString,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -222,7 +222,7 @@ impl PropertyManagementClient {
         data: &windows_core::GUID,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -246,7 +246,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -269,7 +269,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricPropertyMetadataResult>> {
+    ) -> FabricReceiver<crate::Result<IFabricPropertyMetadataResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -292,7 +292,7 @@ impl PropertyManagementClient {
         property_name: &WString,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricPropertyValueResult>> {
+    ) -> FabricReceiver<crate::Result<IFabricPropertyValueResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -318,7 +318,7 @@ impl PropertyManagementClient {
         batch: &[FABRIC_PROPERTY_BATCH_OPERATION],
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<(u32, IFabricPropertyBatchResult)>> {
+    ) -> FabricReceiver<crate::Result<(u32, IFabricPropertyBatchResult)>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -344,7 +344,7 @@ impl PropertyManagementClient {
         prev: Option<&IFabricPropertyEnumerationResult>,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricPropertyEnumerationResult>> {
+    ) -> FabricReceiver<crate::Result<IFabricPropertyEnumerationResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -370,7 +370,7 @@ impl PropertyManagementClient {
         property_operation: &FABRIC_PUT_CUSTOM_PROPERTY_OPERATION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -442,7 +442,6 @@ impl PropertyManagementClient {
             cancellation_token,
         )
         .await?
-        .map_err(|e| e.into())
         .map(|exist| exist != 0)
     }
 
@@ -466,7 +465,6 @@ impl PropertyManagementClient {
             cancellation_token,
         )
         .await?
-        .map_err(|e| e.into())
         .map(NameEnumerationResult::from_com)
     }
 
@@ -603,7 +601,6 @@ impl PropertyManagementClient {
             cancellation_token,
         )
         .await?
-        .map_err(|e| e.into())
         .map(PropertyMetadataResult::from_com)
     }
 
@@ -622,7 +619,6 @@ impl PropertyManagementClient {
             cancellation_token,
         )
         .await?
-        .map_err(|e| e.into())
         .map(PropertyValueResult::from_com)
     }
 }

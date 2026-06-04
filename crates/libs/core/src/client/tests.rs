@@ -99,17 +99,37 @@ async fn test_fabric_client() {
                     // FABRIC_E_SERVICE_OFFLINE is the expected result.
                     // TODO: Investigate the ci.
                     assert!(
-                        e.0 == crate::HRESULT(FABRIC_E_SERVICE_DOES_NOT_EXIST.0)
-                            || e.0
+                        e.code() == crate::HRESULT(FABRIC_E_SERVICE_DOES_NOT_EXIST.0)
+                            || e.code()
                                 == crate::HRESULT(
                                     mssf_com::FabricTypes::FABRIC_E_SERVICE_OFFLINE.0
                                 )
                     );
                 } else {
-                    assert_eq!(e.0, crate::HRESULT(FABRIC_E_SERVICE_DOES_NOT_EXIST.0));
+                    assert_eq!(e.code(), crate::HRESULT(FABRIC_E_SERVICE_DOES_NOT_EXIST.0));
                     println!("EchoApp not provisioned. Skip validate.")
                 }
             }
+        }
+    }
+
+    // Test property client with error
+    {
+        let pc = c.get_property_manager();
+        // Create a name that is invalid to force error, and check the error message is propagated.
+        {
+            let err = pc
+                .create_name(&Uri::from("fabric:/bad?x=1"), timeout, None)
+                .await
+                .unwrap_err();
+            assert_eq!(
+                err.try_as_fabric_error_code().unwrap(),
+                ErrorCode::FABRIC_E_INVALID_NAME_URI
+            );
+            assert_eq!(
+                err.to_string(),
+                "FABRIC_E_INVALID_NAME_URI (-2147017794): The name 'fabric:/bad?x=1' is invalid: character '?' is not supported."
+            );
         }
     }
 }

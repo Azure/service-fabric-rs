@@ -35,10 +35,15 @@ const E_DIR_NOT_EMPTY: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(
 const E_NOT_FOUND: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(HRESULT::from_win32(windows_core::Win32::Foundation::ERROR_NOT_FOUND.0).0);
 
+// Internal error codes used by SF.
+// TODO: Add the complete list from dotnet and cpp code.
+const FABRIC_INTERNAL_E_CANNOT_CONNECT: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(0x80071CC0u32 as i32);
+
 /// Hepler macro to define fabric error code.
 /// SF uses win32 hresult code together with the custom fabric error code.
 /// This enum helps passing errors between Rust and SF API, and is easy to debug.
-/// code1 list are windows errors, lit is a dummy string literal, code list are fabric errors.
+/// code1 list are errors defined in this current file, lit is a dummy string literal,
+/// code list are fabric errors defined in FabricTypes.rs.
 /// The macro defines windows errors first, then followed by fabric errors.
 // Need to match cs impl:
 // https://github.com/microsoft/service-fabric/blob/19791eb97c8d876517daa030e5a403f4bcad25b1/src/prod/src/managed/Api/src/System/Fabric/Interop/NativeTypes.cs#L57
@@ -80,7 +85,7 @@ macro_rules! define_fabric_error_code{
 
 impl From<ErrorCode> for crate::Error {
     fn from(value: ErrorCode) -> Self {
-        crate::Error(HRESULT(value as i32))
+        crate::Error::from_hresult(HRESULT(value as i32))
     }
 }
 
@@ -142,6 +147,8 @@ define_fabric_error_code!(
     E_FILE_EXISTS,
     E_DIR_NOT_EMPTY,
     E_NOT_FOUND,
+    // Internal errors
+    FABRIC_INTERNAL_E_CANNOT_CONNECT,
     ("Literal for breaking up first error chunk and the fabric errors"),
     FABRIC_E_COMMUNICATION_ERROR,
     FABRIC_E_INVALID_ADDRESS,

@@ -49,7 +49,7 @@ impl QueryClient {
         query_description: &FABRIC_NODE_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricGetNodeListResult2>> {
+    ) -> FabricReceiver<crate::Result<IFabricGetNodeListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
 
@@ -67,7 +67,7 @@ impl QueryClient {
         query_description: &FABRIC_APPLICATION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricGetApplicationListResult2>> {
+    ) -> FabricReceiver<crate::Result<IFabricGetApplicationListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -84,8 +84,7 @@ impl QueryClient {
         desc: &FABRIC_SERVICE_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricGetServiceListResult2>>
-    {
+    ) -> FabricReceiver<crate::Result<mssf_com::FabricClient::IFabricGetServiceListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -102,7 +101,7 @@ impl QueryClient {
         desc: &FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricGetPartitionListResult2>> {
+    ) -> FabricReceiver<crate::Result<IFabricGetPartitionListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -119,7 +118,7 @@ impl QueryClient {
         desc: &FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricGetReplicaListResult2>> {
+    ) -> FabricReceiver<crate::Result<IFabricGetReplicaListResult2>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -136,7 +135,7 @@ impl QueryClient {
         desc: &FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricGetPartitionLoadInformationResult>> {
+    ) -> FabricReceiver<crate::Result<IFabricGetPartitionLoadInformationResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -153,7 +152,7 @@ impl QueryClient {
         desc: &FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricGetDeployedServiceReplicaDetailResult>> {
+    ) -> FabricReceiver<crate::Result<IFabricGetDeployedServiceReplicaDetailResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(

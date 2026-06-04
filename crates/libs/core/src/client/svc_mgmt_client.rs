@@ -57,7 +57,7 @@ impl ServiceManagementClient {
         previous_result: Option<&IFabricResolvedServicePartitionResult>, // This is different from generated code
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricResolvedServicePartitionResult>> {
+    ) -> FabricReceiver<crate::Result<IFabricResolvedServicePartitionResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -81,7 +81,7 @@ impl ServiceManagementClient {
         desc: &FABRIC_RESTART_REPLICA_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -98,7 +98,7 @@ impl ServiceManagementClient {
         desc: &FABRIC_REMOVE_REPLICA_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -115,7 +115,7 @@ impl ServiceManagementClient {
         desc: &FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<i64>> {
+    ) -> FabricReceiver<crate::Result<i64>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -132,7 +132,7 @@ impl ServiceManagementClient {
         filterid: i64,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -153,7 +153,7 @@ impl ServiceManagementClient {
         desc: &FABRIC_SERVICE_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -171,7 +171,7 @@ impl ServiceManagementClient {
         desc: &FABRIC_SERVICE_UPDATE_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -188,7 +188,7 @@ impl ServiceManagementClient {
         name: FABRIC_URI,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<()>> {
+    ) -> FabricReceiver<crate::Result<()>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -261,7 +261,6 @@ impl ServiceManagementClient {
             self.restart_replica_internal(&raw, timeout.as_millis() as u32, cancellation_token)
         }
         .await?
-        .map_err(crate::Error::from)
     }
 
     /// This API gives a running replica the chance to cleanup its state and be gracefully shutdown.
@@ -280,7 +279,6 @@ impl ServiceManagementClient {
             self.remove_replica_internal(&raw, timeout.as_millis() as u32, cancellation_token)
         }
         .await?
-        .map_err(crate::Error::from)
     }
 
     /// Remarks:
@@ -330,7 +328,6 @@ impl ServiceManagementClient {
             cancellation_token,
         )
         .await?
-        .map_err(crate::Error::from)
     }
 
     pub async fn create_service(
@@ -345,7 +342,6 @@ impl ServiceManagementClient {
             self.create_service_internal(&ffi_raw, timeout.as_millis() as u32, cancellation_token)
         }
         .await?
-        .map_err(crate::Error::from)
     }
 
     pub async fn update_service(
@@ -366,7 +362,6 @@ impl ServiceManagementClient {
             )
         }
         .await?
-        .map_err(crate::Error::from)
     }
 
     pub async fn delete_service(
@@ -381,7 +376,6 @@ impl ServiceManagementClient {
             cancellation_token,
         )
         .await?
-        .map_err(crate::Error::from)
     }
 }
 

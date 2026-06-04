@@ -208,7 +208,7 @@ impl HealthClient {
         desc: &FABRIC_NODE_HEALTH_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<IFabricNodeHealthResult>> {
+    ) -> FabricReceiver<crate::Result<IFabricNodeHealthResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -225,7 +225,7 @@ impl HealthClient {
         desc: &FABRIC_CLUSTER_HEALTH_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricClusterHealthResult>> {
+    ) -> FabricReceiver<crate::Result<mssf_com::FabricClient::IFabricClusterHealthResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -242,8 +242,7 @@ impl HealthClient {
         desc: &mssf_com::FabricTypes::FABRIC_APPLICATION_HEALTH_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricApplicationHealthResult>>
-    {
+    ) -> FabricReceiver<crate::Result<mssf_com::FabricClient::IFabricApplicationHealthResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -259,8 +258,7 @@ impl HealthClient {
         desc: &mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricPartitionHealthResult>>
-    {
+    ) -> FabricReceiver<crate::Result<mssf_com::FabricClient::IFabricPartitionHealthResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -276,7 +274,7 @@ impl HealthClient {
         desc: &mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricServiceHealthResult>> {
+    ) -> FabricReceiver<crate::Result<mssf_com::FabricClient::IFabricServiceHealthResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -292,7 +290,7 @@ impl HealthClient {
         desc: &mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::WinResult<mssf_com::FabricClient::IFabricReplicaHealthResult>> {
+    ) -> FabricReceiver<crate::Result<mssf_com::FabricClient::IFabricReplicaHealthResult>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(

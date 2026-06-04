@@ -113,7 +113,7 @@ impl IStatefulServiceReplica for StatefulServiceReplicaProxy {
             move |ctx| unsafe { com2.EndClose(ctx) },
             Some(cancellation_token),
         );
-        rx.await?.map_err(crate::Error::from)
+        rx.await?
     }
     #[cfg_attr(
         feature = "tracing",
@@ -164,7 +164,7 @@ impl IReplicator for ReplicatorProxy {
             move |ctx| unsafe { com2.EndClose(ctx) },
             Some(cancellation_token),
         );
-        rx.await?.map_err(crate::Error::from)
+        rx.await?
     }
     #[cfg_attr(
         feature = "tracing",
@@ -186,7 +186,7 @@ impl IReplicator for ReplicatorProxy {
             move |ctx| unsafe { com2.EndChangeRole(ctx) },
             Some(cancellation_token),
         );
-        rx.await?.map_err(crate::Error::from)
+        rx.await?
     }
     #[cfg_attr(
         feature = "tracing",
@@ -205,7 +205,7 @@ impl IReplicator for ReplicatorProxy {
             move |ctx| unsafe { com2.EndUpdateEpoch(ctx) },
             Some(cancellation_token),
         );
-        rx.await?.map_err(crate::Error::from)
+        rx.await?
     }
     #[cfg_attr(
         feature = "tracing",
@@ -296,7 +296,7 @@ impl IPrimaryReplicator for PrimaryReplicatorProxy {
             move |ctx| unsafe { com2.EndOnDataLoss(ctx) },
             Some(cancellation_token),
         );
-        rx.await?.map_err(crate::Error::from)
+        rx.await?
     }
     #[cfg_attr(
         feature = "tracing",
@@ -331,7 +331,7 @@ impl IPrimaryReplicator for PrimaryReplicatorProxy {
             move |ctx| unsafe { com2.EndWaitForCatchUpQuorum(ctx) },
             Some(cancellation_token),
         );
-        rx.await?.map_err(crate::Error::from)
+        rx.await?
     }
     #[cfg_attr(
         feature = "tracing",
@@ -367,7 +367,7 @@ impl IPrimaryReplicator for PrimaryReplicatorProxy {
             move |ctx| unsafe { com2.EndBuildReplica(ctx) },
             Some(cancellation_token),
         );
-        rx.await?.map_err(crate::Error::from)
+        rx.await?
     }
     #[cfg_attr(
         feature = "tracing",

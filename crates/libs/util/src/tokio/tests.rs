@@ -256,6 +256,7 @@ mod proxy_test {
                 token,
             )
             .await?
+            .map_err(|e| mssf_core::WinError::from_hresult(e.code()))
         }
 
         async fn set_data_delay(
@@ -272,6 +273,7 @@ mod proxy_test {
                 token,
             )
             .await?
+            .map_err(|e| mssf_core::WinError::from_hresult(e.code()))
         }
     }
 

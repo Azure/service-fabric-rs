@@ -209,13 +209,22 @@ mod test {
         // In this call SF does not set the last error message.
         let err = crate::runtime::create_com_runtime().unwrap_err();
         let err_thread = Error::from_thread(err.code());
-        assert_eq!(
-            err_thread.code(),
-            ErrorCode::FABRIC_INTERNAL_E_CANNOT_CONNECT.into()
-        );
-        assert_eq!(
-            format!("{err_thread}"),
-            "FABRIC_INTERNAL_E_CANNOT_CONNECT (-2147017536)"
-        );
+        match err_thread.try_as_fabric_error_code().unwrap() {
+            // When onebox is not running on the same machine.
+            ErrorCode::FABRIC_INTERNAL_E_CANNOT_CONNECT => {
+                assert_eq!(
+                    format!("{err_thread}"),
+                    "FABRIC_INTERNAL_E_CANNOT_CONNECT (-2147017536)"
+                );
+            }
+            // When onebox is running. Test is not spawned by SF.
+            ErrorCode::FABRIC_E_CONNECTION_DENIED => {
+                assert_eq!(
+                    format!("{err_thread}"),
+                    "FABRIC_E_CONNECTION_DENIED (-2147017661)"
+                );
+            }
+            c => panic!("unexpected error code {c}"),
+        }
     }
 }

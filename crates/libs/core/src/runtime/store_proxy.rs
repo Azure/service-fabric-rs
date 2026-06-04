@@ -121,7 +121,7 @@ impl TransactionProxy {
             move |ctx| unsafe { com2.EndCommit(ctx) },
             cancellation_token,
         );
-        rx.await?.map_err(crate::Error::from)
+        rx.await?
     }
 
     pub fn rollback(&self) {

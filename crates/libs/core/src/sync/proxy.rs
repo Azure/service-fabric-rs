@@ -24,7 +24,7 @@ use super::{FabricReceiver, oneshot_channel};
 /// the begin and end closure needs to be manually written.
 ///
 /// Begin closure is initiated/called, and FabricReceiver is returned to the user. FabricSender
-/// is supposed to send the async result obtaind from the end closure to the user.
+/// is supposed to send the async result obtained from the end closure to the user.
 /// End closure is wrapped in an awaitable callback (together with a FabricSender),
 /// and such callback is passed to SF begin api and is invoked when
 /// the (begin) initiated operation completes.
@@ -45,7 +45,7 @@ pub fn fabric_begin_end_proxy<BEGIN, END, T>(
     begin: BEGIN,
     end: END,
     token: Option<BoxedCancelToken>,
-) -> FabricReceiver<crate::WinResult<T>>
+) -> FabricReceiver<crate::Result<T>>
 where
     BEGIN: FnOnce(
         Option<&IFabricAsyncOperationCallback>,
@@ -56,7 +56,10 @@ where
     let (tx, mut rx) = oneshot_channel(token);
 
     let callback = crate::sync::AwaitableCallback::new_interface(move |ctx| {
-        let res = end(ctx.as_ref());
+        let res = end(ctx.as_ref()).map_err(|e| {
+            // Capture the thread error message here right after the end call.
+            crate::Error::from_thread(e.code())
+        });
         tx.send(res);
     });
     let ctx = begin(Some(&callback));
@@ -67,6 +70,8 @@ where
             rx
         }
         Err(e) => {
+            // Capture the thread error message here right after the begin call.
+            let e = crate::Error::from_thread(e.code());
             let (tx2, rx2) = oneshot_channel(None);
             tx2.send(Err(e));
             rx2

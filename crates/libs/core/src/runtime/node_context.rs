@@ -16,7 +16,7 @@ use crate::types::NodeId;
 pub fn get_com_node_context(
     timeout_milliseconds: u32,
     cancellation_token: Option<BoxedCancelToken>,
-) -> crate::sync::FabricReceiver<crate::WinResult<IFabricNodeContextResult2>> {
+) -> crate::sync::FabricReceiver<crate::Result<IFabricNodeContextResult2>> {
     fabric_begin_end_proxy(
         move |callback| {
             crate::API_TABLE.fabric_begin_get_node_context(timeout_milliseconds, callback)

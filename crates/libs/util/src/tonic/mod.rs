@@ -10,6 +10,15 @@
 //! The public surface is intentionally flat — internal
 //! sub-modules are an organizational detail. Use the re-exports
 //! below.
+//!
+//! # Experimental
+//!
+//! This module is experimental and is expected to be replaced by the
+//! sf-xds proposal tracked in
+//! <https://github.com/Azure/service-fabric-rs/issues/300>. There is
+//! **no stable API guarantee**: items in this module may change or be
+//! removed in any release (including patch releases) without a major
+//! version bump.
 
 mod channel;
 mod connector;

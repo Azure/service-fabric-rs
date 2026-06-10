@@ -234,8 +234,28 @@ jobs:
         if: failure()
         run: |
           mkdir -p /tmp/artifacts/executables
-          sudo chown $USER:$USER target/debug/deps/samples_reflection-*
-          sudo cp target/debug/deps/samples_reflection-* /tmp/artifacts/executables/ || { echo "Fail to copy known executable"; exit 1; }
+          # Reflection sample binary plus all of its integration test binaries.
+          # Test names mirror files under crates/samples/reflection/tests/*.rs
+          patterns=(
+            samples_reflection
+            concurrency
+            control_e2e
+            fail_lifecycle
+            failover
+            partition_admin
+            tonic_failover
+          )
+          for name in "${patterns[@]}"; do
+            files=$(find target/debug/deps -maxdepth 1 -type f -executable -name "${name}-*" ! -name "*.d" ! -name "*.rlib" ! -name "*.rmeta" || true)
+            if [ -z "$files" ]; then
+              echo "No binaries found for pattern ${name}-*"
+              continue
+            fi
+            for f in $files; do
+              sudo chown $USER:$USER "$f"
+              sudo cp "$f" /tmp/artifacts/executables/ || { echo "Fail to copy $f"; exit 1; }
+            done
+          done
 
       - name: Collect core dumps
         if: always()

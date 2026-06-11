@@ -11,6 +11,7 @@ RUN apt-get update -y \
         software-properties-common debconf-utils \
         git socat sudo python3-pip protobuf-compiler \
         net-tools locales \
+        build-essential pkg-config \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*

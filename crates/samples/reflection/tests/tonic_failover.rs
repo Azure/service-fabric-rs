@@ -25,7 +25,7 @@ use std::time::Duration;
 use mssf_core::{
     GUID, WString,
     client::{FabricClient, svc_mgmt_client::PartitionKeyType},
-    types::Uri,
+    types::{DeleteServiceDescription, Uri},
 };
 use mssf_util::resolve::ServicePartitionResolver;
 use mssf_util::tonic::TargetChannel;
@@ -161,7 +161,11 @@ async fn tonic_channel_recovers_after_primary_restart() {
     let sm = TestCreateUpdateClient::new(fc.clone());
     if let Err(e) = fc
         .get_service_manager()
-        .delete_service(&uri, Duration::from_secs(10), None)
+        .delete_service2(
+            &DeleteServiceDescription::new(uri.clone()),
+            Duration::from_secs(10),
+            None,
+        )
         .await
     {
         tracing::debug!(?e, "pre-cleanup delete (expected if service doesn't exist)");

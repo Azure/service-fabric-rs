@@ -57,6 +57,13 @@ ARG USER_UID=1000
 ARG USER_GID=1000
 ARG RUST_VERSION=stable
 
+# Install docker CLI so the container can talk to the host docker
+# daemon via a mounted /var/run/docker.sock. Used for things like
+# `docker logs onebox` from inside the devcontainer.
+RUN apt-get update \
+    && apt-get install -y docker.io \
+    && rm -rf /var/lib/apt/lists/*
+
 # Create a non-root user
 RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -s /bin/bash \

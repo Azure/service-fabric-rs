@@ -33,8 +33,9 @@ use mssf_core::{
         },
     },
     types::{
-        DeployedServiceReplicaDetailQueryDescription, DeployedServiceReplicaDetailQueryResult,
-        GetPartitionLoadInformationResult, NamedPartitionInfomation, NamedRepartitionDescription,
+        DeleteServiceDescription, DeployedServiceReplicaDetailQueryDescription,
+        DeployedServiceReplicaDetailQueryResult, GetPartitionLoadInformationResult,
+        NamedPartitionInfomation, NamedRepartitionDescription,
         PartitionLoadInformationQueryDescription, QueryServiceReplicaStatus, ReplicaRole,
         RestartReplicaDescription, ServiceDescription, ServicePartitionInformation,
         ServicePartitionQueryDescription, ServicePartitionQueryResultItem, ServicePartitionStatus,
@@ -369,8 +370,8 @@ impl TestCreateUpdateClient {
         tracing::info!("deleting service {service_name:?}");
         let sm = self.fc.get_service_manager().clone();
         let timeout = self.timeout;
-        let service_name = service_name.clone();
-        tokio::spawn(async move { sm.delete_service(&service_name, timeout, None).await })
+        let desc = DeleteServiceDescription::new(service_name.clone());
+        tokio::spawn(async move { sm.delete_service2(&desc, timeout, None).await })
             .await
             .expect("task panicked")
             .expect("delete failed");

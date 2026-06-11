@@ -14,8 +14,54 @@ use samples_reflection::statefulstore::Factory;
 use tokio_util::sync::CancellationToken;
 use tracing::info;
 
+mod log_fmt {
+    //! Custom tracing-subscriber event formatter that prepends a
+    //! constant prefix (e.g. `pid=<n> node=<name>`) to every log
+    //! line. Runs at the subscriber layer, so it fires for every
+    //! event regardless of which thread, task, or span produced it
+    //! — unlike a root span, which relies on thread-local
+    //! propagation and only shows up if the formatter walks the
+    //! span context.
+
+    use tracing_subscriber::fmt::{FormatEvent, FormatFields, format::Writer};
+
+    pub struct HostFields<F> {
+        pub prefix: String,
+        pub inner: F,
+    }
+
+    impl<S, N, F> FormatEvent<S, N> for HostFields<F>
+    where
+        S: tracing::Subscriber + for<'a> tracing_subscriber::registry::LookupSpan<'a>,
+        N: for<'a> FormatFields<'a> + 'static,
+        F: FormatEvent<S, N>,
+    {
+        fn format_event(
+            &self,
+            ctx: &tracing_subscriber::fmt::FmtContext<'_, S, N>,
+            mut writer: Writer<'_>,
+            event: &tracing::Event<'_>,
+        ) -> std::fmt::Result {
+            write!(writer, "{} ", self.prefix)?;
+            self.inner.format_event(ctx, writer, event)
+        }
+    }
+}
+
 fn main() -> mssf_core::Result<()> {
-    tracing_subscriber::fmt().init();
+    // Fetch host identity *before* tracing init so every log line
+    // (including the very first) carries pid + SF node name.
+    let pid = std::process::id();
+    let node_ctx = mssf_core::runtime::node_context::NodeContext::get_sync()
+        .expect("failed to get NodeContext");
+    let node_name = node_ctx.node_name.to_string();
+
+    tracing_subscriber::fmt()
+        .event_format(log_fmt::HostFields {
+            prefix: format!("pid={pid} node={node_name}"),
+            inner: tracing_subscriber::fmt::format::Format::default(),
+        })
+        .init();
     info!("main start");
 
     let rt = tokio::runtime::Runtime::new().unwrap();
@@ -34,9 +80,6 @@ fn main() -> mssf_core::Result<()> {
     // sibling container can reach it via the onebox container's IP
     // (Linux devcontainer setup) and so a same-host test driver can
     // reach it via 127.0.0.1 (Windows onebox).
-    let node_ctx = mssf_core::runtime::node_context::NodeContext::get_sync()
-        .expect("failed to get NodeContext");
-    let node_name = node_ctx.node_name.to_string();
     let grpc_port = control_port_for_node(&node_name);
     let grpc_bind_addr: std::net::SocketAddr = ([0, 0, 0, 0], grpc_port).into();
     let std_listener = std::net::TcpListener::bind(grpc_bind_addr).unwrap_or_else(|e| {
@@ -81,8 +124,14 @@ fn main() -> mssf_core::Result<()> {
         .unwrap();
 
     e.block_until_ctrlc();
+    // If we get past block_until_ctrlc, SF (or an operator) sent
+    // SIGTERM/Ctrl+C and the process is exiting cleanly. A
+    // SIGKILL — which is what `delete_service2(force=true)` and
+    // other hard terminations produce — would NOT reach here.
+    info!("graceful shutdown signal received; draining gRPC server");
     token.cancel();
     rt.block_on(grpc_handle).expect("gRPC task panicked");
+    info!("main exit");
     Ok(())
 }
 

@@ -30,7 +30,8 @@ use std::time::Duration;
 
 use mssf_core::WString;
 use mssf_core::types::{
-    PartitionSchemeDescription, ServiceDescription, StatefulServiceDescription, Uri,
+    DeleteServiceDescription, PartitionSchemeDescription, ServiceDescription,
+    StatefulServiceDescription, Uri,
 };
 use mssf_util::tokio::TokioCancelToken;
 use prost::Message;
@@ -132,8 +133,8 @@ async fn five_stuck_at_close_then_create_delete_sixth() {
     for (i, (name, pid, rid)) in up_services.iter().enumerate() {
         let delete_handle = {
             let sm2 = sm.clone();
-            let svc = name.clone();
-            tokio::spawn(async move { sm2.delete_service(&svc, SF_TIMEOUT, None).await })
+            let desc = DeleteServiceDescription::new(name.clone());
+            tokio::spawn(async move { sm2.delete_service2(&desc, SF_TIMEOUT, None).await })
         };
 
         let mut driver = cluster.partition_driver(pid.clone());
@@ -224,8 +225,8 @@ async fn five_stuck_at_close_then_create_delete_sixth() {
     // while the five stuck Closes are still pending.
     let sixth_delete = {
         let sm2 = sm.clone();
-        let svc = sixth_name.clone();
-        tokio::spawn(async move { sm2.delete_service(&svc, SF_TIMEOUT, None).await })
+        let desc = DeleteServiceDescription::new(sixth_name.clone());
+        tokio::spawn(async move { sm2.delete_service2(&desc, SF_TIMEOUT, None).await })
     };
     sixth_driver
         .drive_replica_sequence(
@@ -357,8 +358,8 @@ async fn cancel_delete_then_retry_succeeds_after_close() {
     const SHORT_TIMEOUT: Duration = Duration::from_secs(3);
     let first_delete = {
         let sm2 = sm.clone();
-        let svc = name.clone();
-        tokio::spawn(async move { sm2.delete_service(&svc, SHORT_TIMEOUT, None).await })
+        let desc = DeleteServiceDescription::new(name.clone());
+        tokio::spawn(async move { sm2.delete_service2(&desc, SHORT_TIMEOUT, None).await })
     };
 
     let cr_none = driver
@@ -415,9 +416,9 @@ async fn cancel_delete_then_retry_succeeds_after_close() {
     let second_ct = CancellationToken::new();
     let second_delete = {
         let sm2 = sm.clone();
-        let svc = name.clone();
+        let desc = DeleteServiceDescription::new(name.clone());
         let token = TokioCancelToken::boxed_from(second_ct.clone());
-        tokio::spawn(async move { sm2.delete_service(&svc, SF_TIMEOUT, Some(token)).await })
+        tokio::spawn(async move { sm2.delete_service2(&desc, SF_TIMEOUT, Some(token)).await })
     };
 
     // Confirm the Close gate is still parked and the second delete
@@ -461,8 +462,8 @@ async fn cancel_delete_then_retry_succeeds_after_close() {
     // correct idempotent endings.
     let third_delete = {
         let sm2 = sm.clone();
-        let svc = name.clone();
-        tokio::spawn(async move { sm2.delete_service(&svc, SF_TIMEOUT, None).await })
+        let desc = DeleteServiceDescription::new(name.clone());
+        tokio::spawn(async move { sm2.delete_service2(&desc, SF_TIMEOUT, None).await })
     };
 
     driver

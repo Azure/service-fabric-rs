@@ -43,6 +43,11 @@ ARG USER_UID=1000
 ARG USER_GID=1000
 ARG RUST_VERSION=stable
 
+# Install docker CLI (client only, no daemon) so the container can talk
+# to the host docker daemon via a mounted /var/run/docker.sock.
+RUN tdnf install --noplugins --skipsignature -y moby-cli \
+    && tdnf clean all
+
 # Create a non-root user
 RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -s /bin/bash \

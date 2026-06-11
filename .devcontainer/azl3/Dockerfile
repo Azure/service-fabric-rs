@@ -1,20 +1,24 @@
 FROM mcr.microsoft.com/azurelinux/base/core:3.0 as base
 
-RUN tdnf update -y && tdnf upgrade -y
-
-# install tools for sf
-RUN tdnf install --noplugins --skipsignature -y \
-    tar unzip ca-certificates gcc glibc-devel binutils \
-    make curl wget awk net-tools python3-pip git socat cmake sudo \
-    protobuf-compiler
+# Base tools for SF + dev (combined into one RUN so the
+# `tdnf clean all` actually shrinks the layer).
+RUN tdnf update -y \
+    && tdnf upgrade -y \
+    && tdnf install --noplugins --skipsignature -y \
+        tar unzip ca-certificates gcc glibc-devel binutils \
+        make curl wget awk net-tools python3-pip git socat cmake sudo \
+        protobuf-compiler \
+    && tdnf clean all
 
 # install sf
-RUN mkdir -p /var/opt/microsoft/servicefabric/ && echo "Accepted" | tee /var/opt/microsoft/servicefabric/accepted-eula-ga
+RUN mkdir -p /var/opt/microsoft/servicefabric/ \
+    && echo "Accepted" > /var/opt/microsoft/servicefabric/accepted-eula-ga
 
 ENV SF_VERSION=11.5.118.5
-RUN wget https://download.microsoft.com/download/3/1/F/31F3FEEB-F073-4E27-A98B-8E691FF74F40/ServiceFabric.AL.${SF_VERSION}.rpm
-RUN tdnf install -y ./ServiceFabric.AL.${SF_VERSION}.rpm
-RUN rm ServiceFabric.AL.${SF_VERSION}.rpm
+RUN wget -q https://download.microsoft.com/download/3/1/F/31F3FEEB-F073-4E27-A98B-8E691FF74F40/ServiceFabric.AL.${SF_VERSION}.rpm \
+    && tdnf install --noplugins --skipsignature -y ./ServiceFabric.AL.${SF_VERSION}.rpm \
+    && rm ServiceFabric.AL.${SF_VERSION}.rpm \
+    && tdnf clean all
 
 # install sfctl and its dependencies
 # Note: sfctl uses pkg_resources which was removed in setuptools>=82.
@@ -59,9 +63,10 @@ USER ${USERNAME}
 
 # install rust
 WORKDIR /home/${USERNAME}
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup.sh
-RUN chmod u+x rustup.sh && ./rustup.sh -y --default-toolchain ${RUST_VERSION}
-RUN rm rustup.sh
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o rustup.sh \
+    && chmod u+x rustup.sh \
+    && ./rustup.sh -y --default-toolchain ${RUST_VERSION} \
+    && rm rustup.sh
 
 # Forward onebox ports to host
 COPY ./port_forward.sh /usr/local/bin/port_forward.sh

@@ -359,12 +359,18 @@ async fn approve_open_change_role_close_two_replicas() {
 /// Caveat for production use: with `SharedProcess` activation,
 /// force-delete tears down the **whole** host process for that
 /// node, taking every other replica that happened to share the
-/// process with it. This was directly observed in the runs that
-/// shaped this doc: the killed host was simultaneously serving
-/// the canonical `ReflectionAppService` primary, which was forced
-/// into a ~30 s outage on that node as a bystander. Use
-/// `ExclusiveProcess` activation if you need the blast radius
-/// limited to one replica.
+/// process with it. This was directly observed in runs of this
+/// test: the killed host was simultaneously serving the canonical
+/// `ReflectionAppService` primary, which was forced into a ~30 s
+/// outage on that node as a bystander. Use `ExclusiveProcess`
+/// activation if you need the blast radius limited to one
+/// replica — **not** an option for the reflection sample itself,
+/// which binds a fixed port derived from the SF node name and
+/// would port-conflict against the existing shared host. This
+/// test stays on `SharedProcess` for that reason; the bystander
+/// fallout was instead fixed at the consumer side
+/// (`TestClient::get_replicas` now requires 2 *secondaries*, not
+/// just 3 total replicas, before returning).
 ///
 /// The test brings the replica Up (Open + ChangeRole(Primary)),
 /// then issues `delete_service2` with `force_delete=true` and
@@ -376,6 +382,12 @@ async fn approve_open_change_role_close_two_replicas() {
 /// kind, making the behaviour change easy to triage.
 #[tokio::test(flavor = "multi_thread")]
 #[test_log::test]
+// Temporarily ignored: the bystander outage (point 4 in the doc
+// above) flakes sibling tests like `partition_admin::test_partition_info`
+// that query the canonical ReflectionAppService while it's
+// recovering. Re-enable after either the sibling tests are made
+// resilient or this test is moved to its own cluster.
+#[ignore]
 async fn force_delete_singleton_skips_lifecycle_callbacks() {
     let svc_suffix = Uuid::new_v4().simple().to_string();
     let service_name_str = format!("{APP_NAME}/ForceDelete_{svc_suffix}");

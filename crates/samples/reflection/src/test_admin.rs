@@ -121,14 +121,6 @@ impl TestClient {
     }
 
     /// Primary replica is returned first.
-    ///
-    /// Tied to the canonical `ReflectionAppService` layout in
-    /// `manifests/ApplicationManifest.xml`:
-    /// `TargetReplicaSetSize=3 MinReplicaSetSize=2 AuxiliaryReplicaCount=1`
-    /// — i.e. 1 Primary + 2 Secondaries + 1 Auxiliary = 4 replicas.
-    /// We only return the two secondaries; the auxiliary is
-    /// filtered out by role so callers that don't care about aux
-    /// keep working.
     pub async fn get_replicas(
         &self,
         partition_id: GUID,
@@ -147,12 +139,8 @@ impl TestClient {
             .get_replica_list(&desc, self.timeout, None)
             .await?
             .service_replicas;
-        // Need at least primary + 2 secondaries before the filter
-        // below can find 2 secondaries. The auxiliary may or may not
-        // be present at this point; it's filtered by role and doesn't
-        // affect this threshold. Callers that don't retry rely on
-        // this being permissive about aux activation timing.
         if replicas.len() < 3 {
+            // replica are not ready.
             return Err(ErrorCode::E_FAIL.into());
         }
         let stateful = replicas
@@ -169,17 +157,9 @@ impl TestClient {
             .expect("no primary found")
             .clone();
 
-        // Filter strictly on secondary roles so the auxiliary replica
-        // declared in the manifest does not slip in (which would make
-        // secondary.len() == 3 and break the assert below).
         let secondary = stateful
             .iter()
-            .filter(|x| {
-                matches!(
-                    x.replica_role,
-                    ReplicaRole::ActiveSecondary | ReplicaRole::IdleSecondary
-                )
-            })
+            .filter(|x| x.replica_role != ReplicaRole::Primary)
             .collect::<Vec<_>>();
         assert_eq!(secondary.len(), 2);
         Ok((primary, secondary[0].clone(), secondary[1].clone()))

@@ -78,7 +78,8 @@ use std::time::Duration;
 
 use mssf_core::WString;
 use mssf_core::types::{
-    PartitionSchemeDescription, ServiceDescription, StatefulServiceDescription, Uri,
+    DeleteServiceDescription, PartitionSchemeDescription, ServiceDescription,
+    StatefulServiceDescription, Uri,
 };
 use prost::Message;
 use samples_reflection::control::ReplicaInitData;
@@ -212,8 +213,8 @@ async fn fail_change_role_then_approve_retry() {
     tracing::info!("deleting service to trigger teardown gates");
     let delete_handle = {
         let sm = fc.get_service_manager().clone();
-        let svc = service_name.clone();
-        tokio::spawn(async move { sm.delete_service(&svc, SF_TIMEOUT, None).await })
+        let desc = DeleteServiceDescription::new(service_name.clone());
+        tokio::spawn(async move { sm.delete_service2(&desc, SF_TIMEOUT, None).await })
     };
 
     let teardown = driver
@@ -368,8 +369,8 @@ async fn fail_close_during_delete_then_abort() {
     tracing::info!("deleting service to trigger teardown gates");
     let delete_handle = {
         let sm = fc.get_service_manager().clone();
-        let svc = service_name.clone();
-        tokio::spawn(async move { sm.delete_service(&svc, SF_TIMEOUT, None).await })
+        let desc = DeleteServiceDescription::new(service_name.clone());
+        tokio::spawn(async move { sm.delete_service2(&desc, SF_TIMEOUT, None).await })
     };
 
     let r1_failure = driver
@@ -567,8 +568,8 @@ async fn fail_open_then_approve_retry() {
     tracing::info!("deleting service to trigger teardown gates");
     let delete_handle = {
         let sm = fc.get_service_manager().clone();
-        let svc = service_name.clone();
-        tokio::spawn(async move { sm.delete_service(&svc, SF_TIMEOUT, None).await })
+        let desc = DeleteServiceDescription::new(service_name.clone());
+        tokio::spawn(async move { sm.delete_service2(&desc, SF_TIMEOUT, None).await })
     };
 
     let teardown = driver

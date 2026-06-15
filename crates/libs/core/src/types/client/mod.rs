@@ -42,11 +42,12 @@ pub use property::{
 
 mod service;
 pub use service::{
-    NamedRepartitionDescription, ServiceDescription, ServiceHealthQueryDescription,
-    ServiceHealthResult, ServiceHealthState, ServiceHealthStatesFilter, ServiceListResult,
-    ServiceQueryDescription, ServiceQueryResultItem, ServiceRepartitionDescription,
-    ServiceUpdateDescription, StatefulServiceDescription, StatefulServiceUpdateDescription,
-    StatelessServiceDescription, StatelessServiceUpdateDescription,
+    DeleteServiceDescription, NamedRepartitionDescription, ServiceDescription,
+    ServiceHealthQueryDescription, ServiceHealthResult, ServiceHealthState,
+    ServiceHealthStatesFilter, ServiceListResult, ServiceQueryDescription, ServiceQueryResultItem,
+    ServiceRepartitionDescription, ServiceUpdateDescription, StatefulServiceDescription,
+    StatefulServiceUpdateDescription, StatelessServiceDescription,
+    StatelessServiceUpdateDescription,
 };
 
 mod application;

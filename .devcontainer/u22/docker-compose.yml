@@ -26,6 +26,7 @@ services:
       - ../../:/home/vscode/repo # repo dir
       - ~/.ssh:/home/vscode/.ssh:ro # git creds
       - /tmp/artifacts/coredumps/repo:/tmp/artifacts/coredumps # core dumps
+      - /var/run/docker.sock:/var/run/docker.sock # host docker daemon (for `docker logs onebox`)
     depends_on:
       - onebox
     

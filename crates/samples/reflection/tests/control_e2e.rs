@@ -22,7 +22,8 @@ use std::time::Duration;
 use mssf_core::WString;
 use mssf_core::client::FabricClient;
 use mssf_core::types::{
-    PartitionSchemeDescription, ServiceDescription, StatefulServiceDescription, Uri,
+    DeleteServiceDescription, PartitionSchemeDescription, ServiceDescription,
+    StatefulServiceDescription, Uri,
 };
 use prost::Message;
 use samples_reflection::control::ReplicaInitData;
@@ -120,8 +121,8 @@ async fn approve_open_change_role_close_singleton_replica() {
     tracing::info!("deleting service to trigger teardown gates");
     let delete_handle = {
         let sm = fc.get_service_manager().clone();
-        let svc_name = service_name.clone();
-        tokio::spawn(async move { sm.delete_service(&svc_name, SF_TIMEOUT, None).await })
+        let desc = DeleteServiceDescription::new(service_name.clone());
+        tokio::spawn(async move { sm.delete_service2(&desc, SF_TIMEOUT, None).await })
     };
 
     // Teardown sequence for the same replica: ChangeRole(None) then Close.
@@ -280,8 +281,8 @@ async fn approve_open_change_role_close_two_replicas() {
     tracing::info!("deleting service to trigger teardown gates");
     let delete_handle = {
         let sm = fc.get_service_manager().clone();
-        let svc = service_name.clone();
-        tokio::spawn(async move { sm.delete_service(&svc, SF_TIMEOUT, None).await })
+        let desc = DeleteServiceDescription::new(service_name.clone());
+        tokio::spawn(async move { sm.delete_service2(&desc, SF_TIMEOUT, None).await })
     };
 
     let teardown_steps = [
@@ -327,4 +328,151 @@ async fn approve_open_change_role_close_two_replicas() {
     );
 
     tracing::info!("two-replica e2e flow complete");
+}
+
+/// Force-delete a singleton controlled replica and verify SF's
+/// **hard-kill** semantics.
+///
+/// Observed behaviour of `DeleteServiceDescription::with_force_delete(true)`
+/// against this SF build (11.5.x, Linux onebox, `SharedProcess`
+/// activation), corroborated by inspecting the onebox container's
+/// logs alongside this test run:
+///
+/// 1. The SF management call returns in ~500 ms.
+/// 2. **Zero** application-level lifecycle callbacks fire on the
+///    deleted replica — no `ChangeRole(None)`, no `Close`, no
+///    `Abort`. The replica controller never sees a teardown gate.
+/// 3. The host process owning the replica is **terminated by SF**
+///    (effectively a SIGKILL — neither `block_until_ctrlc` nor any
+///    Rust drop runs). The reflection sample's `main.rs` emits a
+///    `"graceful shutdown signal received"` trace immediately
+///    after `block_until_ctrlc` returns; that trace is **absent**
+///    for the killed pid in the onebox logs after a force-delete,
+///    which is the diagnostic confirming the hard-kill path.
+/// 4. SF later starts a fresh host process **on the same node**
+///    (visible as a new `main start` line with a new pid, ~30 s
+///    after the kill in this onebox setup). It re-opens any
+///    surviving replicas on that node with `_openmode=Existing`
+///    from local persisted state — SF does not relocate to a
+///    different node just because the process died.
+///
+/// Caveat for production use: with `SharedProcess` activation,
+/// force-delete tears down the **whole** host process for that
+/// node, taking every other replica that happened to share the
+/// process with it. This was directly observed in runs of this
+/// test: the killed host was simultaneously serving the canonical
+/// `ReflectionAppService` primary, which was forced into a ~30 s
+/// outage on that node as a bystander. Use `ExclusiveProcess`
+/// activation if you need the blast radius limited to one
+/// replica — **not** an option for the reflection sample itself,
+/// which binds a fixed port derived from the SF node name and
+/// would port-conflict against the existing shared host. This
+/// test stays on `SharedProcess` for that reason; the bystander
+/// fallout was instead fixed at the consumer side
+/// (`TestClient::get_replicas` now requires 2 *secondaries*, not
+/// just 3 total replicas, before returning).
+///
+/// The test brings the replica Up (Open + ChangeRole(Primary)),
+/// then issues `delete_service2` with `force_delete=true` and
+/// awaits it inline. After it returns, it asserts the partition's
+/// `list_pending` is empty for this replica. If a future SF
+/// version starts routing force-delete through app callbacks (e.g.
+/// emits `Abort` before killing), `list_pending` would surface
+/// the leftover gate and the assertion fires with the actual
+/// kind, making the behaviour change easy to triage.
+#[tokio::test(flavor = "multi_thread")]
+#[test_log::test]
+// Temporarily ignored: the bystander outage (point 4 in the doc
+// above) flakes sibling tests like `partition_admin::test_partition_info`
+// that query the canonical ReflectionAppService while it's
+// recovering. Re-enable after either the sibling tests are made
+// resilient or this test is moved to its own cluster.
+#[ignore]
+async fn force_delete_singleton_skips_lifecycle_callbacks() {
+    let svc_suffix = Uuid::new_v4().simple().to_string();
+    let service_name_str = format!("{APP_NAME}/ForceDelete_{svc_suffix}");
+    let service_name = Uri::from(service_name_str.as_str());
+
+    let mut cluster = Cluster::new();
+
+    let initdata = ReplicaInitData { control: true }.encode_to_vec();
+    let desc = ServiceDescription::Stateful(
+        StatefulServiceDescription::new(
+            Uri::from(APP_NAME),
+            service_name.clone(),
+            WString::from(SERVICE_TYPE),
+            PartitionSchemeDescription::Singleton,
+        )
+        .with_has_persistent_state(true)
+        .with_service_activation_mode(mssf_core::types::ServicePackageActivationMode::SharedProcess)
+        .with_min_replica_set_size(1)
+        .with_target_replica_set_size(1)
+        .with_initialization_data(initdata),
+    );
+
+    let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
+
+    fc.get_service_manager()
+        .create_service(&desc, SF_TIMEOUT, None)
+        .await
+        .expect("create_service failed");
+    tracing::info!("service created; waiting for OPEN gate to appear");
+
+    let partition_id = discover_partition_id(&fc, &service_name).await;
+    tracing::info!("partition_id={partition_id}");
+
+    let mut driver = cluster.partition_driver(partition_id);
+    let (node_idx, open_ev) = driver.wait_next_kind(ApprovalKind::ApprovalOpen).await;
+    let target = open_ev.target.clone().expect("ApprovalEvent.target");
+    let replica_id = target.replica_id;
+    tracing::info!(
+        "OPEN gate observed on node #{node_idx}: replica={replica_id}, gate_id={}",
+        open_ev.gate_id,
+    );
+    driver
+        .approve_proceed(node_idx, target.clone(), open_ev.gate_id.clone())
+        .await;
+
+    let cr_primary = driver
+        .approve_replica_sequence(replica_id, &[ApprovalKind::ApprovalChangeRole])
+        .await;
+    assert_eq!(
+        cr_primary[0].new_role,
+        ProtoReplicaRole::Primary as i32,
+        "expected ChangeRole(Primary), got new_role={}",
+        cr_primary[0].new_role,
+    );
+    tracing::info!("replica {replica_id} now Primary");
+
+    // Issue force-delete inline. SF removes the service at the
+    // management layer; the replica controller is not consulted, so
+    // this returns without waiting on any approval gate.
+    tracing::info!("force-deleting service");
+    let desc = DeleteServiceDescription::new(service_name.clone()).with_force_delete(true);
+    fc.get_service_manager()
+        .delete_service2(&desc, SF_TIMEOUT, None)
+        .await
+        .expect("force delete_service2 failed");
+    tracing::info!("force delete_service2 returned");
+
+    // The replica controller must not have seen any teardown gate
+    // (ChangeRole(None) / Close / Abort). If SF ever changes to
+    // route force-delete through app-level callbacks, one of those
+    // gates will show up here and fail the test with the actual
+    // kind, surfacing the behaviour change.
+    let probe = driver.list_pending().await;
+    let leftover_for_replica: Vec<_> = probe
+        .iter()
+        .filter(|ev| ev.target.as_ref().map(|t| t.replica_id) == Some(replica_id))
+        .collect();
+    assert!(
+        leftover_for_replica.is_empty(),
+        "force-delete should not produce any lifecycle gate for replica {replica_id}, \
+         but found: {leftover_for_replica:?}",
+    );
+
+    tracing::info!("force-delete skipped lifecycle callbacks as expected");
 }

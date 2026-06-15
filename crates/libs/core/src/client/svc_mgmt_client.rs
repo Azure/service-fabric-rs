@@ -7,25 +7,25 @@ use std::{ffi::c_void, time::Duration};
 
 use crate::{
     PCWSTR, WString,
-    mem::{BoxPool, GetRawWithBoxPool},
+    mem::{BoxPool, GetRaw, GetRawWithBoxPool},
     runtime::executor::BoxedCancelToken,
     types::Uri,
 };
 use mssf_com::{
     FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient8},
     FabricTypes::{
-        FABRIC_PARTITION_KEY_TYPE, FABRIC_PARTITION_KEY_TYPE_INT64,
-        FABRIC_PARTITION_KEY_TYPE_INVALID, FABRIC_PARTITION_KEY_TYPE_NONE,
-        FABRIC_PARTITION_KEY_TYPE_STRING, FABRIC_REMOVE_REPLICA_DESCRIPTION,
-        FABRIC_RESOLVED_SERVICE_ENDPOINT, FABRIC_RESTART_REPLICA_DESCRIPTION,
-        FABRIC_SERVICE_DESCRIPTION, FABRIC_SERVICE_ENDPOINT_ROLE,
-        FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION, FABRIC_SERVICE_PARTITION_KIND,
-        FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE, FABRIC_SERVICE_PARTITION_KIND_INVALID,
-        FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
-        FABRIC_SERVICE_ROLE_INVALID, FABRIC_SERVICE_ROLE_STATEFUL_AUXILIARY,
-        FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY_AUXILIARY,
-        FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY, FABRIC_SERVICE_ROLE_STATELESS,
-        FABRIC_SERVICE_UPDATE_DESCRIPTION, FABRIC_URI,
+        FABRIC_DELETE_SERVICE_DESCRIPTION, FABRIC_PARTITION_KEY_TYPE,
+        FABRIC_PARTITION_KEY_TYPE_INT64, FABRIC_PARTITION_KEY_TYPE_INVALID,
+        FABRIC_PARTITION_KEY_TYPE_NONE, FABRIC_PARTITION_KEY_TYPE_STRING,
+        FABRIC_REMOVE_REPLICA_DESCRIPTION, FABRIC_RESOLVED_SERVICE_ENDPOINT,
+        FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_DESCRIPTION,
+        FABRIC_SERVICE_ENDPOINT_ROLE, FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
+        FABRIC_SERVICE_PARTITION_KIND, FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE,
+        FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
+        FABRIC_SERVICE_PARTITION_KIND_SINGLETON, FABRIC_SERVICE_ROLE_INVALID,
+        FABRIC_SERVICE_ROLE_STATEFUL_AUXILIARY, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
+        FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY_AUXILIARY, FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY,
+        FABRIC_SERVICE_ROLE_STATELESS, FABRIC_SERVICE_UPDATE_DESCRIPTION, FABRIC_URI,
     },
 };
 
@@ -199,6 +199,23 @@ impl ServiceManagementClient {
             cancellation_token,
         )
     }
+
+    fn delete_service2_internal(
+        &self,
+        desc: &FABRIC_DELETE_SERVICE_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::Result<()>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginDeleteService2(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndDeleteService2(ctx) },
+            cancellation_token,
+        )
+    }
 }
 
 impl From<IFabricServiceManagementClient8> for ServiceManagementClient {
@@ -364,6 +381,7 @@ impl ServiceManagementClient {
         .await?
     }
 
+    #[deprecated(note = "Use `delete_service2` instead, which supports force-delete.")]
     pub async fn delete_service(
         &self,
         name: &Uri,
@@ -375,6 +393,20 @@ impl ServiceManagementClient {
             timeout.as_millis() as u32,
             cancellation_token,
         )
+        .await?
+    }
+
+    /// Delete service with extended options (force delete).
+    pub async fn delete_service2(
+        &self,
+        desc: &crate::types::DeleteServiceDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<()> {
+        {
+            let raw = desc.get_raw();
+            self.delete_service2_internal(&raw, timeout.as_millis() as u32, cancellation_token)
+        }
         .await?
     }
 }

@@ -9,15 +9,32 @@ use mssf_core::types::{
     ServicePartitionQueryResultItem, ServiceQueryResultItem, ServiceReplicaQueryResultItem, Uri,
 };
 
-/// Health entities produced by HealthDataProducer.
+/// Events produced by HealthDataProducer.
+///
+/// Most variants carry a health entity; `IterationComplete` is a control
+/// marker signalling that a producer loop finished an iteration.
 #[derive(Debug, Clone)]
-pub enum HealthEntity {
+pub enum ProducerEvent {
     Node(NodeHealthEntity),
     Cluster(ClusterHealthEntity),
     Application(ApplicationHealthEntity),
     Partition(PartitionHealthEntity),
     Service(ServiceHealthEntity),
     Replica(ReplicaHealthEntity),
+    /// Marker emitted at the end of a producer loop iteration. Allows a
+    /// consumer to detect that a loop has produced a full set of data for the
+    /// current iteration.
+    IterationComplete(LoopKind),
+}
+
+/// Identifies which producer loop an [`ProducerEvent::IterationComplete`] marker
+/// belongs to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LoopKind {
+    /// The cluster and node health loop.
+    ClusterNode,
+    /// The application (and services, partitions, replicas) health loop.
+    Application,
 }
 
 /// There is no info for cluster name in FabricClient.

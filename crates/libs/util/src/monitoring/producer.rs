@@ -22,7 +22,10 @@ pub struct HealthDataProducer {
     fc: FabricClient,
     interval: Duration,
     sender: mpsc::UnboundedSender<HealthEntity>,
-    iteration: std::sync::atomic::AtomicU64,
+    /// Number of completed cluster + node loop iterations.
+    node_iteration: std::sync::atomic::AtomicU64,
+    /// Number of completed application loop iterations.
+    app_iteration: std::sync::atomic::AtomicU64,
 }
 
 /// Default timeout for FabricClient operations.
@@ -42,7 +45,8 @@ impl HealthDataProducer {
             fc,
             interval,
             sender,
-            iteration: std::sync::atomic::AtomicU64::new(0),
+            node_iteration: std::sync::atomic::AtomicU64::new(0),
+            app_iteration: std::sync::atomic::AtomicU64::new(0),
         }
     }
 
@@ -53,8 +57,14 @@ impl HealthDataProducer {
         })
     }
 
-    /// Run once to produce health data.
-    pub(crate) async fn run_once(&self, token: BoxedCancelToken) -> Result<(), Action> {
+    /// Run once to produce cluster and node health data.
+    ///
+    /// Kept separate from application health so that the (potentially slow)
+    /// application traversal does not delay cluster/node reporting.
+    pub(crate) async fn run_once_cluster_and_nodes(
+        &self,
+        token: BoxedCancelToken,
+    ) -> Result<(), Action> {
         // Get cluster health information.
         if let Some(entity) = self.produce_cluster_health_entity(token.clone()).await {
             self.send_entity(entity)?;
@@ -67,6 +77,20 @@ impl HealthDataProducer {
                 }
             }
         }
+        self.node_iteration
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        Ok(())
+    }
+
+    /// Run once to produce application health data, including the services,
+    /// partitions, and replicas underneath each application.
+    ///
+    /// This traversal can be slow on large clusters, so it runs in its own
+    /// loop independent of cluster/node reporting.
+    pub(crate) async fn run_once_applications(
+        &self,
+        token: BoxedCancelToken,
+    ) -> Result<(), Action> {
         // Get application information.
         if let Ok(apps) = self.get_all_applications(token.clone()).await {
             for app in apps {
@@ -138,23 +162,50 @@ impl HealthDataProducer {
                 }
             }
         }
-        self.iteration
+        self.app_iteration
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         Ok(())
     }
 
-    /// Run a loop to produce health data.
+    /// Run both the cluster/node loop and the application loop concurrently.
+    ///
+    /// The two loops are independent: a slow application traversal will not
+    /// delay cluster/node reporting, and vice versa.
     pub async fn run_loop(&self, token: BoxedCancelToken) {
+        tokio::join!(
+            self.run_cluster_node_loop(token.clone()),
+            self.run_application_loop(token.clone()),
+        );
+        tracing::info!("Health data producer loops exited.");
+    }
+
+    /// Run a loop to produce cluster and node health data.
+    pub async fn run_cluster_node_loop(&self, token: BoxedCancelToken) {
+        self.run_interval_loop(token, "cluster/node", |token| {
+            self.run_once_cluster_and_nodes(token)
+        })
+        .await;
+    }
+
+    /// Run a loop to produce application health data.
+    pub async fn run_application_loop(&self, token: BoxedCancelToken) {
+        self.run_interval_loop(token, "application", |token| {
+            self.run_once_applications(token)
+        })
+        .await;
+    }
+
+    /// Drive `run_once` on `self.interval`, honoring cancellation.
+    async fn run_interval_loop<F, Fut>(&self, token: BoxedCancelToken, name: &str, mut run_once: F)
+    where
+        F: FnMut(BoxedCancelToken) -> Fut,
+        Fut: std::future::Future<Output = Result<(), Action>>,
+    {
         loop {
             let start_time = ::tokio::time::Instant::now();
-            match self.run_once(token.clone()).await {
-                Err(Action::Stop) => {
-                    tracing::info!("Health data producer stopped.");
-                    break;
-                }
-                _ => {
-                    // continue the loop
-                }
+            if let Err(Action::Stop) = run_once(token.clone()).await {
+                tracing::info!("Health data {name} producer stopped.");
+                break;
             }
 
             // remaining time
@@ -165,7 +216,7 @@ impl HealthDataProducer {
 
                 tokio::select! {
                     _ = token.wait() => {
-                        tracing::info!("Cancellation requested, exiting health data producer loop.");
+                        tracing::info!("Cancellation requested, exiting health data {name} producer loop.");
                         break;
                     }
                     _ = tokio::time::sleep(wait_duration) => {}
@@ -173,15 +224,26 @@ impl HealthDataProducer {
             }
 
             if token.is_cancelled() {
-                tracing::info!("Cancellation requested, exiting health data producer loop.");
+                tracing::info!("Cancellation requested, exiting health data {name} producer loop.");
                 break;
             }
         }
-        tracing::info!("Health data producer loop exited.");
+        tracing::info!("Health data {name} producer loop exited.");
     }
 
-    pub fn get_iteration(&self) -> u64 {
-        self.iteration.load(std::sync::atomic::Ordering::Relaxed)
+    /// Number of completed application loop iterations.
+    ///
+    /// The application loop is the slowest, so a non-zero value implies the
+    /// faster cluster/node loop has also produced data.
+    pub fn get_app_iteration(&self) -> u64 {
+        self.app_iteration
+            .load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    /// Number of completed cluster/node loop iterations.
+    pub fn get_node_iteration(&self) -> u64 {
+        self.node_iteration
+            .load(std::sync::atomic::Ordering::Relaxed)
     }
 }
 

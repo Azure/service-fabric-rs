@@ -106,15 +106,20 @@ mod tests {
         // Wait at least 1 iteration bit and then stop the producer
         let max_iteration = 30;
         for _ in 0..max_iteration {
-            if producer.get_iteration() > 0 {
+            if producer.get_app_iteration() > 0 && producer.get_node_iteration() > 0 {
                 break;
             }
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
         assert_ne!(
-            producer.get_iteration(),
+            producer.get_app_iteration(),
             0,
-            "Producer did not run any iteration"
+            "Producer did not run any application iteration"
+        );
+        assert_ne!(
+            producer.get_node_iteration(),
+            0,
+            "Producer did not run any node iteration"
         );
         drop(producer); // this is required for consumer to finish.
         token.cancel();

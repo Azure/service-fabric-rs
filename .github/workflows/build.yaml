@@ -22,7 +22,7 @@ jobs:
       rust-versions: ${{ steps.set-versions.outputs.rust-versions }}
       rust-max-version: ${{ steps.set-versions.outputs.rust-max-version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Read max Rust version from rust-toolchain.toml
         id: set-versions
@@ -42,7 +42,7 @@ jobs:
       matrix:
         rust-version: ${{ fromJSON(needs.setup.outputs.rust-versions) }}
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Show cmake version
       run: cmake --version
@@ -120,7 +120,7 @@ jobs:
           tdnf install --noplugins --skipsignature -y \
             tar unzip ca-certificates gcc glibc-devel binutils make protobuf-compiler
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Remove rust toolchain file to avoid conflict
         run: rm -f rust-toolchain.toml
@@ -171,7 +171,7 @@ jobs:
         run: df -h
 
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Configure Docker to use /mnt directory
         run: |
@@ -282,7 +282,7 @@ jobs:
     needs: setup
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Show cmake version
       run: cmake --version

@@ -3,7 +3,10 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use crate::monitoring::{HealthEntity, NodeHealthEntity, entities::ClusterHealthEntity};
+use crate::monitoring::{
+    NodeHealthEntity, ProducerEvent,
+    entities::{ClusterHealthEntity, LoopKind},
+};
 use ::tokio::sync::mpsc;
 use mssf_core::{
     client::FabricClient,
@@ -21,8 +24,7 @@ use std::time::Duration;
 pub struct HealthDataProducer {
     fc: FabricClient,
     interval: Duration,
-    sender: mpsc::UnboundedSender<HealthEntity>,
-    iteration: std::sync::atomic::AtomicU64,
+    sender: mpsc::UnboundedSender<ProducerEvent>,
 }
 
 /// Default timeout for FabricClient operations.
@@ -36,37 +38,55 @@ impl HealthDataProducer {
     pub fn new(
         fc: FabricClient,
         interval: Duration,
-        sender: mpsc::UnboundedSender<HealthEntity>,
+        sender: mpsc::UnboundedSender<ProducerEvent>,
     ) -> Self {
         HealthDataProducer {
             fc,
             interval,
             sender,
-            iteration: std::sync::atomic::AtomicU64::new(0),
         }
     }
 
-    fn send_entity(&self, entity: HealthEntity) -> Result<(), Action> {
-        self.sender.send(entity).map_err(|_| {
+    fn send_event(&self, event: ProducerEvent) -> Result<(), Action> {
+        self.sender.send(event).map_err(|_| {
             tracing::error!("Receiver dropped, cannot send more data.");
             Action::Stop
         })
     }
 
-    /// Run once to produce health data.
-    pub(crate) async fn run_once(&self, token: BoxedCancelToken) -> Result<(), Action> {
+    /// Run once to produce cluster and node health data.
+    ///
+    /// Kept separate from application health so that the (potentially slow)
+    /// application traversal does not delay cluster/node reporting.
+    pub(crate) async fn run_once_cluster_and_nodes(
+        &self,
+        token: BoxedCancelToken,
+    ) -> Result<(), Action> {
         // Get cluster health information.
         if let Some(entity) = self.produce_cluster_health_entity(token.clone()).await {
-            self.send_entity(entity)?;
+            self.send_event(entity)?;
         }
         // Get node information.
         if let Ok(nodes) = self.get_all_nodes(token.clone()).await {
             for node in nodes {
                 if let Some(entity) = self.produce_node_health_entity(token.clone(), node).await {
-                    self.send_entity(entity)?;
+                    self.send_event(entity)?;
                 }
             }
         }
+        self.send_event(ProducerEvent::IterationComplete(LoopKind::ClusterNode))?;
+        Ok(())
+    }
+
+    /// Run once to produce application health data, including the services,
+    /// partitions, and replicas underneath each application.
+    ///
+    /// This traversal can be slow on large clusters, so it runs in its own
+    /// loop independent of cluster/node reporting.
+    pub(crate) async fn run_once_applications(
+        &self,
+        token: BoxedCancelToken,
+    ) -> Result<(), Action> {
         // Get application information.
         if let Ok(apps) = self.get_all_applications(token.clone()).await {
             for app in apps {
@@ -75,7 +95,7 @@ impl HealthDataProducer {
                     .produce_application_health_entity(token.clone(), app)
                     .await
                 {
-                    self.send_entity(entity)?;
+                    self.send_event(entity)?;
                 }
 
                 // Get service information for the application.
@@ -89,7 +109,7 @@ impl HealthDataProducer {
                         if let Some(entity) =
                             self.produce_service_health_entity(token.clone(), svc).await
                         {
-                            self.send_entity(entity)?;
+                            self.send_event(entity)?;
                         }
 
                         // Get partition information for the service.
@@ -109,7 +129,7 @@ impl HealthDataProducer {
                                     )
                                     .await
                                 {
-                                    self.send_entity(entity)?;
+                                    self.send_event(entity)?;
                                 }
                                 // Get replica information for the partition.
                                 if let Ok(replicas) = self
@@ -128,7 +148,7 @@ impl HealthDataProducer {
                                             )
                                             .await
                                         {
-                                            self.send_entity(entity)?;
+                                            self.send_event(entity)?;
                                         }
                                     }
                                 }
@@ -138,23 +158,49 @@ impl HealthDataProducer {
                 }
             }
         }
-        self.iteration
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.send_event(ProducerEvent::IterationComplete(LoopKind::Application))?;
         Ok(())
     }
 
-    /// Run a loop to produce health data.
+    /// Run both the cluster/node loop and the application loop concurrently.
+    ///
+    /// The two loops are independent: a slow application traversal will not
+    /// delay cluster/node reporting, and vice versa.
     pub async fn run_loop(&self, token: BoxedCancelToken) {
+        tokio::join!(
+            self.run_cluster_node_loop(token.clone()),
+            self.run_application_loop(token.clone()),
+        );
+        tracing::info!("Health data producer loops exited.");
+    }
+
+    /// Run a loop to produce cluster and node health data.
+    pub async fn run_cluster_node_loop(&self, token: BoxedCancelToken) {
+        self.run_interval_loop(token, "cluster/node", |token| {
+            self.run_once_cluster_and_nodes(token)
+        })
+        .await;
+    }
+
+    /// Run a loop to produce application health data.
+    pub async fn run_application_loop(&self, token: BoxedCancelToken) {
+        self.run_interval_loop(token, "application", |token| {
+            self.run_once_applications(token)
+        })
+        .await;
+    }
+
+    /// Drive `run_once` on `self.interval`, honoring cancellation.
+    async fn run_interval_loop<F, Fut>(&self, token: BoxedCancelToken, name: &str, mut run_once: F)
+    where
+        F: FnMut(BoxedCancelToken) -> Fut,
+        Fut: std::future::Future<Output = Result<(), Action>>,
+    {
         loop {
             let start_time = ::tokio::time::Instant::now();
-            match self.run_once(token.clone()).await {
-                Err(Action::Stop) => {
-                    tracing::info!("Health data producer stopped.");
-                    break;
-                }
-                _ => {
-                    // continue the loop
-                }
+            if let Err(Action::Stop) = run_once(token.clone()).await {
+                tracing::info!("Health data {name} producer stopped.");
+                break;
             }
 
             // remaining time
@@ -165,7 +211,7 @@ impl HealthDataProducer {
 
                 tokio::select! {
                     _ = token.wait() => {
-                        tracing::info!("Cancellation requested, exiting health data producer loop.");
+                        tracing::info!("Cancellation requested, exiting health data {name} producer loop.");
                         break;
                     }
                     _ = tokio::time::sleep(wait_duration) => {}
@@ -173,20 +219,19 @@ impl HealthDataProducer {
             }
 
             if token.is_cancelled() {
-                tracing::info!("Cancellation requested, exiting health data producer loop.");
+                tracing::info!("Cancellation requested, exiting health data {name} producer loop.");
                 break;
             }
         }
-        tracing::info!("Health data producer loop exited.");
-    }
-
-    pub fn get_iteration(&self) -> u64 {
-        self.iteration.load(std::sync::atomic::Ordering::Relaxed)
+        tracing::info!("Health data {name} producer loop exited.");
     }
 }
 
 impl HealthDataProducer {
-    async fn produce_cluster_health_entity(&self, token: BoxedCancelToken) -> Option<HealthEntity> {
+    async fn produce_cluster_health_entity(
+        &self,
+        token: BoxedCancelToken,
+    ) -> Option<ProducerEvent> {
         // Ignore nodes and app health because we retrieve them separately.
         // Technically we can get everything in one call, but the payload might be too large,
         // and we want to get other entities not present in the cluster health.
@@ -209,7 +254,7 @@ impl HealthDataProducer {
                 tracing::error!("Failed to get cluster health: {}", err);
             })
             .ok()?;
-        Some(HealthEntity::Cluster(ClusterHealthEntity {
+        Some(ProducerEvent::Cluster(ClusterHealthEntity {
             health: cluster_healths,
         }))
     }
@@ -219,7 +264,7 @@ impl HealthDataProducer {
         &self,
         token: BoxedCancelToken,
         node: NodeQueryResultItem,
-    ) -> Option<HealthEntity> {
+    ) -> Option<ProducerEvent> {
         // Logic to get node health goes here.
 
         let desc = NodeHealthQueryDescription {
@@ -239,7 +284,7 @@ impl HealthDataProducer {
                 tracing::error!("Failed to get node health: {}", err);
             })
             .ok()?;
-        Some(HealthEntity::Node(NodeHealthEntity {
+        Some(ProducerEvent::Node(NodeHealthEntity {
             node,
             health: node_healths,
         }))
@@ -249,7 +294,7 @@ impl HealthDataProducer {
         &self,
         token: BoxedCancelToken,
         app: mssf_core::types::ApplicationQueryResultItem,
-    ) -> Option<HealthEntity> {
+    ) -> Option<ProducerEvent> {
         let desc = mssf_core::types::ApplicationHealthQueryDescription {
             application_name: app.application_name.clone(),
             ..Default::default()
@@ -263,7 +308,7 @@ impl HealthDataProducer {
                 tracing::error!("Failed to get application health: {}", err);
             })
             .ok()?;
-        Some(HealthEntity::Application(
+        Some(ProducerEvent::Application(
             crate::monitoring::entities::ApplicationHealthEntity {
                 application: app,
                 health: app_health,
@@ -275,7 +320,7 @@ impl HealthDataProducer {
         &self,
         token: BoxedCancelToken,
         svc: mssf_core::types::ServiceQueryResultItem,
-    ) -> Option<HealthEntity> {
+    ) -> Option<ProducerEvent> {
         let svc_name = svc.get_service_name().clone();
         let desc = mssf_core::types::ServiceHealthQueryDescription {
             service_name: svc_name,
@@ -290,7 +335,7 @@ impl HealthDataProducer {
                 tracing::error!("Failed to get service health: {}", err);
             })
             .ok()?;
-        Some(HealthEntity::Service(
+        Some(ProducerEvent::Service(
             crate::monitoring::entities::ServiceHealthEntity {
                 health: svc_health,
                 service: svc,
@@ -304,7 +349,7 @@ impl HealthDataProducer {
         part: mssf_core::types::ServicePartitionQueryResultItem,
         service_name: Uri,
         application_name: Uri,
-    ) -> Option<HealthEntity> {
+    ) -> Option<ProducerEvent> {
         let partition_id = part.get_partition_id();
         let desc = mssf_core::types::PartitionHealthQueryDescription {
             partition_id,
@@ -319,7 +364,7 @@ impl HealthDataProducer {
                 tracing::error!("Failed to get partition health: {}", err);
             })
             .ok()?;
-        Some(HealthEntity::Partition(
+        Some(ProducerEvent::Partition(
             crate::monitoring::entities::PartitionHealthEntity {
                 health: part_health,
                 partition: part,
@@ -336,7 +381,7 @@ impl HealthDataProducer {
         replica: mssf_core::types::ServiceReplicaQueryResultItem,
         service_name: Uri,
         application_name: Uri,
-    ) -> Option<HealthEntity> {
+    ) -> Option<ProducerEvent> {
         let desc = mssf_core::types::ReplicaHealthQueryDescription {
             partition_id,
             replica_id_or_instance_id: replica.get_replica_or_instance_id(),
@@ -351,7 +396,7 @@ impl HealthDataProducer {
                 tracing::error!("Failed to get replica health: {}", err);
             })
             .ok()?;
-        Some(HealthEntity::Replica(
+        Some(ProducerEvent::Replica(
             crate::monitoring::entities::ReplicaHealthEntity {
                 health: replica_health,
                 replica,

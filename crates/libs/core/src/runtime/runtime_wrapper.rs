@@ -1,13 +1,16 @@
 use crate::WString;
 /// safe wrapping for runtime
 use mssf_com::FabricRuntime::{
-    IFabricRuntime2, IFabricStatefulServiceFactory, IFabricStatelessServiceFactory,
+    IFabricRuntime2, IFabricSelfReconfiguringServiceFactory, IFabricStatefulServiceFactory,
+    IFabricStatelessServiceFactory,
 };
 
 use super::{
-    create_com_runtime, executor::Executor, stateful_bridge::StatefulServiceFactoryBridge,
-    stateful_traits::IStatefulServiceFactory, stateless_bridge::StatelessServiceFactoryBridge,
-    stateless_traits::IStatelessServiceFactory,
+    create_com_runtime, executor::Executor,
+    self_reconfiguring_bridge::SelfReconfiguringServiceFactoryBridge,
+    self_reconfiguring_traits::ISelfReconfiguringServiceFactory,
+    stateful_bridge::StatefulServiceFactoryBridge, stateful_traits::IStatefulServiceFactory,
+    stateless_bridge::StatelessServiceFactoryBridge, stateless_traits::IStatelessServiceFactory,
 };
 pub struct Runtime<E>
 where
@@ -52,6 +55,21 @@ where
         unsafe {
             self.com_impl
                 .RegisterStatefulServiceFactory(servicetypename.as_pcwstr(), &bridge)
+        }
+        .map_err(crate::Error::from)
+    }
+
+    pub fn register_self_reconfiguring_service_factory(
+        &self,
+        servicetypename: &WString,
+        factory: Box<dyn ISelfReconfiguringServiceFactory>,
+    ) -> crate::Result<()> {
+        let rt_cp = self.rt.clone();
+        let bridge: IFabricSelfReconfiguringServiceFactory =
+            SelfReconfiguringServiceFactoryBridge::create(factory, rt_cp).into();
+        unsafe {
+            self.com_impl
+                .RegisterSelfReconfiguringServiceFactory(servicetypename.as_pcwstr(), &bridge)
         }
         .map_err(crate::Error::from)
     }

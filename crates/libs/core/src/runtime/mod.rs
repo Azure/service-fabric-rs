@@ -35,9 +35,19 @@ pub use stateless_traits::{
     IStatelessServiceFactory, IStatelessServiceInstance, IStatelessServicePartition,
 };
 
+mod self_reconfiguring_traits;
+pub use self_reconfiguring_traits::{
+    ISelfReconfiguringServiceFactory, ISelfReconfiguringServiceInstance,
+    ISelfReconfiguringServicePartition,
+};
+
 pub mod stateless_bridge;
 mod stateless_proxy;
 pub use stateless_proxy::StatelessServicePartition;
+
+pub mod self_reconfiguring_bridge;
+mod self_reconfiguring_proxy;
+pub use self_reconfiguring_proxy::SelfReconfiguringServicePartition;
 pub mod store;
 
 pub mod store_proxy;

@@ -798,7 +798,7 @@ dependencies = [
 
 [[package]]
 name = "mssf-core"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "async-trait",
  "bitflags",
@@ -845,7 +845,7 @@ dependencies = [
 
 [[package]]
 name = "mssf-util"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "arc-swap",
  "bytes",

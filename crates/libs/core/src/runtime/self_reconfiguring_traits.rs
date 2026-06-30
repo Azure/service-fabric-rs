@@ -32,22 +32,17 @@ pub trait ISelfReconfiguringServiceFactory: Send + Sync + 'static {
     ) -> crate::Result<Box<dyn ISelfReconfiguringServiceInstance>>;
 }
 
-/// Defines behavior that governs the lifecycle and configuration participation of
-/// a self-reconfiguring service instance, such as startup, configuration changes,
-/// and shutdown.
-///
-/// Unlike a stateless instance, a self-reconfiguring instance additionally
-/// receives configuration requests and configuration-change requests from Service
-/// Fabric and reports its resulting configuration through its partition.
+/// Safe abstraction over the `IFabricSelfReconfiguringServiceInstance` COM
+/// interface that an author implements. Each method corresponds to a method on
+/// that COM interface; `open` and `close` are asynchronous (COM Begin/End), the
+/// rest are synchronous.
 #[async_trait::async_trait]
 pub trait ISelfReconfiguringServiceInstance: Send + Sync + 'static {
-    /// Opens an initialized service instance so that it can be contacted by
-    /// clients. The returned string is the address of this service instance,
-    /// which is associated with the service name via Service Fabric naming and
-    /// returned to clients that resolve the service.
+    /// Opens an initialized service instance. The returned string is the address
+    /// of this service instance, which is associated with the service name via
+    /// Service Fabric naming and returned to clients that resolve the service.
     ///
-    /// The `open_mode` indicates whether the instance is being opened as new or
-    /// existing.
+    /// `open_mode` is the open mode supplied by Service Fabric.
     async fn open(
         &self,
         partition: Arc<dyn ISelfReconfiguringServicePartition>,
@@ -55,20 +50,16 @@ pub trait ISelfReconfiguringServiceInstance: Send + Sync + 'static {
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<WString>;
 
-    /// Notifies the instance of a configuration request from Service Fabric.
-    ///
-    /// This is a synchronous notification; the instance should act on the request
-    /// and report the resulting configuration through its partition.
+    /// Synchronous notification of a configuration request from Service Fabric
+    /// (COM `RequestConfiguration`).
     fn request_configuration(
         &self,
         request: SelfReconfiguringConfigurationRequest,
     ) -> crate::Result<()>;
 
-    /// Notifies the instance of a configuration-change request from Service
-    /// Fabric, carrying the set of per-instance changes.
-    ///
-    /// This is a synchronous notification; the instance should act on the request
-    /// and report the resulting configuration through its partition.
+    /// Synchronous notification of a configuration-change request from Service
+    /// Fabric, carrying the set of per-instance changes (COM
+    /// `RequestConfigurationChange`).
     fn request_configuration_change(
         &self,
         change: SelfReconfiguringConfigurationChangeRequest,
@@ -84,7 +75,8 @@ pub trait ISelfReconfiguringServiceInstance: Send + Sync + 'static {
     fn abort(&self);
 }
 
-/// Abstraction for the `IFabricSelfReconfiguringServicePartition` interface.
+/// Safe abstraction over the `IFabricSelfReconfiguringServicePartition` COM
+/// interface. Each method corresponds to a synchronous method on that interface.
 pub trait ISelfReconfiguringServicePartition: Send + Sync + 'static {
     /// Provides access to the `ServicePartitionInformation` of the service, which
     /// contains the partition type and ID.
@@ -114,7 +106,7 @@ pub trait ISelfReconfiguringServicePartition: Send + Sync + 'static {
         health_info: &crate::types::HealthInformation,
     ) -> crate::Result<()>;
 
-    /// Reports the instance's resulting configuration back to Service Fabric.
+    /// Reports configuration through the partition (COM `ReportConfiguration`).
     fn report_configuration(
         &self,
         report: &SelfReconfiguringConfigurationReport,

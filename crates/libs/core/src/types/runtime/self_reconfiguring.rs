@@ -17,7 +17,8 @@ use std::marker::PhantomData;
 use crate::WString;
 use mssf_com::FabricTypes::{
     FABRIC_SELF_RECONFIGURING_CONFIGURATION_CHANGE_REQUEST,
-    FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT, FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT_ID,
+    FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT,
+    FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT_ID,
     FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST,
     FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST_ID,
     FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE,
@@ -28,8 +29,9 @@ use mssf_com::FabricTypes::{
     FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_EXISTING,
     FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_INVALID,
     FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_NEW, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_NONE, FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
+    FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_NONE,
+    FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
     FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED,
     FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_INVALID,
 };
@@ -58,7 +60,9 @@ impl From<FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE> for SelfReconfiguringOpe
 impl From<SelfReconfiguringOpenMode> for FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE {
     fn from(val: SelfReconfiguringOpenMode) -> Self {
         match val {
-            SelfReconfiguringOpenMode::Invalid => FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_INVALID,
+            SelfReconfiguringOpenMode::Invalid => {
+                FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_INVALID
+            }
             SelfReconfiguringOpenMode::New => FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_NEW,
             SelfReconfiguringOpenMode::Existing => {
                 FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_EXISTING
@@ -79,7 +83,9 @@ pub enum SelfReconfiguringInstanceRole {
 impl From<&FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE> for SelfReconfiguringInstanceRole {
     fn from(r: &FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE) -> Self {
         match *r {
-            FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL => SelfReconfiguringInstanceRole::Initial,
+            FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL => {
+                SelfReconfiguringInstanceRole::Initial
+            }
             FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER => SelfReconfiguringInstanceRole::Member,
             _ => SelfReconfiguringInstanceRole::None,
         }
@@ -90,7 +96,9 @@ impl From<&SelfReconfiguringInstanceRole> for FABRIC_SELF_RECONFIGURING_INSTANCE
     fn from(val: &SelfReconfiguringInstanceRole) -> Self {
         match *val {
             SelfReconfiguringInstanceRole::None => FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_NONE,
-            SelfReconfiguringInstanceRole::Initial => FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
+            SelfReconfiguringInstanceRole::Initial => {
+                FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL
+            }
             SelfReconfiguringInstanceRole::Member => FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
         }
     }
@@ -415,7 +423,9 @@ mod tests {
 
     #[test]
     fn report_id_round_trip() {
-        let id = SelfReconfiguringConfigurationReportId { sequence_number: 99 };
+        let id = SelfReconfiguringConfigurationReportId {
+            sequence_number: 99,
+        };
         let raw: FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT_ID = (&id).into();
         assert_eq!(SelfReconfiguringConfigurationReportId::from(&raw), id);
     }

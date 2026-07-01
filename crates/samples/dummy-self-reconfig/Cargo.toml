@@ -1,0 +1,16 @@
+[package]
+name = "dummy-self-reconfig"
+version = "0.0.1"
+edition.workspace = true
+publish = false
+
+[[bin]]
+name = "dummy-self-reconfig"
+path = "src/main.rs"
+
+[dependencies]
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tokio.workspace = true
+mssf-core = { workspace = true, default-features = true }
+mssf-util = { workspace = true, default-features = true }

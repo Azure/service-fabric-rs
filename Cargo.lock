@@ -267,6 +267,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "dummy-self-reconfig"
+version = "0.0.1"
+dependencies = [
+ "mssf-core",
+ "mssf-util",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "either"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

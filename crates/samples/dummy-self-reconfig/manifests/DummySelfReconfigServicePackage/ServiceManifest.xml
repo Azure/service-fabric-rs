@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ServiceManifest Name="DummySelfReconfigServicePackage" Version="1.0" xmlns="http://schemas.microsoft.com/2011/01/fabric" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Description>A dummy self-reconfiguring test service implemented with mssf_core.</Description>
+  <ServiceTypes>
+    <SelfReconfiguringServiceType ServiceTypeName="DummySelfReconfigServiceType" />
+  </ServiceTypes>
+  <CodePackage Name="Code" Version="1.0">
+    <EntryPoint>
+      <ExeHost>
+        <Program>dummy-self-reconfig.exe</Program>
+        <ConsoleRedirection FileRetentionCount="5" FileMaxSizeInKb="2048"/>
+      </ExeHost>
+    </EntryPoint>
+    <EnvironmentVariables>
+      <EnvironmentVariable Name="RUST_LOG" Value="info"/>
+    </EnvironmentVariables>
+  </CodePackage>
+</ServiceManifest>

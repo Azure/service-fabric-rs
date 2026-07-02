@@ -10,9 +10,9 @@ use crate::{
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use health_client::HealthClient;
 use mssf_com::FabricClient::{
-    IFabricClientConnectionEventHandler, IFabricClientSettings2, IFabricHealthClient4,
-    IFabricPropertyManagementClient2, IFabricQueryClient13, IFabricServiceManagementClient8,
-    IFabricServiceNotificationEventHandler,
+    IFabricApplicationManagementClient, IFabricClientConnectionEventHandler, IFabricClientSettings2,
+    IFabricHealthClient4, IFabricPropertyManagementClient2, IFabricQueryClient13,
+    IFabricServiceManagementClient8, IFabricServiceNotificationEventHandler,
 };
 use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
@@ -27,11 +27,13 @@ mod connection;
 mod notification;
 
 // Export public client modules
+pub mod application_client;
 pub mod health_client;
 mod property_client;
 pub mod query_client;
 pub mod svc_mgmt_client;
 // reexport
+pub use application_client::ApplicationManagementClient;
 pub use connection::{ClaimsRetrievalMetadata, GatewayInformationResult};
 pub use notification::ServiceNotification;
 pub use property_client::PropertyManagementClient;
@@ -289,6 +291,7 @@ pub struct FabricClient {
     service_client: ServiceManagementClient,
     query_client: QueryClient,
     health_client: HealthClient,
+    application_client: ApplicationManagementClient,
 }
 
 impl FabricClient {
@@ -308,11 +311,16 @@ impl FabricClient {
             .unwrap();
         let com_query_client = com.clone().cast::<IFabricQueryClient13>().unwrap();
         let com_health_client = com.clone().cast::<IFabricHealthClient4>().unwrap();
+        let com_application_client = com
+            .clone()
+            .cast::<IFabricApplicationManagementClient>()
+            .unwrap();
         Self {
             property_client: PropertyManagementClient::from(com_property_client),
             service_client: ServiceManagementClient::from(com_service_client),
             query_client: QueryClient::from(com_query_client),
             health_client: HealthClient::from(com_health_client),
+            application_client: ApplicationManagementClient::from(com_application_client),
         }
     }
 
@@ -334,5 +342,11 @@ impl FabricClient {
     /// Get the client for get/set Service Fabric health properties.
     pub fn get_health_manager(&self) -> &HealthClient {
         &self.health_client
+    }
+
+    /// Get the client for managing applications, including querying application
+    /// upgrade progress.
+    pub fn get_application_manager(&self) -> &ApplicationManagementClient {
+        &self.application_client
     }
 }

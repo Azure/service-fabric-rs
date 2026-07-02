@@ -7,6 +7,8 @@ mod producer;
 pub use producer::HealthDataProducer;
 mod entities;
 pub use entities::{LoopKind, NodeHealthEntity, ProducerEvent};
+mod upgrade_producer;
+pub use upgrade_producer::{UpgradeDataProducer, UpgradeProducerEvent};
 
 #[cfg(test)]
 mod tests {

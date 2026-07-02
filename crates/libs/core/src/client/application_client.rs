@@ -65,7 +65,7 @@ impl ApplicationManagementClient {
 
 // Public implementation block.
 impl ApplicationManagementClient {
-    /// Gets the upgrade progress for the specified application. 
+    /// Gets the upgrade progress for the specified application.
     /// Equivalent of the `Get-ServiceFabricApplicationUpgrade` PowerShell cmdlet.
     ///
     /// The returned [`ApplicationUpgradeProgress`] includes the aggregate

@@ -10,9 +10,9 @@ use crate::{
 use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotificationHandler};
 use health_client::HealthClient;
 use mssf_com::FabricClient::{
-    IFabricApplicationManagementClient, IFabricClientConnectionEventHandler, IFabricClientSettings2,
-    IFabricHealthClient4, IFabricPropertyManagementClient2, IFabricQueryClient13,
-    IFabricServiceManagementClient8, IFabricServiceNotificationEventHandler,
+    IFabricApplicationManagementClient, IFabricClientConnectionEventHandler,
+    IFabricClientSettings2, IFabricHealthClient4, IFabricPropertyManagementClient2,
+    IFabricQueryClient13, IFabricServiceManagementClient8, IFabricServiceNotificationEventHandler,
 };
 use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,

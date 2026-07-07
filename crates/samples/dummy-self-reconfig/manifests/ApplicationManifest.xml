@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ApplicationManifest
+  ApplicationTypeName="DummySelfReconfigAppType"
+  ApplicationTypeVersion="1.0"
+  xmlns="http://schemas.microsoft.com/2011/01/fabric"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Description>Dummy Self-Reconfiguring Test Application implemented with mssf_core.</Description>
+  <Parameters>
+    <Parameter Name="DummySelfReconfigService_InstanceCount" DefaultValue="3" />
+    <Parameter Name="DummySelfReconfigService_PlacementConstraints" DefaultValue="" />
+  </Parameters>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="DummySelfReconfigServicePackage" ServiceManifestVersion="1.0" />
+  </ServiceManifestImport>
+  <ServiceTemplates>
+    <SelfReconfiguringService ServiceTypeName="DummySelfReconfigServiceType" InstanceCount="[DummySelfReconfigService_InstanceCount]" MinInstanceCount="[DummySelfReconfigService_InstanceCount]">
+      <SingletonPartition />
+      <PlacementConstraints>[DummySelfReconfigService_PlacementConstraints]</PlacementConstraints>
+    </SelfReconfiguringService>
+  </ServiceTemplates>
+  <DefaultServices>
+    <Service Name="DummySelfReconfigService" ServicePackageActivationMode="ExclusiveProcess">
+      <SelfReconfiguringService ServiceTypeName="DummySelfReconfigServiceType" InstanceCount="[DummySelfReconfigService_InstanceCount]" MinInstanceCount="[DummySelfReconfigService_InstanceCount]">
+        <SingletonPartition />
+        <PlacementConstraints>[DummySelfReconfigService_PlacementConstraints]</PlacementConstraints>
+      </SelfReconfiguringService>
+    </Service>
+  </DefaultServices>
+</ApplicationManifest>

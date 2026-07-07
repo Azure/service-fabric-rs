@@ -69,12 +69,14 @@ add_custom_target(format
     COMMAND ${cargo_exe} fmt -p samples_echomain
     COMMAND ${cargo_exe} fmt -p samples_echomain_stateful
     COMMAND ${cargo_exe} fmt -p samples_reflection
+    COMMAND ${cargo_exe} fmt -p dummy-self-reconfig
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_subdirectory(crates/samples/echomain)
 add_subdirectory(crates/samples/reflection)
 add_subdirectory(crates/samples/echomain-stateful)
+add_subdirectory(crates/samples/dummy-self-reconfig)
 add_subdirectory(crates/samples/no_default_features)
 
 if(WIN32) #linux is not tested

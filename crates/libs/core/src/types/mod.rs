@@ -9,7 +9,9 @@ pub use common::*;
 mod client;
 pub use client::*;
 mod runtime;
-pub use runtime::{EndpointResourceDescription, health::*, stateful::*, store::*};
+pub use runtime::{
+    EndpointResourceDescription, health::*, self_reconfiguring::*, stateful::*, store::*,
+};
 
 #[cfg(test)]
 mod mockifabricclientsettings;

@@ -227,6 +227,10 @@
           {
             "name": "EnableDeploymentAtDataRoot",
             "value": "true"
+          },
+          {
+            "name": "EnableSelfReconfiguringServices",
+            "value": "true"
           }
         ]
       },

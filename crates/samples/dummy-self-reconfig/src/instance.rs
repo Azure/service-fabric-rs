@@ -3,12 +3,11 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-//! Self-reconfiguring service instance.
-//!
-//! The "business logic" is modeled on the internal Service Fabric
-//! `SelfReconfigTestService` C++ sample: the instance with the lowest instance
-//! id is elected leader, and only the leader reports the configuration back to
-//! Service Fabric.
+//! Self-reconfiguring service instance - equivalent of a "replica" in the traditional
+//! stateful service model, but instead its membership and configuration is entirely managed
+//! by the implementation itself and not rely on Service Fabric's built-in failover
+//! management. It would still listen to the configuration change requests from Service
+//! Fabric and report the current configuration back to Service Fabric.
 
 use std::sync::{Arc, Mutex};
 
@@ -29,6 +28,8 @@ use tracing::info;
 struct InstanceState {
     /// Highest request id seen so far; `{0, 0}` means none yet.
     request_id: SelfReconfiguringConfigurationRequestId,
+    /// Whether this instance is the leader, which is the only instance that
+    /// reports configuration back to Service Fabric.
     is_leader: bool,
     /// The last configuration the instance was told about, reported back when
     /// Service Fabric asks for the current configuration.
@@ -104,11 +105,8 @@ fn build_report(
     }
 }
 
-/// Elects the leader instance id, mirroring the C++ sample exactly: the leader
-/// is the lowest instance id; if that instance is being deactivated, the leader
-/// becomes the first instance (in list order) that is not being deactivated.
-/// Returns `None` when every instance is being deactivated. `instances` must be
-/// non-empty.
+/// Dummy leader election: pick the instance with the lowest instance id, unless it is deactivated,
+/// in which case pick the next lowest.
 fn elect_leader(instances: &[InstanceChangeRequest]) -> Option<i64> {
     let mut leader_index = 0usize;
     let mut leader_id = instances[0].instance_id;

@@ -50,16 +50,13 @@ pub trait ISelfReconfiguringServiceInstance: Send + Sync + 'static {
         cancellation_token: BoxedCancelToken,
     ) -> crate::Result<WString>;
 
-    /// Synchronous notification of a configuration request from Service Fabric
-    /// (COM `RequestConfiguration`).
+    /// Public documentation for this interface is TBD.
     fn request_configuration(
         &self,
         request: SelfReconfiguringConfigurationRequest,
     ) -> crate::Result<()>;
 
-    /// Synchronous notification of a configuration-change request from Service
-    /// Fabric, carrying the set of per-instance changes (COM
-    /// `RequestConfigurationChange`).
+    /// Public documentation for this interface is TBD.
     fn request_configuration_change(
         &self,
         change: SelfReconfiguringConfigurationChangeRequest,
@@ -106,7 +103,7 @@ pub trait ISelfReconfiguringServicePartition: Send + Sync + 'static {
         health_info: &crate::types::HealthInformation,
     ) -> crate::Result<()>;
 
-    /// Reports configuration through the partition (COM `ReportConfiguration`).
+    /// Public documentation for this interface is TBD.
     fn report_configuration(
         &self,
         report: &SelfReconfiguringConfigurationReport,

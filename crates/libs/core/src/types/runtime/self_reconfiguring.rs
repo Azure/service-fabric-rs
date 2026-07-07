@@ -268,16 +268,9 @@ impl From<&FABRIC_SELF_RECONFIGURING_CONFIGURATION_CHANGE_REQUEST>
     for SelfReconfiguringConfigurationChangeRequest
 {
     fn from(r: &FABRIC_SELF_RECONFIGURING_CONFIGURATION_CHANGE_REQUEST) -> Self {
-        let mut instances = Vec::new();
-        if !r.Instances.is_null() {
-            let list = unsafe { &*r.Instances };
-            if !list.Items.is_null() {
-                for i in 0..list.Count {
-                    let item = unsafe { &*list.Items.offset(i as isize) };
-                    instances.push(InstanceChangeRequest::from(item));
-                }
-            }
-        }
+        let instances = unsafe { r.Instances.as_ref() }
+            .map(|list| crate::iter::vec_from_raw_com(list.Count as usize, list.Items))
+            .unwrap_or_default();
         Self {
             request_id: SelfReconfiguringConfigurationRequestId::from(&r.RequestId),
             instances,

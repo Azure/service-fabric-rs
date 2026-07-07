@@ -130,6 +130,7 @@
     </Section>
     <Section Name="Management">
         <Parameter Name="ImageStoreConnectionString" Value="fabric:ImageStore" />
+        <Parameter Name="EnableSelfReconfiguringServices" Value="True" />
     </Section>
     <Section Name="NamingService">
       <Parameter Name="PartitionCount" Value="1" />

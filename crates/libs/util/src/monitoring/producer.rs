@@ -117,9 +117,9 @@ impl HealthDataProducer {
                     && let Some(entity) = self
                         .produce_application_upgrade_entity(token.clone(), &app_name)
                         .await
-                    {
-                        self.send_event(entity)?;
-                    }
+                {
+                    self.send_event(entity)?;
+                }
 
                 // Get service information for the application.
                 if let Ok(services) = self

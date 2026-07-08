@@ -4,9 +4,10 @@
 // ------------------------------------------------------------
 
 use mssf_core::types::{
-    ApplicationHealth, ApplicationQueryResultItem, ClusterHealth, NodeHealthResult,
-    NodeQueryResultItem, PartitionHealthResult, ReplicaHealthResult, ServiceHealthResult,
-    ServicePartitionQueryResultItem, ServiceQueryResultItem, ServiceReplicaQueryResultItem, Uri,
+    ApplicationHealth, ApplicationQueryResultItem, ApplicationUpgradeProgress, ClusterHealth,
+    NodeHealthResult, NodeQueryResultItem, PartitionHealthResult, ReplicaHealthResult,
+    ServiceHealthResult, ServicePartitionQueryResultItem, ServiceQueryResultItem,
+    ServiceReplicaQueryResultItem, Uri,
 };
 
 /// Events produced by HealthDataProducer.
@@ -21,6 +22,10 @@ pub enum ProducerEvent {
     Partition(PartitionHealthEntity),
     Service(ServiceHealthEntity),
     Replica(ReplicaHealthEntity),
+    /// An application that is actively going through an upgrade. Only emitted
+    /// when upgrade reporting is enabled on the producer (
+    /// [`crate::monitoring::HealthDataProducer::with_upgrade_reporting`]).
+    Upgrade(ApplicationUpgradeProgress),
     /// Marker emitted at the end of a producer loop iteration. Allows a
     /// consumer to detect that a loop has produced a full set of data for the
     /// current iteration.

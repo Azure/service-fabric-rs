@@ -7,14 +7,16 @@ mod producer;
 pub use producer::HealthDataProducer;
 mod entities;
 pub use entities::{LoopKind, NodeHealthEntity, ProducerEvent};
-mod upgrade_producer;
-pub use upgrade_producer::{UpgradeDataProducer, UpgradeProducerEvent};
 
 #[cfg(test)]
 mod tests {
 
     use std::time::Duration;
 
+    use mssf_core::types::{
+        ApplicationUpgradeProgress, ApplicationUpgradeState, UpgradeDomainState,
+        UpgradeDomainStatus, Uri,
+    };
     use mssf_core::{WString, client::FabricClient};
     use tokio::sync::mpsc;
 
@@ -34,6 +36,7 @@ mod tests {
         pub partition_health_entities: Vec<crate::monitoring::entities::PartitionHealthEntity>,
         pub service_health_entities: Vec<crate::monitoring::entities::ServiceHealthEntity>,
         pub replica_health_entities: Vec<crate::monitoring::entities::ReplicaHealthEntity>,
+        pub application_upgrade_entities: Vec<ApplicationUpgradeProgress>,
     }
 
     impl MockHealthDataConsumer {
@@ -59,6 +62,7 @@ mod tests {
                 partition_health_entities: Vec::new(),
                 service_health_entities: Vec::new(),
                 replica_health_entities: Vec::new(),
+                application_upgrade_entities: Vec::new(),
             };
             let mut cluster_node_done = false;
             let mut application_done = false;
@@ -82,6 +86,9 @@ mod tests {
                     ProducerEvent::Replica(replica_entity) => {
                         data.replica_health_entities.push(replica_entity);
                     }
+                    ProducerEvent::Upgrade(upgrade_entity) => {
+                        data.application_upgrade_entities.push(upgrade_entity);
+                    }
                     ProducerEvent::IterationComplete(kind) => match kind {
                         LoopKind::ClusterNode => cluster_node_done = true,
                         LoopKind::Application => application_done = true,
@@ -102,9 +109,108 @@ mod tests {
         fc: FabricClient,
     ) -> (HealthDataProducer, MockHealthDataConsumer) {
         let (sender, receiver) = mpsc::unbounded_channel();
-        let producer = HealthDataProducer::new(fc, Duration::from_secs(3), sender);
+        let producer = HealthDataProducer::new(fc, Duration::from_secs(3), sender)
+            .with_upgrade_reporting(true);
         let consumer = MockHealthDataConsumer::new(receiver);
         (producer, consumer)
+    }
+
+    /// Build a test [`ApplicationUpgradeProgress`] with the given upgrade state
+    /// and upgrade domains.
+    fn make_upgrade_progress(
+        application_name: &str,
+        upgrade_state: ApplicationUpgradeState,
+        upgrade_domains: &[(&str, UpgradeDomainState)],
+    ) -> ApplicationUpgradeProgress {
+        ApplicationUpgradeProgress {
+            application_name: Uri::from(application_name),
+            application_type_name: WString::from("TestAppType"),
+            target_application_type_version: WString::from("1.0.0"),
+            upgrade_state,
+            upgrade_domains: upgrade_domains
+                .iter()
+                .map(|(name, state)| UpgradeDomainStatus {
+                    name: WString::from(*name),
+                    state: *state,
+                })
+                .collect(),
+        }
+    }
+
+    /// The consumer should collect every [`ProducerEvent::Upgrade`] event up to
+    /// the point where both loops have signalled completion, then stop and
+    /// cancel the producer. Events sent after both markers belong to the next
+    /// iteration and must not leak into this one.
+    #[tokio::test]
+    async fn test_consumer_collects_upgrades() {
+        let (sender, receiver) = mpsc::unbounded_channel();
+        let mut consumer = MockHealthDataConsumer::new(receiver);
+
+        // Two upgrades in this iteration, then both completion markers.
+        sender
+            .send(ProducerEvent::Upgrade(make_upgrade_progress(
+                "fabric:/App1",
+                ApplicationUpgradeState::RollingForwardInProgress,
+                &[
+                    ("UD0", UpgradeDomainState::Completed),
+                    ("UD1", UpgradeDomainState::InProgress),
+                    ("UD2", UpgradeDomainState::Pending),
+                ],
+            )))
+            .unwrap();
+        sender
+            .send(ProducerEvent::Upgrade(make_upgrade_progress(
+                "fabric:/App2",
+                ApplicationUpgradeState::RollingBackInProgress,
+                &[],
+            )))
+            .unwrap();
+        sender
+            .send(ProducerEvent::IterationComplete(LoopKind::ClusterNode))
+            .unwrap();
+        sender
+            .send(ProducerEvent::IterationComplete(LoopKind::Application))
+            .unwrap();
+        // Anything after both markers must not be collected for this iteration.
+        sender
+            .send(ProducerEvent::Upgrade(make_upgrade_progress(
+                "fabric:/App3",
+                ApplicationUpgradeState::Failed,
+                &[],
+            )))
+            .unwrap();
+
+        let token = mssf_core::sync::SimpleCancelToken::new_boxed();
+        let data = consumer.get_all_data(&token).await;
+
+        assert_eq!(
+            data.application_upgrade_entities.len(),
+            2,
+            "should collect exactly one iteration of upgrades"
+        );
+
+        let app1 = &data.application_upgrade_entities[0];
+        assert_eq!(app1.application_name.to_string(), "fabric:/App1");
+        assert_eq!(
+            app1.upgrade_state,
+            ApplicationUpgradeState::RollingForwardInProgress
+        );
+        assert_eq!(app1.upgrade_domains.len(), 3);
+        assert_eq!(app1.upgrade_domains[1].name.to_string(), "UD1");
+        assert_eq!(
+            app1.upgrade_domains[1].state,
+            UpgradeDomainState::InProgress
+        );
+
+        let app2 = &data.application_upgrade_entities[1];
+        assert_eq!(app2.application_name.to_string(), "fabric:/App2");
+        assert_eq!(
+            app2.upgrade_state,
+            ApplicationUpgradeState::RollingBackInProgress
+        );
+
+        // The consumer should have cancelled the producer after both markers.
+        assert!(token.is_cancelled());
     }
 
     #[tokio::test]
@@ -224,6 +330,21 @@ mod tests {
                     || replica1.health.replica_health.get_aggregated_health_state()
                         == mssf_core::types::HealthState::Warning
             );
+        }
+
+        // Upgrade reporting is enabled by the test helper. There may or may not
+        // be an application upgrading; either way, every surfaced application
+        // must actually be upgrading (the producer filters out the rest).
+        if data.application_upgrade_entities.is_empty() {
+            tracing::warn!("No applications are currently upgrading in the cluster");
+        } else {
+            for progress in &data.application_upgrade_entities {
+                assert!(
+                    progress.is_active(),
+                    "producer should only surface actively-upgrading apps, got state {}",
+                    progress.upgrade_state
+                );
+            }
         }
     }
 }

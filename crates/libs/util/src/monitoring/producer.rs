@@ -25,6 +25,10 @@ pub struct HealthDataProducer {
     fc: FabricClient,
     interval: Duration,
     sender: mpsc::UnboundedSender<ProducerEvent>,
+    /// When true, the application loop also queries application upgrade
+    /// progress and emits [`ProducerEvent::Upgrade`] for actively-upgrading
+    /// applications.
+    report_upgrades: bool,
 }
 
 /// Default timeout for FabricClient operations.
@@ -44,7 +48,18 @@ impl HealthDataProducer {
             fc,
             interval,
             sender,
+            report_upgrades: false,
         }
+    }
+
+    /// Enables or disables emitting application upgrade progress.
+    ///
+    /// When enabled, the application loop additionally queries each
+    /// application's upgrade progress and emits a [`ProducerEvent::Upgrade`] for every application
+    /// that is actively upgrading. Disabled by default.
+    pub fn with_upgrade_reporting(mut self, report_upgrades: bool) -> Self {
+        self.report_upgrades = report_upgrades;
+        self
     }
 
     fn send_event(&self, event: ProducerEvent) -> Result<(), Action> {
@@ -94,6 +109,14 @@ impl HealthDataProducer {
                 if let Some(entity) = self
                     .produce_application_health_entity(token.clone(), app)
                     .await
+                {
+                    self.send_event(entity)?;
+                }
+
+                if self.report_upgrades
+                    && let Some(entity) = self
+                        .produce_application_upgrade_entity(token.clone(), &app_name)
+                        .await
                 {
                     self.send_event(entity)?;
                 }
@@ -314,6 +337,32 @@ impl HealthDataProducer {
                 health: app_health,
             },
         ))
+    }
+
+    /// Produce an application upgrade progress event, if the application is
+    /// actively upgrading. Returns `None` when the application is not upgrading
+    /// or the query fails.
+    async fn produce_application_upgrade_entity(
+        &self,
+        token: BoxedCancelToken,
+        application_name: &Uri,
+    ) -> Option<ProducerEvent> {
+        let progress = self
+            .fc
+            .get_application_manager()
+            .get_application_upgrade_progress(application_name, DEFAULT_TIMEOUT, Some(token))
+            .await
+            .inspect_err(|err| {
+                tracing::error!(
+                    "Failed to get application upgrade progress for {application_name}: {err}"
+                );
+            })
+            .ok()?;
+        if progress.is_active() {
+            Some(ProducerEvent::Upgrade(progress))
+        } else {
+            None
+        }
     }
 
     async fn produce_service_health_entity(

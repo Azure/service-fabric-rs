@@ -57,6 +57,10 @@ pub use application::{
     ApplicationQueryResultItem, ApplicationStatus, DeployedApplicationHealthState,
     DeployedApplicationHealthStatesFilter,
 };
+mod application_upgrade;
+pub use application_upgrade::{
+    ApplicationUpgradeProgress, ApplicationUpgradeState, UpgradeDomainState, UpgradeDomainStatus,
+};
 
 // FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS
 bitflags::bitflags! {

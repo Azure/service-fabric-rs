@@ -64,6 +64,15 @@ retry $MAX_RETRY $RETRY_INTERVAL "provision reflection" \
     sfctl application provision --application-type-build-path samples_reflection
 sfctl application create --app-name fabric:/ReflectionApp --app-type ReflectionApp --app-version 0.0.1
 
+retry $MAX_RETRY $RETRY_INTERVAL "upload dummy self-reconfig" \
+    sfctl application upload --path build/sf_apps/dummy-self-reconfig --show-progress
+retry $MAX_RETRY $RETRY_INTERVAL "provision dummy self-reconfig" \
+    sfctl application provision --application-type-build-path dummy-self-reconfig
+sfctl application create \
+    --app-name fabric:/DummySelfReconfigApp \
+    --app-type DummySelfReconfigAppType \
+    --app-version 1.0
+
 # --- Step 4: Wait for services to be resolvable ---
 echo "Waiting for services to be resolvable..."
 retry $MAX_RETRY $RETRY_INTERVAL "resolve EchoAppService" \

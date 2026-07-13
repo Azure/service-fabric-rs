@@ -16,8 +16,8 @@
 #      binaries that lack the Detach RPC.
 #   3. Delete every service under each app instance (catches per-test
 #      services like ApprovalE2e_<uuid>).
-#   4. Delete app instances (fabric:/EchoApp, fabric:/ReflectionApp).
-#   5. Unprovision app types (EchoApp@0.0.1, ReflectionApp@0.0.1).
+#   4. Delete app instances.
+#   5. Unprovision app types.
 #   6. Remove uploads from the image store.
 
 MAX_RETRY=20
@@ -128,6 +128,8 @@ echo "Deleting services under fabric:/EchoApp"
 delete_services_under_app "EchoApp"
 echo "Deleting services under fabric:/ReflectionApp"
 delete_services_under_app "ReflectionApp"
+echo "Deleting services under fabric:/DummySelfReconfigApp"
+delete_services_under_app "DummySelfReconfigApp"
 
 # --- Step 4: Delete the app instances ---
 delete_app() {
@@ -148,6 +150,8 @@ delete_app() {
 
 retry $MAX_RETRY $RETRY_INTERVAL "delete EchoApp"        delete_app "EchoApp"        || true
 retry $MAX_RETRY $RETRY_INTERVAL "delete ReflectionApp"  delete_app "ReflectionApp"  || true
+retry $MAX_RETRY $RETRY_INTERVAL "delete DummySelfReconfigApp" \
+    delete_app "DummySelfReconfigApp" || true
 
 # --- Step 5: Unprovision app types ---
 unprovision_app_type() {
@@ -173,6 +177,8 @@ retry $MAX_RETRY $RETRY_INTERVAL "unprovision EchoApp"       \
     unprovision_app_type EchoApp 0.0.1 || true
 retry $MAX_RETRY $RETRY_INTERVAL "unprovision ReflectionApp" \
     unprovision_app_type ReflectionApp 0.0.1 || true
+retry $MAX_RETRY $RETRY_INTERVAL "unprovision DummySelfReconfigAppType" \
+    unprovision_app_type DummySelfReconfigAppType 1.0 || true
 
 # --- Step 6: Remove uploaded packages from the image store ---
 # `sfctl store delete` removes a relative path inside the image store.
@@ -195,6 +201,7 @@ remove_store_path() {
 
 best_effort "store-delete samples_echomain"    remove_store_path samples_echomain
 best_effort "store-delete samples_reflection"  remove_store_path samples_reflection
+best_effort "store-delete dummy-self-reconfig" remove_store_path dummy-self-reconfig
 
 echo
 echo "All test apps removed (best-effort). Re-run prepare_test_apps.sh to redeploy."

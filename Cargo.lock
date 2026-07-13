@@ -272,6 +272,7 @@ version = "0.0.1"
 dependencies = [
  "mssf-core",
  "mssf-util",
+ "test-log",
  "tokio",
  "tracing",
  "tracing-subscriber",

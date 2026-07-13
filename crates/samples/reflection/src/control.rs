@@ -26,7 +26,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex as StdMutex};
 
 use mssf_core::async_trait;
-use mssf_core::types::ReplicaRole;
+use mssf_core::types::{
+    ReplicaRole, SelfReconfiguringConfigurationChangeRequest, SelfReconfiguringConfigurationRequest,
+};
 use prost::Message;
 use tokio::sync::{Mutex as TokioMutex, Notify, oneshot};
 use uuid::Uuid;
@@ -42,6 +44,14 @@ pub enum Approval {
     ChangeRole(ReplicaRole),
     Close,
     Abort,
+    RequestConfiguration,
+    RequestConfigurationChange,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ApprovalDetails {
+    ConfigurationRequest(SelfReconfiguringConfigurationRequest),
+    ConfigurationChange(SelfReconfiguringConfigurationChangeRequest),
 }
 
 /// What `await_approval` should return to its caller.
@@ -64,7 +74,15 @@ pub trait ReplicaController: Send + Sync + std::fmt::Debug {
     /// immediately; `GrpcController` blocks until a test sends
     /// `Approve` over gRPC. The sync `abort` call site bridges to
     /// this with `TokioExecutor::block_on_any`.
-    async fn await_approval(&self, gate: Approval) -> Decision;
+    async fn await_approval(&self, gate: Approval) -> Decision {
+        self.await_approval_with_details(gate, None).await
+    }
+
+    async fn await_approval_with_details(
+        &self,
+        gate: Approval,
+        details: Option<ApprovalDetails>,
+    ) -> Decision;
 
     /// Whether this controller should be registered with the
     /// `ReplicaControl` gRPC server. `NoopController` returns `false`
@@ -90,7 +108,11 @@ pub struct NoopController;
 
 #[async_trait]
 impl ReplicaController for NoopController {
-    async fn await_approval(&self, _gate: Approval) -> Decision {
+    async fn await_approval_with_details(
+        &self,
+        _gate: Approval,
+        _details: Option<ApprovalDetails>,
+    ) -> Decision {
         Decision::Proceed
     }
     fn as_any(&self) -> &dyn std::any::Any {
@@ -109,6 +131,7 @@ type GateDecision = Decision;
 pub(crate) struct Pending {
     pub gate_id: Uuid,
     pub gate: Approval,
+    pub details: Option<ApprovalDetails>,
     sender: oneshot::Sender<GateDecision>,
 }
 
@@ -183,8 +206,15 @@ impl GrpcController {
     /// gRPC `WaitForApproval` / `ListPending` handlers. Returns
     /// `(gate_id, gate)`; does NOT consume the slot.
     pub fn peek_pending(&self) -> Option<(Uuid, Approval)> {
+        self.pending_snapshot()
+            .map(|(gate_id, gate, _)| (gate_id, gate))
+    }
+
+    pub fn pending_snapshot(&self) -> Option<(Uuid, Approval, Option<ApprovalDetails>)> {
         let guard = self.pending.lock().unwrap();
-        guard.as_ref().map(|p| (p.gate_id, p.gate))
+        guard
+            .as_ref()
+            .map(|pending| (pending.gate_id, pending.gate, pending.details.clone()))
     }
 
     /// Block until `pending` is populated and matches `expected` (or
@@ -194,7 +224,7 @@ impl GrpcController {
     pub async fn wait_for_approval(
         &self,
         expected: Option<ApprovalKindFilter>,
-    ) -> (Uuid, Approval) {
+    ) -> (Uuid, Approval, Option<ApprovalDetails>) {
         loop {
             // Register interest BEFORE inspecting state. tokio's Notify
             // delivers wake-ups to listeners that exist at the time of
@@ -207,10 +237,10 @@ impl GrpcController {
             let notified = self.notify.notified();
             tokio::pin!(notified);
 
-            if let Some((gate_id, gate)) = self.peek_pending()
+            if let Some((gate_id, gate, details)) = self.pending_snapshot()
                 && expected.is_none_or(|f| f.matches(gate))
             {
-                return (gate_id, gate);
+                return (gate_id, gate, details);
             }
             notified.as_mut().await;
         }
@@ -255,7 +285,11 @@ impl Default for GrpcController {
 
 #[async_trait]
 impl ReplicaController for GrpcController {
-    async fn await_approval(&self, gate: Approval) -> Decision {
+    async fn await_approval_with_details(
+        &self,
+        gate: Approval,
+        details: Option<ApprovalDetails>,
+    ) -> Decision {
         // Fast path: if detach() has been called, every future gate
         // proceeds immediately without touching gate_lock or pending.
         if self.is_detached() {
@@ -287,6 +321,7 @@ impl ReplicaController for GrpcController {
             *slot = Some(Pending {
                 gate_id,
                 gate,
+                details,
                 sender: tx,
             });
         }
@@ -352,6 +387,8 @@ pub enum ApprovalKindFilter {
     ChangeRole,
     Close,
     Abort,
+    RequestConfiguration,
+    RequestConfigurationChange,
 }
 
 impl ApprovalKindFilter {
@@ -362,6 +399,14 @@ impl ApprovalKindFilter {
                 | (ApprovalKindFilter::ChangeRole, Approval::ChangeRole(_))
                 | (ApprovalKindFilter::Close, Approval::Close)
                 | (ApprovalKindFilter::Abort, Approval::Abort)
+                | (
+                    ApprovalKindFilter::RequestConfiguration,
+                    Approval::RequestConfiguration
+                )
+                | (
+                    ApprovalKindFilter::RequestConfigurationChange,
+                    Approval::RequestConfigurationChange
+                )
         )
     }
 }
@@ -483,7 +528,7 @@ mod tests {
         let parked = tokio::spawn(async move { c2.await_approval(Approval::Open).await });
 
         // Wait until the gate is observable.
-        let (gate_id, gate) = c.wait_for_approval(Some(ApprovalKindFilter::Open)).await;
+        let (gate_id, gate, _) = c.wait_for_approval(Some(ApprovalKindFilter::Open)).await;
         assert_eq!(gate, Approval::Open);
 
         match c.approve(gate_id, Decision::Proceed) {
@@ -505,7 +550,7 @@ mod tests {
                 .await
         });
 
-        let (gate_id, _) = c
+        let (gate_id, _, _) = c
             .wait_for_approval(Some(ApprovalKindFilter::ChangeRole))
             .await;
         let err = mssf_core::Error::from(mssf_core::HRESULT(-1));
@@ -523,7 +568,7 @@ mod tests {
         let c2 = c.clone();
         let parked = tokio::spawn(async move { c2.await_approval(Approval::Open).await });
 
-        let (real_gate_id, _) = c.wait_for_approval(None).await;
+        let (real_gate_id, _, _) = c.wait_for_approval(None).await;
         let stale_gate_id = Uuid::new_v4();
         match c.approve(stale_gate_id, Decision::Proceed) {
             ApproveResult::IdMismatch {
@@ -562,7 +607,7 @@ mod tests {
         let close = tokio::spawn(async move { c1.await_approval(Approval::Close).await });
 
         // Let close park.
-        let (close_gate_id, _) = c.wait_for_approval(Some(ApprovalKindFilter::Close)).await;
+        let (close_gate_id, _, _) = c.wait_for_approval(Some(ApprovalKindFilter::Close)).await;
 
         // Now spawn abort; it should queue on gate_lock, not race onto pending.
         let c2 = c.clone();
@@ -582,7 +627,7 @@ mod tests {
         let _ = close.await.unwrap();
 
         // Abort gate eventually shows up.
-        let (abort_gate_id, abort_gate) =
+        let (abort_gate_id, abort_gate, _) =
             c.wait_for_approval(Some(ApprovalKindFilter::Abort)).await;
         assert_eq!(abort_gate, Approval::Abort);
         assert_ne!(abort_gate_id, close_gate_id, "fresh UUID per gate");
@@ -605,7 +650,7 @@ mod tests {
         let c2 = c.clone();
         let parked = tokio::spawn(async move { c2.await_approval(Approval::Close).await });
 
-        let (gate_id, gate) = waiter.await.unwrap();
+        let (gate_id, gate, _) = waiter.await.unwrap();
         assert_eq!(gate, Approval::Close);
         c.approve(gate_id, Decision::Proceed);
         let _ = parked.await.unwrap();
@@ -622,7 +667,7 @@ mod tests {
 
         // Now ask: WaitForApproval should see the populated pending on
         // the very first peek.
-        let (gate_id, gate) = c.wait_for_approval(None).await;
+        let (gate_id, gate, _) = c.wait_for_approval(None).await;
         assert_eq!(gate, Approval::Close);
         c.approve(gate_id, Decision::Proceed);
         let _ = parked.await.unwrap();

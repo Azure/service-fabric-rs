@@ -1,7 +1,9 @@
 syntax = "proto3";
 
-// Test-driven control plane for the reflection sample's stateful
-// replicas. See docs/design/ReflectionReplicaTestControl.md for the
+// Test-driven control plane for the reflection sample's stateful or
+// self-reconfiguring replicas/instances.
+//
+// See docs/design/ReflectionReplicaTestControl.md for the
 // full design (gate semantics, drop semantics, RPC error model).
 
 package reflection.control.v1;
@@ -60,6 +62,8 @@ enum ApprovalKind {
   APPROVAL_CHANGE_ROLE = 2;
   APPROVAL_CLOSE       = 3;
   APPROVAL_ABORT       = 4; // approved synchronously; decision payload is ignored
+  APPROVAL_REQUEST_CONFIGURATION        = 5;
+  APPROVAL_REQUEST_CONFIGURATION_CHANGE = 6;
 }
 
 // Lifecycle role for the replica, matching mssf_core::types::ReplicaRole.
@@ -85,6 +89,45 @@ message ApprovalEvent {
   // likely replaced by a fresh one; the Approve is rejected with
   // FailedPrecondition + GateIdMismatch.
   string       gate_id  = 4;
+  oneof details {
+    ConfigurationRequest       configuration_request        = 5;
+    ConfigurationChangeRequest configuration_change_request = 6;
+  }
+}
+
+message ConfigurationRequestId {
+  int64 generation_number = 1;
+  int64 sequence_number   = 2;
+}
+
+enum SelfReconfiguringInstanceRole {
+  SELF_RECONFIGURING_INSTANCE_ROLE_NONE    = 0;
+  SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL = 1;
+  SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER  = 2;
+}
+
+enum SelfReconfiguringActivationState {
+  SELF_RECONFIGURING_ACTIVATION_STATE_INVALID     = 0;
+  SELF_RECONFIGURING_ACTIVATION_STATE_ACTIVATED   = 1;
+  SELF_RECONFIGURING_ACTIVATION_STATE_DEACTIVATED = 2;
+}
+
+message ConfigurationRequest {
+  ConfigurationRequestId request_id = 1;
+}
+
+message InstanceChangeRequest {
+  int64 instance_id = 1;
+  SelfReconfiguringInstanceRole role = 2;
+  SelfReconfiguringInstanceRole requested_role = 3;
+  SelfReconfiguringActivationState activation_state = 4;
+  SelfReconfiguringActivationState requested_activation_state = 5;
+  string endpoints = 6;
+}
+
+message ConfigurationChangeRequest {
+  ConfigurationRequestId request_id = 1;
+  repeated InstanceChangeRequest instances = 2;
 }
 
 message ApproveRequest {

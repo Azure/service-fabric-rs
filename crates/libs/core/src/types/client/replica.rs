@@ -20,7 +20,9 @@ use mssf_com::{
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED, FABRIC_QUERY_SERVICE_REPLICA_STATUS_INBUILD,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_INVALID, FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_STANDBY, FABRIC_REMOVE_REPLICA_DESCRIPTION,
-        FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_KIND_STATEFUL,
+        FABRIC_RESTART_REPLICA_DESCRIPTION,
+        FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
+        FABRIC_SERVICE_KIND_SELF_RECONFIGURING, FABRIC_SERVICE_KIND_STATEFUL,
         FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
         FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
         FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM,
@@ -75,6 +77,7 @@ pub enum ServiceReplicaQueryResultItem {
     Invalid,
     Stateful(StatefulServiceReplicaQueryResult),
     Stateless(StatelessServiceInstanceQueryResult),
+    SelfReconfiguring(SelfReconfiguringServiceInstanceQueryResult),
 }
 
 impl From<&FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceReplicaQueryResultItem {
@@ -96,6 +99,15 @@ impl From<&FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceReplicaQueryResu
                 };
                 Self::Stateless(raw.into())
             }
+            FABRIC_SERVICE_KIND_SELF_RECONFIGURING => {
+                let raw = unsafe {
+                    (value.Value
+                        as *const FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_QUERY_RESULT_ITEM)
+                        .as_ref()
+                        .unwrap()
+                };
+                Self::SelfReconfiguring(raw.into())
+            }
             _ => Self::Invalid,
         }
     }
@@ -106,6 +118,9 @@ impl ServiceReplicaQueryResultItem {
         match self {
             ServiceReplicaQueryResultItem::Stateful(stateful) => stateful.replica_id,
             ServiceReplicaQueryResultItem::Stateless(stateless) => stateless.instance_id,
+            ServiceReplicaQueryResultItem::SelfReconfiguring(self_reconfiguring) => {
+                self_reconfiguring.instance_id
+            }
             ServiceReplicaQueryResultItem::Invalid => 0,
         }
     }
@@ -114,6 +129,9 @@ impl ServiceReplicaQueryResultItem {
             ServiceReplicaQueryResultItem::Stateful(stateful) => stateful.aggregated_health_state,
             ServiceReplicaQueryResultItem::Stateless(stateless) => {
                 stateless.aggregated_health_state
+            }
+            ServiceReplicaQueryResultItem::SelfReconfiguring(self_reconfiguring) => {
+                self_reconfiguring.aggregated_health_state
             }
             ServiceReplicaQueryResultItem::Invalid => HealthState::Invalid,
         }
@@ -192,6 +210,35 @@ impl From<&FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM>
     fn from(value: &FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM) -> Self {
         Self {
             instance_id: value.InstanceId,
+            replica_status: (&value.ReplicaStatus).into(),
+            aggregated_health_state: (&value.AggregatedHealthState).into(),
+            replica_address: WString::from(value.ReplicaAddress),
+            node_name: WString::from(value.NodeName),
+            last_in_build_duration_in_seconds: value.LastInBuildDurationInSeconds,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SelfReconfiguringServiceInstanceQueryResult {
+    pub instance_id: i64,
+    pub current_role: crate::types::SelfReconfiguringInstanceRole,
+    pub previous_role: crate::types::SelfReconfiguringInstanceRole,
+    pub replica_status: QueryServiceReplicaStatus,
+    pub aggregated_health_state: HealthState,
+    pub replica_address: WString,
+    pub node_name: WString,
+    pub last_in_build_duration_in_seconds: i64,
+}
+
+impl From<&FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_QUERY_RESULT_ITEM>
+    for SelfReconfiguringServiceInstanceQueryResult
+{
+    fn from(value: &FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_QUERY_RESULT_ITEM) -> Self {
+        Self {
+            instance_id: value.InstanceId,
+            current_role: (&value.InstanceRole).into(),
+            previous_role: (&value.PreviousSelfReconfiguringInstanceRole).into(),
             replica_status: (&value.ReplicaStatus).into(),
             aggregated_health_state: (&value.AggregatedHealthState).into(),
             replica_address: WString::from(value.ReplicaAddress),
@@ -515,5 +562,53 @@ impl From<&mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH>
                 crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
             }),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mssf_com::FabricTypes::{
+        FABRIC_HEALTH_STATE_OK, FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
+        FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
+        FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
+    };
+
+    #[test]
+    fn converts_self_reconfiguring_instance_query_result() {
+        let address = WString::from("localhost:1234");
+        let node = WString::from("_Node_0");
+        let raw = FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_QUERY_RESULT_ITEM {
+            InstanceId: 17,
+            InstanceRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
+            ReplicaStatus: FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
+            AggregatedHealthState: FABRIC_HEALTH_STATE_OK,
+            ReplicaAddress: address.as_pcwstr(),
+            NodeName: node.as_pcwstr(),
+            LastInBuildDurationInSeconds: 9,
+            PreviousSelfReconfiguringInstanceRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
+            Reserved: std::ptr::null_mut(),
+        };
+        let item = FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM {
+            Kind: FABRIC_SERVICE_KIND_SELF_RECONFIGURING,
+            Value: &raw as *const _ as *mut _,
+        };
+
+        let converted = ServiceReplicaQueryResultItem::from(&item);
+        assert_eq!(converted.get_replica_or_instance_id(), 17);
+        assert_eq!(converted.get_aggregated_health_state(), HealthState::Ok);
+        let ServiceReplicaQueryResultItem::SelfReconfiguring(converted) = converted else {
+            panic!("expected self-reconfiguring instance");
+        };
+        assert_eq!(
+            converted.current_role,
+            crate::types::SelfReconfiguringInstanceRole::Member
+        );
+        assert_eq!(
+            converted.previous_role,
+            crate::types::SelfReconfiguringInstanceRole::Initial
+        );
+        assert_eq!(converted.replica_status, QueryServiceReplicaStatus::Ready);
+        assert_eq!(converted.last_in_build_duration_in_seconds, 9);
     }
 }

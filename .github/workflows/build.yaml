@@ -99,6 +99,7 @@ jobs:
         .\tests\echo_script_test.ps1
         .\scripts\reflection_ctl.ps1 -Action Add
         .\scripts\echomain_ctl.ps1 -Action Add
+        .\scripts\dummy_self_reconfig_ctl.ps1 -Action Add
 
     - name: Run cargo test
       run: cargo +${{ matrix.rust-version }} test --all

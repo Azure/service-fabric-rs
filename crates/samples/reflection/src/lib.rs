@@ -17,6 +17,7 @@ pub mod echo;
 pub mod grpc;
 pub mod grpc_control;
 pub mod lifecycle;
+pub mod self_reconfiguring;
 pub mod statefulstore;
 pub mod test_admin;
 pub mod test_cluster;
@@ -26,3 +27,4 @@ pub use statefulstore::Factory;
 /// Service-type name registered by the reflection sample. Must match the
 /// value declared in `manifests/ServiceManifest.xml`.
 pub const SERVICE_TYPE_NAME: &str = "ReflectionAppService";
+pub const SELF_RECONFIGURING_SERVICE_TYPE_NAME: &str = "ReflectionSelfReconfigService";

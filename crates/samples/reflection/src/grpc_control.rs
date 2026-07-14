@@ -12,19 +12,22 @@ use std::time::Duration;
 
 use tonic::{Request, Response, Status};
 
-use crate::control::{Approval, ApprovalKindFilter, ApproveResult, Decision};
+use crate::control::{Approval, ApprovalDetails, ApprovalKindFilter, ApproveResult, Decision};
 use crate::grpc::ReplicaRegistry;
 
 pub mod proto {
     tonic::include_proto!("reflection.control.v1");
 }
 
+use proto::approval_event::Details as ApprovalEventDetails;
 use proto::approve_request::Decision as ApproveDecisionOneof;
 use proto::list_pending_request::ReplicaFilter;
 use proto::replica_control_server::{ReplicaControl, ReplicaControlServer};
 use proto::{
-    ApprovalEvent, ApprovalKind, ApproveRequest, DetachAllResponse, Empty, ListPendingRequest,
-    ListPendingResponse, ReplicaRef, ReplicaRole as ProtoReplicaRole, WaitForApprovalRequest,
+    ApprovalEvent, ApprovalKind, ApproveRequest, ConfigurationChangeRequest, ConfigurationRequest,
+    ConfigurationRequestId, DetachAllResponse, Empty, InstanceChangeRequest, ListPendingRequest,
+    ListPendingResponse, ReplicaRef, ReplicaRole as ProtoReplicaRole,
+    SelfReconfiguringActivationState, SelfReconfiguringInstanceRole, WaitForApprovalRequest,
 };
 
 /// Default wait timeout when `WaitForApprovalRequest.timeout_ms` is 0.
@@ -112,6 +115,12 @@ fn approval_kind_filter_from_proto(k: i32) -> Result<Option<ApprovalKindFilter>,
         ApprovalKind::ApprovalChangeRole => Some(ApprovalKindFilter::ChangeRole),
         ApprovalKind::ApprovalClose => Some(ApprovalKindFilter::Close),
         ApprovalKind::ApprovalAbort => Some(ApprovalKindFilter::Abort),
+        ApprovalKind::ApprovalRequestConfiguration => {
+            Some(ApprovalKindFilter::RequestConfiguration)
+        }
+        ApprovalKind::ApprovalRequestConfigurationChange => {
+            Some(ApprovalKindFilter::RequestConfigurationChange)
+        }
     })
 }
 
@@ -120,10 +129,81 @@ fn approval_to_proto(gate: Approval) -> (ApprovalKind, ProtoReplicaRole) {
         Approval::Open => (ApprovalKind::ApprovalOpen, ProtoReplicaRole::Unknown),
         Approval::Close => (ApprovalKind::ApprovalClose, ProtoReplicaRole::Unknown),
         Approval::Abort => (ApprovalKind::ApprovalAbort, ProtoReplicaRole::Unknown),
+        Approval::RequestConfiguration => (
+            ApprovalKind::ApprovalRequestConfiguration,
+            ProtoReplicaRole::Unknown,
+        ),
+        Approval::RequestConfigurationChange => (
+            ApprovalKind::ApprovalRequestConfigurationChange,
+            ProtoReplicaRole::Unknown,
+        ),
         Approval::ChangeRole(role) => (
             ApprovalKind::ApprovalChangeRole,
             replica_role_to_proto(role),
         ),
+    }
+}
+
+fn request_id_to_proto(
+    request_id: mssf_core::types::SelfReconfiguringConfigurationRequestId,
+) -> ConfigurationRequestId {
+    ConfigurationRequestId {
+        generation_number: request_id.generation_number,
+        sequence_number: request_id.sequence_number,
+    }
+}
+
+fn self_reconfiguring_role_to_proto(
+    role: mssf_core::types::SelfReconfiguringInstanceRole,
+) -> SelfReconfiguringInstanceRole {
+    use mssf_core::types::SelfReconfiguringInstanceRole as Role;
+    match role {
+        Role::None => SelfReconfiguringInstanceRole::None,
+        Role::Initial => SelfReconfiguringInstanceRole::Initial,
+        Role::Member => SelfReconfiguringInstanceRole::Member,
+    }
+}
+
+fn activation_state_to_proto(
+    state: mssf_core::types::SelfReconfiguringInstanceActivationState,
+) -> SelfReconfiguringActivationState {
+    use mssf_core::types::SelfReconfiguringInstanceActivationState as State;
+    match state {
+        State::Invalid => SelfReconfiguringActivationState::Invalid,
+        State::Activated => SelfReconfiguringActivationState::Activated,
+        State::Deactivated => SelfReconfiguringActivationState::Deactivated,
+    }
+}
+
+fn approval_details_to_proto(details: Option<ApprovalDetails>) -> Option<ApprovalEventDetails> {
+    match details {
+        Some(ApprovalDetails::ConfigurationRequest(request)) => Some(
+            ApprovalEventDetails::ConfigurationRequest(ConfigurationRequest {
+                request_id: Some(request_id_to_proto(request.request_id)),
+            }),
+        ),
+        Some(ApprovalDetails::ConfigurationChange(change)) => Some(
+            ApprovalEventDetails::ConfigurationChangeRequest(ConfigurationChangeRequest {
+                request_id: Some(request_id_to_proto(change.request_id)),
+                instances: change
+                    .instances
+                    .into_iter()
+                    .map(|instance| InstanceChangeRequest {
+                        instance_id: instance.instance_id,
+                        role: self_reconfiguring_role_to_proto(instance.role) as i32,
+                        requested_role: self_reconfiguring_role_to_proto(instance.requested_role)
+                            as i32,
+                        activation_state: activation_state_to_proto(instance.activation_state)
+                            as i32,
+                        requested_activation_state: activation_state_to_proto(
+                            instance.requested_activation_state,
+                        ) as i32,
+                        endpoints: instance.endpoints.to_string(),
+                    })
+                    .collect(),
+            }),
+        ),
+        None => None,
     }
 }
 
@@ -146,6 +226,7 @@ fn build_approval_event(
     replica_id: i64,
     gate_id: uuid::Uuid,
     gate: Approval,
+    details: Option<ApprovalDetails>,
 ) -> ApprovalEvent {
     let (kind, new_role) = approval_to_proto(gate);
     ApprovalEvent {
@@ -156,6 +237,7 @@ fn build_approval_event(
         kind: kind as i32,
         new_role: new_role as i32,
         gate_id: gate_id.to_string(),
+        details: approval_details_to_proto(details),
     }
 }
 
@@ -197,11 +279,12 @@ impl ReplicaControl for ReplicaControlImpl {
             .ok_or_else(|| Status::internal("registered controller is not a GrpcController"))?;
 
         match tokio::time::timeout(timeout, grpc.wait_for_approval(expected)).await {
-            Ok((gate_id, gate)) => Ok(Response::new(build_approval_event(
+            Ok((gate_id, gate, details)) => Ok(Response::new(build_approval_event(
                 partition_id,
                 replica_id,
                 gate_id,
                 gate,
+                details,
             ))),
             Err(_) => Err(Status::deadline_exceeded(format!(
                 "WaitForApproval timed out after {} ms",
@@ -304,12 +387,13 @@ impl ReplicaControl for ReplicaControlImpl {
             else {
                 continue;
             };
-            if let Some((gate_id, gate)) = grpc.peek_pending() {
+            if let Some((gate_id, gate, details)) = grpc.pending_snapshot() {
                 events.push(build_approval_event(
                     entry.partition_id,
                     entry.replica_id,
                     gate_id,
                     gate,
+                    details,
                 ));
             }
         }

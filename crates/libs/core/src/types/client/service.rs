@@ -9,16 +9,21 @@ use mssf_com::{
     FabricClient::IFabricGetServiceListResult2,
     FabricTypes::{
         FABRIC_DELETE_SERVICE_DESCRIPTION, FABRIC_NAMED_REPARTITION_DESCRIPTION,
-        FABRIC_SERVICE_DESCRIPTION, FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
-        FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS, FABRIC_SERVICE_HEALTH_STATE,
-        FABRIC_SERVICE_PARTITION_KIND, FABRIC_SERVICE_PARTITION_KIND_INVALID,
-        FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_QUERY_DESCRIPTION,
+        FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION,
+        FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION_EX1,
+        FABRIC_SELF_RECONFIGURING_SERVICE_FAILOVER_SETTINGS, FABRIC_SERVICE_DESCRIPTION,
+        FABRIC_SERVICE_DESCRIPTION_KIND_SELF_RECONFIGURING,
+        FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL, FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
+        FABRIC_SERVICE_HEALTH_STATE, FABRIC_SERVICE_PARTITION_KIND,
+        FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
+        FABRIC_SERVICE_PLACEMENT_POLICY_LIST, FABRIC_SERVICE_QUERY_DESCRIPTION,
         FABRIC_SERVICE_QUERY_DESCRIPTION_EX1, FABRIC_SERVICE_QUERY_DESCRIPTION_EX2,
         FABRIC_SERVICE_QUERY_DESCRIPTION_EX3, FABRIC_SERVICE_QUERY_RESULT_ITEM,
-        FABRIC_SERVICE_UPDATE_DESCRIPTION, FABRIC_STATEFUL_SERVICE_DESCRIPTION,
-        FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX1, FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2,
-        FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3, FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4,
-        FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS, FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX1,
+        FABRIC_SERVICE_TAGS_DESCRIPTION, FABRIC_SERVICE_UPDATE_DESCRIPTION,
+        FABRIC_STATEFUL_SERVICE_DESCRIPTION, FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX1,
+        FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX2, FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX3,
+        FABRIC_STATEFUL_SERVICE_DESCRIPTION_EX4, FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS,
+        FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX1,
         FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX2,
         FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX3,
         FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_EX4,
@@ -38,7 +43,8 @@ use mssf_com::{
         FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX12, FABRIC_STATELESS_SERVICE_DESCRIPTION,
         FABRIC_STATELESS_SERVICE_DESCRIPTION_EX1, FABRIC_STATELESS_SERVICE_DESCRIPTION_EX2,
         FABRIC_STATELESS_SERVICE_DESCRIPTION_EX3, FABRIC_STATELESS_SERVICE_DESCRIPTION_EX4,
-        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION,
+        FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION, FABRIC_STRING_LIST,
+        SELF_RECONFIGURING_INSTANCE_LIFECYCLE_DESCRIPTION,
     },
 };
 use windows_core::{PCWSTR, WString};
@@ -56,6 +62,7 @@ pub enum ServiceDescription {
     // Invalid,
     Stateful(StatefulServiceDescription), // FABRIC_STATEFUL_SERVICE_DESCRIPTION
     Stateless(StatelessServiceDescription), // FABRIC_STATELESS_SERVICE_DESCRIPTION
+    SelfReconfiguring(SelfReconfiguringServiceDescription), // FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION
 }
 
 #[derive(Debug)]
@@ -376,6 +383,138 @@ impl GetRawWithBoxPool<FABRIC_STATELESS_SERVICE_DESCRIPTION> for StatelessServic
     }
 }
 
+#[derive(Debug)]
+pub struct SelfReconfiguringServiceDescription {
+    application_name: Uri,
+    service_name: Uri,
+    service_type_name: WString,
+    initialization_data: Option<Vec<u8>>,
+    partition_scheme: PartitionSchemeDescription,
+    instance_count: i32,
+    min_instance_count: i32,
+    placement_constraints: WString,
+    service_package_activation_mode: ServicePackageActivationMode,
+    service_dns_name: WString,
+}
+
+impl SelfReconfiguringServiceDescription {
+    pub fn new(
+        application_name: Uri,
+        service_name: Uri,
+        service_type_name: WString,
+        partition_scheme: PartitionSchemeDescription,
+    ) -> Self {
+        Self {
+            application_name,
+            service_name,
+            service_type_name,
+            initialization_data: None,
+            partition_scheme,
+            instance_count: 1,
+            min_instance_count: 1,
+            placement_constraints: WString::default(),
+            service_package_activation_mode: ServicePackageActivationMode::default(),
+            service_dns_name: WString::default(),
+        }
+    }
+
+    pub fn with_initialization_data(mut self, initialization_data: Vec<u8>) -> Self {
+        self.initialization_data = Some(initialization_data);
+        self
+    }
+
+    pub fn with_instance_count(mut self, instance_count: i32) -> Self {
+        self.instance_count = instance_count;
+        self
+    }
+
+    pub fn with_min_instance_count(mut self, min_instance_count: i32) -> Self {
+        self.min_instance_count = min_instance_count;
+        self
+    }
+
+    pub fn with_placement_constraints(mut self, placement_constraints: WString) -> Self {
+        self.placement_constraints = placement_constraints;
+        self
+    }
+
+    pub fn with_service_activation_mode(
+        mut self,
+        service_package_activation_mode: ServicePackageActivationMode,
+    ) -> Self {
+        self.service_package_activation_mode = service_package_activation_mode;
+        self
+    }
+}
+
+impl GetRawWithBoxPool<FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION>
+    for SelfReconfiguringServiceDescription
+{
+    fn get_raw_with_pool(
+        &self,
+        pool: &mut BoxPool,
+    ) -> FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION {
+        let ex1 = pool.push(Box::new(
+            FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION_EX1 {
+                IsCreateAsDisabled: false,
+                Reserved: std::ptr::null_mut(),
+            },
+        ));
+        let (initialization_data, initialization_data_size) = self
+            .initialization_data
+            .as_ref()
+            .map(|data| (data.as_ptr() as *mut u8, data.len() as u32))
+            .unwrap_or((std::ptr::null_mut(), 0));
+        let (partition_scheme, partition_scheme_description) = self.partition_scheme.as_raw();
+        let policy_list = pool.push(Box::new(FABRIC_SERVICE_PLACEMENT_POLICY_LIST::default()));
+        let instance_lifecycle = pool.push(Box::new(
+            SELF_RECONFIGURING_INSTANCE_LIFECYCLE_DESCRIPTION::default(),
+        ));
+        let failover_settings = pool.push(Box::new(
+            FABRIC_SELF_RECONFIGURING_SERVICE_FAILOVER_SETTINGS {
+                Flags: 0,
+                InstanceLifecycleDescription: instance_lifecycle as *mut _,
+                InstanceRestartWaitDurationSeconds: 0,
+                Reserved: std::ptr::null_mut(),
+            },
+        ));
+        let tags_required_to_place = pool.push(Box::new(FABRIC_STRING_LIST::default()));
+        let tags_required_to_run = pool.push(Box::new(FABRIC_STRING_LIST::default()));
+        let tags_description = pool.push(Box::new(FABRIC_SERVICE_TAGS_DESCRIPTION {
+            TagsRequiredToPlace: tags_required_to_place as *mut _,
+            TagsRequiredToRun: tags_required_to_run as *mut _,
+            Reserved: std::ptr::null_mut(),
+        }));
+
+        FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION {
+            ApplicationName: self.application_name.as_raw(),
+            ServiceName: self.service_name.as_raw(),
+            ServiceTypeName: self.service_type_name.as_pcwstr(),
+            InitializationDataSize: initialization_data_size,
+            InitializationData: initialization_data,
+            PartitionScheme: partition_scheme,
+            PartitionSchemeDescription: partition_scheme_description,
+            PlacementConstraints: self.placement_constraints.as_pcwstr(),
+            CorrelationCount: 0,
+            Correlations: std::ptr::null_mut(),
+            MetricCount: 0,
+            Metrics: std::ptr::null_mut(),
+            PolicyList: policy_list as *mut _,
+            IsDefaultMoveCostSpecified: false,
+            DefaultMoveCost: MoveCost::Zero.into(),
+            ServicePackageActivationMode: self.service_package_activation_mode.into(),
+            ServiceDnsName: self.service_dns_name.as_pcwstr(),
+            ScalingPolicyCount: 0,
+            ServiceScalingPolicies: std::ptr::null_mut(),
+            TagsDescription: tags_description as *mut _,
+            FailoverSettings: failover_settings as *mut _,
+            MinInstanceCount: self.min_instance_count,
+            InstanceCount: self.instance_count,
+            Reserved: ex1 as *const _ as *mut c_void,
+        }
+    }
+}
+
 impl GetRawWithBoxPool<FABRIC_SERVICE_DESCRIPTION> for ServiceDescription {
     fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_SERVICE_DESCRIPTION {
         match self {
@@ -392,6 +531,14 @@ impl GetRawWithBoxPool<FABRIC_SERVICE_DESCRIPTION> for ServiceDescription {
                 let raw_ptr = pool.push(Box::new(raw));
                 FABRIC_SERVICE_DESCRIPTION {
                     Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
+                    Value: raw_ptr as *const _ as *mut c_void,
+                }
+            }
+            ServiceDescription::SelfReconfiguring(desc) => {
+                let raw = desc.get_raw_with_pool(pool);
+                let raw_ptr = pool.push(Box::new(raw));
+                FABRIC_SERVICE_DESCRIPTION {
+                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND_SELF_RECONFIGURING,
                     Value: raw_ptr as *const _ as *mut c_void,
                 }
             }
@@ -1074,6 +1221,8 @@ pub enum ServiceQueryResultItem {
     Stateful(StatefulServiceQueryResultItem),
     // FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM
     Stateless(StatelessServiceQueryResultItem),
+    // FABRIC_SELF_RECONFIGURING_SERVICE_QUERY_RESULT_ITEM
+    SelfReconfiguring(SelfReconfiguringServiceQueryResultItem),
 }
 
 impl From<&FABRIC_SERVICE_QUERY_RESULT_ITEM> for ServiceQueryResultItem {
@@ -1097,6 +1246,17 @@ impl From<&FABRIC_SERVICE_QUERY_RESULT_ITEM> for ServiceQueryResultItem {
                 };
                 ServiceQueryResultItem::Stateless(StatelessServiceQueryResultItem::from(item))
             }
+            mssf_com::FabricTypes::FABRIC_SERVICE_KIND_SELF_RECONFIGURING => {
+                let item = unsafe {
+                    (value.Value
+                        as *const mssf_com::FabricTypes::FABRIC_SELF_RECONFIGURING_SERVICE_QUERY_RESULT_ITEM)
+                        .as_ref()
+                        .unwrap()
+                };
+                ServiceQueryResultItem::SelfReconfiguring(
+                    SelfReconfiguringServiceQueryResultItem::from(item),
+                )
+            }
             // TODO: may need to handle other kinds with newer sdks.
             _ => panic!("Unknown service query result kind"),
         }
@@ -1108,6 +1268,7 @@ impl ServiceQueryResultItem {
         match self {
             ServiceQueryResultItem::Stateful(item) => item.health_state,
             ServiceQueryResultItem::Stateless(item) => item.health_state,
+            ServiceQueryResultItem::SelfReconfiguring(item) => item.health_state,
         }
     }
 
@@ -1115,6 +1276,7 @@ impl ServiceQueryResultItem {
         match self {
             ServiceQueryResultItem::Stateful(item) => &item.service_name,
             ServiceQueryResultItem::Stateless(item) => &item.service_name,
+            ServiceQueryResultItem::SelfReconfiguring(item) => &item.service_name,
         }
     }
 }
@@ -1232,6 +1394,31 @@ impl From<&mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM>
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct SelfReconfiguringServiceQueryResultItem {
+    pub service_name: Uri,
+    pub service_type_name: WString,
+    pub service_manifest_version: WString,
+    pub health_state: HealthState,
+    pub service_status: QueryServiceStatus,
+}
+
+impl From<&mssf_com::FabricTypes::FABRIC_SELF_RECONFIGURING_SERVICE_QUERY_RESULT_ITEM>
+    for SelfReconfiguringServiceQueryResultItem
+{
+    fn from(
+        value: &mssf_com::FabricTypes::FABRIC_SELF_RECONFIGURING_SERVICE_QUERY_RESULT_ITEM,
+    ) -> Self {
+        Self {
+            service_name: Uri::from(value.ServiceName),
+            service_type_name: WString::from(value.ServiceTypeName),
+            service_manifest_version: WString::from(value.ServiceManifestVersion),
+            health_state: HealthState::from(&value.HealthState),
+            service_status: QueryServiceStatus::from(value.ServiceStatus),
+        }
+    }
+}
+
 // FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION
 #[derive(Debug, Clone, Default)]
 pub struct ServiceHealthQueryDescription {
@@ -1289,8 +1476,8 @@ pub struct ServiceHealthResult {
     pub service_name: Uri,
     pub aggregated_health_state: HealthState,
     pub health_events: Vec<HealthEvent>,
+    pub partition_health_states: Vec<super::PartitionHealthState>,
     // TODO: implement other fields
-    // pub partitions_health: Vec<PartitionHealth>,
 }
 
 impl From<&mssf_com::FabricClient::IFabricServiceHealthResult> for ServiceHealthResult {
@@ -1300,11 +1487,16 @@ impl From<&mssf_com::FabricClient::IFabricServiceHealthResult> for ServiceHealth
         let health_event_list = unsafe { raw.HealthEvents.as_ref() }.map_or(vec![], |list| {
             crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
         });
+        let partition_health_states = unsafe { raw.PartitionHealthStates.as_ref() }
+            .map_or(vec![], |list| {
+                crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
+            });
 
         Self {
             service_name: Uri::from(raw.ServiceName),
             aggregated_health_state: HealthState::from(&raw.AggregatedHealthState),
             health_events: health_event_list,
+            partition_health_states,
         }
     }
 }
@@ -1335,5 +1527,78 @@ impl GetRaw<FABRIC_DELETE_SERVICE_DESCRIPTION> for DeleteServiceDescription {
             ForceDelete: self.force_delete,
             Reserved: std::ptr::null_mut(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mssf_com::FabricTypes::{
+        FABRIC_HEALTH_STATE_WARNING, FABRIC_PARTITION_SCHEME_SINGLETON,
+        FABRIC_QUERY_SERVICE_STATUS_ACTIVE, FABRIC_SELF_RECONFIGURING_SERVICE_QUERY_RESULT_ITEM,
+        FABRIC_SERVICE_DESCRIPTION_KIND_SELF_RECONFIGURING, FABRIC_SERVICE_KIND_SELF_RECONFIGURING,
+        FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_SHARED_PROCESS,
+    };
+
+    #[test]
+    fn self_reconfiguring_description_defaults_and_conversion() {
+        let description = SelfReconfiguringServiceDescription::new(
+            Uri::from("fabric:/app"),
+            Uri::from("fabric:/app/service"),
+            WString::from("ServiceType"),
+            PartitionSchemeDescription::Singleton,
+        );
+        let mut pool = BoxPool::new();
+        let raw = ServiceDescription::SelfReconfiguring(description).get_raw_with_pool(&mut pool);
+
+        assert_eq!(raw.Kind, FABRIC_SERVICE_DESCRIPTION_KIND_SELF_RECONFIGURING);
+        let raw_description = unsafe {
+            (raw.Value as *const FABRIC_SELF_RECONFIGURING_SERVICE_DESCRIPTION)
+                .as_ref()
+                .unwrap()
+        };
+        assert_eq!(
+            raw_description.PartitionScheme,
+            FABRIC_PARTITION_SCHEME_SINGLETON
+        );
+        assert_eq!(raw_description.InstanceCount, 1);
+        assert_eq!(raw_description.MinInstanceCount, 1);
+        assert_eq!(raw_description.InitializationDataSize, 0);
+        assert!(raw_description.InitializationData.is_null());
+        assert_eq!(
+            raw_description.ServicePackageActivationMode,
+            FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_SHARED_PROCESS
+        );
+        assert!(!raw_description.Reserved.is_null());
+    }
+
+    #[test]
+    fn converts_self_reconfiguring_service_query_result() {
+        let service_name = Uri::from("fabric:/app/service");
+        let service_type = WString::from("ServiceType");
+        let manifest_version = WString::from("1.0");
+        let raw = FABRIC_SELF_RECONFIGURING_SERVICE_QUERY_RESULT_ITEM {
+            ServiceName: service_name.as_raw(),
+            ServiceTypeName: service_type.as_pcwstr(),
+            ServiceManifestVersion: manifest_version.as_pcwstr(),
+            HealthState: FABRIC_HEALTH_STATE_WARNING,
+            ServiceStatus: FABRIC_QUERY_SERVICE_STATUS_ACTIVE,
+            Metadata: std::ptr::null_mut(),
+            Reserved: std::ptr::null_mut(),
+        };
+        let item = FABRIC_SERVICE_QUERY_RESULT_ITEM {
+            Kind: FABRIC_SERVICE_KIND_SELF_RECONFIGURING,
+            Value: &raw as *const _ as *mut _,
+        };
+
+        let converted = ServiceQueryResultItem::from(&item);
+        assert_eq!(converted.get_service_name(), &service_name);
+        assert_eq!(converted.get_health_state(), HealthState::Warning);
+        let ServiceQueryResultItem::SelfReconfiguring(converted) = converted else {
+            panic!("expected self-reconfiguring service");
+        };
+        assert_eq!(converted.service_type_name, service_type);
+        assert_eq!(converted.service_manifest_version, manifest_version);
+        assert_eq!(converted.service_status, QueryServiceStatus::Active);
     }
 }

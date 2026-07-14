@@ -159,6 +159,12 @@ pub async fn discover_partition_id(fc: &FabricClient, service_name: &Uri) -> Str
                                 _ => None,
                             }
                         }
+                        ServicePartitionQueryResultItem::SelfReconfiguring(s) => {
+                            match s.partition_information {
+                                ServicePartitionInformation::Singleton(info) => Some(info.id),
+                                _ => None,
+                            }
+                        }
                         _ => None,
                     })
                     .next();
@@ -171,7 +177,7 @@ pub async fn discover_partition_id(fc: &FabricClient, service_name: &Uri) -> Str
         if std::time::Instant::now() >= deadline {
             panic!(
                 "no Singleton partition for {service_name} within {POLL_BUDGET:?}: \
-                 service may not have been created or is not stateful Singleton"
+                 service may not have been created or is not Singleton"
             );
         }
         tokio::time::sleep(POLL_BACKOFF).await;
@@ -185,6 +191,7 @@ pub async fn discover_partition_id(fc: &FabricClient, service_name: &Uri) -> Str
 /// call without the test having to retry the whole startup loop.
 pub struct Cluster {
     host: String,
+    urls: Vec<String>,
     clients: Vec<Option<ReplicaControlClient<Channel>>>,
     connect_timeout: Duration,
 }
@@ -197,9 +204,24 @@ impl Cluster {
     }
 
     pub fn with_host(host: impl Into<String>) -> Self {
+        let host = host.into();
+        let urls = (0..NODE_COUNT)
+            .map(|index| format!("http://{}:{}", host, REFLECTION_CONTROL_BASE_PORT + index))
+            .collect::<Vec<_>>();
         Self {
-            host: host.into(),
-            clients: (0..NODE_COUNT).map(|_| None).collect(),
+            host,
+            clients: (0..urls.len()).map(|_| None).collect(),
+            urls,
+            connect_timeout: Duration::from_millis(500),
+        }
+    }
+
+    pub fn with_urls(urls: Vec<String>) -> Self {
+        let clients = (0..urls.len()).map(|_| None).collect();
+        Self {
+            host: String::new(),
+            urls,
+            clients,
             connect_timeout: Duration::from_millis(500),
         }
     }
@@ -212,12 +234,10 @@ impl Cluster {
     /// suppressed because a node may not host the reflection sample
     /// yet (or ever).
     pub async fn ensure(&mut self) {
-        for (i, slot) in self.clients.iter_mut().enumerate() {
+        for (slot, url) in self.clients.iter_mut().zip(&self.urls) {
             if slot.is_some() {
                 continue;
             }
-            let port = REFLECTION_CONTROL_BASE_PORT + i as u16;
-            let url = format!("http://{}:{}", self.host, port);
             let endpoint = match Endpoint::from_shared(url.clone()) {
                 Ok(e) => e
                     .connect_timeout(self.connect_timeout)

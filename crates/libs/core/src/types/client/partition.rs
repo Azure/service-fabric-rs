@@ -17,10 +17,15 @@ use mssf_com::{
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_INVALID,
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_NOT_READY,
         FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_RECONFIGURING, FABRIC_SERVICE_KIND_STATEFUL,
+        FABRIC_QUERY_SERVICE_PARTITION_STATUS_RECONFIGURING,
+        FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_STATE,
+        FABRIC_SELF_RECONFIGURING_SERVICE_PARTITION_QUERY_RESULT_ITEM,
+        FABRIC_SERVICE_KIND_SELF_RECONFIGURING, FABRIC_SERVICE_KIND_STATEFUL,
         FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
         FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM,
         FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM,
+        FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_STATE,
+        FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_STATE,
         FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM,
     },
 };
@@ -74,6 +79,7 @@ pub enum ServicePartitionQueryResultItem {
     Invalid,
     Stateful(StatefulServicePartitionQueryResult),
     Stateless(StatelessServicePartitionQueryResult),
+    SelfReconfiguring(SelfReconfiguringServicePartitionQueryResult),
 }
 
 impl From<&FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartitionQueryResultItem {
@@ -95,6 +101,15 @@ impl From<&FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartitionQuery
                 };
                 Self::Stateless(raw.into())
             }
+            FABRIC_SERVICE_KIND_SELF_RECONFIGURING => {
+                let raw = unsafe {
+                    (value.Value
+                        as *const FABRIC_SELF_RECONFIGURING_SERVICE_PARTITION_QUERY_RESULT_ITEM)
+                        .as_ref()
+                        .unwrap()
+                };
+                Self::SelfReconfiguring(raw.into())
+            }
             _ => Self::Invalid,
         }
     }
@@ -109,6 +124,9 @@ impl ServicePartitionQueryResultItem {
             ServicePartitionQueryResultItem::Stateless(stateless) => {
                 stateless.partition_information.get_partition_id()
             }
+            ServicePartitionQueryResultItem::SelfReconfiguring(self_reconfiguring) => {
+                self_reconfiguring.partition_information.get_partition_id()
+            }
             ServicePartitionQueryResultItem::Invalid => GUID::zeroed(),
         }
     }
@@ -116,6 +134,9 @@ impl ServicePartitionQueryResultItem {
         match self {
             ServicePartitionQueryResultItem::Stateful(stateful) => stateful.health_state,
             ServicePartitionQueryResultItem::Stateless(stateless) => stateless.health_state,
+            ServicePartitionQueryResultItem::SelfReconfiguring(self_reconfiguring) => {
+                self_reconfiguring.health_state
+            }
             ServicePartitionQueryResultItem::Invalid => HealthState::Invalid,
         }
     }
@@ -200,6 +221,29 @@ impl From<&FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM>
         Self {
             partition_information: unsafe { value.PartitionInformation.as_ref().unwrap().into() },
             instance_count: value.InstanceCount,
+            health_state: (&value.HealthState).into(),
+            partition_status: (&value.PartitionStatus).into(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SelfReconfiguringServicePartitionQueryResult {
+    pub partition_information: ServicePartitionInformation,
+    pub instance_count: u32,
+    pub min_instance_count: u32,
+    pub health_state: HealthState,
+    pub partition_status: ServicePartitionStatus,
+}
+
+impl From<&FABRIC_SELF_RECONFIGURING_SERVICE_PARTITION_QUERY_RESULT_ITEM>
+    for SelfReconfiguringServicePartitionQueryResult
+{
+    fn from(value: &FABRIC_SELF_RECONFIGURING_SERVICE_PARTITION_QUERY_RESULT_ITEM) -> Self {
+        Self {
+            partition_information: unsafe { value.PartitionInformation.as_ref().unwrap().into() },
+            instance_count: value.InstanceCount,
+            min_instance_count: value.MinInstanceCount,
             health_state: (&value.HealthState).into(),
             partition_status: (&value.PartitionStatus).into(),
         }
@@ -320,8 +364,8 @@ pub struct PartitionHealthResult {
     pub partition_id: GUID,
     pub aggregated_health_state: HealthState,
     pub health_events: Vec<super::HealthEvent>,
+    pub replica_health_states: Vec<ReplicaHealthState>,
     // TODO: other fields
-    // pub replicas_health: Vec<super::ReplicaHealthResult>,
     // pub health_statistics: super::HealthStatistics,
     // pub unhealthy_evaluations: Vec<super::HealthEvaluation>,
 }
@@ -332,10 +376,157 @@ impl From<&mssf_com::FabricClient::IFabricPartitionHealthResult> for PartitionHe
         let health_event_list = unsafe { raw.HealthEvents.as_ref() }.map_or(vec![], |list| {
             crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
         });
+        let replica_health_states = unsafe { raw.ReplicaHealthStates.as_ref() }
+            .map_or(vec![], |list| {
+                crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
+            });
         Self {
             partition_id: raw.PartitionId,
             aggregated_health_state: (&raw.AggregatedHealthState).into(),
             health_events: health_event_list,
+            replica_health_states,
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PartitionHealthState {
+    pub partition_id: GUID,
+    pub aggregated_health_state: HealthState,
+}
+
+impl From<&mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATE> for PartitionHealthState {
+    fn from(value: &mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATE) -> Self {
+        Self {
+            partition_id: value.PartitionId,
+            aggregated_health_state: (&value.AggregatedHealthState).into(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum ReplicaHealthState {
+    Stateful {
+        partition_id: GUID,
+        replica_id: i64,
+        aggregated_health_state: HealthState,
+    },
+    Stateless {
+        partition_id: GUID,
+        instance_id: i64,
+        aggregated_health_state: HealthState,
+    },
+    SelfReconfiguring {
+        partition_id: GUID,
+        instance_id: i64,
+        aggregated_health_state: HealthState,
+    },
+}
+
+impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE> for ReplicaHealthState {
+    fn from(value: &mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE) -> Self {
+        match value.Kind {
+            FABRIC_SERVICE_KIND_STATEFUL => {
+                let raw = unsafe {
+                    (value.Value as *const FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_STATE)
+                        .as_ref()
+                        .unwrap()
+                };
+                Self::Stateful {
+                    partition_id: raw.PartitionId,
+                    replica_id: raw.ReplicaId,
+                    aggregated_health_state: (&raw.AggregatedHealthState).into(),
+                }
+            }
+            FABRIC_SERVICE_KIND_STATELESS => {
+                let raw = unsafe {
+                    (value.Value as *const FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_STATE)
+                        .as_ref()
+                        .unwrap()
+                };
+                Self::Stateless {
+                    partition_id: raw.PartitionId,
+                    instance_id: raw.InstanceId,
+                    aggregated_health_state: (&raw.AggregatedHealthState).into(),
+                }
+            }
+            FABRIC_SERVICE_KIND_SELF_RECONFIGURING => {
+                let raw = unsafe {
+                    (value.Value as *const FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_STATE)
+                        .as_ref()
+                        .unwrap()
+                };
+                Self::SelfReconfiguring {
+                    partition_id: raw.PartitionId,
+                    instance_id: raw.InstanceId,
+                    aggregated_health_state: (&raw.AggregatedHealthState).into(),
+                }
+            }
+            _ => panic!("Invalid service kind in ReplicaHealthState"),
+        }
+    }
+}
+
+impl ReplicaHealthState {
+    pub fn get_aggregated_health_state(&self) -> HealthState {
+        match self {
+            Self::Stateful {
+                aggregated_health_state,
+                ..
+            }
+            | Self::Stateless {
+                aggregated_health_state,
+                ..
+            }
+            | Self::SelfReconfiguring {
+                aggregated_health_state,
+                ..
+            } => *aggregated_health_state,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mssf_com::FabricTypes::{
+        FABRIC_HEALTH_STATE_OK, FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY,
+        FABRIC_SERVICE_PARTITION_INFORMATION, FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
+        FABRIC_SINGLETON_PARTITION_INFORMATION,
+    };
+
+    #[test]
+    fn converts_self_reconfiguring_partition_query_result() {
+        let partition_id = GUID::from_u128(42);
+        let singleton = FABRIC_SINGLETON_PARTITION_INFORMATION {
+            Id: partition_id,
+            Reserved: std::ptr::null_mut(),
+        };
+        let partition_information = FABRIC_SERVICE_PARTITION_INFORMATION {
+            Kind: FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
+            Value: &singleton as *const _ as *mut _,
+        };
+        let raw = FABRIC_SELF_RECONFIGURING_SERVICE_PARTITION_QUERY_RESULT_ITEM {
+            PartitionInformation: &partition_information,
+            InstanceCount: 5,
+            MinInstanceCount: 3,
+            HealthState: FABRIC_HEALTH_STATE_OK,
+            PartitionStatus: FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY,
+            Reserved: std::ptr::null_mut(),
+        };
+        let item = FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM {
+            Kind: FABRIC_SERVICE_KIND_SELF_RECONFIGURING,
+            Value: &raw as *const _ as *mut _,
+        };
+
+        let converted = ServicePartitionQueryResultItem::from(&item);
+        assert_eq!(converted.get_partition_id(), partition_id);
+        assert_eq!(converted.get_health_state(), HealthState::Ok);
+        let ServicePartitionQueryResultItem::SelfReconfiguring(converted) = converted else {
+            panic!("expected self-reconfiguring partition");
+        };
+        assert_eq!(converted.instance_count, 5);
+        assert_eq!(converted.min_instance_count, 3);
+        assert_eq!(converted.partition_status, ServicePartitionStatus::Ready);
     }
 }

@@ -6,10 +6,12 @@
 use mssf_core::WString;
 use mssf_core::runtime::CodePackageActivationContext;
 use mssf_util::tokio::TokioExecutor;
+use samples_reflection::SELF_RECONFIGURING_SERVICE_TYPE_NAME;
 use samples_reflection::SERVICE_TYPE_NAME;
 use samples_reflection::grpc;
 use samples_reflection::grpc::ReplicaRegistry;
 use samples_reflection::grpc_control::{control_port_for_node, replica_control_server};
+use samples_reflection::self_reconfiguring::SelfReconfiguringFactory;
 use samples_reflection::statefulstore::Factory;
 use tokio_util::sync::CancellationToken;
 use tracing::info;
@@ -80,16 +82,24 @@ fn main() -> mssf_core::Result<()> {
     // sibling container can reach it via the onebox container's IP
     // (Linux devcontainer setup) and so a same-host test driver can
     // reach it via 127.0.0.1 (Windows onebox).
-    let grpc_port = control_port_for_node(&node_name);
+    let exclusive_activation = std::env::var("Fabric_ServicePackageActivationId")
+        .is_ok_and(|activation_id| !activation_id.is_empty());
+    let grpc_port = if exclusive_activation {
+        0
+    } else {
+        control_port_for_node(&node_name)
+    };
     let grpc_bind_addr: std::net::SocketAddr = ([0, 0, 0, 0], grpc_port).into();
-    let std_listener = std::net::TcpListener::bind(grpc_bind_addr).unwrap_or_else(|e| {
-        panic!("failed to bind gRPC listener on {grpc_bind_addr} (node {node_name}): {e}")
+    let std_listener = std::net::TcpListener::bind(grpc_bind_addr).unwrap_or_else(|error| {
+        panic!("failed to bind gRPC listener on {grpc_bind_addr} (node {node_name}): {error}")
     });
     std_listener
         .set_nonblocking(true)
         .expect("failed to set non-blocking");
     let grpc_local_addr = std_listener.local_addr().expect("failed to get local addr");
-    info!("gRPC server listening on {grpc_local_addr} (node {node_name})");
+    info!(
+        "gRPC server listening on {grpc_local_addr} (node {node_name}, exclusive={exclusive_activation})"
+    );
 
     // Shared state between gRPC and Service Fabric
     let registry = ReplicaRegistry::new();
@@ -117,10 +127,21 @@ fn main() -> mssf_core::Result<()> {
         hostname,
         e.clone(),
         grpc_port,
-        registry,
+        registry.clone(),
     ));
     runtime
         .register_stateful_service_factory(&WString::from(SERVICE_TYPE_NAME), factory)
+        .unwrap();
+    runtime
+        .register_self_reconfiguring_service_factory(
+            &WString::from(SELF_RECONFIGURING_SERVICE_TYPE_NAME),
+            Box::new(SelfReconfiguringFactory::new(
+                e.clone(),
+                registry,
+                get_hostname()?.to_string(),
+                grpc_local_addr.port(),
+            )),
+        )
         .unwrap();
 
     e.block_until_ctrlc();

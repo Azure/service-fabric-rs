@@ -7,6 +7,7 @@
         <LoadMetric Name="MyLoad" Weight="Low" PrimaryDefaultLoad="0" SecondaryDefaultLoad="0" />
       </LoadMetrics>
     </StatefulServiceType>
+    <SelfReconfiguringServiceType ServiceTypeName="ReflectionSelfReconfigService" />
   </ServiceTypes>
   <CodePackage Name="Code" Version="1.0">
     <EntryPoint>

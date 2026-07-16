@@ -2,7 +2,7 @@
 
 Status: Proposal / experiment. Nothing shipped.
 
-Date: 2026-06-04
+Date: 2026-06-04 (last updated 2026-07-16)
 
 Owners: mssf maintainers
 
@@ -108,41 +108,39 @@ plumbing to talk to SF services.
   service discovery + LB. They compose naturally later but are
   out of scope for v1.
 
-## Architecture options
+## Architecture
 
-Three places the SF→xDS translation can live. All three are
-open — they can be evaluated independently, and more than one
-can ship behind a common SF→xDS core library.
+The SF→xDS translation runs in an out-of-process **local xDS
+agent** (below), deployed per node. It has a single-tier and a
+two-tier form (see [Two-tier discovery](#two-tier-discovery-sf-yarp-inspired)),
+and the same agent code can be co-hosted with a client in one
+process for tests (see
+[Single-process test harness](#single-process-test-harness)).
 
-### Option A — In-process xDS source (Rust only)
+> **Rejected as the basis — in-process Rust-only source.** An
+> in-process Rust path already exists
+> ([`FabricTargetResolver`](../../crates/libs/util/src/tonic/naming/mod.rs)
+> + [`Channel::balance_channel`](https://docs.rs/tonic/0.14/tonic/transport/struct.Channel.html#method.balance_channel),
+> no xDS) and stays the recommended baseline for a lone Rust caller
+> (see [Why pursue this?](#why-pursue-this)). It is not the basis
+> for *this* proposal because it only helps Rust and gives up the
+> uniform, language-agnostic xDS interface — not because it is
+> technically hard. Hand-writing a full xDS *client* in Rust would
+> be hard, but that is unnecessary: `tonic-xds` already provides
+> one, and it can even run in-process against an in-process ADS
+> source, as the [test harness](#single-process-test-harness) does.
 
-A Rust library that implements gRPC-xDS-the-client locally:
-parses `xds:///fabric/...` URIs, owns a `FabricClient` and
-naming plumbing, and feeds endpoints through gRPC's LB policy
-machinery.
-
-Pros: no extra process; pure in-process call.
-
-Cons: requires a Rust gRPC xDS client implementation. None
-exists in `tonic` today. Building one is a large undertaking
-(LB policy registry, subchannel state machines, ORCA, RLS,
-…).
-
-### Option B — Local xDS agent (per node)
+### Local xDS agent (per node)
 
 A small `mssf-xds-agent` process (Rust, built on `tonic`) runs
 on every SF node (as an SF stateless `-1` service, see
 [Deployment](#deployment)), listens on a local endpoint (loopback
 TCP or a Unix domain socket), and speaks
 [ADS](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol#aggregated-discovery-service)
-to local gRPC clients. It owns a `FabricClient`, registers a
-[notification filter](https://learn.microsoft.com/en-us/dotnet/api/system.fabric.servicenotificationfilterdescription)
-for the SF URIs it serves, and translates pushes into xDS
-`DiscoveryResponse`s.
-
-Clients are configured with `GRPC_XDS_BOOTSTRAP` pointing at the
-local agent (loopback `127.0.0.1:<port>` or a `unix:` socket).
-Any gRPC language works unchanged.
+to local gRPC clients. Clients are configured with
+`GRPC_XDS_BOOTSTRAP` pointing at the local agent (loopback
+`127.0.0.1:<port>` or a `unix:` socket), so any gRPC language works
+unchanged.
 
 ```
 +----------------+         +-----------------------+
@@ -158,23 +156,253 @@ Any gRPC language works unchanged.
                               +-----------------+
 ```
 
-Pros: works for every language. Deploys as a stateless `-1`
-service, which fits SF's node-level model — one self-managed
-instance per node.
+Where the SF-facing discovery lives has two shapes, both valid for
+the local agent:
 
-Cons: extra process to deploy and monitor. Local hop on every
-new subchannel (one-time, cheap).
+- **Single-tier (simplest).** Each agent owns its own
+  `FabricClient`, registers a
+  [notification filter](https://learn.microsoft.com/en-us/dotnet/api/system.fabric.servicenotificationfilterdescription)
+  for the SF URIs it serves, and translates naming pushes into xDS
+  `DiscoveryResponse`s locally (the diagram above). Good for small
+  clusters and the earliest experiment.
+- **Two-tier (scalable, SF-YARP-style).** Borrowed from
+  [microsoft/service-fabric-yarp](https://github.com/microsoft/service-fabric-yarp):
+  a **single** `mssf-xds-discovery` control tier owns the one
+  `FabricClient` and registers **one** cluster-wide notification
+  filter, does the SF→xDS translation once, and publishes the
+  snapshot; each per-node agent drops its `FabricClient` and becomes
+  a thin relay that re-serves the snapshot locally. This collapses
+  N per-node naming subscriptions to one. See
+  [Two-tier discovery](#two-tier-discovery-sf-yarp-inspired) for the
+  full design.
 
-### Option C — Centralized control plane
+Start single-tier to nail the wire shape, then split into the
+two-tier form when per-node naming load or config consistency
+warrants it — the SF→xDS translation code is identical in both;
+only *where it runs* changes.
 
-One (or HA-set) `mssf-xds-control-plane` service per cluster.
-Clients connect directly to it. Simplest deploy if the cluster
-already runs a control-plane-flavored service.
+Pros: works for every language; deploys as a stateless `-1` service
+that fits SF's node-level model. In the two-tier form, one
+notification registration and one authoritative translation serve
+the whole cluster. Client RPCs always go direct to the target
+replica (no data-path hop).
 
-Pros: one place to add policy, RBAC, telemetry.
+Cons: extra process(es) to deploy and monitor; a one-time local hop
+on every new subchannel (cheap). The two-tier form adds a singleton
+control tier — on its restart, relays serve last-known-good, so it
+is a config-freshness gap rather than a data-path outage — plus an
+extra hop on the *config* path (not the request path).
 
-Cons: extra network hop on every xDS stream; CP becomes a
-cluster-wide SPOF if not HA.
+### Single-process test harness
+
+For tests and local development, the agent's code can run **in the
+same OS process** as the gRPC client — no SF cluster, no separate
+binary, no `GRPC_XDS_BOOTSTRAP` file wiring. A test starts the ADS
+server on an ephemeral loopback port (or an in-memory
+`tokio::io::duplex` transport), points a `tonic-xds` channel at it,
+and drives requests end-to-end inside one `#[tokio::test]`. The SF
+naming source is swapped for a fake that yields scripted
+`ResolvedServicePartition`s, so failover, empty-endpoint, and
+partition-selection cases are exercised deterministically without a
+real `FabricClient`.
+
+This is purely a **test harness**, not a deployment shape: it keeps
+the SF→xDS translation and the ADS wire format under
+unit/integration test while the production path stays the
+out-of-process per-node agent above. It is the natural home for the
+conformance check against `tonic-xds` (caveat 3 in
+[Rust client story](#rust-client-story)) and for regression tests of
+the [failover walkthrough](#failover-walkthrough--primary-moves-n1--n2).
+Build it as a reusable fixture (e.g. `mssf-xds-agent`'s test support
+module) so every later phase reuses it.
+
+## Two-tier discovery (SF-YARP-inspired)
+
+[microsoft/service-fabric-yarp](https://github.com/microsoft/service-fabric-yarp)
+solves the same shape of problem for HTTP and is worth copying: it
+**separates discovery from the data plane**. Rather than have every
+proxy node talk to `FabricClient`, SF-YARP splits into two services:
+
+- `FabricDiscovery.Service` — a **stateless singleton**
+  (`FabricDiscovery_InstanceCount = 1`) that owns the one
+  `FabricClient`, registers **one** cluster-wide
+  `ServiceNotificationFilterDescription` (name `fabric:`,
+  `matchNamePrefix: true`), discovers the topology, and exposes a
+  **summarized** config for consumers to pull in real time. It is
+  *not* replicated/HA — on failure SF restarts the single instance
+  and consumers serve last-known-good during the gap.
+- `YarpProxy.Service` — the data plane, deployed on **every** node
+  (stateless `-1`). It holds **no** `FabricClient` and registers
+  **no** notification filter; it just consumes the summarized config
+  from the discovery service and proxies traffic.
+
+One relevant divergence: SF-YARP **does not handle partition keys**
+(it enumerates partitions but requires the caller to pass a
+partition GUID as a query parameter). This proposal goes beyond it
+with `mssf-partition-key` + RDS `Range`/`Exact` matching (see
+[LB policy mapping](#lb-policy-mapping)); only the *discovery
+split* is borrowed, not SF-YARP's partition limitation.
+
+The payoff SF-YARP gets — and the reason to borrow it — is that the
+expensive, chatty SF-naming subscription happens **once** for the
+whole cluster instead of once per node.
+
+### Applying the split to xDS
+
+Map the two SF-YARP tiers onto the agent:
+
+| SF-YARP | xDS analog | Runs where | Owns `FabricClient`? | Notification filter? |
+|---|---|---|---|---|
+| `FabricDiscovery.Service` | `mssf-xds-discovery` (control tier) | stateless singleton (`InstanceCount=1`) | **Yes**, exactly one | **One** cluster-wide `fabric:` prefix filter |
+| `YarpProxy.Service` | `mssf-xds-agent` (relay tier) | every node, stateless `-1` | No | No |
+| summarized config API | ADS snapshot stream (discovery → relay) | — | — | — |
+
+The relay is, in xDS terms, a **caching proxy**: an xDS *client*
+upstream to the control tier and an xDS *server* downstream to its
+local clients. Two ways it can re-serve the snapshot, an open
+design choice:
+
+- **Verbatim** — hold the whole cluster's LDS/RDS/CDS/EDS and serve
+  it to any local client. Simplest, but every node caches the full
+  snapshot (memory + fan-out grow with cluster size, partly working
+  against the scaling win).
+- **On-demand (filtered)** — forward each local client's resource
+  subscriptions upstream and cache only what its clients asked for.
+  Scales better but is real xDS-federation work (subscription
+  propagation, per-relay resource sets). LDS/CDS are named
+  subscriptions, so the relay already knows *what* is wanted; the
+  cost is plumbing it upstream.
+
+Start verbatim (simple, correct); move to on-demand only if
+per-node snapshot size becomes a problem.
+
+The control tier does the SF→xDS translation described in
+[SF naming → xDS resource mapping](#sf-naming--xds-resource-mapping)
+**once** and publishes the resulting LDS/RDS/CDS/EDS snapshot. Each
+per-node relay subscribes to that snapshot and re-serves it verbatim
+(or filtered to just the URIs its local clients actually asked for)
+over the local loopback/UDS ADS endpoint. Node-local gRPC clients
+are unchanged — they still point at `127.0.0.1` / a UDS via
+`GRPC_XDS_BOOTSTRAP` and speak vanilla xDS.
+
+Crucially, only the **config** takes the extra hop (control tier →
+relay). Client RPCs still connect **directly** to the target
+replica's endpoint, exactly as in the single-tier form — the
+two-tier split adds no data-path latency.
+
+```mermaid
+flowchart TB
+    SF["SF Naming"]
+    Disc["mssf-xds-discovery (control tier)<br/>stateless singleton (InstanceCount=1)<br/>ONE FabricClient · ONE notif filter (fabric:)"]
+    subgraph NodeA["Node A"]
+        RA["mssf-xds-agent (relay)<br/>no FabricClient"]
+        CA["gRPC client"]
+    end
+    subgraph NodeB["Node B"]
+        RB["mssf-xds-agent (relay)<br/>no FabricClient"]
+        CB["gRPC client"]
+    end
+    Svc["target service replica(s)"]
+    SF -- "1 notification stream" --> Disc
+    Disc -- "xDS snapshot (config only)" --> RA
+    Disc -- "xDS snapshot (config only)" --> RB
+    CA -- "xds:/// via loopback/UDS" --> RA
+    CB -- "xds:/// via loopback/UDS" --> RB
+    CA -. "direct gRPC RPC" .-> Svc
+    CB -. "direct gRPC RPC" .-> Svc
+```
+
+### Why borrow it — per-node notification cost
+
+In the single-tier form of the
+[local agent](#local-xds-agent-per-node), each of *N* nodes
+runs an agent that independently registers a `fabric:`
+catch-all `ServiceNotificationFilterDescription`. That is **N**
+cluster-wide subscriptions against SF Naming, **N** copies of the
+same topology stream, and **N** redundant SF→xDS translations — all
+producing identical output. On a large cluster that is real,
+avoidable load on the naming subsystem. The two-tier split collapses
+it to **one** subscription, one translation, and a cheap fan-out of
+the already-computed snapshot. This is precisely the trade SF-YARP
+makes.
+
+### Freshness: PUSH + PULL, like SF-YARP
+
+Copy SF-YARP's hybrid refresh into the control tier, not just raw
+notifications:
+
+- **PULL** — periodically re-poll the full topology (SF-YARP's
+  `FullRefreshPollPeriodInSeconds`, default 300s) to self-heal from
+  any missed notification.
+- **PUSH** — react to endpoint-change notifications to mark services
+  dirty and recompute only the affected resources fast.
+- **Fail-fast health** — mirror `AbortAfterTimeoutInSeconds`
+  (default 600s) / `AbortAfterConsecutiveFailures` (default 3): if
+  topology discovery stalls or repeatedly fails, terminate the
+  instance so SF restarts it (on this or another node) rather than
+  serving stale config. Because the tier is a singleton, relays
+  serving last-known-good cover the restart gap.
+
+The [hold-last-known-good / staleness-timeout](#offline--empty-endpoint-window)
+policy already proposed for the agent moves into the control tier
+unchanged; the relays simply mirror whatever snapshot they last
+received.
+
+### Tradeoffs and when to choose it
+
+| | Single-tier (per-node agent) | Two-tier (central discovery) |
+|---|---|---|
+| Notification registrations | one per node (N) | one per cluster |
+| SF→xDS translations | N (redundant) | 1 (authoritative) |
+| Config consistency across nodes | eventual, per-node | single source of truth |
+| Failure domain | isolated per node | shared singleton control tier; on restart, relays serve last-known-good (config-freshness gap, not a data-path outage) |
+| Deploy complexity | one service | two services + a config channel |
+| Data-path latency | direct to replica | direct to replica (unchanged) |
+
+Choose the two-tier split when the cluster is large enough that
+per-node naming subscriptions or divergent per-node config become a
+concern, or when a single authoritative translation (for policy,
+telemetry, RBAC later) is valuable. For a small cluster or an early
+experiment, the single-tier agent is simpler — so keep the
+phasing below.
+
+### Where SF-facing responsibilities live
+
+Several sections below ([Failover signal](#failover-signal),
+[Forced re-resolve](#forced-re-resolve-on-client-observed-failure))
+are written for the **single-tier** agent, which owns a
+`FabricClient` and re-resolves SF directly. Under two-tier those
+responsibilities move to the **control tier**, because the relay
+has no `FabricClient`:
+
+- Notification handling and SF→xDS translation happen only in the
+  control tier; relays just mirror the pushed snapshot.
+- The client-observed-failure fast-paths (LRS-driven and
+  ORCA-driven re-resolve, and the opt-in `Complain` RPC) cannot
+  re-resolve at the relay. The relay **forwards** the signal
+  upstream to the control tier, which re-resolves SF and pushes a
+  fresh snapshot back down. This adds one control-plane hop to
+  those paths — acceptable because they are already the
+  slow-path escape hatch, not the steady state.
+- Client RPCs are unaffected in both tiers (always direct to the
+  replica).
+
+### Phasing
+
+This is a topology refinement layered on the existing
+[phased plan](#phased-experiment-plan), not a rewrite:
+
+- **Phases 1–2** stay single-tier (each agent owns a
+  `FabricClient`) to nail the wire shape and notification handling
+  with the smallest surface.
+- **Phase 2.5 (new)** — factor the SF-facing discovery + SF→xDS
+  translation into `mssf-xds-discovery` (stateless singleton,
+  `InstanceCount=1`) and reduce `mssf-xds-agent` to a snapshot
+  relay. The translation code is unchanged; only *where it runs*
+  and *how the snapshot reaches the node* change.
+- **Phases 3–5** (partitioning, priority routing, ORCA/LRS) then
+  implement **once** in the control tier and fan out to every relay
+  for free.
 
 ## SF naming → xDS resource mapping
 
@@ -319,9 +547,10 @@ validates it against the `echomain` and `kvstore` samples.
 
 ## Failover signal
 
-The control plane sees primary-role-change events globally, so a
-client-side per-response signal is not needed under xDS. Two
-mechanisms, used together:
+The SF-facing component that owns the notification stream — the
+agent (single-tier) or the control tier (two-tier) — sees
+primary-role-change events globally, so a client-side per-response
+signal is not needed under xDS. Two mechanisms, used together:
 
 ### Push-driven (preferred)
 
@@ -586,7 +815,7 @@ Four near-term caveats:
    address configuration is future work. It is therefore **not
    confirmed** that `tonic-xds` reads the standard
    `GRPC_XDS_BOOTSTRAP` file, which is how the
-   [Option B deployment](#option-b--local-xds-agent-per-node)
+   [local-agent deployment](#local-xds-agent-per-node)
    assumes every language finds the local agent. Phase 0/1 must
    determine how `tonic-xds` is told where the management server
    is (bootstrap file, env var, or a config field that doesn't
@@ -629,6 +858,11 @@ Four near-term caveats:
 - No notification filter yet — refresh-on-subscribe + periodic
   re-poll. Establishes the wire shape with the smallest possible
   surface.
+- Build the [single-process test harness](#single-process-test-harness)
+  here (agent + `tonic-xds` client + fake naming source in one
+  `#[tokio::test]`) and assert EDS round-trips end-to-end. This is
+  the primary test deliverable of Phase 1 and the fixture every
+  later phase reuses.
 
 ### Phase 2 — Notification-driven push
 
@@ -639,6 +873,20 @@ Four near-term caveats:
 - The agent's lifetime is the process lifetime, which sidesteps
   the filter-lifecycle-on-Drop and FabricClient cleanup race
   that complicate in-process notification consumers.
+
+### Phase 2.5 — Split into control tier + relay (optional, SF-YARP-style)
+
+- Factor the SF-facing discovery + SF→xDS translation out of the
+  per-node agent into a single `mssf-xds-discovery` control tier
+  (stateless singleton, `InstanceCount=1`), and reduce
+  `mssf-xds-agent` to a snapshot relay that owns no `FabricClient`.
+  See [Two-tier discovery](#two-tier-discovery-sf-yarp-inspired).
+- Collapses N per-node `fabric:` notification registrations to one
+  cluster-wide subscription and one authoritative translation.
+- The translation code is unchanged; only *where it runs* and *how
+  the snapshot reaches each node* change. Skip this phase for small
+  clusters or early experiments where the single-tier agent is
+  sufficient.
 
 ### Phase 3 — Partitioned services (partition selection)
 
@@ -677,8 +925,8 @@ best fit because it:
   no external bootstrap step;
 - is managed, health-monitored, and upgraded by SF itself like any
   other service;
-- gets a FabricClient and node context from its activation
-  environment.
+- gets a FabricClient (single-tier) and node context from its
+  activation environment.
 
 Each instance listens locally and clients on the same node connect
 to it. Two listener transports, either or both:
@@ -701,6 +949,18 @@ the cluster bootstrap, outside SF's app model — is only worth it
 if the agent must come up strictly before any user service. The
 stateless `-1` service is otherwise simpler and self-managing.
 
+**Two-tier deployment.** If the
+[two-tier split](#two-tier-discovery-sf-yarp-inspired) is adopted,
+the same stateless `-1` recommendation applies to the
+`mssf-xds-agent` *relay* (minus the FabricClient — the relay gets no
+naming access), and the `mssf-xds-discovery` *control tier* deploys
+as a separate **stateless singleton** (`InstanceCount=1`), mirroring
+SF-YARP's `FabricDiscovery.Service`. It is not replicated; on
+failure SF restarts the instance and relays serve last-known-good
+during the gap. Only the control tier is granted FabricClient
+credentials; relays reach it over the cluster's internal network to
+receive xDS snapshots and re-serve them locally.
+
 ## Security
 
 - Local-only by default (loopback TCP or UDS). Cross-node xDS
@@ -708,7 +968,9 @@ stateless `-1` service is otherwise simpler and self-managing.
   listener additionally restricts access by filesystem
   permissions.
 - The agent runs as a service account with FabricClient
-  credentials. Standard SF security boundaries apply.
+  credentials. Standard SF security boundaries apply. In the
+  two-tier form only the control tier holds those credentials; the
+  per-node relay has no naming access.
 - xDS-level mTLS / RBAC is deferred (Future work). Until then,
   xDS data is host-trust scoped.
 
@@ -721,9 +983,11 @@ stateless `-1` service is otherwise simpler and self-managing.
 - **Authority handling.** xDS bootstrap supports multiple
   authorities (each can point at a different control plane).
   Useful for federation; complicates the agent. Defer.
-- **Notification filter granularity.** Per-URI filters or one
-  catch-all filter per app? Per-URI is simpler; catch-all may
-  be more efficient for apps with hundreds of services.
+- **Notification filter granularity (single-tier only).** Per-URI
+  filters or one catch-all filter per app? Per-URI is simpler;
+  catch-all may be more efficient for apps with hundreds of
+  services. Mooted under two-tier, where the control tier registers
+  one cluster-wide `fabric:` prefix filter.
 - **Service config vs. xDS-driven config.** gRPC also accepts a
   static service config blob (LB policy + retry). Should the
   agent always push service config via LDS, or rely on

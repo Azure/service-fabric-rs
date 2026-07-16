@@ -6,6 +6,44 @@ Date: 2026-06-04
 
 Owners: mssf maintainers
 
+## Why pursue this?
+
+**The value is client simplicity.** With `tonic-xds`, reaching an
+SF service is a vanilla xDS channel:
+
+```rust
+let channel = XdsChannelBuilder::with_config(
+    XdsChannelConfig::default()
+        .with_target_uri(XdsUri::parse("xds:///fabric/MyApp/Greeter")?),
+).build_grpc_channel();
+let client = GreeterClient::new(channel);
+```
+
+No SF-specific client code, no notification registration, no
+endpoint parsing, no LB wiring — and the *same* code shape in
+every gRPC language (Go/Java/C++/Node/Rust).
+
+Contrast the direct path a Rust caller uses today: construct a
+`FabricClient`, register a notification filter, build a
+[`ServicePartitionResolver`](../../crates/libs/util/src/resolve.rs)
+with a retryer, write a `TargetSelector` to pick a replica and
+parse its address, and feed the result into
+[`Channel::balance_channel`](https://docs.rs/tonic/0.14/tonic/transport/struct.Channel.html#method.balance_channel).
+That works, but it's a lot of SF-aware boilerplate — and it only
+exists in Rust. xDS moves that complexity into the agent, once,
+behind a standard interface.
+
+The tradeoff: an `mssf-xds-agent` must run on each node. So this
+is worth it when either (a) non-Rust gRPC clients need SF services
+(they have no `ServicePartitionResolver` equivalent), or (b) even
+Rust callers want the simpler, uniform xDS client instead of the
+manual plumbing. If neither holds — a single Rust caller happy
+with the direct path and no desire to run an agent — the direct
+path is fine and this proposal is optional.
+
+Phase 0 still validates the chosen client(s) against a minimal ADS
+source before building anything.
+
 ## Background
 
 Service Fabric (SF) services are addressed by Fabric URIs
@@ -47,9 +85,10 @@ plumbing to talk to SF services.
    into the xDS resource model
    ([LDS/RDS/CDS/EDS](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol#resource-types)).
 3. Map SF stateful semantics (primary / secondary / partition
-   key) onto standard xDS LB policies — `round_robin` for
-   stateless, priority-routing for primary-with-fallback,
-   `ring_hash` for sticky-by-key.
+   key) onto standard xDS resources — `round_robin` for
+   stateless, priority-routing for primary-with-fallback, and
+   RDS `Route` matching on the partition key to select the owning
+   partition (which then reuses the same primary LB).
 4. Stay incremental: ship a minimum viable EDS-only experiment
    first; add RDS/CDS sophistication and ORCA only when a real
    workload needs them.
@@ -92,16 +131,18 @@ exists in `tonic` today. Building one is a large undertaking
 ### Option B — Local xDS agent (per node)
 
 A small `mssf-xds-agent` process (Rust, built on `tonic`) runs
-on every SF node, listens on a loopback port, and speaks
+on every SF node (as an SF stateless `-1` service, see
+[Deployment](#deployment)), listens on a local endpoint (loopback
+TCP or a Unix domain socket), and speaks
 [ADS](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol#aggregated-discovery-service)
 to local gRPC clients. It owns a `FabricClient`, registers a
 [notification filter](https://learn.microsoft.com/en-us/dotnet/api/system.fabric.servicenotificationfilterdescription)
 for the SF URIs it serves, and translates pushes into xDS
 `DiscoveryResponse`s.
 
-Clients are configured with `XDS_BOOTSTRAP=/etc/sf/xds.json`
-pointing at `127.0.0.1:<port>`. Any gRPC language works
-unchanged.
+Clients are configured with `GRPC_XDS_BOOTSTRAP` pointing at the
+local agent (loopback `127.0.0.1:<port>` or a `unix:` socket).
+Any gRPC language works unchanged.
 
 ```
 +----------------+         +-----------------------+
@@ -117,11 +158,11 @@ unchanged.
                               +-----------------+
 ```
 
-Pros: works for every language. Sidecar-style deploy fits SF's
-node-level model (one agent as a stateless `-1` service or
-guest exe).
+Pros: works for every language. Deploys as a stateless `-1`
+service, which fits SF's node-level model — one self-managed
+instance per node.
 
-Cons: extra process to deploy and monitor. Loopback hop on every
+Cons: extra process to deploy and monitor. Local hop on every
 new subchannel (one-time, cheap).
 
 ### Option C — Centralized control plane
@@ -144,34 +185,101 @@ xDS has four resource types gRPC consumes:
 [ClusterLoadAssignment](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol#clusterloadassignment)
 (EDS).
 
-### URI scheme
+### URI scheme and routing strategy
 
-`xds:///fabric/<app>/<service>[?role=primary|secondary|all][&partition=<key>]`
+> **The whole strategy in one place.** Service identity and
+> per-channel policy live in the **URI**; anything that varies per
+> request lives in a **header**.
+>
+> | Concern | Where | Mechanism |
+> |---|---|---|
+> | Which service | URI path | `xds:///fabric/<app>/<service>` becomes the xDS resource (Listener) name |
+> | Per-channel policy (primary-only vs. read-from-secondary, listener pick) | URI resource-name convention | a distinct resource name the agent maps to a cluster — **not** a query param |
+> | Which partition (per request) | `mssf-partition-key` header | RDS route match: `Range` for Int64, `String::Exact` for Named |
+>
+> The URI is bound once when the channel is built and survives
+> failover; a partition key changes per call, so it cannot ride in
+> the URI.
 
-The `fabric/<app>/<service>` portion is the xDS resource name
-(LDS / Listener key). Query params are parsed by the agent into
-RDS / CDS variants.
+`tonic-xds`'s
+[`XdsUri`](https://docs.rs/tonic-xds/latest/tonic_xds/struct.XdsUri.html)
+keeps only a `target: String` and validates just the `xds`
+scheme, so **query params are dropped** — `?role=` / `?partition=`
+cannot carry routing intent. Encode per-channel selectors in the
+resource name; do per-request partition selection with the header
+(see [LB policy mapping](#lb-policy-mapping)).
 
 Examples:
 
 | URI | Meaning |
 |---|---|
-| `xds:///fabric/MyApp/Greeter` | partitioned-singleton, default LB |
-| `xds:///fabric/MyApp/Greeter?role=primary` | force primary-only cluster |
-| `xds:///fabric/MyApp/Kv?partition=user:42` | hash-bucket lookup |
+| `xds:///fabric/MyApp/Greeter` | resolve the service; default LB. Partition (if any) selected per-request via the `mssf-partition-key` header. |
+| `xds:///fabric/MyApp/Kv` | partitioned `KvStore`; the client sets `mssf-partition-key: user:42` per call and RDS routes it to the owning partition's cluster. |
 
 ### Mapping table
 
 | SF concept | xDS resource | Notes |
 |---|---|---|
 | Fabric URI (`fabric:/App/Svc`) | `Listener` name | One listener per URI; created lazily on first subscribe. |
-| Partition (`PartitionKeyType::*`) | `RouteConfiguration` → `Cluster` selection | For singleton: one cluster. For Int64/Named: `Route` per partition, matched via request header `mssf-partition-key` or `:authority` suffix. |
+| Partition (`PartitionKeyType::*`) | `RouteConfiguration` → `Cluster` selection | Singleton: one cluster. Int64/Named: one `Route` per partition, matched on the `mssf-partition-key` request header. |
 | `ServiceEndpointRole::StatefulPrimary` | `Cluster` name `...-primary` + `Priority 0` in EDS | Optionally aggregated with secondaries (Priority 1) for failover routing. |
 | `ServiceEndpointRole::StatefulSecondary` | `Cluster` name `...-secondary` + EDS with `round_robin` | For read-from-secondary patterns. |
-| `ResolvedServiceEndpoint.address` (URL string) | `LbEndpoint.endpoint.address` | Agent parses the SF endpoint string; fails the resource if unparseable. |
+| `ResolvedServiceEndpoint.address` (URL string) | `LbEndpoint.endpoint.address` | Agent parses the SF endpoint string; see [Endpoint address parsing](#endpoint-address-parsing). Fails the resource if unparseable. |
 | `ResolvedServicePartition` version bump (notification) | EDS `DiscoveryResponse` push | Standard xDS push semantics; no client polling. |
 | `ServicePartitionAccessStatus::NotPrimary` (server side) | `HealthStatus::UNHEALTHY` on the endpoint | Removes endpoint from active set without dropping the connection; gRPC LB will pick another. |
-| `ServicePartitionInformation` (Int64/Named ranges) | `LbEndpoint` metadata + `RingHashLbConfig` hash policy on the route | For sticky-by-key. |
+| Resolve returns **no endpoints** (`FABRIC_E_SERVICE_OFFLINE`) | see [Offline / empty-endpoint window](#offline--empty-endpoint-window) | Service restarting or removed; the resolver in `resolve.rs` retries this case. |
+| `ServicePartitionInformation` (Int64/Named ranges) | `Route` match on `mssf-partition-key` → per-partition `Cluster` | Partition **selection** only. Within the chosen cluster, routing is identical to the singleton stateful-primary case. |
+
+### Offline / empty-endpoint window
+
+[`ServicePartitionResolver::resolve`](../../crates/libs/util/src/resolve.rs)
+treats an empty endpoint set as `FABRIC_E_SERVICE_OFFLINE` and
+retries it as transient (service restarting, mid-failover, or
+just removed). The agent must decide what EDS state to expose
+during that window:
+
+- **Hold last-known-good (preferred for transient blips).** Keep
+  serving the previous EDS resource and let SF's retry converge.
+  Existing subchannels stay up; a brief primary gap is invisible
+  to clients whose requests are retried. Bound this with a
+  staleness timeout so a genuinely-removed service doesn't pin
+  dead endpoints forever.
+- **Push an empty `ClusterLoadAssignment` (for confirmed
+  removal).** Once the staleness timeout elapses (or a
+  notification confirms deletion), push EDS with zero
+  `LbEndpoint`s. gRPC surfaces `Unavailable` to picks, which is
+  the correct signal for "service is gone," not "try the stale
+  address."
+
+The agent should **not** tear down the ADS resource entirely on a
+transient empty result — that would force clients to re-subscribe
+and lose the fast reconnect path. Phase 1 implements
+hold-last-known-good + staleness timeout; the confirmed-removal
+push lands with notifications in Phase 2.
+
+### Endpoint address parsing
+
+Each `ResolvedServiceEndpoint` carries **one** `address` string
+for **one** replica (the `endpoints` vec has one entry per
+replica/role — primary plus secondaries),
+[`svc_mgmt_client.rs`](../../crates/libs/core/src/client/svc_mgmt_client.rs).
+The address is **opaque and service-author-defined** — the
+[`TargetSelector`](../../crates/libs/util/src/tonic/naming/selector.rs)
+docstring calls it "a user-defined SF endpoint string — not
+necessarily a URL." Two shapes occur: a single URL (what the mssf
+samples publish, sometimes with query params, e.g.
+`grpc://10.0.0.4:20001?partition=...`), or a
+`ServiceEndpointCollection` JSON envelope
+(`{"Endpoints":{"":"http://..."}}`) if the service uses SF's
+multi-listener convention.
+
+The agent must therefore: accept either shape (for JSON, pick a
+named listener, defaulting to `""`); parse the chosen URL into
+`address` + `port_value`, failing the EDS resource on anything
+malformed; and keep the parse **pluggable** (reuse the per-service
+`TargetSelector` closure) rather than hard-coding one convention.
+This is the most common place real integrations break, so Phase 1
+validates it against the `echomain` and `kvstore` samples.
 
 ### LB policy mapping
 
@@ -181,7 +289,33 @@ Examples:
 | Stateless service, latency-aware | `LEAST_REQUEST` | `choice_count=2` |
 | Stateful primary only | `ROUND_ROBIN` over a 1-endpoint EDS | primary cluster only |
 | Stateful primary with read-from-secondary | priority-aggregated cluster: P0 = primary, P1 = secondaries | `PriorityLoadAssignment` + per-call route choice |
-| Sticky-by-key (Int64/Named partitioning) | `RING_HASH` | `hash_policy` from `mssf-partition-key` header or path-template; ring nodes = partition primaries |
+| Partitioned stateful (Int64/Named) | **same as the two rows above, applied to the selected partition's cluster** | partition is chosen by RDS first; see below |
+
+> **Partitioned routing = partition selection (RDS) + the ordinary
+> stateful-primary LB.** These are two independent layers, and the
+> second layer is *not new*:
+>
+> 1. **Select the partition (RDS).** SF partitions own disjoint key
+>    *ranges*, so a key is answerable only by its owning partition.
+>    The agent emits one `Cluster` per partition and a
+>    `RouteConfiguration` whose `Route`s match `mssf-partition-key`
+>    to that cluster — exact matching, **not** hashing.
+>    `tonic-xds` already supports this in
+>    [`routing.rs`](https://github.com/grpc/grpc-rust/blob/master/tonic-xds/src/xds/routing.rs):
+>    Int64 → `Range` matcher (SF's inclusive `[low, high]` →
+>    half-open `[low, high+1)`), Named → `String::Exact`. The header
+>    is per-call metadata, also forwarded to the server for an
+>    optional ownership check.
+> 2. **Route within the partition.** Once the cluster is chosen,
+>    routing is *identical* to the singleton stateful-primary case
+>    (1-endpoint primary EDS, or primary+secondary priority), with
+>    the same EDS-push failover. Nothing partition-specific.
+>
+> **`RING_HASH` is not used** — SF partitions are authoritative key
+> ranges, not equivalent backends to hash across, and a ring can't
+> honor exact boundaries or the one-primary-per-partition rule.
+> Phase 3 adds only the RDS selection layer and reuses the
+> Phase 1/4 primary LB unchanged.
 
 ## Failover signal
 
@@ -412,7 +546,7 @@ is the long-term answer for Rust callers. Its public API today is
 essentially:
 
 ```rust
-use tonic_xds::{XdsChannelBuilder, XdsChannelConfig, XdsUri};
+use tonic_xds::{XdsChannelBuilder, XdsChannelConfig, XdsChannelGrpc, XdsUri};
 
 let target = XdsUri::parse("xds:///fabric/MyApp/Greeter")?;
 let channel = XdsChannelBuilder::with_config(
@@ -421,44 +555,67 @@ let channel = XdsChannelBuilder::with_config(
 let client = GreeterClient::new(channel);
 ```
 
-`XdsChannelGrpc` is a `tonic::client::GrpcService` implementing
-the standard ADS-subscribe + LDS/RDS/CDS/EDS + P2C LB stack, and
-`XdsChannel` exposes the same plumbing as a generic
-`tower::Service` for non-gRPC HTTP. Aimed at the same
+This snippet is confirmed against the crate's own example (the
+builder / config / URI types and `build_grpc_channel()` match).
+`XdsChannelGrpc` is a `tonic::client::GrpcService` and `XdsChannel`
+exposes the same plumbing as a generic `tower::Service` for
+non-gRPC HTTP, aimed at the same
 [gRPC xDS features](https://github.com/grpc/grpc/blob/master/doc/grpc_xds_features.md)
-list that Go/Java/C++ implement.
+list that Go/Java/C++ implement. **The crates.io docs still frame
+LDS/RDS/CDS/EDS-over-ADS and P2C LB as _planned_ features, but the
+source is already substantially further along** — the `master`
+tree implements RDS route matching (domain/path/**header**, incl.
+integer `Range` and string matchers), weighted clusters, A28
+fraction routing, A29 data-plane TLS, and A32 circuit-breaking
+parsing. Phase 1 should still verify against a *pinned* version
+rather than assume, since the published alpha lags the tree.
 
 For this proposal that means Rust callers behave like every
-other language: configure `XDS_BOOTSTRAP` to point at the local
-`mssf-xds-agent`, parse `xds:///fabric/...`, done. No SF-specific
-resolver code in the client.
+other language: point the client at the local `mssf-xds-agent`,
+parse `xds:///fabric/...`, done. No SF-specific resolver code in
+the client.
 
-Three near-term caveats:
+Four near-term caveats:
 
-1. `tonic-xds` is **alpha** (one published version, ~20 total
+1. `tonic-xds` is **alpha** (one published version, ~26 total
    downloads at time of writing). Feature coverage and API
    stability will move. Plan to pin a version and track upstream.
-2. The agent → `tonic-xds` interop is just "standard xDS," but
+2. **How the client reaches the agent is unresolved.**
+   `XdsChannelConfig` today "only supports specifying the xDS URI
+   for the target service"; the docs say management-server
+   address configuration is future work. It is therefore **not
+   confirmed** that `tonic-xds` reads the standard
+   `GRPC_XDS_BOOTSTRAP` file, which is how the
+   [Option B deployment](#option-b--local-xds-agent-per-node)
+   assumes every language finds the local agent. Phase 0/1 must
+   determine how `tonic-xds` is told where the management server
+   is (bootstrap file, env var, or a config field that doesn't
+   exist yet) before the Rust path can work at all. This does not
+   affect non-Rust clients, which use their runtime's standard
+   bootstrap.
+3. The agent → `tonic-xds` interop is just "standard xDS," but
    it's worth an explicit conformance test against the
    `tonic-xds` examples early in Phase 1 to catch any
    alpha-era quirks.
-3. If `tonic-xds` doesn't yet implement a feature a workload
-   needs (e.g. ring-hash, ORCA, LRS reporting), Rust callers can
-   fall back to a thin shim that opens an ADS stream to the
+4. If `tonic-xds` doesn't yet implement a feature a workload
+   needs (e.g. ORCA, LRS reporting, or A42 `hash_policy`
+   population — which is still a TODO, though partition selection
+   uses header *matching*, which **is** implemented), Rust callers
+   can fall back to a thin shim that opens an ADS stream to the
    local agent, reads only EDS, and feeds endpoints into
    [`Channel::balance_channel`](https://docs.rs/tonic/0.14/tonic/transport/struct.Channel.html#method.balance_channel)
    — strictly a stopgap, not a long-term path.
 
 ## Phased experiment plan
 
-### Phase 0 — Decide if xDS is worth pursuing
+### Phase 0 — Pick and validate the target client(s)
 
-- Pick one real polyglot workload (e.g. a Java/Go gRPC client
-  that wants to call a Rust SF stateful service). If none,
-  defer this whole proposal.
-- Validate that the gRPC-xDS clients in those languages
-  actually accept a minimal ADS source (some early versions
-  require LRS, ALS, etc.).
+- Pick the client(s) that motivate this: a non-Rust gRPC client
+  (Java/Go/C++/Node) that needs SF services, and/or a Rust caller
+  that wants the simpler `xds:///` channel over the manual
+  `ServicePartitionResolver` plumbing.
+- Validate that the chosen gRPC-xDS clients accept a minimal ADS
+  source (some early versions require LRS, ALS, etc.).
 
 ### Phase 1 — Minimal `mssf-xds-agent`, EDS only
 
@@ -467,7 +624,8 @@ Three near-term caveats:
   per URI, fixed `ROUND_ROBIN`) + `EDS` (from SF naming).
 - One `FabricClient` shared across all URIs.
 - Selector logic (which endpoints to include, role filter) is
-  parameterized per URI via the URI query string.
+  keyed off the resource name (the `target`), since query params
+  are not available on the client `xds://` URI.
 - No notification filter yet — refresh-on-subscribe + periodic
   re-poll. Establishes the wire shape with the smallest possible
   surface.
@@ -482,12 +640,14 @@ Three near-term caveats:
   the filter-lifecycle-on-Drop and FabricClient cleanup race
   that complicate in-process notification consumers.
 
-### Phase 3 — Partitioned services + sticky LB
+### Phase 3 — Partitioned services (partition selection)
 
-- Add `RING_HASH` cluster shape for Int64/Named partitioned
-  services.
-- Route requests by `mssf-partition-key` header (or a
-  configurable hash policy).
+- Add the RDS layer: one `Cluster` per partition and a
+  `RouteConfiguration` that matches the request's
+  `mssf-partition-key` to the owning partition's cluster
+  (exact Int64-range / named-key match, **not** hashing).
+- Within each partition's cluster, reuse the Phase 1 primary LB
+  unchanged — partition routing adds no new LB policy.
 - Validate against `KvStore` sample (Int64 partitioning).
 
 ### Phase 4 — Priority routing (primary + secondaries)
@@ -508,22 +668,45 @@ Stop at the earliest phase that satisfies real demand.
 
 ## Deployment
 
-`mssf-xds-agent` runs on every node. Two reasonable shapes:
+**Recommended: a stateless `-1` service.** Deploy `mssf-xds-agent`
+as an SF stateless service with instance count `-1`, which places
+exactly one instance on every node in the cluster. This is the
+best fit because it:
 
-1. **SF guest-exe stateless `-1` service.** Standard SF
-   primitive; managed by SF itself; easy to upgrade.
-2. **systemd / Windows service installed by the cluster
-   bootstrap.** Lives outside SF's app model; useful if the
-   agent must come up before any user service.
+- runs on every node automatically, including nodes added later —
+  no external bootstrap step;
+- is managed, health-monitored, and upgraded by SF itself like any
+  other service;
+- gets a FabricClient and node context from its activation
+  environment.
 
-Either way, the agent listens on `127.0.0.1:<fixed-port>` and
-the cluster bootstrap drops an `xds_bootstrap.json` in a
-well-known path. Clients export `GRPC_XDS_BOOTSTRAP=<path>`.
+Each instance listens locally and clients on the same node connect
+to it. Two listener transports, either or both:
+
+- **Loopback TCP** — `127.0.0.1:<fixed-port>`. Works for every
+  gRPC runtime with no extra support.
+- **Unix domain socket** — a UDS path (e.g.
+  `/var/run/mssf/xds.sock`) when available. Avoids the TCP stack,
+  gives filesystem-permission-based access control, and sidesteps
+  port allocation. gRPC clients that support `unix:` targets can
+  use it directly; fall back to loopback TCP where they don't
+  (e.g. some Windows scenarios).
+
+The cluster (or the agent itself) drops an `xds_bootstrap.json`
+in a well-known path pointing at whichever transport is in use;
+clients export `GRPC_XDS_BOOTSTRAP=<path>`.
+
+An alternative shape — a systemd / Windows service installed by
+the cluster bootstrap, outside SF's app model — is only worth it
+if the agent must come up strictly before any user service. The
+stateless `-1` service is otherwise simpler and self-managing.
 
 ## Security
 
-- Loopback-only by default. Cross-node xDS traffic is **not** a
-  goal; every node has its own agent.
+- Local-only by default (loopback TCP or UDS). Cross-node xDS
+  traffic is **not** a goal; every node has its own agent. A UDS
+  listener additionally restricts access by filesystem
+  permissions.
 - The agent runs as a service account with FabricClient
   credentials. Standard SF security boundaries apply.
 - xDS-level mTLS / RBAC is deferred (Future work). Until then,
@@ -573,6 +756,6 @@ well-known path. Clients export `GRPC_XDS_BOOTSTRAP=<path>`.
 - [xDS protocol reference](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol) — canonical xDS protocol spec.
 - [ORCA load report proto](https://github.com/cncf/xds/blob/main/xds/data/orca/v3/orca_load_report.proto)
 - [`tonic-xds` on crates.io](https://crates.io/crates/tonic-xds) — upstream Rust xDS client used by SF Rust callers.
-- [`grpc/grpc-rust/tonic-xds`](https://github.com/grpc/grpc-rust/tree/master/tonic-xds) — `tonic-xds` source and issue tracker.
+- [`grpc/grpc-rust/tonic-xds`](https://github.com/grpc/grpc-rust/tree/master/tonic-xds) — `tonic-xds` source and issue tracker (recently moved here from `hyperium/tonic`; crates.io metadata for the alpha still points at the old location).
 - [gRPC xDS features matrix](https://github.com/grpc/grpc/blob/master/doc/grpc_xds_features.md) — reference list of xDS features gRPC implementations align to.
 - [`crates/libs/util/src/resolve.rs`](../../crates/libs/util/src/resolve.rs) — `ServicePartitionResolver`, the SF-side naming primitive the agent builds on.

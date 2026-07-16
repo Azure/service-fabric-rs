@@ -28,6 +28,18 @@ pub mod Foundation {
     pub const E_UNEXPECTED: windows_core::HRESULT = windows_core::HRESULT(0x8000FFFF_u32 as _);
 
     pub struct WIN32_ERROR(pub u32);
+    impl WIN32_ERROR {
+        /// Maps a Win32 error code to an HRESULT value. Mirrors
+        /// `windows_result::WIN32_ERROR::to_hresult` (which the flat windows-core
+        /// exposes but is not usable on linux) so mssf error mapping keeps working.
+        pub const fn to_hresult(self) -> windows_core::HRESULT {
+            windows_core::HRESULT(if self.0 as i32 <= 0 {
+                self.0
+            } else {
+                (self.0 & 0x0000_FFFF) | (7 << 16) | 0x8000_0000
+            } as i32)
+        }
+    }
     pub const ERROR_FILE_EXISTS: WIN32_ERROR = WIN32_ERROR(80u32);
     pub const ERROR_DIR_NOT_EMPTY: WIN32_ERROR = WIN32_ERROR(145u32);
     pub const ERROR_NOT_FOUND: WIN32_ERROR = WIN32_ERROR(1168u32);

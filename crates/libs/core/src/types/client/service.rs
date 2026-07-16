@@ -427,9 +427,9 @@ impl GetRawWithBoxPool<FABRIC_NAMED_REPARTITION_DESCRIPTION> for NamedRepartitio
         let (remove_count, remove_ptr) = pool.push_vec(names_to_remove);
         FABRIC_NAMED_REPARTITION_DESCRIPTION {
             NamesToAddCount: add_count as u32,
-            NamesToAdd: add_ptr,
+            NamesToAdd: add_ptr as *mut _,
             NamesToRemoveCount: remove_count as u32,
-            NamesToRemove: remove_ptr,
+            NamesToRemove: remove_ptr as *mut _,
             Reserved: std::ptr::null_mut(),
         }
     }

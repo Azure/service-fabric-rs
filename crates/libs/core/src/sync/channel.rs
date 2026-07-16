@@ -61,7 +61,7 @@ impl<T> FabricReceiver<T> {
     // Cancels the inner SF operation if exists, and reset the ctx.
     fn cancel_inner_ctx(&mut self) -> crate::WinResult<()> {
         if let Some(ctx) = &self.ctx {
-            if let Err(e) = unsafe { ctx.Cancel() } {
+            if let Err(e) = unsafe { ctx.Cancel() }.ok() {
                 // fail to cancel inner operation.
                 return Err(e);
             } else {

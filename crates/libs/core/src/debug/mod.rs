@@ -6,7 +6,7 @@
 #[cfg(target_os = "windows")]
 pub fn wait_for_debugger() {
     loop {
-        if unsafe { windows::Win32::System::Diagnostics::Debug::IsDebuggerPresent().as_bool() } {
+        if unsafe { windows::debugapi::IsDebuggerPresent().as_bool() } {
             #[cfg(feature = "tracing")]
             tracing::info!("Debugger found.");
             break;

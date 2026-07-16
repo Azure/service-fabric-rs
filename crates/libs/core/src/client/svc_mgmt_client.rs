@@ -88,7 +88,7 @@ impl ServiceManagementClient {
             move |callback| unsafe {
                 com1.BeginRestartReplica(desc, timeout_milliseconds, callback)
             },
-            move |ctx| unsafe { com2.EndRestartReplica(ctx) },
+            move |ctx| unsafe { com2.EndRestartReplica(ctx).ok() },
             cancellation_token,
         )
     }
@@ -105,7 +105,7 @@ impl ServiceManagementClient {
             move |callback| unsafe {
                 com1.BeginRemoveReplica(desc, timeout_milliseconds, callback)
             },
-            move |ctx| unsafe { com2.EndRemoveReplica(ctx) },
+            move |ctx| unsafe { com2.EndRemoveReplica(ctx).ok() },
             cancellation_token,
         )
     }
@@ -143,7 +143,7 @@ impl ServiceManagementClient {
                     callback,
                 )
             },
-            move |ctx| unsafe { com2.EndUnregisterServiceNotificationFilter(ctx) },
+            move |ctx| unsafe { com2.EndUnregisterServiceNotificationFilter(ctx).ok() },
             cancellation_token,
         )
     }
@@ -160,7 +160,7 @@ impl ServiceManagementClient {
             move |callback| unsafe {
                 com1.BeginCreateService(desc, timeout_milliseconds, callback)
             },
-            move |ctx| unsafe { com2.EndCreateService(ctx) },
+            move |ctx| unsafe { com2.EndCreateService(ctx).ok() },
             cancellation_token,
         )
     }
@@ -178,7 +178,7 @@ impl ServiceManagementClient {
             move |callback| unsafe {
                 com1.BeginUpdateService(name, desc, timeout_milliseconds, callback)
             },
-            move |ctx| unsafe { com2.EndUpdateService(ctx) },
+            move |ctx| unsafe { com2.EndUpdateService(ctx).ok() },
             cancellation_token,
         )
     }
@@ -195,7 +195,7 @@ impl ServiceManagementClient {
             move |callback| unsafe {
                 com1.BeginDeleteService(name, timeout_milliseconds, callback)
             },
-            move |ctx| unsafe { com2.EndDeleteService(ctx) },
+            move |ctx| unsafe { com2.EndDeleteService(ctx).ok() },
             cancellation_token,
         )
     }
@@ -212,7 +212,7 @@ impl ServiceManagementClient {
             move |callback| unsafe {
                 com1.BeginDeleteService2(desc, timeout_milliseconds, callback)
             },
-            move |ctx| unsafe { com2.EndDeleteService2(ctx) },
+            move |ctx| unsafe { com2.EndDeleteService2(ctx).ok() },
             cancellation_token,
         )
     }

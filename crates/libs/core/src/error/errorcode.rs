@@ -28,12 +28,11 @@ const E_UNEXPECTED: FABRIC_ERROR_CODE =
 
 // HRESULT codes from win32 errors that SF resuses.
 const E_FILE_EXISTS: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(HRESULT::from_win32(windows_core::Win32::Foundation::ERROR_FILE_EXISTS.0).0);
-const E_DIR_NOT_EMPTY: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(
-    HRESULT::from_win32(windows_core::Win32::Foundation::ERROR_DIR_NOT_EMPTY.0).0,
-);
+    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::ERROR_FILE_EXISTS.to_hresult().0);
+const E_DIR_NOT_EMPTY: FABRIC_ERROR_CODE =
+    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::ERROR_DIR_NOT_EMPTY.to_hresult().0);
 const E_NOT_FOUND: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(HRESULT::from_win32(windows_core::Win32::Foundation::ERROR_NOT_FOUND.0).0);
+    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::ERROR_NOT_FOUND.to_hresult().0);
 
 // Internal error codes used by SF.
 // TODO: Add the complete list from dotnet and cpp code.
@@ -60,7 +59,7 @@ macro_rules! define_fabric_error_code{
 
             // defines SF error codes.
             $(
-                $code = mssf_com::FabricTypes::$code .0,
+                $code = mssf_com::FabricTypes::FABRIC_ERROR_CODE::$code .0,
             )*
         }
 
@@ -74,7 +73,7 @@ macro_rules! define_fabric_error_code{
                     )*
                     // SF code converts.
                     $(
-                        mssf_com::FabricTypes::$code => Ok(Self::$code),
+                        mssf_com::FabricTypes::FABRIC_ERROR_CODE::$code => Ok(Self::$code),
                     )*
                     _ => Err("Unknown FABRIC_ERROR_CODE")
                 }

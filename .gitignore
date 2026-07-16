@@ -8,3 +8,8 @@ obj
 
 # cargo stuff
 target
+
+# Local copy of the SF winmd used by tools_api during the windows-bindgen
+# experiment. Normally the winmd is fetched via CMake FetchContent into
+# build/_deps; this is a generated binary artifact and must not be committed.
+crates/tools/api/winmd/

@@ -280,7 +280,7 @@ pub struct DeployedStatefulServiceReplicaDetailQueryResult {
 impl DeployedStatefulServiceReplicaDetailQueryResult {
     pub fn new(value: &FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM) -> Self {
         Self {
-            service_name: WString::from(PCWSTR(value.ServiceName.0)),
+            service_name: WString::from(PCWSTR(value.ServiceName.0 as *const u16)),
             partition_id: value.PartitionId,
             replica_id: value.ReplicaId,
             current_service_operation: (value.CurrentServiceOperation).into(),
@@ -312,7 +312,7 @@ pub struct DeployedStatelessServiceInstanceQueryResult {
 impl DeployedStatelessServiceInstanceQueryResult {
     pub fn new(value: &FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM) -> Self {
         Self {
-            service_name: WString::from(PCWSTR(value.ServiceName.0)),
+            service_name: WString::from(PCWSTR(value.ServiceName.0 as *const u16)),
             service_type_name: WString::from(value.ServiceTypeName),
             service_manifest_version: WString::from(value.ServiceManifestVersion),
             code_package_name: WString::from(value.CodePackageName),

@@ -37,11 +37,11 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
             .map(WString::as_pcwstr)
             .collect();
         // Maybe a bit paranoid, but let's make sure we use a null ptr if it's an empty boxed slice
-        fn slice_to_ptr(val: &[PCWSTR]) -> *const PCWSTR {
+        fn slice_to_ptr(val: &[PCWSTR]) -> *mut PCWSTR {
             if val.is_empty() {
-                std::ptr::null()
+                std::ptr::null_mut()
             } else {
-                val.as_ptr()
+                val.as_ptr() as *mut PCWSTR
             }
         }
         let mut ex1 = FABRIC_CLAIMS_CREDENTIALS_EX1 {
@@ -86,6 +86,7 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
 
         // SAFETY: COM interop. SetSecurityCredentials does not retain reference to the passed in data after function returns.
         let result = unsafe { settings_interface.SetSecurityCredentials(&security_credentials) }
+            .ok()
             .map_err(crate::Error::from);
         #[cfg(miri)] // TODO: investigate what's wrong with windows_core::implement drop implement.
         Box::leak(Box::new(settings_interface));

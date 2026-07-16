@@ -110,7 +110,7 @@ impl IStatefulServiceReplica for StatefulServiceReplicaProxy {
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginClose(callback) },
-            move |ctx| unsafe { com2.EndClose(ctx) },
+            move |ctx| unsafe { com2.EndClose(ctx).ok() },
             Some(cancellation_token),
         );
         rx.await?
@@ -161,7 +161,7 @@ impl IReplicator for ReplicatorProxy {
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginClose(callback) },
-            move |ctx| unsafe { com2.EndClose(ctx) },
+            move |ctx| unsafe { com2.EndClose(ctx).ok() },
             Some(cancellation_token),
         );
         rx.await?
@@ -183,7 +183,7 @@ impl IReplicator for ReplicatorProxy {
             move |callback| unsafe {
                 com1.BeginChangeRole(&fabric_epoch, (&role).into(), callback)
             },
-            move |ctx| unsafe { com2.EndChangeRole(ctx) },
+            move |ctx| unsafe { com2.EndChangeRole(ctx).ok() },
             Some(cancellation_token),
         );
         rx.await?
@@ -202,7 +202,7 @@ impl IReplicator for ReplicatorProxy {
         let fabric_epoch: mssf_com::FabricTypes::FABRIC_EPOCH = (&epoch).into();
         let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginUpdateEpoch(&fabric_epoch, callback) },
-            move |ctx| unsafe { com2.EndUpdateEpoch(ctx) },
+            move |ctx| unsafe { com2.EndUpdateEpoch(ctx).ok() },
             Some(cancellation_token),
         );
         rx.await?
@@ -216,14 +216,18 @@ impl IReplicator for ReplicatorProxy {
         tracing::instrument(skip_all, level = "debug", ret, err)
     )]
     fn get_current_progress(&self) -> crate::Result<i64> {
-        unsafe { self.com_impl.GetCurrentProgress() }.map_err(crate::Error::from)
+        unsafe { self.com_impl.GetCurrentProgress() }
+            .map(|v| v.0)
+            .map_err(crate::Error::from)
     }
     #[cfg_attr(
         feature = "tracing",
         tracing::instrument(skip_all, level = "debug", ret, err)
     )]
     fn get_catch_up_capability(&self) -> crate::Result<i64> {
-        unsafe { self.com_impl.GetCatchUpCapability() }.map_err(crate::Error::from)
+        unsafe { self.com_impl.GetCatchUpCapability() }
+            .map(|v| v.0)
+            .map_err(crate::Error::from)
     }
     #[cfg_attr(
         feature = "tracing",
@@ -288,7 +292,7 @@ impl IPrimaryReplicator for PrimaryReplicatorProxy {
         feature = "tracing",
         tracing::instrument(skip_all, level = "debug", ret, err)
     )]
-    async fn on_data_loss(&self, cancellation_token: BoxedCancelToken) -> crate::Result<u8> {
+    async fn on_data_loss(&self, cancellation_token: BoxedCancelToken) -> crate::Result<bool> {
         let com1 = &self.com_impl;
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
@@ -313,6 +317,7 @@ impl IPrimaryReplicator for PrimaryReplicatorProxy {
             self.com_impl
                 .UpdateCatchUpReplicaSetConfiguration(cc_view.get_raw(), pc_view.get_raw())
         }
+        .ok()
         .map_err(crate::Error::from)
     }
     #[cfg_attr(
@@ -328,7 +333,7 @@ impl IPrimaryReplicator for PrimaryReplicatorProxy {
         let com2 = self.com_impl.clone();
         let rx = fabric_begin_end_proxy(
             move |callback| unsafe { com1.BeginWaitForCatchUpQuorum(catchupmode.into(), callback) },
-            move |ctx| unsafe { com2.EndWaitForCatchUpQuorum(ctx) },
+            move |ctx| unsafe { com2.EndWaitForCatchUpQuorum(ctx).ok() },
             Some(cancellation_token),
         );
         rx.await?
@@ -345,6 +350,7 @@ impl IPrimaryReplicator for PrimaryReplicatorProxy {
             self.com_impl
                 .UpdateCurrentReplicaSetConfiguration(currentconfiguration.get_view().get_raw())
         }
+        .ok()
         .map_err(crate::Error::from)
     }
     #[cfg_attr(
@@ -364,7 +370,7 @@ impl IPrimaryReplicator for PrimaryReplicatorProxy {
                 info.Reserved = std::ptr::addr_of!(ex1) as *mut c_void;
                 unsafe { com1.BeginBuildReplica(&info, callback) }
             },
-            move |ctx| unsafe { com2.EndBuildReplica(ctx) },
+            move |ctx| unsafe { com2.EndBuildReplica(ctx).ok() },
             Some(cancellation_token),
         );
         rx.await?
@@ -374,7 +380,7 @@ impl IPrimaryReplicator for PrimaryReplicatorProxy {
         tracing::instrument(skip_all, level = "debug", ret, err)
     )]
     fn remove_replica(&self, replicaid: i64) -> crate::Result<()> {
-        unsafe { self.com_impl.RemoveReplica(replicaid) }.map_err(crate::Error::from)
+        unsafe { self.com_impl.RemoveReplica(mssf_com::FabricTypes::FABRIC_REPLICA_ID(replicaid)) }.ok().map_err(crate::Error::from)
     }
 }
 
@@ -411,25 +417,25 @@ impl super::IStatefulServicePartition for StatefulServicePartition {
     fn report_load(&self, metrics: &[LoadMetric]) -> crate::Result<()> {
         let metrics_ref = LoadMetricListRef::from_slice(metrics);
         let raw = metrics_ref.as_raw_slice();
-        unsafe { self.com_impl.ReportLoad(raw) }.map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportLoad(raw.len() as u32, raw.as_ptr()) }.ok().map_err(crate::Error::from)
     }
 
     fn report_fault(&self, fault_type: FaultType) -> crate::Result<()> {
-        unsafe { self.com_impl.ReportFault(fault_type.into()) }.map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportFault(fault_type.into()) }.ok().map_err(crate::Error::from)
     }
 
     fn report_move_cost(&self, move_cost: MoveCost) -> crate::Result<()> {
-        unsafe { self.com_impl.ReportMoveCost(move_cost.into()) }.map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportMoveCost(move_cost.into()) }.ok().map_err(crate::Error::from)
     }
 
     fn report_partition_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
         let healthinfo_ref = &healthinfo.into();
-        unsafe { self.com_impl.ReportPartitionHealth(healthinfo_ref) }.map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportPartitionHealth(healthinfo_ref) }.ok().map_err(crate::Error::from)
     }
 
     fn report_replica_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
         let healthinfo_ref = &healthinfo.into();
-        unsafe { self.com_impl.ReportReplicaHealth(healthinfo_ref) }.map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportReplicaHealth(healthinfo_ref) }.ok().map_err(crate::Error::from)
     }
 
     fn try_get_com(

@@ -62,9 +62,14 @@ impl KVStoreProxy {
 
     pub fn add(&self, tx: &TransactionProxy, key: &[u16], value: &[u8]) -> crate::Result<()> {
         unsafe {
-            self.com_impl
-                .Add(&tx.com_impl, PCWSTR::from_raw(key.as_ptr()), value)
+            self.com_impl.Add(
+                &tx.com_impl,
+                PCWSTR::from_raw(key.as_ptr()),
+                value.len() as i32,
+                value.as_ptr(),
+            )
         }
+        .ok()
         .map_err(crate::Error::from)
     }
 
@@ -89,9 +94,10 @@ impl KVStoreProxy {
             self.com_impl.Remove(
                 &tx.com_impl,
                 PCWSTR::from_raw(key.as_ptr()),
-                checksequencenumber,
+                mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER(checksequencenumber),
             )
         }
+        .ok()
         .map_err(crate::Error::from)
     }
 }
@@ -121,7 +127,7 @@ impl TransactionProxy {
             move |ctx| unsafe { com2.EndCommit(ctx) },
             cancellation_token,
         );
-        rx.await?
+        rx.await?.map(|v| v.0)
     }
 
     pub fn rollback(&self) {

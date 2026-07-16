@@ -112,8 +112,8 @@ impl IReplicator for EmptyReplicator {
 #[mssf_core::async_trait]
 impl IPrimaryReplicator for EmptyReplicator {
     #[tracing::instrument(skip(_token), err, ret)]
-    async fn on_data_loss(&self, _token: BoxedCancelToken) -> mssf_core::Result<u8> {
-        Ok(0)
+    async fn on_data_loss(&self, _token: BoxedCancelToken) -> mssf_core::Result<bool> {
+        Ok(false)
     }
 
     #[tracing::instrument(err, ret)]

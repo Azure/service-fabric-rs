@@ -51,7 +51,7 @@ impl PropertyManagementClient {
             move |callback| unsafe {
                 com1.BeginCreateName(name.as_raw(), timeout_milliseconds, callback)
             },
-            move |ctx| unsafe { com2.EndCreateName(ctx) },
+            move |ctx| unsafe { com2.EndCreateName(ctx).ok() },
             cancellation_token,
         )
     }
@@ -68,7 +68,7 @@ impl PropertyManagementClient {
             move |callback| unsafe {
                 com1.BeginDeleteName(name.as_raw(), timeout_milliseconds, callback)
             },
-            move |ctx| unsafe { com2.EndDeleteName(ctx) },
+            move |ctx| unsafe { com2.EndDeleteName(ctx).ok() },
             cancellation_token,
         )
     }
@@ -78,7 +78,7 @@ impl PropertyManagementClient {
         name: &Uri,
         timeout_milliseconds: u32,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> FabricReceiver<crate::Result<u8>> {
+    ) -> FabricReceiver<crate::Result<bool>> {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
@@ -130,12 +130,13 @@ impl PropertyManagementClient {
                 com1.BeginPutPropertyBinary(
                     name.as_raw(),
                     property_name.as_pcwstr(),
-                    data,
+                    data.len() as u32,
+                    data.as_ptr(),
                     timeout_milliseconds,
                     callback,
                 )
             },
-            move |ctx| unsafe { com2.EndPutPropertyBinary(ctx) },
+            move |ctx| unsafe { com2.EndPutPropertyBinary(ctx).ok() },
             cancellation_token,
         )
     }
@@ -160,7 +161,7 @@ impl PropertyManagementClient {
                     callback,
                 )
             },
-            move |ctx| unsafe { com2.EndPutPropertyInt64(ctx) },
+            move |ctx| unsafe { com2.EndPutPropertyInt64(ctx).ok() },
             cancellation_token,
         )
     }
@@ -185,7 +186,7 @@ impl PropertyManagementClient {
                     callback,
                 )
             },
-            move |ctx| unsafe { com2.EndPutPropertyDouble(ctx) },
+            move |ctx| unsafe { com2.EndPutPropertyDouble(ctx).ok() },
             cancellation_token,
         )
     }
@@ -210,7 +211,7 @@ impl PropertyManagementClient {
                     callback,
                 )
             },
-            move |ctx| unsafe { com2.EndPutPropertyWString(ctx) },
+            move |ctx| unsafe { com2.EndPutPropertyWString(ctx).ok() },
             cancellation_token,
         )
     }
@@ -235,7 +236,7 @@ impl PropertyManagementClient {
                     callback,
                 )
             },
-            move |ctx| unsafe { com2.EndPutPropertyGuid(ctx) },
+            move |ctx| unsafe { com2.EndPutPropertyGuid(ctx).ok() },
             cancellation_token,
         )
     }
@@ -258,7 +259,7 @@ impl PropertyManagementClient {
                     callback,
                 )
             },
-            move |ctx| unsafe { com2.EndDeleteProperty(ctx) },
+            move |ctx| unsafe { com2.EndDeleteProperty(ctx).ok() },
             cancellation_token,
         )
     }
@@ -323,7 +324,7 @@ impl PropertyManagementClient {
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
             move |callback| unsafe {
-                com1.BeginSubmitPropertyBatch(name.as_raw(), batch, timeout_milliseconds, callback)
+                com1.BeginSubmitPropertyBatch(name.as_raw(), batch.len() as u32, batch.as_ptr(), timeout_milliseconds, callback)
             },
             move |ctx| unsafe {
                 let mut failed_operation_index_in_request = 0;
@@ -382,7 +383,7 @@ impl PropertyManagementClient {
                     callback,
                 )
             },
-            move |ctx| unsafe { com2.EndPutCustomPropertyOperation(ctx) },
+            move |ctx| unsafe { com2.EndPutCustomPropertyOperation(ctx).ok() },
             cancellation_token,
         )
     }
@@ -442,7 +443,6 @@ impl PropertyManagementClient {
             cancellation_token,
         )
         .await?
-        .map(|exist| exist != 0)
     }
 
     /// Enumerates sub-names of a SF name in Naming Service.

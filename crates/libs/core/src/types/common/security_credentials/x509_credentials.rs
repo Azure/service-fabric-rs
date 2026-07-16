@@ -110,9 +110,9 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
             .collect();
         // technically speaking, doesn't need to be null in this case. but being paranoid
         let allowed_common_names_ptr = if allowed_common_names.is_empty() {
-            std::ptr::null()
+            std::ptr::null_mut()
         } else {
-            allowed_common_names.as_ptr()
+            allowed_common_names.as_ptr() as *mut _
         };
         let find_type = FABRIC_X509_FIND_TYPE::from(&self.FindType);
         let find_value = match &self.FindType {
@@ -143,6 +143,7 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
 
         // SAFETY: COM interop. SetSecurityCredentials does not retain reference to the passed in data after function returns.
         let result = unsafe { settings_interface.SetSecurityCredentials(&security_credentials) }
+            .ok()
             .map_err(crate::Error::from);
         #[cfg(miri)] // TODO: investigate what's wrong with windows_core::implement drop implement.
         Box::leak(Box::new(settings_interface));

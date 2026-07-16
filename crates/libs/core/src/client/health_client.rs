@@ -130,7 +130,7 @@ impl HealthClient {
                 let fabric_health_info =
                     FABRIC_HEALTH_INFORMATION::from(&health_report.health_information);
                 let fabric_health_report_value = FABRIC_SERVICE_HEALTH_REPORT {
-                    ServiceName: FABRIC_URI(health_report.service_name.as_ptr() as *mut u16),
+                    ServiceName: FABRIC_URI(health_report.service_name.as_ptr() as *mut core::ffi::c_void),
                     HealthInformation: &fabric_health_info,
                     Reserved: std::ptr::null_mut(),
                 };
@@ -144,7 +144,7 @@ impl HealthClient {
                 let fabric_health_info =
                     FABRIC_HEALTH_INFORMATION::from(&health_report.health_information);
                 let fabric_health_report_value = FABRIC_APPLICATION_HEALTH_REPORT {
-                    ApplicationName: FABRIC_URI(health_report.application_name.as_ptr() as *mut u16),
+                    ApplicationName: FABRIC_URI(health_report.application_name.as_ptr() as *mut core::ffi::c_void),
                     HealthInformation: &fabric_health_info,
                     Reserved: std::ptr::null_mut(),
                 };
@@ -158,7 +158,7 @@ impl HealthClient {
                 let fabric_health_info =
                     FABRIC_HEALTH_INFORMATION::from(&health_report.health_information);
                 let fabric_health_report_value = FABRIC_DEPLOYED_APPLICATION_HEALTH_REPORT {
-                    ApplicationName: FABRIC_URI(health_report.application_name.as_ptr() as *mut u16),
+                    ApplicationName: FABRIC_URI(health_report.application_name.as_ptr() as *mut core::ffi::c_void),
                     NodeName: health_report.node_name.as_pcwstr(),
                     HealthInformation: &fabric_health_info,
                     Reserved: std::ptr::null_mut(),
@@ -173,7 +173,7 @@ impl HealthClient {
                 let fabric_health_info =
                     FABRIC_HEALTH_INFORMATION::from(&health_report.health_information);
                 let fabric_health_report_value = FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_REPORT {
-                    ApplicationName: FABRIC_URI(health_report.application_name.as_ptr() as *mut u16),
+                    ApplicationName: FABRIC_URI(health_report.application_name.as_ptr() as *mut core::ffi::c_void),
                     ServiceManifestName: health_report.service_manifest_name.as_pcwstr(),
                     NodeName: health_report.node_name.as_pcwstr(),
                     HealthInformation: &fabric_health_info,
@@ -198,7 +198,7 @@ impl HealthClient {
                 };
                 unsafe { self.com.ReportHealth(&fabric_health_report) }
             }
-        }.map_err(crate::Error::from)
+        }.ok().map_err(crate::Error::from)
     }
 }
 

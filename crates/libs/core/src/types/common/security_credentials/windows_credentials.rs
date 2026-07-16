@@ -37,9 +37,9 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
             .map(WString::as_pcwstr)
             .collect();
         let remote_identities_ptr = if remote_identities.is_empty() {
-            std::ptr::null()
+            std::ptr::null_mut()
         } else {
-            remote_identities.as_ptr()
+            remote_identities.as_ptr() as *mut _
         };
         let mut value = FABRIC_WINDOWS_CREDENTIALS {
             RemoteSpn: self.RemoteSpn.as_pcwstr(),
@@ -55,6 +55,7 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
 
         // SAFETY: COM interop. SetSecurityCredentials does not retain reference to the passed in data after function returns.
         let result = unsafe { settings_interface.SetSecurityCredentials(&security_credentials) }
+            .ok()
             .map_err(crate::Error::from);
         #[cfg(miri)] // TODO: investigate what's wrong with windows_core::implement drop implement.
         Box::leak(Box::new(settings_interface));

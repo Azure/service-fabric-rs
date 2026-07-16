@@ -82,7 +82,7 @@ where
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &crate::GUID,
-        replicaid: i64,
+        replicaid: mssf_com::FabricTypes::FABRIC_REPLICA_ID,
     ) -> crate::WinResult<IFabricStatefulServiceReplica> {
         let h_servicename = Uri::from(servicename);
         let h_servicetypename = WString::from(*servicetypename);
@@ -99,7 +99,7 @@ where
             h_servicename,
             data,
             *partitionid,
-            replicaid,
+            replicaid.0,
         )?;
         let rt = self.rt.clone();
         let replica_bridge = IFabricStatefulServiceReplicaBridge::create(replica, rt);
@@ -282,18 +282,20 @@ where
         feature = "tracing",
         tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
-    fn GetCurrentProgress(&self) -> crate::WinResult<i64> {
+    fn GetCurrentProgress(&self) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
         let lsn = self.inner.get_current_progress();
-        lsn.map_err(crate::WinError::from)
+        lsn.map(mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER)
+            .map_err(crate::WinError::from)
     }
 
     #[cfg_attr(
         feature = "tracing",
         tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
-    fn GetCatchUpCapability(&self) -> crate::WinResult<i64> {
+    fn GetCatchUpCapability(&self) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
         let lsn = self.inner.get_catch_up_capability();
-        lsn.map_err(crate::WinError::from)
+        lsn.map(mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER)
+            .map_err(crate::WinError::from)
     }
 }
 
@@ -377,7 +379,7 @@ where
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
-        unsafe { self.rplctr.EndChangeRole(context.as_ref()) }
+        unsafe { self.rplctr.EndChangeRole(context.as_ref()).ok() }
     }
 
     #[allow(clippy::not_unsafe_ptr_arg_deref)]
@@ -393,7 +395,7 @@ where
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
-        unsafe { self.rplctr.EndUpdateEpoch(context.as_ref()) }
+        unsafe { self.rplctr.EndUpdateEpoch(context.as_ref()).ok() }
     }
 
     fn BeginClose(
@@ -407,18 +409,18 @@ where
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
     ) -> crate::WinResult<()> {
-        unsafe { self.rplctr.EndClose(context.as_ref()) }
+        unsafe { self.rplctr.EndClose(context.as_ref()).ok() }
     }
 
     fn Abort(&self) {
         unsafe { self.rplctr.Abort() }
     }
 
-    fn GetCurrentProgress(&self) -> crate::WinResult<i64> {
+    fn GetCurrentProgress(&self) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
         unsafe { self.rplctr.GetCurrentProgress() }
     }
 
-    fn GetCatchUpCapability(&self) -> crate::WinResult<i64> {
+    fn GetCatchUpCapability(&self) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
         unsafe { self.rplctr.GetCatchUpCapability() }
     }
 }
@@ -453,7 +455,7 @@ where
     fn EndOnDataLoss(
         &self,
         context: windows_core::Ref<super::IFabricAsyncOperationContext>,
-    ) -> crate::WinResult<u8> {
+    ) -> crate::WinResult<bool> {
         BridgeContext::result(context)?
     }
 
@@ -564,9 +566,9 @@ where
         feature = "tracing",
         tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
-    fn RemoveReplica(&self, replicaid: i64) -> crate::WinResult<()> {
+    fn RemoveReplica(&self, replicaid: mssf_com::FabricTypes::FABRIC_REPLICA_ID) -> crate::WinResult<()> {
         self.inner
-            .remove_replica(replicaid)
+            .remove_replica(replicaid.0)
             .map_err(crate::WinError::from)
     }
 }

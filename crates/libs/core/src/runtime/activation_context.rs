@@ -153,6 +153,7 @@ impl CodePackageActivationContext {
             None => std::ptr::null(),
         };
         unsafe { self.com_impl.ReportApplicationHealth2(&raw, raw_options) }
+            .ok()
             .map_err(crate::Error::from)
     }
 

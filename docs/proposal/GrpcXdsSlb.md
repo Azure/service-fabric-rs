@@ -7,7 +7,7 @@ Date: 2026-07-16
 Owners: mssf maintainers
 
 Extends: [gRPC xDS over Service Fabric Naming](./GrpcXds.md)
-(the "base proposal", accepted).
+(the base proposal — also a proposal/experiment, nothing shipped).
 
 ## Why pursue this?
 
@@ -74,7 +74,11 @@ Grounded in Azure docs
   IPs**. They are routable only from inside the VNet or across
   VNet peering / VPN / ExpressRoute. Secondary node types can
   optionally get **per-instance public IPs**
-  (`enableNodePublicIP`); primary node types cannot.
+  (`enableNodePublicIP`); at the time of writing (2026-07) Azure
+  managed-cluster docs restrict this to **secondary** node types
+  (primary node types cannot). This has changed over time — verify
+  against current managed-cluster networking docs before relying on
+  it as an absolute.
 - **Managed vs. classic; BYOLB.** Managed clusters auto-create a
   Standard public LB + FQDN per node type and reserve NSG priority
   ranges. **Bring-your-own-LB** (Standard SKU) is supported for
@@ -84,9 +88,10 @@ Grounded in Azure docs
   - **Outbound rule required** — Standard SLB is "secure by
     default"; each node type needs an outbound rule (port 443 for
     cluster setup) or deployment fails.
-  - **Idle timeout** — default ~4–5 min. **Long-lived gRPC / ADS
-    streams are silently dropped** if idle past the timeout unless
-    TCP keepalive / HTTP/2 pings keep them warm.
+  - **Idle timeout** — default **4 minutes** (configurable up to
+    30). **Long-lived gRPC / ADS streams are silently dropped** if
+    idle past the timeout unless TCP keepalive / HTTP/2 pings keep
+    them warm.
   - **Session persistence** — default distribution is a 5-tuple
     hash (a given TCP flow is pinned to one backend for its life);
     optional 2-/3-tuple source-IP affinity.
@@ -171,6 +176,11 @@ This proposal therefore splits on **client network position** and
 
 ## Reachability scenarios
 
+> **Note on numbering:** there is no Scenario B below. The former
+> Scenario B (in-cluster reverse proxy) moved to its own
+> [reverse-proxy proposal](./HttpReverseProxy.md); the labels A, C,
+> and C2 are kept stable to avoid churn in cross-references.
+
 ### Scenario A — client is in-VNet / peered / VPN / ExpressRoute
 
 Node private IPs are routable from the client. Then:
@@ -183,8 +193,15 @@ Node private IPs are routable from the client. Then:
   options:
   - **Node-local not available (off-node, in-VNet):** point the
     client at the **two-tier control tier** (`mssf-xds-discovery`)
-    via its VNet address, or at a small set of relays exposed on a
-    VNet-internal LB rule. See
+    via its VNet address (exposed through a VNet-internal LB rule).
+    In the base design the relays re-serve only over loopback/UDS to
+    on-node clients and hold no FabricClient, so **exposing a relay
+    fleet to off-node clients over the network is a new capability
+    this proposal would add** (relays would need a network-facing,
+    TLS ADS listener) — not something the base design already
+    supports. Prefer routing off-node clients to the discovery tier;
+    treat a network-exposed relay/edge fleet as an explicit,
+    opt-in addition. See
     [Control-plane reach through the SLB](#control-plane-reach-through-the-slb).
   - **Client on a node:** identical to the base proposal
     (loopback/UDS local agent).
@@ -209,9 +226,36 @@ advertising the service's private node endpoints (unreachable off
 VNet), it advertises the **SLB frontend** as the endpoint. Concretely
 the control tier, for a service that has an SLB mapping, emits a
 `Cluster` whose EDS holds a single `LbEndpoint = VIP:<frontendPort>`.
-The client's `tonic-xds` channel dials that; the SLB spreads across
-the backend pool; the SLB's health probe on `<servicePort>` prunes
-nodes that are not running the service.
+The client's `tonic-xds` channel dials that; the SLB's health probe
+on `<servicePort>` prunes nodes that are not running the service.
+
+**Which VIP? (multi-node-type clusters.)** As the Background notes, a
+cluster can have several node types, each its **own VMSS behind its
+own LB/VIP**. The `VIP` in the translation is therefore **not
+global** — it is the VIP of the node type(s) actually running the
+service. In practice the service must be **pinned to one node type**
+(SF placement constraints) so a single `VIP:<frontendPort>` is
+well-defined; if it spans multiple node types, the control tier emits
+one `LbEndpoint` **per fronting node type's VIP** (the client then
+gets whichever backend any VIP hashes to — still an "any-healthy"
+path). Either way the mapping the control tier holds is
+**per-(service, node type)**, not a single cluster-wide VIP.
+
+**How load actually spreads (important).** The SLB is a *per-flow*
+(5-tuple) balancer, and a typical gRPC client multiplexes **all**
+RPCs for a target over **one long-lived HTTP/2 connection**. That
+single TCP flow is hashed to **one** backend and pinned there for
+its entire life, so — for a single-channel client — **effectively no
+spreading happens**: all traffic lands on one backend until the
+connection is torn down. Spreading across the pool only comes from
+having **multiple connections**, e.g. multiple client channels /
+subchannels, `GRPC_ARG` connection settings that open more than one
+transport, client-side connection cycling, or a server
+`MAX_CONNECTION_AGE` that periodically forces reconnects (each new
+flow re-hashes to a possibly different backend). Scenario C is
+therefore an **any-healthy-backend** path — correctness does not
+depend on even distribution — not a fine-grained load spreader for a
+single channel.
 
 ```mermaid
 flowchart LR
@@ -226,8 +270,8 @@ flowchart LR
     end
     Disc -.->|"EDS: endpoint = VIP:Fport"| Ext
     Ext -->|"gRPC to VIP:Fport"| SLB
-    SLB -->|"5-tuple spread"| S1
-    SLB --> S2
+    SLB -->|"per-flow (5-tuple) pin"| S1
+    SLB -.->|"only with extra connections"| S2
 ```
 
 Properties:
@@ -235,22 +279,48 @@ Properties:
 - **Fast:** no proxy tier, no in-cluster hop; just the SLB. This is
   the whole point versus the [reverse proxy](./HttpReverseProxy.md).
 - **xDS still earns its keep:** service discovery (which services
-  exist and their `VIP:port`), health-driven removal, LB-policy /
-  service-config push, and RDS selection **across** multiple
-  SLB-fronted services. What it does **not** do is pick a replica
-  *within* a service — the SLB is topology-blind, so
-  `mssf-partition-key` / primary selection has no effect on this
-  path.
+  exist and their `VIP:port`), LB-policy / service-config push, and
+  RDS selection **across** multiple SLB-fronted services. What it
+  does **not** do is pick a replica *within* a service — the SLB is
+  topology-blind, so `mssf-partition-key` / primary selection has no
+  effect on this path. Note that **per-backend health pruning on
+  this path is an SLB property** (the health probe on `<servicePort>`
+  removes unhealthy nodes), **not** xDS: the only EDS endpoint is the
+  VIP, so xDS would drop it only if the *entire* VIP/service is gone,
+  not per replica.
 - **Scope:** stateless services, or "any active replica is fine"
-  reads. **Not** for partition/primary-targeted calls — those need
-  Scenario A (in-VNet direct), Scenario C2 (per-instance NAT), or
-  the [reverse proxy](./HttpReverseProxy.md).
+  reads — i.e. **only** the base proposal's `mssf-partition-role:
+  any`. Because the VIP is topology-blind, the Scenario C RDS resource
+  must **require an explicit `mssf-partition-role: any` match and fail
+  closed** for absent / `primary` / `secondary`: it must **not** reuse
+  the base proposal's absent-⇒-primary fallback, since a
+  default-primary request served by the flat VIP would land on an
+  arbitrary replica (often a secondary), violating the base proposal's
+  write-safety guarantee. Callers needing primary/secondary (including
+  the absent-⇒-primary default) must take a topology-aware path —
+  Scenario A (in-VNet direct), Scenario C2 (per-instance NAT), or the
+  [reverse proxy](./HttpReverseProxy.md). **Not** for
+  partition/primary-targeted calls on the flat VIP.
 - **Dual advertisement:** the same service can be advertised two
   ways from one snapshot — node-IP endpoints for in-VNet Scenario A
   clients and a `VIP:frontendPort` endpoint for Scenario C clients.
-  The client selects via the base proposal's **resource-name
-  convention** (a distinct `xds:///` target, e.g. `.../Svc` vs.
-  `.../Svc@slb`), so no query params are needed.
+  This is the **SLB-vs-direct** axis (which *endpoint set* a channel
+  dials). It is orthogonal to replica-role selection **only for
+  `role=any`**: because the flat VIP is topology-blind it can honor
+  *only* `mssf-partition-role: any`, so on this path the two axes are
+  **not** fully orthogonal — `primary`/`secondary` (and the
+  absent-⇒-primary default) require a topology-aware path, not the flat
+  VIP. Replica-role selection itself the base proposal carries per
+  request in the [`mssf-partition-role` header](./GrpcXds.md#partition-key-semantics),
+  **not** a resource name. The SLB-vs-direct axis still uses the base
+  proposal's **resource-name convention** (a distinct `xds:///` target
+  that the agent maps to a cluster — not a query param). The exact
+  spelling depends on that convention, which is still an
+  [open question in the base proposal](./GrpcXds.md) (URI shape is
+  not yet locked): a suffix like `.../Svc@slb` vs. `.../Svc` is one
+  option, but `@` must be confirmed as a legal character in the xDS
+  resource/target name `tonic-xds` accepts before adopting it — a
+  distinct path segment (e.g. `.../Svc/slb`) is the safe fallback.
 
 How the control tier learns the mapping is an
 [open question](#open-questions): static config, an ARM query of
@@ -265,27 +335,58 @@ which map a frontend port to a port on **one specific VMSS
 instance**. That is enough to regain **primary selection with no
 proxy hop**.
 
-The idea: give each backend instance a **dedicated, static** NAT
+The idea: give each backend instance a **dedicated** NAT
 frontend port that targets the service's (fixed) port on *that
 instance* — `VIP:<Fport_A> → instanceA:<servicePort>`,
-`VIP:<Fport_B> → instanceB:<servicePort>`, … set up **once**. Then
-the control tier does a two-step translation:
+`VIP:<Fport_B> → instanceB:<servicePort>`, … Then the control tier
+does a two-step translation:
 
 1. FabricClient resolves the partition **primary** to its node
-   endpoint (`nodeA_ip:<servicePort>`), exactly as in the base
-   proposal.
-2. A static **`instance → VIP:frontendPort`** table maps that
-   instance to its dedicated NAT port. The control tier advertises
+   endpoint (`nodeA_ip:<servicePort>` / SF node name), exactly as in
+   the base proposal.
+2. A **`node → VMSS-instance-ID → VIP:frontendPort`** table maps that
+   node to its dedicated NAT port. The control tier advertises
    **that** `VIP:<Fport_A>` as the single EDS endpoint.
+
+**Prerequisite — the node↔instance↔port mapping.** This is the
+non-trivial part and must be called out. FabricClient identifies the
+primary by **SF node name / node IP**, but inbound NAT rules target a
+**VMSS instance ID**, and SF node names are **not** trivially the
+same as VMSS instance IDs. The control tier therefore needs a
+reliable, continuously-maintained mapping
+`SF-node-name/IP → VMSS-instance-ID → NAT frontend port`. Obtaining
+and keeping it correct (e.g. from IMDS/ARM instance metadata joined
+to the LB's NAT rules, or an SF node property that records the
+instance ID) is a hard requirement for C2 to work at all — the
+"table" in step 2 does not exist for free.
+
+**Instance IDs are only unique within a VMSS.** With multiple node
+types, a bare instance ID is ambiguous — it must be qualified by node
+type, since each node type is a **separate VMSS behind its own LB**.
+The mapping is therefore
+`SF-node → (node type / VMSS, instance ID) → that LB's VIP:frontendPort`:
+resolving the primary's node also resolves **which node type's LB**
+holds the NAT rule, and the advertised endpoint is **that** VIP. When
+a primary moves across node types on failover, the advertised VIP
+changes too, not just the frontend port.
 
 The client dials `VIP:<Fport_A>`; the SLB NATs it to the exact
 instance holding the primary. One L4 hop, no proxy, **and**
 primary-correct.
 
+**Supported roles (C2 is topology-aware).** Unlike the flat Scenario C
+VIP, the per-instance-NAT path resolves the specific replica behind
+each frontend port, so it **can honor the full base-proposal role
+contract** — `primary` (and the absent-⇒-primary default), `secondary`,
+and `any` — exactly like Scenario A direct: the control tier advertises
+the NAT port of the primary instance for `primary`, a secondary
+instance's NAT port for `secondary`, etc. C2 therefore does **not** need
+Scenario C's fail-closed `any`-only restriction.
+
 ```mermaid
 flowchart LR
     Ext["external gRPC client"]
-    Disc["mssf-xds-discovery<br/>primary → instanceA<br/>instanceA → VIP:Fport_A"]
+    Disc["mssf-xds-discovery<br/>primary → nodeA → instanceA<br/>instanceA → VIP:Fport_A"]
     SLB["Azure SLB<br/>NAT: Fport_A→instanceA<br/>Fport_B→instanceB"]
     subgraph Cluster
         A["instance A (primary)"]
@@ -296,15 +397,66 @@ flowchart LR
     SLB -->|"NAT to specific instance"| A
 ```
 
-**Failover is cheap and Azure-static.** When the primary moves
+**Failover reuses pre-existing NAT ports.** When the primary moves
 A→B, the control tier re-resolves, sees the primary on instance B,
 and pushes a new EDS endpoint `VIP:<Fport_B>`; the client reconnects
-there. **Nothing in Azure changes** — the NAT rules are permanent,
-one per instance; only *which pre-existing frontend port the xDS
-server advertises* changes. This is the crucial difference from
-"dynamically rewrite a NAT rule on failover," which would be slow
-control-plane churn; here the remap happens entirely in the xDS
-push.
+there. The key win is that **no Azure NAT rule is rewritten on
+failover** — the per-instance NAT ports already exist, and only
+*which pre-existing frontend port the xDS server advertises* changes.
+This avoids the slow control-plane churn of "dynamically rewrite a
+NAT rule on failover"; the remap happens entirely in the xDS push.
+
+Failover **latency and client behavior are the same as the base
+proposal**: re-resolve + EDS push + client reconnect, plus the
+in-flight-to-old-primary window. As in the base doc, the stale
+server on instance A merely returns `NotPrimary`; it does **not**
+mark its own endpoint unhealthy. Only the notification-driven
+control tier re-resolves and pushes the replacement endpoint (or an
+unhealthy/draining EDS state), so gRPC drains to the new one without
+dropping the connection abruptly. A client that observes the failure
+first may trigger the separately documented forced-re-resolve fast
+path. "No Azure changes" refers only to the NAT rules — the client
+still experiences a normal xDS reconnect, not a zero-cost switch.
+
+**The NAT table is not static across VMSS lifecycle events, but
+scale-in and reimage differ.** The per-instance rules are only
+"permanent" relative to a *fixed* instance set, and VMSS is elastic —
+but the two events that move it have different effects on the NAT
+mapping:
+
+- **Scale-in (instance removed).** The instance leaves the set, and
+  with inbound NAT *pools* its per-instance rule is destroyed; the
+  frontend port is freed and instance IDs are **not stably reused**.
+  This genuinely removes a `node → instance → NAT port` entry, so the
+  table must be re-derived on scale events, not cached once.
+- **Reimage (instance rebuilt in place).** Reimaging normally
+  **preserves the VMSS instance identity and its generated inbound-NAT
+  mapping** — only the live TCP flow is interrupted while the instance
+  reboots. The NAT frontend port does **not** disappear; it points at
+  the same instance again once it comes back. So the table entry
+  survives; what a mid-connection client sees is a dropped flow and a
+  reconnect once the instance and its replica are back.
+
+So the `node → instance → NAT port` table is a **moving** set that
+must be kept in sync with VMSS membership (re-derived on scale events;
+on reimage the mapping persists but the hosted replica may relocate).
+Two consequences to plan for:
+
+- The port budget (below) tracks a **changing** instance count, not
+  a one-time allocation.
+- **On a mid-connection infra event, don't assume the SF primary has
+  already moved.** An infrastructure-driven removal/reimage (or a node
+  going down) breaks the flow *before* SF necessarily deactivates the
+  node or reconverges naming. Until node deactivation and re-resolution
+  complete, the control tier may still advertise the old instance's
+  port — a **stale-mapping / brief-outage window** where the client
+  reconnects to a port whose replica is gone or moving. Correctness
+  therefore depends on the base proposal's failover ordering
+  (RPC error / `NotPrimary` + forced re-resolve or control-plane EDS
+  update): the client must not
+  treat the old mapping as valid once the primary relocates. State this
+  ordering/durability prerequisite rather than assuming the switch has
+  already happened.
 
 **Constraints (be honest):**
 
@@ -314,8 +466,17 @@ push.
   declare a fixed endpoint (like the samples' `ServiceEndpoint1`).
 - **Port budget.** One NAT frontend port per **(instance, exposed
   service)**. Scales with node count × services-exposed-this-way —
-  fine for a handful of services, not for hundreds. NSG must open
-  the NAT frontend-port range.
+  fine for a handful of services, not for hundreds. Concretely the
+  ceiling is `nodes × services-exposed` NAT ports, bounded by both the
+  finite TCP frontend-port space (~65K) and Azure's **per-LB
+  inbound-NAT limits** (single-instance NAT rules number in the low
+  thousands per LB — verify the current figure in the Azure Load
+  Balancer limits doc). So e.g. ~100 nodes × ~10 services ≈ 1000 ports
+  is already near that ceiling: C2 stops scaling **well before** the
+  reverse proxy would, which is the point at which to reach for it.
+  Because the instance set moves (scale/reimage), the allocation must
+  be **re-tracked as membership changes**, not sized once. NSG must
+  open the NAT frontend-port range.
 - **Multiple replicas per instance.** If one instance hosts several
   partition primaries of the same service on **distinct** ports,
   you need a NAT port per (instance, replica port) — feasible only
@@ -362,27 +523,75 @@ the SLB. Design points:
 
 - **Expose discovery on a stable LB rule.** Add a load-balancing
   rule `VIP:<xdsPort> → discoveryPort` with a TCP health probe, so
-  clients (Scenario A) or the [reverse proxy](./HttpReverseProxy.md)
-  (bootstrapping) can open ADS.
-  All relays/discovery instances serve the same snapshot, so the
-  5-tuple spread is safe — a stream pins to one backend for its
-  life; on backend loss the client reconnects and re-subscribes
-  (standard xDS).
+  clients can open ADS. This rule serves **every scenario's bootstrap**,
+  not just Scenario A: the public **C / C2** clients that motivate this
+  proposal must also reach an ADS endpoint to fetch their EDS
+  translation (the SLB frontend for C, the per-instance NAT port for
+  C2), and the [reverse proxy](./HttpReverseProxy.md) needs it to
+  bootstrap. Which frontend each uses follows the client's network
+  location:
+  - **In-VNet / peered (Scenario A):** the **VNet-internal** frontend
+    (private VIP).
+  - **Off-VNet / public (Scenarios C and C2):** the **public** frontend
+    (public VIP) — the same public boundary the C/C2 data path crosses,
+    since these clients cannot reach a private VIP. Public exposure of
+    the control plane **requires** client auth/authz (see
+    [Security](#security)).
+
+  **Which node type's VIP?** As with the data-plane VIPs, there is no
+  single cluster VIP: the ADS rule must front a **specific node type's
+  LB** — the one whose VMSS actually hosts the discovery singleton
+  (pin it via placement constraints). Off-node clients bootstrap
+  against **that** node type's `VIP:<xdsPort>`.
+
+  **Pick one backend tier explicitly.**
+  In the base proposal the discovery tier `mssf-xds-discovery` is a
+  **stateless singleton** (`InstanceCount=1`) and the relays are
+  per-node (`-1`) serving only node-local loopback/UDS clients. This
+  rule should front the **discovery singleton** (a single backend —
+  so there is no cross-backend "spread" and no reconnect storm across
+  backends; a stream simply pins to the one instance and reconnects
+  on its restart). Note the **relays do not cover a direct off-node
+  client** here: relay last-known-good only helps clients that connect
+  *through a relay* (node-local loopback/UDS clients). A direct client
+  attached to the discovery singleton keeps the resources it has
+  already **accepted** and continues serving them while it reconnects
+  — so an ADS gap is a **stale-config interval** (config updates pause
+  until the stream is re-established and re-synced), not an immediate
+  outage. Fronting the **relay fleet** instead would require first
+  giving relays a network-facing ADS listener (see Scenario A note) — a
+  change this proposal would have to introduce; only then does the
+  5-tuple-spread reasoning (all relays serve the same snapshot) apply.
+  Do not conflate the two tiers.
 - **Keepalive vs. SLB idle timeout.** ADS is a long-lived, often
-  idle HTTP/2 stream. The SLB idle timeout (~4–5 min) will silently
-  drop it. **Require** gRPC keepalive pings (client
+  idle HTTP/2 stream. The SLB idle timeout (**4 minutes** by default)
+  will silently drop it. **Require** gRPC keepalive pings (client
   `keep_alive_while_idle`, server permit-without-stream) at an
   interval below the LB idle timeout, and/or raise the rule's
-  `idleTimeoutInMinutes`. This is mandatory, not optional — without
-  it, config updates stop arriving and clients silently serve stale
-  endpoints.
-- **Reconnect storms.** If a discovery backend fails, every pinned
-  client reconnects at once and re-subscribes. Bound this with
-  jittered reconnect (tonic/`tower` backoff) and rely on relays
-  holding last-known-good so a reconnect gap is not an outage.
+  `idleTimeoutInMinutes` (**up to the 30-minute maximum**). This is
+  mandatory, not optional — without it, config updates stop arriving
+  and clients silently serve stale endpoints.
+- **Reconnect storms.** If the discovery singleton restarts, every
+  pinned client reconnects at once and re-subscribes. Bound this with
+  jittered reconnect (tonic/`tower` backoff). During the gap a direct
+  client keeps serving its **already-accepted** resources (a
+  stale-config interval, not an outage); relay-held last-known-good
+  only helps clients that connect **through a relay** (node-local),
+  not direct off-node streams.
 - **TLS.** Because the ADS stream now crosses the network (not
   loopback/UDS), it must be **TLS**, terminated at the discovery /
   relay listener. See [Security](#security).
+- **Off-node bootstrap (endpoint + trust anchor).** On-node clients
+  are bootstrapped by the local agent over loopback/UDS; an off-VNet
+  C/C2 client has **no such channel** and must obtain, out of band, at
+  least: the public ADS `VIP:<xdsPort>` / FQDN, the xDS
+  bootstrap/target config, the **CA / trust anchor** to validate the
+  TLS/mTLS listener, and its own **client cert / token** for the
+  required authz. The straightforward answer is that the **operator
+  ships a static bootstrap file plus the CA** to each off-node client
+  (the same way any public gRPC client is provisioned); the cluster
+  cannot self-serve this over the very channel it is trying to
+  establish. This is a prerequisite for every public (C/C2) path.
 
 ## Azure SLB configuration required
 
@@ -391,7 +600,8 @@ are cluster policy):
 
 | Purpose | Frontend | Backend | Probe | Notes |
 |---|---|---|---|---|
-| xDS ADS (control) | `VIP:<xdsPort>` | discovery/relay port | TCP | Scenario A clients + reverse-proxy bootstrap. Raise idle timeout; require keepalive. |
+| xDS ADS — in-VNet (control) | internal `VIP:<xdsPort>` | discovery singleton port | TCP | Scenario A clients + reverse-proxy bootstrap. Raise idle timeout; require keepalive. |
+| xDS ADS — public (control) | public `VIP:<xdsPort>` | discovery singleton port | TCP | Scenario C/C2 off-VNet bootstrap. **Requires** client auth/authz (mTLS or equivalent). Raise idle timeout; require keepalive. |
 | Service ingress (Scenario C) | `VIP:<frontendPort>` | service port | TCP on service port | Direct-via-SLB fast path; probe prunes nodes not running the service. This mapping is exactly what the EDS translation advertises. |
 | Existing mgmt | `VIP:19000/19080` | 19000/19080 | TCP | Unchanged SF management; leave as-is. |
 
@@ -402,9 +612,11 @@ Also:
 
 - **Outbound rule (443)** must exist on each node type (Standard
   SLB requirement) or deployment fails.
-- **NSG rules** must open the new frontend ports inbound
-  (managed-cluster custom NSG range 1000–3000; classic clusters add
-  to the NSG directly). Keep 19080 reachable for SFRP.
+- **NSG rules** must open the new frontend ports inbound (managed
+  clusters expose a reserved customer-usable NSG priority window —
+  see the [managed-cluster networking docs](https://learn.microsoft.com/en-us/azure/service-fabric/how-to-managed-cluster-networking)
+  for the exact current range, which has changed over time; classic
+  clusters add to the NSG directly). Keep 19080 reachable for SFRP.
 - **BYOLB** (secondary node types) must have the backend + NAT
   pools pre-configured and outbound connectivity, per Azure BYOLB
   requirements.
@@ -419,15 +631,32 @@ host-trust scoped. **That no longer holds** once xDS or data-plane
 traffic crosses the SLB:
 
 - **Control plane (ADS over SLB):** require **TLS** on the
-  discovery/relay listener; strongly prefer **mTLS** so only
-  authorized clients/proxies can pull the topology (it reveals
-  every service's endpoints). Cluster certs already exist on nodes;
-  reuse them or issue a dedicated xDS cert.
+  discovery/relay listener. Because the ADS stream reveals **every
+  service's endpoints**, server-only TLS is not enough — it proves the
+  server's identity but lets any TLS client enumerate the topology. For
+  a **public** C/C2 control-plane frontend, therefore **require client
+  authentication and authorization** — **mTLS or an equivalent
+  mechanism** (e.g. a validated bearer/JWT with an authz check) — so
+  only authorized clients/proxies can pull topology. A **weaker,
+  server-only-TLS policy is acceptable only for a clearly scoped
+  private / trusted-network deployment** (VNet-internal frontend, no
+  off-VNet exposure). Cluster certs already exist on nodes; reuse them
+  or issue a dedicated xDS cert.
+  - **Defense-in-depth beyond authn.** Auth answers "who," not "how
+    much": a public ADS frontend is still a topology-enumerating,
+    handshake-consuming target. Where the client population is known,
+    add an **NSG source-IP allowlist**; enable **Azure DDoS Protection**
+    on the public VIP; and apply **connection/handshake rate limiting**
+    on the discovery listener.
 - **Data plane (Scenarios A/C/C2):** the client and replica (or the
-  SLB-fronted service) negotiate TLS end-to-end; xDS SDS can
-  distribute certs later (base proposal Future work). The reverse
-  proxy's own TLS-termination and authN/authZ model is covered in
-  its [proposal](./HttpReverseProxy.md#security).
+  SLB-fronted service) negotiate TLS **end-to-end**. This works
+  because the SLB is a **pure L4 passthrough** — it forwards TCP and
+  does **not** terminate or inspect TLS — so the handshake and the
+  session run all the way to the backend (or NAT'd instance) without
+  the LB breaking it. xDS SDS can distribute certs later (base
+  proposal Future work). The reverse proxy's own TLS-termination and
+  authN/authZ model is covered in its
+  [proposal](./HttpReverseProxy.md#security).
 - **NSG posture:** expose only the xDS/service/mgmt ports needed;
   everything else stays closed. Prefer per-node-type subnets/NSGs
   (managed-cluster BYOLB pattern) so blast radius is bounded.
@@ -463,6 +692,15 @@ The **reverse-proxy** path (for public primary-targeted callers
 that C2 cannot serve) is phased separately in its
 [proposal](./HttpReverseProxy.md#phasing).
 
+**Observability for the new failure modes.** These phases introduce
+silent failure modes an operator must be able to see. Watch: **ADS
+stream age / last-sync time** and **keepalive-ping failures** (catches
+idle-timeout drops and stale-config intervals); **EDS-advertised vs.
+actual-primary mismatch** (catches the C2 stale-mapping window / wrong
+NAT port); and **per-backend traffic skew** (catches Scenario C
+landing all traffic on one backend). Surfacing these makes each phase
+verifiable in practice rather than silently degraded.
+
 Stop at the earliest phase that satisfies the real client
 population — many clusters only ever need Scenario A.
 
@@ -478,7 +716,9 @@ population — many clusters only ever need Scenario A.
   needs LB read permissions; (c) keeps ownership with the service
   author. Likely support static first, then labels.
 - **Per-instance public IPs as an alternative.**
-  Secondary node types can get per-instance public IPs. Could EDS
+  Secondary node types can get per-instance public IPs (a
+  point-in-time constraint — primary node types are excluded per
+  current managed-cluster docs, 2026-07; re-verify). Could EDS
   hand back those per-node public IPs so a public client *does* go
   direct-to-replica (an xDS path, no proxy)? Possible but fragile
   (public IP per node, NSG surface, cost, primary node types

@@ -423,7 +423,7 @@ xDS has four resource types gRPC consumes:
 > |---|---|---|
 > | Which service | URI path | `xds:///fabric/<app>/<service>` becomes the xDS resource (Listener) name |
 > | Per-channel policy (primary-only vs. read-from-secondary, listener pick) | URI resource-name convention | a distinct resource name the agent maps to a cluster — **not** a query param |
-> | Which partition (per request) | `mssf-partition-key` header | RDS route match: `Range` for Int64, `String::Exact` for Named |
+> | Which partition (per request) | `mssf-partition-key` header | RDS route match: `Range` for Int64, `String::Exact` for Named (see [Partition key semantics](#partition-key-semantics)) |
 >
 > The URI is bound once when the channel is built and survives
 > failover; a partition key changes per call, so it cannot ride in
@@ -442,7 +442,7 @@ Examples:
 | URI | Meaning |
 |---|---|
 | `xds:///fabric/MyApp/Greeter` | resolve the service; default LB. Partition (if any) selected per-request via the `mssf-partition-key` header. |
-| `xds:///fabric/MyApp/Kv` | partitioned `KvStore`; the client sets `mssf-partition-key: user:42` per call and RDS routes it to the owning partition's cluster. |
+| `xds:///fabric/MyApp/Kv` | partitioned `KvStore` (Int64); the client sets `mssf-partition-key: 42` (a decimal i64) per call and RDS routes it to the partition whose range covers 42. See [Partition key semantics](#partition-key-semantics). |
 
 ### Mapping table
 
@@ -544,6 +544,56 @@ validates it against the `echomain` and `kvstore` samples.
 > honor exact boundaries or the one-primary-per-partition rule.
 > Phase 3 adds only the RDS selection layer and reuses the
 > Phase 1/4 primary LB unchanged.
+
+### Partition key semantics
+
+The `mssf-partition-key` header value is **not** an arbitrary
+business key — it must be in the **same domain as the service's SF
+partition scheme**, because the agent builds the `Route`s directly
+from SF's live partition information
+([`ServicePartitionInformation`](../../crates/libs/core/src/types/common/partition.rs)).
+SF supports exactly three schemes
+([`PartitionKeyType`](../../crates/libs/core/src/client/svc_mgmt_client.rs)):
+
+| SF scheme | `mssf-partition-key` value | Route built by the agent |
+|---|---|---|
+| `Singleton` | *omitted* | one default `Route`; no matcher |
+| `Int64Range` | a **decimal `i64`** (e.g. `42`) | one `Range` matcher per partition from its `low_key`/`high_key` (inclusive SF `[low, high]` → half-open `[low, high+1)`) |
+| `Named` | the **exact partition name** | one `String::Exact` matcher per partition name (case-sensitive) |
+
+Consequences and rules:
+
+- **No transform/hashing layer.** The client sends the *same* i64
+  or name it would pass to
+  [`resolve_service_partition(name, PartitionKeyType::Int64(k) | String(n))`](../../crates/libs/util/src/resolve.rs).
+  SF does not hash for you; mapping a business entity
+  (`user:42`) to an `i64` or a partition name is the
+  **application's** job, done before setting the header. If a
+  business-key→partition-key transform is ever wanted, it belongs
+  in a client helper, not the agent — the agent only mirrors SF's
+  partition boundaries.
+- **Routes are derived from the live scheme.** The agent enumerates
+  the service's partitions and emits one `Route`/`Cluster` per
+  partition. On **repartition** it must re-emit the
+  `RouteConfiguration` so the matchers keep mirroring SF exactly;
+  stale ranges would mis-route silently.
+- **Malformed / mismatched key.** A non-integer header on an
+  `Int64Range` service, or an unknown name on a `Named` service,
+  matches no `Route`. Define this as a hard client error
+  (`Unavailable`/`InvalidArgument`) rather than a silent fallback
+  to an arbitrary partition.
+- **Missing key on a partitioned service.** No default partition is
+  safe to assume for a partitioned stateful service. Either require
+  the header (fail closed) or route to an explicit
+  `-unpartitioned`/error cluster; do **not** pick partition 0.
+- **Value encoding.** Header values are ASCII strings: Int64 keys
+  are decimal (optionally negative, full `i64` range); Named keys
+  are the partition name verbatim. Reserve the `mssf-` prefix for
+  these SF routing headers.
+
+This contract is validated in Phase 3 against the `KvStore`
+sample (Int64 partitioning); a Named-partition sample should be
+added to cover the `String::Exact` path.
 
 ## Failover signal
 

@@ -8,7 +8,8 @@ Owners: mssf maintainers
 
 Relates to:
 [gRPC xDS over Service Fabric Naming](./GrpcXds.md) (the "base xDS
-proposal", accepted) and
+proposal"; like this doc, `Status: Proposal / experiment. Nothing
+shipped.`) and
 [gRPC xDS over Service Fabric on Azure SLB](./GrpcXdsSlb.md) (the
 "SLB proposal"). This doc **generalizes the SLB proposal's former
 Scenario B** — originally a gRPC-only gateway — into a generic
@@ -115,15 +116,21 @@ upgrades. None are required to proxy HTTP or native gRPC.
 1. Give **public / VIP-only** clients partition/primary-aware
    access to SF services — HTTP and gRPC alike — when SLB
    Scenarios A/C/C2 do not apply.
-2. Reuse the base proposal's **partition-key semantics** and
+2. Reuse the base proposal's **partition-key** and **replica-role**
+   semantics (`mssf-partition-key` / `mssf-partition-role`) and its
    **failover model** so routing behavior matches the in-cluster
    xDS path; only the *place* the decision is made differs.
 3. Keep the external client trivial: normal HTTP/gRPC to the VIP,
-   plus the `mssf-partition-key` header for partitioned services.
+   plus the `mssf-partition-key` header for partitioned services
+   and the optional `mssf-partition-role` header for read routing.
    No SF-specific client code.
-4. Improve on SF's built-in reverse proxy and SF-YARP: native
-   HTTP/2 + trailers for gRPC, **key-based** partition selection,
-   and Linux support.
+4. Improve on SF's built-in reverse proxy and SF-YARP where they
+   fall short: **key/role-based** partition and replica selection
+   (`mssf-partition-key` / `mssf-partition-role`), **Linux**
+   support, and **config/stack unification** with the xDS agent
+   (one xDS snapshot and runtime across the in-cluster and proxy
+   paths). HTTP/2 + gRPC proxying itself is table stakes — SF-YARP
+   already does it (see [SF-YARP](#can-sf-yarp-be-used-directly)).
 
 ## Non-Goals
 
@@ -158,13 +165,28 @@ type exposed by the SLB. It:
    [partition-key semantics](./GrpcXds.md#partition-key-semantics)
    (decimal `i64` for Int64Range, exact name for Named). Singleton
    services skip this step.
-5. **Selects the replica** — the partition's **primary** by default,
-   or a secondary for read routes — and forwards the request,
-   preserving method, headers, body, and (for gRPC) trailers and
-   streaming.
+5. **Selects the replica role** by reading `mssf-partition-role`,
+   reusing the base proposal's
+   [replica-role semantics](./GrpcXds.md#partition-key-semantics):
+   `primary` (default) / `secondary` / `any`. The header is a
+   normal HTTP header for HTTP callers and request metadata for
+   gRPC callers, so it maps to the proxy unchanged. **Absent or
+   unmatched ⇒ primary** (fail-*safe*, write-safe), matching the
+   in-cluster xDS path. It then forwards the request to a replica
+   of that role, preserving method, headers, body, and (for gRPC)
+   trailers and streaming.
 6. **Follows failover** — when the primary moves, the topology
-   update repoints the proxy; in-flight retries land on the new
-   primary.
+   update repoints the proxy to the new endpoint; the proxy then
+   **stops routing new work to the old-primary pool and establishes
+   a new pool to the new primary** (a topology repoint alone does not
+   tear down established upstream connections). The proxy is
+   **passive toward in-flight streams**: it drains the old-primary
+   pool for **new** streams only and does **not** proactively reset
+   or cancel established upstream streams. The backend app (the
+   replica that is no longer primary) is responsible for ending its
+   own stream; the proxy just propagates whatever the backend does
+   back to the client (see [Failover and retries](#failover-and-retries)).
+   Retry behavior is bounded by idempotency, not automatic.
 
 ```mermaid
 flowchart LR
@@ -189,6 +211,55 @@ It adds one in-cluster hop and a proxy tier, and gives up the "no
 data-path component" property the base proposal is proud of. It is
 the price of serving a client that can reach only a single L4 VIP,
 and of offering one generic HTTP entry point.
+
+### Failover and retries
+
+Goal 3 keeps the external client free of **SF/xDS-specific
+failover logic** — no xDS resolution, no partition/replica
+awareness, no SF-specific client code. It does **not** relieve
+the client of the *ordinary* retry and reconnection any HTTP/gRPC
+client must already handle: a `503` / `Code::Unavailable`, or a
+closed stream, is still the client's to retry or re-establish,
+exactly as with any upstream. What the proxy absorbs is only
+**SF-topology failover** — repointing to the new primary — and,
+within that, it may transparently retry only *known-idempotent*
+requests. It cannot delegate SF failover to "the caller's own
+idempotency rules" the way the base proposal does, but it also
+does not take over the caller-owned retry model — that stays
+consistent with the sibling proposal. This constrains what the
+proxy may safely do when a primary moves mid-request:
+
+- **Idempotent requests** (safe HTTP methods, or requests the
+  operator explicitly marks idempotent) may be **transparently
+  retried** against the new primary once the topology update
+  lands.
+- **Non-idempotent requests** (unary gRPC, `POST`/`PATCH` and
+  similar) **must not** be auto-retried by the proxy — a replay
+  could double-apply a write. On failover mid-request these
+  surface a `Code::Unavailable` / `503` to the client, which
+  owns the decision to retry.
+- **Long-lived gRPC streams and streaming bodies cannot be
+  transparently replayed.** A primary move is not a graceful drain
+  of a *still-valid* backend (which stops **new** streams but lets
+  in-flight ones finish); the old primary is no longer the primary,
+  so new work is repointed to the new primary. The proxy does **not**
+  proactively reset or cancel the affected streams. Instead, the
+  **backend app** owns termination: when the replica detects it is no
+  longer primary it closes the stream / ends the RPC (typically
+  surfacing `NotPrimary` / an error), or completes the in-flight
+  request if it still can. The proxy simply propagates that back to
+  the client (`Code::Unavailable` / `503` as applicable); the client
+  then re-establishes the stream against the new primary. A long-lived
+  stream pinned to the old primary therefore ends when the backend
+  closes it, not via a proxy-initiated reset, and there is no
+  proxy-side buffering that would make a stream survive a backend
+  change.
+
+So the proxy's default policy is: retry only known-idempotent
+requests, once the pool has been rebuilt to the new primary;
+surface an error for everything else. Status-aware retry/hedging
+over the failover window is Phase P3 work (see [Phasing](#phasing)),
+not an MVP guarantee.
 
 ### Config ingest
 
@@ -216,8 +287,13 @@ direct-naming is a valid MVP.
   the owning partition per the base proposal's semantics. Malformed
   or missing keys fail the same way (hard error, never a silent
   fallback to an arbitrary partition).
-- **Replica:** primary by default; secondary for explicitly marked
-  read routes.
+- **Replica role:** `mssf-partition-role` header — a normal HTTP
+  header for HTTP callers, request metadata for gRPC callers —
+  selects `primary` (default) / `secondary` (read-from-secondary)
+  / `any` (all replicas), reusing the base proposal's
+  [replica-role semantics](./GrpcXds.md#partition-key-semantics).
+  **Absent or unmatched ⇒ primary** (fail-*safe*, write-safe), so
+  read routing is opt-in and identical to the in-cluster xDS path.
 
 ## Can SF-YARP be used directly?
 
@@ -267,6 +343,7 @@ SLB. Required LB shape (illustrative ports):
 |---|---|---|---|---|
 | HTTP ingress | `VIP:80` | proxy HTTP port | TCP/HTTP | plaintext / h2c |
 | HTTPS ingress | `VIP:443` | proxy HTTPS port | TCP/HTTPS | TLS termination at the proxy |
+| gRPC ingress | `VIP:443` (h2) | proxy HTTPS port | TCP/HTTPS | **gRPC rides the HTTPS/443 listener** (ALPN `h2`); no separate frontend port. This is the "gRPC ingress rule" the [SLB proposal](./GrpcXdsSlb.md#azure-slb-configuration-required) points at. |
 
 Plus the Standard-SLB essentials from the SLB proposal apply:
 outbound rule (443), NSG opening the ingress ports inbound, and —
@@ -282,10 +359,25 @@ boundary:
 
 - **TLS termination.** The proxy terminates client TLS at the VIP
   and re-originates to the replica with mTLS inside the cluster
-  (cluster certs). For gRPC, upstream must remain HTTP/2.
+  (cluster certs). For gRPC, upstream must remain HTTP/2. **Backend
+  assumption:** this presumes the target replica accepts
+  cluster-cert mTLS on its listener. SF application services
+  commonly present their **own** service/endpoint certificate, or
+  listen plaintext; when a backend does not speak cluster-cert
+  mTLS, the proxy must be configured **per service** with the
+  expected upstream scheme (its service cert / CA to validate, or
+  explicit plaintext for trusted in-cluster networks) rather than
+  assuming every replica is a cluster-cert mTLS peer.
 - **AuthN/AuthZ.** The proxy is the natural place to enforce client
   identity (mTLS client certs, tokens/JWT) and per-service
   authorization before it will proxy.
+- **DoS / abuse surface.** A public, L4-fronted L7 proxy has a
+  real abuse surface (connection floods, slowloris/half-open,
+  HTTP/2 stream-concurrency exhaustion). The proxy enforces basic
+  **connection, stream-concurrency, and header/idle timeouts** to
+  bound this; broader volumetric protection is **delegated to the
+  upstream layer** (SLB/NSG, or a WAF/DDoS front). Application-level
+  rate limiting and quotas remain a Non-Goal (see [Non-Goals](#non-goals)).
 - **NSG posture.** Expose only the ingress ports (and control-plane
   ports if the proxy ingests xDS over the network); everything else
   closed. Prefer per-node-type subnets/NSGs so blast radius is
@@ -294,15 +386,28 @@ boundary:
 ## Phasing
 
 - **Phase P1 — MVP.** `mssf-http-proxy` ingesting the control-tier
-  snapshot (or direct SF naming), terminating external HTTP at
-  `VIP:80/443`, selecting service + primary; **HTTP/1.1 and plain
-  HTTP/2** first, stateless / singleton services.
+  snapshot (or direct SF naming), selecting service + primary;
+  **HTTP/1.1 and plain HTTP/2** first, stateless / singleton
+  services. Until P2 adds `mssf-partition-role` selection, the proxy
+  routes to the partition **primary by default** (role selection
+  deferred), so the default-primary / write-safety contract holds
+  from this first public phase. Because this phase already accepts
+  public traffic, the
+  **baseline security boundary lands here, not later**: TLS
+  termination at `VIP:443` with backend transport policy
+  (cluster-cert mTLS or the per-service upstream scheme), client
+  authN/authZ where the deployment requires it, and the
+  connection / stream-concurrency / header-idle limits from
+  [Security](#security). Plain HTTP at `VIP:80` is for
+  **private or test-only** deployments; public exposure uses `:443`.
 - **Phase P2 — gRPC + partitioning.** End-to-end HTTP/2 with
   **trailer forwarding and streaming** (native gRPC), plus
-  `mssf-partition-key` selection (RDS `Range`/`Exact`) and
-  primary+secondary read routes.
-- **Phase P3 — hardening.** mTLS end-to-end, authN/authZ, outlier
-  ejection, metrics, retry/hedging over failover windows.
+  `mssf-partition-key` / `mssf-partition-role` selection (RDS
+  `Range`/`Exact`) and primary+secondary read routes. The P1
+  security controls remain in force.
+- **Phase P3 — hardening.** Mandatory end-to-end mTLS (beyond the
+  P1 baseline), richer authZ policy, outlier ejection, metrics, and
+  status-aware retry/hedging over failover windows.
 
 Only build this when the client population actually includes
 VIP-only callers (or plain-HTTP services) the direct xDS paths

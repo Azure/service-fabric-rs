@@ -760,11 +760,11 @@ Consequences and rules:
   matcher), in this exact order:
 
   1. `key == K` **and** `role == secondary` → K's `...-secondary`
-     cluster
-  2. `key == K` **and** `role == any` → K's all-replicas cluster
+     cluster (`{S1, S2, …}`)
+  2. `key == K` **and** `role == any` → K's all-replicas cluster (`{P, S1, S2, …}`)
   3. *(optional, explicit)* `key == K` **and** `role == primary` → K's
-     `...-primary` cluster
-  4. `key == K` (no role matcher) → K's `...-primary` cluster
+     `...-primary` cluster (`{P}`)
+  4. `key == K` (no role matcher) → K's `...-primary` cluster (`{P}`)
      — **fallback** for absent/unmatched role
 
   Every one of these four still carries the `key == K` matcher, so the

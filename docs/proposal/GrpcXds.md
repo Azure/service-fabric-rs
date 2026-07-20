@@ -44,6 +44,49 @@ path is fine and this proposal is optional.
 Phase 0 still validates the chosen client(s) against a minimal ADS
 source before building anything.
 
+## Central design principle
+
+> **This is THE principle the rest of this proposal derives from.**
+> The xDS agent — and the sibling
+> [HTTP reverse proxy](./HttpReverseProxy.md) — are **thin
+> discovery/routing components, not smart middleboxes that add
+> correctness logic.** Two facets:
+>
+> 1. **Thin layer (naming-only).** The layer exposes **only what SF
+>    Naming natively provides** — primary/secondary/any replica
+>    resolution, partition resolution, and notification-driven
+>    failover. It does **not** invent or synthesize capabilities Naming
+>    lacks: no priority-failover/fallback aggregation, no
+>    persisted-snapshot durable recovery. When a client wants behavior
+>    the layer doesn't provide, the **client adapts** (retry with a
+>    different `mssf-partition-role`, retry on `Unavailable`) rather
+>    than the layer manufacturing it.
+> 2. **Fat replica.** Each service replica owns its own correctness and
+>    behavior — write-safety (a secondary returns `NotPrimary`),
+>    terminating its own connection/stream when it stops being primary
+>    (the proxy stays passive on failover), handling role changes, and
+>    honoring idempotency. This is **already** how SF services are
+>    written; the design leans on it deliberately.
+
+The concrete design decisions below all follow from this principle:
+
+- Role set = exactly what Naming resolves
+  (`primary`/`secondary`/`any`); no invented `failover` aggregation — a
+  client wanting fallback retries with a different role.
+  ([Partition key semantics](#partition-key-semantics))
+- Absent/unmatched role ⇒ primary (fail-safe); the replica still
+  enforces write-safety via `NotPrimary`.
+  ([Partition key semantics](#partition-key-semantics))
+- Failover = naming-driven EDS re-push; not an xDS priority construct.
+  ([Failover signal](#failover-signal))
+- Control-plane-driven health only; the server never self-reports into
+  EDS. ([Server-side ORCA reports](#server-side-orca-reports-optional-for-richer-signals))
+- Singleton / discovery-tier restart handled like any SF service
+  restart (re-resolve from Naming); no bespoke durable recovery.
+  ([Freshness: PUSH + PULL](#freshness-push--pull-like-sf-yarp))
+- Reverse proxy is passive on failover; the backend replica terminates
+  its own stream. ([HTTP reverse proxy](./HttpReverseProxy.md#the-proxy))
+
 ## Background
 
 Service Fabric (SF) services are addressed by Fabric URIs
@@ -366,6 +409,18 @@ policy already proposed for the agent moves into the control tier
 unchanged; the relays simply mirror whatever snapshot they last
 received.
 
+A discovery-tier restart is handled like any other SF service
+restart: SF Naming is the source of truth, so on restart the control
+tier re-resolves and rebuilds its snapshot from Naming. Consumers
+(relays or direct clients) treat the momentary unavailability exactly
+as they treat any SF Naming resolution — they retry until resolution
+succeeds; existing consumers keep serving their already-received
+snapshot during the gap, and new consumers simply retry until the tier
+is back. No bespoke durable/persisted recovery mechanism is needed
+(and none would be a Naming feature) — per the
+[central design principle](#central-design-principle), the layer offers
+only what Naming provides.
+
 ### Tradeoffs and when to choose it
 
 | | Single-tier (per-node agent) | Two-tier (central discovery) |
@@ -507,9 +562,12 @@ during that window:
 
 The agent should **not** tear down the ADS resource entirely on a
 transient empty result — that would force clients to re-subscribe
-and lose the fast reconnect path. Phase 1 implements
-hold-last-known-good + staleness timeout; the confirmed-removal
-push lands with notifications in Phase 2.
+and lose the fast reconnect path. Hold-last-known-good is a bounded
+*serve-until-stale* reflection of Naming's transient state, **not**
+persisted/durable recovery (the
+[central design principle](#central-design-principle)). Phase 1
+implements it + staleness timeout; the confirmed-removal push lands
+with notifications in Phase 2.
 
 ### Endpoint address parsing
 

@@ -2,7 +2,7 @@
 
 Status: Proposal / experiment. Nothing shipped.
 
-Date: 2026-06-04 (last updated 2026-07-16)
+Date: 2026-06-04 (last updated 2026-07-20)
 
 Owners: mssf maintainers
 
@@ -464,8 +464,8 @@ Examples:
 | URI | Meaning |
 |---|---|
 | `xds:///fabric/MyApp/Greeter` | resolve the service; default LB. Partition (if any) selected per-request via the `mssf-partition-key` header. |
-| `xds:///fabric/MyApp/Kv` | partitioned `KvStore` (Int64); the client sets `mssf-partition-key: 42` (a decimal i64) per call and RDS routes it to the partition whose range covers 42. See [Partition key semantics](#partition-key-semantics). |
-| `xds:///fabric/MyApp/Kv` + `mssf-partition-role: secondary` | same plain target, **read-from-secondary**; RDS matches both headers and routes the request to the selected partition's `...-secondary` `ROUND_ROBIN` cluster. `any` targets all replicas of the partition; **absent/unmatched ⇒ primary** (write-safe default). A client wanting a hard read-only channel stamps this header on every call via a metadata interceptor. See [LB policy mapping](#lb-policy-mapping). |
+| `xds:///fabric/MyApp/KvStore` | partitioned `KvStore` (Int64); the client sets `mssf-partition-key: 42` (a decimal i64) per call and RDS routes it to the partition whose range covers 42. See [Partition key semantics](#partition-key-semantics). |
+| `xds:///fabric/MyApp/KvStore` + `mssf-partition-role: secondary` | same plain target, **read-from-secondary**; RDS matches both headers and routes the request to the selected partition's `...-secondary` `ROUND_ROBIN` cluster. `any` targets all replicas of the partition; **absent/unmatched ⇒ primary** (write-safe default). A client wanting a hard read-only channel stamps this header on every call via a metadata interceptor. See [LB policy mapping](#lb-policy-mapping). |
 
 ### Mapping table
 
@@ -593,19 +593,16 @@ validates it against the `echomain` and `kvstore` samples.
 >   `...-primary` / `...-secondary` / all-replicas cluster (partition
 >   N's own replicas), never one flat secondary cluster. **When the
 >   header is absent or its value matches no role route, the request
->   falls through to that partition's primary cluster** (the role
->   routes are ordered ahead of a key-only primary fallback; see the
->   RDS route ordering under [Partition key semantics](#partition-key-semantics))
->   — the plain
->   `xds:///fabric/App/Svc` target stays primary-only exactly as the
->   old `-secondary` suffix guaranteed for free, so writes are never
->   silently steered onto a secondary. A caller that wants a hard
->   read-only channel installs a client-side metadata interceptor
->   that stamps `mssf-partition-role: secondary` on every call (the
->   per-channel replacement for a dedicated `-secondary` resource
->   name); a caller that needs both roles simply sets the header
->   per request. The correctness backstop is unchanged: the header is
->   a routing *hint*, and SF still returns `NotPrimary` if a write
+>   falls through to that partition's primary cluster** — the role routes
+>   are emitted ahead of a key-only primary fallback (see the RDS route
+>   ordering under [Partition key semantics](#partition-key-semantics)), so
+>   the plain `xds:///fabric/App/Svc` target stays primary-only just as the
+>   old `-secondary` suffix did for free, and writes are never silently
+>   steered onto a secondary. A caller wanting a hard read-only channel
+>   stamps `mssf-partition-role: secondary` on every call via a client-side
+>   metadata interceptor (the per-channel replacement for a dedicated
+>   `-secondary` resource name). The correctness backstop is unchanged: the
+>   header is a routing *hint*, and SF still returns `NotPrimary` if a write
 >   lands on a secondary.
 
 ### Partition key semantics

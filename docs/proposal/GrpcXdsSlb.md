@@ -2,7 +2,7 @@
 
 Status: Proposal / experiment. Nothing shipped.
 
-Date: 2026-07-16
+Date: 2026-07-16 (last updated 2026-07-20)
 
 Owners: mssf maintainers
 
@@ -299,28 +299,25 @@ Properties:
   write-safety guarantee. Callers needing primary/secondary (including
   the absent-⇒-primary default) must take a topology-aware path —
   Scenario A (in-VNet direct), Scenario C2 (per-instance NAT), or the
-  [reverse proxy](./HttpReverseProxy.md). **Not** for
-  partition/primary-targeted calls on the flat VIP.
+  [reverse proxy](./HttpReverseProxy.md).
 - **Dual advertisement:** the same service can be advertised two
   ways from one snapshot — node-IP endpoints for in-VNet Scenario A
   clients and a `VIP:frontendPort` endpoint for Scenario C clients.
-  This is the **SLB-vs-direct** axis (which *endpoint set* a channel
-  dials). It is orthogonal to replica-role selection **only for
-  `role=any`**: because the flat VIP is topology-blind it can honor
-  *only* `mssf-partition-role: any`, so on this path the two axes are
-  **not** fully orthogonal — `primary`/`secondary` (and the
-  absent-⇒-primary default) require a topology-aware path, not the flat
-  VIP. Replica-role selection itself the base proposal carries per
-  request in the [`mssf-partition-role` header](./GrpcXds.md#partition-key-semantics),
-  **not** a resource name. The SLB-vs-direct axis still uses the base
+  This **SLB-vs-direct** axis (which *endpoint set* a channel dials) is
+  orthogonal to replica-role selection **only for `role=any`**; as above,
+  the topology-blind VIP cannot honor `primary`/`secondary` (or the
+  absent-⇒-primary default), which need a topology-aware path.
+  Replica-role selection is carried per request in the
+  [`mssf-partition-role` header](./GrpcXds.md#partition-key-semantics),
+  **not** a resource name, whereas the SLB-vs-direct axis uses the base
   proposal's **resource-name convention** (a distinct `xds:///` target
-  that the agent maps to a cluster — not a query param). The exact
-  spelling depends on that convention, which is still an
-  [open question in the base proposal](./GrpcXds.md) (URI shape is
-  not yet locked): a suffix like `.../Svc@slb` vs. `.../Svc` is one
-  option, but `@` must be confirmed as a legal character in the xDS
-  resource/target name `tonic-xds` accepts before adopting it — a
-  distinct path segment (e.g. `.../Svc/slb`) is the safe fallback.
+  that the agent maps to a cluster — not a query param). Its exact
+  spelling depends on that convention, still an
+  [open question in the base proposal](./GrpcXds.md) (URI shape is not yet
+  locked): a suffix like `.../Svc@slb` vs. `.../Svc` is one option, but `@`
+  must be confirmed as a legal character in the xDS resource/target name
+  `tonic-xds` accepts before adopting it — a distinct path segment (e.g.
+  `.../Svc/slb`) is the safe fallback.
 
 How the control tier learns the mapping is an
 [open question](#open-questions): static config, an ARM query of
@@ -453,10 +450,8 @@ Two consequences to plan for:
   reconnects to a port whose replica is gone or moving. Correctness
   therefore depends on the base proposal's failover ordering
   (RPC error / `NotPrimary` + forced re-resolve or control-plane EDS
-  update): the client must not
-  treat the old mapping as valid once the primary relocates. State this
-  ordering/durability prerequisite rather than assuming the switch has
-  already happened.
+  update): the client must not treat the old mapping as valid once the
+  primary relocates.
 
 **Constraints (be honest):**
 
@@ -573,11 +568,9 @@ the SLB. Design points:
   and clients silently serve stale endpoints.
 - **Reconnect storms.** If the discovery singleton restarts, every
   pinned client reconnects at once and re-subscribes. Bound this with
-  jittered reconnect (tonic/`tower` backoff). During the gap a direct
-  client keeps serving its **already-accepted** resources (a
-  stale-config interval, not an outage); relay-held last-known-good
-  only helps clients that connect **through a relay** (node-local),
-  not direct off-node streams.
+  jittered reconnect (tonic/`tower` backoff); during the gap a direct
+  client keeps serving its already-accepted resources (a stale-config
+  interval, not an outage), as noted above.
 - **TLS.** Because the ADS stream now crosses the network (not
   loopback/UDS), it must be **TLS**, terminated at the discovery /
   relay listener. See [Security](#security).

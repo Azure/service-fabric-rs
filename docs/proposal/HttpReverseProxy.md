@@ -2,7 +2,7 @@
 
 Status: Proposal / experiment. Nothing shipped.
 
-Date: 2026-07-17
+Date: 2026-07-17 (last updated 2026-07-20)
 
 Owners: mssf maintainers
 
@@ -348,8 +348,8 @@ SLB. Required LB shape (illustrative ports):
 Plus the Standard-SLB essentials from the SLB proposal apply:
 outbound rule (443), NSG opening the ingress ports inbound, and —
 because HTTP/2 and gRPC streams are long-lived — **keepalive tuned
-below the SLB idle timeout** (~4–5 min) so streams are not silently
-dropped. See
+below the SLB idle timeout** (**4 min** by default) so streams are not
+silently dropped. See
 [SLB proposal — Azure SLB configuration](./GrpcXdsSlb.md#azure-slb-configuration-required).
 
 ## Security

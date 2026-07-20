@@ -718,6 +718,20 @@ Consequences and rules:
   `primary` / `secondary` / `any`. Reserve the `mssf-` prefix for
   these SF routing headers (`mssf-partition-key` and
   `mssf-partition-role`).
+- **Not an authorization boundary (untrusted addressing primitive).**
+  `mssf-partition-key` (and `mssf-partition-role`) are **caller-supplied
+  routing hints**, validated only for *well-formedness*, never for
+  *entitlement*: the caller picks which partition it addresses, and the
+  routing layer faithfully delivers to it. Under a partition-per-tenant
+  layout this is a cross-tenant addressing (IDOR) risk — changing the
+  key value reads/writes another tenant's partition if the backend
+  assumes the routing layer already scoped the request. The routing
+  layer does **not** scope it. In multi-tenant contexts,
+  **partition/authority-level authorization is required** — enforced by
+  the backend on every request and/or by the ADS authorization posture
+  (see [Security](#security)) that scopes which authorities/partitions a
+  given identity may address at all. Add a conformance test that
+  caller-A carrying tenant-B's key is rejected by the backend.
 
 This contract is validated in Phase 3 against the `KvStore`
 sample (Int64 partitioning); a Named-partition sample should be
@@ -1177,18 +1191,64 @@ receive xDS snapshots and re-serve them locally.
   filesystem permissions.
 - Two-tier: the discovery→relay snapshot channel **is**
   cross-node xDS traffic, and it carries the whole cluster's
-  LDS/RDS/CDS/EDS topology. It is trust-scoped to the cluster's
-  internal network (the same boundary SF's own inter-node traffic
-  uses) and reaches only the SF-deployed relay instances. The
-  client-facing hop on each node stays loopback/UDS as above.
-  Hardening this channel with mTLS/SDS is deferred (see below);
-  until then it relies on the cluster-internal network boundary.
+  LDS/RDS/CDS/EDS topology. It reaches only the SF-deployed relay
+  instances and the client-facing hop on each node stays loopback/UDS.
+- **Discovery→relay channel authentication (security gate, not an
+  open-ended deferral).** The relay holds no `FabricClient` and
+  re-serves **verbatim** whatever snapshot arrives, so an
+  unauthenticated channel is a **config-poisoning** surface: a
+  same-network adversary that claims the discovery address (especially
+  during a singleton-restart race) could push a poisoned EDS snapshot
+  and redirect client RPCs — **including writes** — to attacker
+  endpoints. A network boundary alone is a single point of failure,
+  not defense-in-depth. The gate before the two-tier form is exposed
+  beyond a single-tenant, fully-trusted internal network is:
+  1. **First verify** whether SF's inter-node transport already
+     provides **mutual authentication** for this channel. The docs
+     currently claim only network *scoping*, not mutual auth — this
+     must be confirmed, not assumed.
+  2. **If it does not**, require **control-tier-identity-pinned mTLS**
+     on the discovery→relay channel (the relay pins the control tier's
+     identity and rejects any other snapshot source) **before** the
+     two-tier form is exposed publicly or multi-tenant. This is the
+     recommended resolution of the ship-now-vs-mTLS-first timing
+     trade-off; network-boundary trust is acceptable **only** for a
+     fully-trusted single-tenant internal
+     deployment with the residual risk explicitly signed off.
+- **ADS authorization (which resources, not just who).** Authenticating
+  the caller is **not sufficient**: the discovery tier owns a
+  cluster-wide `fabric:` catch-all, so a single authenticated principal
+  (or one leaked credential) could otherwise enumerate **every**
+  service/partition/endpoint — full-topology reconnaissance as the
+  blast radius of one credential. Two supported postures, stated
+  explicitly:
+  - **Trusted-first-party posture (default for this proposal).** The
+    ADS frontend is served **only** to fully-trusted first-party
+    consumers (per-node relays, the SF-deployed proxy fleet) that are
+    already entitled to the whole topology. No per-identity scoping is
+    required *because no untrusted identity is admitted.*
+  - **Scoped posture (required before any untrusted/multi-tenant
+    exposure).** Add a **per-identity authorization layer** that scopes
+    the served snapshot (per-authority / per-app), so differently-scoped
+    credentials receive **strictly different** resource sets. A public
+    or multi-tenant ADS frontend **must not** ship on authN alone.
+    This also backstops the `mssf-partition-key`
+    [cross-tenant addressing risk](#partition-key-semantics).
 - The agent runs as a service account with FabricClient
   credentials. Standard SF security boundaries apply. In the
   two-tier form only the control tier holds those credentials; the
   per-node relay has no naming access.
-- xDS-level mTLS / RBAC is deferred (Future work). Until then,
-  xDS data is host-trust scoped.
+- **Separate trust anchor for external clients.** Any credential
+  provisioned to an off-node / external ADS client (see the SLB
+  proposal's off-node bootstrap) **must not** chain to the cluster
+  management CA and **must not** be valid for SF management or node
+  transport. Reusing cluster certs / distributing the cluster CA to
+  external clients merges a low-trust topology reader into the cluster
+  administration trust domain. Issue external ADS/proxy clients from a
+  **dedicated, narrowly-scoped trust anchor**, not the cluster CA.
+- xDS-level mTLS / RBAC hardening beyond the gates above is tracked in
+  Future work (SDS-distributed certs); until then, single-tier xDS
+  data stays host-trust scoped.
 
 ## Open questions
 

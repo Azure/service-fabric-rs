@@ -286,7 +286,15 @@ direct-naming is a valid MVP.
   for HTTP callers, request metadata for gRPC callers — matched to
   the owning partition per the base proposal's semantics. Malformed
   or missing keys fail the same way (hard error, never a silent
-  fallback to an arbitrary partition).
+  fallback to an arbitrary partition). **Note:** the key is an
+  **untrusted, non-authorizing** addressing hint — the caller picks
+  the partition and the proxy faithfully routes to it. In multi-tenant
+  (e.g. partition-per-tenant) deployments this is a cross-tenant
+  addressing (IDOR) risk, so partition/authority-level authorization
+  must be enforced (by the proxy's client authZ and/or the backend);
+  see the base proposal's
+  [partition-key threat note](./GrpcXds.md#partition-key-semantics)
+  and [Security](#security).
 - **Replica role:** `mssf-partition-role` header — a normal HTTP
   header for HTTP callers, request metadata for gRPC callers —
   selects `primary` (default) / `secondary` (read-from-secondary)
@@ -358,19 +366,32 @@ A public VIP is internet-facing, so the proxy is the security
 boundary:
 
 - **TLS termination.** The proxy terminates client TLS at the VIP
-  and re-originates to the replica with mTLS inside the cluster
-  (cluster certs). For gRPC, upstream must remain HTTP/2. **Backend
-  assumption:** this presumes the target replica accepts
-  cluster-cert mTLS on its listener. SF application services
-  commonly present their **own** service/endpoint certificate, or
-  listen plaintext; when a backend does not speak cluster-cert
-  mTLS, the proxy must be configured **per service** with the
-  expected upstream scheme (its service cert / CA to validate, or
-  explicit plaintext for trusted in-cluster networks) rather than
-  assuming every replica is a cluster-cert mTLS peer.
-- **AuthN/AuthZ.** The proxy is the natural place to enforce client
-  identity (mTLS client certs, tokens/JWT) and per-service
-  authorization before it will proxy.
+  and re-originates to the replica **inside the cluster over TLS**.
+  **Scope the proxy's upstream identity narrowly:** the proxy
+  re-originates with a **dedicated proxy identity** (its own cert),
+  **not** a full cluster cert that every replica trusts as an
+  administrative peer. A dedicated identity bounds blast radius — a
+  proxy compromise can then reach only what that identity is
+  authorized for, and **cannot impersonate arbitrary privileged
+  clients**. **Backend assumption:** this presumes the target replica
+  accepts the proxy's upstream mTLS identity on its listener. SF
+  application services commonly present their **own** service/endpoint
+  certificate; when a backend does not speak the proxy's mTLS identity,
+  the proxy must be configured **per service** with the expected
+  upstream scheme (its service cert / CA to validate). **Plaintext
+  upstream is disallowed on any externally-facing path** — it is
+  permitted **only** for a clearly **private / test-only** backend that
+  is not reachable from the public ingress. An externally-facing
+  request must never be forwarded over an unauthenticated, unencrypted
+  upstream. For gRPC, the upstream must remain HTTP/2.
+- **AuthN/AuthZ.** For any **public** exposure, client authentication
+  and per-service authorization (mTLS client certs, tokens/JWT) are
+  **mandatory by default** — the proxy **ships closed**. It **must
+  not** proxy an unauthenticated public request to a backend in the
+  default posture; an anonymous request cannot reach, and certainly
+  cannot mutate, a write primary. Relaxing this (anonymous/open
+  ingress) is allowed **only** for an explicitly-scoped private or
+  test deployment, never as the public default.
 - **DoS / abuse surface.** A public, L4-fronted L7 proxy has a
   real abuse surface (connection floods, slowloris/half-open,
   HTTP/2 stream-concurrency exhaustion). The proxy enforces basic

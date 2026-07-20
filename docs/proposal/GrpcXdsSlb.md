@@ -221,6 +221,26 @@ directly and the SLB forwards at L4 to a healthy backend. The data
 path is the **raw SLB SDN path — no application proxy hop** — so it
 is as fast as any Azure L4 traffic.
 
+**Advertisement-time eligibility (structural, not just a role
+constraint).** A flat `@slb` VIP is **topology-blind**: it hashes a
+5-tuple to *some* healthy backend with no notion of which partition
+that backend owns. For a **partitioned** service this is not merely a
+relaxed role — it is *incorrect*: a `key=K` request can hash to a node
+that hosts a **different** partition, silently violating partition
+ownership. Restricting the path to `mssf-partition-role: any` (below)
+does **not** fix this, because `any` still means "any replica **of the
+owning partition**," which a flat VIP cannot guarantee. Therefore
+Scenario C is **structurally available only** for services where
+**every backend serves every key** — i.e. **`Singleton`** or
+**stateless** services. The control tier **must reject** partitioned
+(`Int64Range` / `Named`) targets from Scenario C advertisement
+entirely (do not emit an `@slb` VIP endpoint for them, regardless of
+role); such services must take a topology-aware path — Scenario A,
+Scenario C2 (per-instance NAT), or the
+[reverse proxy](./HttpReverseProxy.md). (Add an integration test that
+hashes a key-K request to a non-owning node and asserts the
+partitioned service was never advertised on the flat VIP.)
+
 The xDS server's job here is a **translation**: instead of
 advertising the service's private node endpoints (unreachable off
 VNet), it advertises the **SLB frontend** as the endpoint. Concretely
@@ -288,17 +308,23 @@ Properties:
   removes unhealthy nodes), **not** xDS: the only EDS endpoint is the
   VIP, so xDS would drop it only if the *entire* VIP/service is gone,
   not per replica.
-- **Scope:** stateless services, or "any active replica is fine"
-  reads — i.e. **only** the base proposal's `mssf-partition-role:
-  any`. Because the VIP is topology-blind, the Scenario C RDS resource
-  must **require an explicit `mssf-partition-role: any` match and fail
-  closed** for absent / `primary` / `secondary`: it must **not** reuse
-  the base proposal's absent-⇒-primary fallback, since a
-  default-primary request served by the flat VIP would land on an
-  arbitrary replica (often a secondary), violating the base proposal's
-  write-safety guarantee. Callers needing primary/secondary (including
-  the absent-⇒-primary default) must take a topology-aware path —
-  Scenario A (in-VNet direct), Scenario C2 (per-instance NAT), or the
+- **Scope:** **`Singleton`/stateless services only** (every backend
+  serves every key — see the advertisement-time eligibility rule
+  above; partitioned targets are **rejected** from this path, not
+  merely constrained). Within that eligible set, the path serves "any
+  active replica is fine" reads — i.e. **only** the base proposal's
+  `mssf-partition-role: any`. Because the VIP is topology-blind, the
+  Scenario C RDS resource must **require an explicit
+  `mssf-partition-role: any` match and fail closed** for absent /
+  `primary` / `secondary`: it must **not** reuse the base proposal's
+  absent-⇒-primary fallback, since a default-primary request served by
+  the flat VIP would land on an arbitrary replica, violating the base
+  proposal's write-safety guarantee. This is the per-resource
+  fail-closed variant of the base
+  [`mssf-partition-role` semantics](./GrpcXds.md#partition-key-semantics).
+  Callers needing primary/secondary (including the absent-⇒-primary
+  default) must take a topology-aware path — Scenario A (in-VNet
+  direct), Scenario C2 (per-instance NAT), or the
   [reverse proxy](./HttpReverseProxy.md).
 - **Dual advertisement:** the same service can be advertised two
   ways from one snapshot — node-IP endpoints for in-VNet Scenario A
@@ -371,13 +397,31 @@ The client dials `VIP:<Fport_A>`; the SLB NATs it to the exact
 instance holding the primary. One L4 hop, no proxy, **and**
 primary-correct.
 
+**Where the Azure-specific translation lives (layering, honest).**
+Steps 1–2 above require knowledge the base SF-generic tier was defined
+**without**: an IMDS/ARM-sourced `node → VMSS-instance → NAT-port`
+(and `→ VIP`) table, re-derived on scale events. To keep the base
+proposal's "reuse the SF-generic core unchanged" claim (Goal 4) honest,
+that Azure knowledge is **not** folded into the SF-generic snapshot
+logic. It lives in a **decorating `mssf-slb-mapper` layer** that sits
+**above** the SF-generic control tier: the base tier still produces the
+ordinary SF→xDS snapshot (replica → node endpoint), and the mapper
+**post-processes** it for `@slb`-advertised services, rewriting node
+endpoints into `VIP:<NAT-port>` (C2) or `VIP:<frontendPort>` (C)
+endpoints using the Azure table. The upward dependency on
+Azure/IMDS/ARM is thus **isolated in the mapper**, not pushed into the
+SF-generic translation — this is what "reuse as an unchanged core +
+decorate" means, and it is the honest reading of the C/C2 data flow.
+
 **Supported roles (C2 is topology-aware).** Unlike the flat Scenario C
 VIP, the per-instance-NAT path resolves the specific replica behind
 each frontend port, so it **can honor the full base-proposal role
 contract** — `primary` (and the absent-⇒-primary default), `secondary`,
 and `any` — exactly like Scenario A direct: the control tier advertises
-the NAT port of the primary instance for `primary`, a secondary
-instance's NAT port for `secondary`, etc. C2 therefore does **not** need
+the NAT port of the primary instance for `primary` (`{P}`), a secondary
+instance's NAT port for `secondary` (`{S1, S2, …}`), and all instances for
+`any` (`{P, S1, S2, …}`) — using the base proposal's `P`/`S1, S2, …`
+replica-role notation. C2 therefore does **not** need
 Scenario C's fail-closed `any`-only restriction.
 
 ```mermaid
@@ -584,7 +628,10 @@ the SLB. Design points:
   ships a static bootstrap file plus the CA** to each off-node client
   (the same way any public gRPC client is provisioned); the cluster
   cannot self-serve this over the very channel it is trying to
-  establish. This is a prerequisite for every public (C/C2) path.
+  establish. This is a prerequisite for every public (C/C2) path. The
+  trust anchor and client cert shipped here **must** come from the
+  dedicated external-client PKI, **not** the cluster management CA (see
+  [Security](#security)).
 
 ## Azure SLB configuration required
 
@@ -633,8 +680,27 @@ traffic crosses the SLB:
   only authorized clients/proxies can pull topology. A **weaker,
   server-only-TLS policy is acceptable only for a clearly scoped
   private / trusted-network deployment** (VNet-internal frontend, no
-  off-VNet exposure). Cluster certs already exist on nodes; reuse them
-  or issue a dedicated xDS cert.
+  off-VNet exposure).
+  - **AuthN is not authZ-of-resources.** Authenticating the caller
+    does **not** authorize *which* resources it may pull. The base
+    proposal's ADS
+    [authorization posture](./GrpcXds.md#security) applies here: the
+    default posture serves the ADS frontend **only** to fully-trusted
+    first-party proxies already entitled to the whole topology; any
+    **untrusted / multi-tenant** public frontend **must** add a
+    **per-identity authorization layer** that scopes the served
+    snapshot (per-authority / per-app) so one credential cannot
+    enumerate the entire cluster. State which posture a given
+    deployment adopts.
+  - **Separate trust anchor for external clients.** Cluster certs
+    already exist on nodes, but external ADS clients **must not** be
+    provisioned a credential that chains to the **cluster management
+    CA** or is valid for SF management (19000/19080) or node
+    transport — that would merge a low-trust topology reader into the
+    cluster-administration trust domain. Issue external ADS/proxy
+    clients from a **dedicated, narrowly-scoped external-client PKI**
+    whose issuing CA is **not** the cluster CA. (This is a requirement,
+    not an option.)
   - **Defense-in-depth beyond authn.** Auth answers "who," not "how
     much": a public ADS frontend is still a topology-enumerating,
     handshake-consuming target. Where the client population is known,

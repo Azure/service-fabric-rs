@@ -53,6 +53,15 @@ partition/primary-aware HTTP reverse proxy that terminates external
 HTTP/HTTP2/gRPC behind the SLB and forwards each request to the
 correct replica.
 
+It **inherits the base proposal's
+[central design principle](./GrpcXds.md#central-design-principle)**: the
+proxy is a **thin, passive** discovery/routing component that exposes
+only what SF Naming provides and invents no correctness logic, while
+the **backend replica owns correctness** — it enforces write-safety
+(`NotPrimary`) and, on failover, terminates its own in-flight stream
+rather than relying on the proxy to sever it (see
+[Failover and retries](#failover-and-retries)).
+
 ## Is this xDS?
 
 **No — and that is why it lives in its own doc.** The defining
@@ -186,7 +195,8 @@ type exposed by the SLB. It:
    replica that is no longer primary) is responsible for ending its
    own stream; the proxy just propagates whatever the backend does
    back to the client (see [Failover and retries](#failover-and-retries)).
-   Retry behavior is bounded by idempotency, not automatic.
+   Retry is **client-owned**; the proxy does not retry on the client's
+   behalf.
 
 ```mermaid
 flowchart LR
@@ -220,24 +230,28 @@ awareness, no SF-specific client code. It does **not** relieve
 the client of the *ordinary* retry and reconnection any HTTP/gRPC
 client must already handle: a `503` / `Code::Unavailable`, or a
 closed stream, is still the client's to retry or re-establish,
-exactly as with any upstream. What the proxy absorbs is only
-**SF-topology failover** — repointing to the new primary — and,
-within that, it may transparently retry only *known-idempotent*
-requests. It cannot delegate SF failover to "the caller's own
-idempotency rules" the way the base proposal does, but it also
-does not take over the caller-owned retry model — that stays
-consistent with the sibling proposal. This constrains what the
-proxy may safely do when a primary moves mid-request:
+exactly as with any upstream. Per the
+[central design principle](./GrpcXds.md#central-design-principle) the
+proxy stays **thin and passive**: what it absorbs is only
+**SF-topology failover** — repointing **new** work to the new
+primary — and **retry and idempotency remain client-owned**, exactly
+as on the base xDS path ("the client adapts"). The proxy cannot know
+an application's idempotency semantics, so it does **not** replay
+requests or buffer request bodies on the client's behalf. This is what
+the proxy does when a primary moves mid-request:
 
-- **Idempotent requests** (safe HTTP methods, or requests the
-  operator explicitly marks idempotent) may be **transparently
-  retried** against the new primary once the topology update
-  lands.
-- **Non-idempotent requests** (unary gRPC, `POST`/`PATCH` and
-  similar) **must not** be auto-retried by the proxy — a replay
-  could double-apply a write. On failover mid-request these
-  surface a `Code::Unavailable` / `503` to the client, which
-  owns the decision to retry.
+- **New work follows the topology.** Once the topology update lands,
+  the proxy routes **new** requests — and any request not yet
+  dispatched upstream — to the new primary. This is routing to the
+  current endpoint, **not** a replay of an already-started request: no
+  idempotency assumption and no body buffering are involved.
+- **In-flight requests surface their error.** A request already
+  dispatched to the old primary when it stops being primary surfaces a
+  `Code::Unavailable` / `503` to the client, which **owns the decision
+  to retry** per its own idempotency rules. The proxy does **not**
+  auto-retry it — a blind replay could double-apply a write, and only
+  the client (or the replica) knows whether the operation is safe to
+  repeat.
 - **Long-lived gRPC streams and streaming bodies cannot be
   transparently replayed.** A primary move is not a graceful drain
   of a *still-valid* backend (which stops **new** streams but lets
@@ -255,11 +269,28 @@ proxy may safely do when a primary moves mid-request:
   proxy-side buffering that would make a stream survive a backend
   change.
 
-So the proxy's default policy is: retry only known-idempotent
-requests, once the pool has been rebuilt to the new primary;
-surface an error for everything else. Status-aware retry/hedging
-over the failover window is Phase P3 work (see [Phasing](#phasing)),
-not an MVP guarantee.
+  **This is a hard backend-app contract, not a best-effort
+  expectation.** Because the proxy stays passive (it issues **no**
+  GOAWAY/RST toward in-flight streams on failover — see the
+  [passive-failover decision](#the-proxy)), write-safety for in-flight
+  streams depends **entirely** on the backend: a replica that is
+  demoted **MUST stop serving as primary and terminate its own
+  in-flight stream(s)** promptly (reject/complete-and-close, surfacing
+  `NotPrimary`), rather than continuing to serve writes after
+  demotion. A backend that only checks role at connection start and
+  keeps serving an established stream would keep accepting writes on a
+  no-longer-primary replica — the proxy does not and will not sever it.
+  This contract is therefore a **conformance requirement** for any
+  write-bearing service placed behind the proxy, and should be covered
+  by a conformance test: demote a primary mid-stream and assert the
+  backend terminates the stream (the proxy remains passive throughout).
+
+So the proxy's default policy is: repoint **new** work to the new
+primary once the pool has been rebuilt, and surface an error for
+anything already in flight — the client retries per its own
+idempotency rules. Any future status-aware behavior stays
+subordinate to that client-owned model (see [Phasing](#phasing)); the
+proxy does not hedge or retry on the client's behalf.
 
 ### Config ingest
 
@@ -415,20 +446,30 @@ boundary:
   from this first public phase. Because this phase already accepts
   public traffic, the
   **baseline security boundary lands here, not later**: TLS
-  termination at `VIP:443` with backend transport policy
-  (cluster-cert mTLS or the per-service upstream scheme), client
-  authN/authZ where the deployment requires it, and the
+  termination at `VIP:443` with a **narrowly-scoped dedicated proxy
+  upstream identity** (not a full cluster cert) speaking mTLS or the
+  per-service upstream scheme, **mandatory client authN/authZ for
+  public exposure (the proxy ships closed — no anonymous public
+  request reaches a backend by default)**, and the
   connection / stream-concurrency / header-idle limits from
-  [Security](#security). Plain HTTP at `VIP:80` is for
-  **private or test-only** deployments; public exposure uses `:443`.
+  [Security](#security). Plain HTTP at `VIP:80`, and any plaintext
+  upstream, are for **private or test-only** deployments; public
+  exposure uses `:443` and never forwards over a plaintext upstream.
 - **Phase P2 — gRPC + partitioning.** End-to-end HTTP/2 with
   **trailer forwarding and streaming** (native gRPC), plus
   `mssf-partition-key` / `mssf-partition-role` selection (RDS
-  `Range`/`Exact`) and primary+secondary read routes. The P1
+  `Range`/`Exact`) and primary+secondary read routes (`secondary` spans
+  `{S1, S2, …}`, `any` spans `{P, S1, S2, …}`, using the base proposal's
+  `P`/`S1, S2, …` replica-role notation). The P1
   security controls remain in force.
 - **Phase P3 — hardening.** Mandatory end-to-end mTLS (beyond the
-  P1 baseline), richer authZ policy, outlier ejection, metrics, and
-  status-aware retry/hedging over failover windows.
+  P1 baseline), richer authZ policy, optional outlier ejection (a
+  convenience that does not supersede naming-driven failover or the
+  replica's `NotPrimary` write-safety) and metrics, and — if pursued —
+  status-awareness used only to repoint /
+  surface failures faster over failover windows. Retry and hedging
+  stay **client-owned**; the proxy does not retry or hedge on the
+  client's behalf.
 
 Only build this when the client population actually includes
 VIP-only callers (or plain-HTTP services) the direct xDS paths
@@ -448,9 +489,9 @@ cannot serve.
   co-resident with the discovery control tier? Isolation vs.
   footprint.
 - **gRPC value-adds.** Should the proxy read `grpc-status` trailers
-  for status-aware retry/hedging during failover, or stay
-  status-agnostic? Reading trailers is more useful but couples the
-  proxy to gRPC semantics.
+  to repoint / surface failover faster (retry and hedging stay
+  client-owned either way), or stay status-agnostic? Reading trailers
+  is more useful but couples the proxy to gRPC semantics.
 - **Per-instance public IPs as an alternative.** Secondary node
   types can get per-instance public IPs; a public client could then
   go direct-to-replica (an xDS path) and skip the proxy. Fragile

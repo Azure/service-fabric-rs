@@ -9,6 +9,17 @@ Owners: mssf maintainers
 Extends: [gRPC xDS over Service Fabric Naming](./GrpcXds.md)
 (the base proposal — also a proposal/experiment, nothing shipped).
 
+This proposal **inherits the base proposal's
+[central design principle](./GrpcXds.md#central-design-principle)**:
+the xDS layer is a thin, naming-only discovery/routing component and
+each replica is "fat" (owns its own write-safety and role changes).
+Locally that means the SLB paths expose **only naming-provided
+selection** — `@slb` honors only `role=any` (a flat VIP cannot pick a
+specific replica), while the topology-aware paths (Scenario A/C2) honor
+the full naming-provided role set — and add no correctness logic of
+their own; the backend replica still returns `NotPrimary` on a
+misrouted write.
+
 ## Why pursue this?
 
 The [base proposal](./GrpcXds.md) gives node-local gRPC clients a
@@ -459,9 +470,11 @@ proposal**: re-resolve + EDS push + client reconnect, plus the
 in-flight-to-old-primary window. As in the base doc, the stale
 server on instance A merely returns `NotPrimary`; it does **not**
 mark its own endpoint unhealthy. Only the notification-driven
-control tier re-resolves and pushes the replacement endpoint (or an
-unhealthy/draining EDS state), so gRPC drains to the new one without
-dropping the connection abruptly. A client that observes the failure
+control tier re-resolves and pushes the replacement endpoint
+(optionally reflecting the old one as `DRAINING` when SF gives
+advance notice — a passive routing signal; in-flight completion is
+the replica's call), so gRPC stops picking the old endpoint for new
+RPCs and the client reconnects to the new one. A client that observes the failure
 first may trigger the separately documented forced-re-resolve fast
 path. "No Azure changes" refers only to the NAT rules — the client
 still experiences a normal xDS reconnect, not a zero-cost switch.

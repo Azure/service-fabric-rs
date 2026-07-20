@@ -162,12 +162,19 @@ This proposal therefore splits on **client network position** and
    NAT, outbound, idle timeout) needed for the xDS control stream
    and the data path to survive an SLB.
 4. Reuse the base proposal's SF→xDS translation and two-tier
-   discovery **unchanged**; add only what the SLB boundary forces.
+   discovery **as an unchanged core**, and add the Azure/SLB-specific
+   translation as a **decorating layer above** it — not by editing the
+   SF-generic tier in place. See the SF-generic-vs-Azure-specific
+   boundary note under [Scenario C2](#scenario-c2--primary-aware-direct-via-slb-per-instance-nat).
 
 ## Non-Goals
 
 - Changing the SF→xDS mapping, URI/header strategy, or failover
-  model from the base proposal. Those are inherited verbatim.
+  model from the base proposal. The **SF-generic core** (partition
+  matching, role semantics, notification-driven failover) is inherited
+  verbatim; the Azure/SLB specifics (VIP/NAT translation) are added as
+  a **separate decorating layer**, not by rewriting that core (see the
+  boundary note under [Scenario C2](#scenario-c2--primary-aware-direct-via-slb-per-instance-nat)).
 - Making the Azure SLB itself partition-aware. It stays a flat L4
   balancer; any topology awareness lives in cluster-side software.
 - A public multi-tenant gateway product. This is SF-cluster-scoped.
@@ -496,6 +503,20 @@ Two consequences to plan for:
   (RPC error / `NotPrimary` + forced re-resolve or control-plane EDS
   update): the client must not treat the old mapping as valid once the
   primary relocates.
+- **Fail-closed publication barrier for a concurrently changing
+  mapping.** The advertised endpoint is a **join across two
+  eventually-consistent control planes** (SF membership and the
+  Azure/VMSS→NAT table). The control tier **must not** advertise an
+  endpoint built from a **mismatched-generation** join. While the
+  `SF-node → VMSS-instance → NAT-port` mapping is mid-change (VMSS
+  scale-in / reimage / NAT reassignment), the affected role/partition's
+  EDS must **fail closed** — served **empty / `Unavailable`** — until
+  the control tier holds a **verified, same-generation** membership +
+  mapping pair. A change on **either** source invalidates the cached
+  mapping for the affected instances. A stale or ambiguous mapping is
+  never published: better a brief, explicit unavailability than
+  silently NATing a client to a dead or unintended instance. Simulate
+  all orderings of failover / scale-in / NAT removal / restart.
 
 **Constraints (be honest):**
 

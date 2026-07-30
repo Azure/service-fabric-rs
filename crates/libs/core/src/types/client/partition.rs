@@ -25,7 +25,7 @@ use mssf_com::{
     },
 };
 
-use crate::types::{HealthState, ServicePartitionInformation};
+use crate::types::{HealthState, HealthStateFilterFlags, ServicePartitionInformation};
 
 // Partition related types
 // FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION
@@ -336,6 +336,23 @@ impl From<&mssf_com::FabricClient::IFabricPartitionHealthResult> for PartitionHe
             partition_id: raw.PartitionId,
             aggregated_health_state: (&raw.AggregatedHealthState).into(),
             health_events: health_event_list,
+        }
+    }
+}
+
+// FABRIC_PARTITION_HEALTH_STATES_FILTER
+#[derive(Debug, Clone)]
+pub struct PartitionHealthStatesFilter {
+    pub health_state_filter: HealthStateFilterFlags,
+}
+
+impl GetRaw<mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATES_FILTER>
+    for PartitionHealthStatesFilter
+{
+    fn get_raw(&self) -> mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATES_FILTER {
+        mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATES_FILTER {
+            HealthStateFilter: self.health_state_filter.bits() as u32,
+            Reserved: std::ptr::null_mut(),
         }
     }
 }

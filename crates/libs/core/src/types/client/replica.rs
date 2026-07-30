@@ -28,7 +28,7 @@ use mssf_com::{
     },
 };
 
-use crate::types::{HealthState, ReplicaRole};
+use crate::types::{HealthState, HealthStateFilterFlags, ReplicaRole};
 
 use super::{QueryReplicatorOperationName, QueryServiceOperationName};
 
@@ -514,6 +514,23 @@ impl From<&mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH>
             health_events: unsafe { value.HealthEvents.as_ref() }.map_or(vec![], |list| {
                 crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
             }),
+        }
+    }
+}
+
+// FABRIC_REPLICA_HEALTH_STATES_FILTER
+#[derive(Debug, Clone)]
+pub struct ReplicaHealthStatesFilter {
+    pub health_state_filter: HealthStateFilterFlags,
+}
+
+impl GetRaw<mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATES_FILTER>
+    for ReplicaHealthStatesFilter
+{
+    fn get_raw(&self) -> mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATES_FILTER {
+        mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATES_FILTER {
+            HealthStateFilter: self.health_state_filter.bits() as u32,
+            Reserved: std::ptr::null_mut(),
         }
     }
 }

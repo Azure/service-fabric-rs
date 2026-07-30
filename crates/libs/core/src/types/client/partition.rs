@@ -267,8 +267,8 @@ pub struct PartitionHealthQueryDescription {
     pub partition_id: GUID,
     pub health_policy: Option<super::ApplicationHealthPolicy>,
     pub events_filter: Option<super::HealthEventsFilter>,
+    pub replicas_filter: Option<super::ReplicaHealthStatesFilter>,
     // TODO: other fields
-    // pub replicas_filter: Option<super::ReplicaHealthStatesFilter>,
     // pub health_statistics_filter: Option<super::HealthStatisticsFilter>,
 }
 
@@ -297,6 +297,15 @@ impl crate::mem::GetRawWithBoxPool<mssf_com::FabricTypes::FABRIC_PARTITION_HEALT
             })
             .unwrap_or_default();
 
+        let replicas_filter = self
+            .replicas_filter
+            .as_ref()
+            .map(|f| {
+                let b = Box::new(f.get_raw());
+                pool.push(b)
+            })
+            .unwrap_or_default();
+
         let ex1 = pool.push(Box::new(
             mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_QUERY_DESCRIPTION_EX1 {
                 Reserved: std::ptr::null_mut(),
@@ -308,7 +317,7 @@ impl crate::mem::GetRawWithBoxPool<mssf_com::FabricTypes::FABRIC_PARTITION_HEALT
             EventsFilter: events_filter,
             HealthPolicy: health_policy,
             PartitionId: self.partition_id,
-            ReplicasFilter: std::ptr::null_mut(),
+            ReplicasFilter: replicas_filter,
             Reserved: ex1 as *mut _,
         }
     }
@@ -354,5 +363,57 @@ impl GetRaw<mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATES_FILTER>
             HealthStateFilter: self.health_state_filter.bits() as u32,
             Reserved: std::ptr::null_mut(),
         }
+    }
+}
+
+// FABRIC_PARTITION_HEALTH_STATE
+#[derive(Debug, Clone)]
+pub struct PartitionHealthState {
+    pub partition_id: GUID,
+    pub aggregated_health_state: HealthState,
+}
+
+impl From<&mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATE> for PartitionHealthState {
+    fn from(value: &mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATE) -> Self {
+        Self {
+            partition_id: value.PartitionId,
+            aggregated_health_state: (&value.AggregatedHealthState).into(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::mem::{BoxPool, GetRawWithBoxPool};
+    use crate::types::ReplicaHealthStatesFilter;
+
+    #[test]
+    fn test_partition_health_query_description_replicas_filter_raw() {
+        let desc = PartitionHealthQueryDescription {
+            partition_id: GUID::zeroed(),
+            replicas_filter: Some(ReplicaHealthStatesFilter {
+                health_state_filter: HealthStateFilterFlags::ERROR,
+            }),
+            ..Default::default()
+        };
+        let mut pool = BoxPool::new();
+        let raw = desc.get_raw_with_pool(&mut pool);
+        assert!(!raw.ReplicasFilter.is_null());
+        assert_eq!(
+            unsafe { (*raw.ReplicasFilter).HealthStateFilter },
+            HealthStateFilterFlags::ERROR.bits() as u32
+        );
+    }
+
+    #[test]
+    fn test_partition_health_query_description_no_replicas_filter_raw() {
+        let desc = PartitionHealthQueryDescription {
+            partition_id: GUID::zeroed(),
+            ..Default::default()
+        };
+        let mut pool = BoxPool::new();
+        let raw = desc.get_raw_with_pool(&mut pool);
+        assert!(raw.ReplicasFilter.is_null());
     }
 }

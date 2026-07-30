@@ -14,7 +14,8 @@ use mssf_core::{
     types::{
         ApplicationHealthStatesFilter, ApplicationQueryDescription, ClusterHealthQueryDescription,
         HealthEventsFilter, HealthStateFilterFlags, NodeHealthQueryDescription,
-        NodeHealthStatesFilter, NodeQueryResultItem, Uri,
+        NodeHealthStatesFilter, NodeQueryResultItem, PartitionHealthStatesFilter,
+        ReplicaHealthStatesFilter, Uri,
     },
 };
 use std::time::Duration;
@@ -370,9 +371,13 @@ impl HealthDataProducer {
         token: BoxedCancelToken,
         svc: mssf_core::types::ServiceQueryResultItem,
     ) -> Option<ProducerEvent> {
+        // As with cluster health, Ignore partitions health because we retrieve them separately.
         let svc_name = svc.get_service_name().clone();
         let desc = mssf_core::types::ServiceHealthQueryDescription {
             service_name: svc_name,
+            partitions_filter: Some(PartitionHealthStatesFilter {
+                health_state_filter: HealthStateFilterFlags::NONE,
+            }),
             ..Default::default()
         };
         let svc_health = self
@@ -399,9 +404,13 @@ impl HealthDataProducer {
         service_name: Uri,
         application_name: Uri,
     ) -> Option<ProducerEvent> {
+        // As with cluster health, Ignore replicas health because we retrieve them separately.
         let partition_id = part.get_partition_id();
         let desc = mssf_core::types::PartitionHealthQueryDescription {
             partition_id,
+            replicas_filter: Some(ReplicaHealthStatesFilter {
+                health_state_filter: HealthStateFilterFlags::NONE,
+            }),
             ..Default::default()
         };
         let part_health = self

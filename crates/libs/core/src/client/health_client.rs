@@ -301,6 +301,43 @@ impl HealthClient {
             cancellation_token,
         )
     }
+
+    fn get_deployed_application_health_internal(
+        &self,
+        desc: &mssf_com::FabricTypes::FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::Result<mssf_com::FabricClient::IFabricDeployedApplicationHealthResult>>
+    {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetDeployedApplicationHealth2(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetDeployedApplicationHealth2(ctx) },
+            cancellation_token,
+        )
+    }
+
+    fn get_deployed_service_package_health_internal(
+        &self,
+        desc: &mssf_com::FabricTypes::FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<
+        crate::Result<mssf_com::FabricClient::IFabricDeployedServicePackageHealthResult>,
+    > {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetDeployedServicePackageHealth2(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetDeployedServicePackageHealth2(ctx) },
+            cancellation_token,
+        )
+    }
 }
 
 impl HealthClient {
@@ -420,5 +457,45 @@ impl HealthClient {
         }
         .await??;
         Ok(crate::types::ReplicaHealthResult::from(&com))
+    }
+
+    /// Gets the health of a deployed application.
+    pub async fn get_deployed_application_health(
+        &self,
+        desc: &crate::types::DeployedApplicationHealthQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::DeployedApplicationHealth> {
+        let com = {
+            let mut pool = BoxPool::new();
+            let desc_raw = desc.get_raw_with_pool(&mut pool);
+            self.get_deployed_application_health_internal(
+                &desc_raw,
+                timeout.as_millis() as u32,
+                cancellation_token,
+            )
+        }
+        .await??;
+        Ok(crate::types::DeployedApplicationHealth::from(&com))
+    }
+
+    /// Gets the health of a deployed service package.
+    pub async fn get_deployed_service_package_health(
+        &self,
+        desc: &crate::types::DeployedServicePackageHealthQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::DeployedServicePackageHealth> {
+        let com = {
+            let mut pool = BoxPool::new();
+            let desc_raw = desc.get_raw_with_pool(&mut pool);
+            self.get_deployed_service_package_health_internal(
+                &desc_raw,
+                timeout.as_millis() as u32,
+                cancellation_token,
+            )
+        }
+        .await??;
+        Ok(crate::types::DeployedServicePackageHealth::from(&com))
     }
 }

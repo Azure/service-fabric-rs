@@ -62,6 +62,11 @@ pub use application_upgrade::{
     ApplicationUpgradeProgress, ApplicationUpgradeState, UpgradeDomainState, UpgradeDomainStatus,
 };
 
+mod deployed_service_package;
+pub use deployed_service_package::*;
+mod deployed_application;
+pub use deployed_application::*;
+
 // FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS
 bitflags::bitflags! {
     #[derive(Debug, Clone)]

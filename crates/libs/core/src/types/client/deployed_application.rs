@@ -60,8 +60,7 @@ impl GetRawWithBoxPool<FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION>
             })
             .unwrap_or_default();
 
-        // HealthStatisticsFilter is not yet exposed on the Rust wrapper (see Phase 6 of
-        // docs/design/HealthQueryCompleteness.md); always request full statistics.
+        // HealthStatisticsFilter is not yet exposed on the Rust wrapper; always request full statistics.
         let ex1 = pool.push(Box::new(
             FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION_EX1 {
                 HealthStatisticsFilter: std::ptr::null(),

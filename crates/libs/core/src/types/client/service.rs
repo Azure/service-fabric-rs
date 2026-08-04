@@ -1238,8 +1238,8 @@ pub struct ServiceHealthQueryDescription {
     pub service_name: Uri,
     pub health_policy: Option<ApplicationHealthPolicy>,
     pub events_filter: Option<HealthEventsFilter>,
+    pub partitions_filter: Option<super::PartitionHealthStatesFilter>,
     // TODO: implement other filters
-    // pub partitions_filter: Option<PartitionHealthStatesFilter>,
     // pub health_statistics_filter: Option<HealthStatisticsFilter>,
 }
 
@@ -1266,6 +1266,14 @@ impl crate::mem::GetRawWithBoxPool<mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_
                 pool.push(b)
             })
             .unwrap_or_default();
+        let partitions_filter = self
+            .partitions_filter
+            .as_ref()
+            .map(|f| {
+                let b = Box::new(f.get_raw());
+                pool.push(b)
+            })
+            .unwrap_or_default();
         let ex1 = Box::new(
             mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_QUERY_DESCRIPTION_EX1 {
                 HealthStatisticsFilter: std::ptr::null_mut(),
@@ -1277,7 +1285,7 @@ impl crate::mem::GetRawWithBoxPool<mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH_
             ServiceName: self.service_name.as_raw(),
             HealthPolicy: health_policy,
             EventsFilter: events_filter,
-            PartitionsFilter: std::ptr::null_mut(),
+            PartitionsFilter: partitions_filter,
             Reserved: ex1 as *mut c_void,
         }
     }
@@ -1289,22 +1297,32 @@ pub struct ServiceHealthResult {
     pub service_name: Uri,
     pub aggregated_health_state: HealthState,
     pub health_events: Vec<HealthEvent>,
-    // TODO: implement other fields
-    // pub partitions_health: Vec<PartitionHealth>,
+    pub partition_health_states: Vec<super::PartitionHealthState>,
 }
 
 impl From<&mssf_com::FabricClient::IFabricServiceHealthResult> for ServiceHealthResult {
     fn from(value: &mssf_com::FabricClient::IFabricServiceHealthResult) -> Self {
         let raw = unsafe { value.get_ServiceHealth().as_ref().unwrap() };
+        raw.into()
+    }
+}
 
+impl From<&mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH> for ServiceHealthResult {
+    fn from(raw: &mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH) -> Self {
         let health_event_list = unsafe { raw.HealthEvents.as_ref() }.map_or(vec![], |list| {
             crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
         });
+
+        let partition_health_states = unsafe { raw.PartitionHealthStates.as_ref() }
+            .map_or(vec![], |list| {
+                crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
+            });
 
         Self {
             service_name: Uri::from(raw.ServiceName),
             aggregated_health_state: HealthState::from(&raw.AggregatedHealthState),
             health_events: health_event_list,
+            partition_health_states,
         }
     }
 }
@@ -1335,5 +1353,67 @@ impl GetRaw<FABRIC_DELETE_SERVICE_DESCRIPTION> for DeleteServiceDescription {
             ForceDelete: self.force_delete,
             Reserved: std::ptr::null_mut(),
         }
+    }
+}
+
+#[cfg(test)]
+mod health_query_tests {
+    use super::*;
+    use crate::GUID;
+    use crate::types::PartitionHealthStatesFilter;
+
+    #[test]
+    fn test_service_health_query_description_partitions_filter_raw() {
+        let desc = ServiceHealthQueryDescription {
+            service_name: Uri::from("fabric:/App1/Svc1"),
+            partitions_filter: Some(PartitionHealthStatesFilter {
+                health_state_filter: HealthStateFilterFlags::WARNING,
+            }),
+            ..Default::default()
+        };
+        let mut pool = BoxPool::new();
+        let raw = desc.get_raw_with_pool(&mut pool);
+        assert!(!raw.PartitionsFilter.is_null());
+        assert_eq!(
+            unsafe { (*raw.PartitionsFilter).HealthStateFilter },
+            HealthStateFilterFlags::WARNING.bits() as u32
+        );
+    }
+
+    #[test]
+    fn test_service_health_query_description_no_partitions_filter_raw() {
+        let desc = ServiceHealthQueryDescription {
+            service_name: Uri::from("fabric:/App1/Svc1"),
+            ..Default::default()
+        };
+        let mut pool = BoxPool::new();
+        let raw = desc.get_raw_with_pool(&mut pool);
+        assert!(raw.PartitionsFilter.is_null());
+    }
+
+    #[test]
+    fn test_service_health_result_partition_health_states() {
+        let partition_state = mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATE {
+            PartitionId: GUID::zeroed(),
+            AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_WARNING,
+            Reserved: std::ptr::null_mut(),
+        };
+        let list = mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATE_LIST {
+            Count: 1,
+            Items: &partition_state,
+        };
+        let raw = mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH {
+            ServiceName: Uri::from("fabric:/App1/Svc1").as_raw(),
+            AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_WARNING,
+            HealthEvents: std::ptr::null(),
+            PartitionHealthStates: &list,
+            Reserved: std::ptr::null_mut(),
+        };
+        let result = ServiceHealthResult::from(&raw);
+        assert_eq!(result.partition_health_states.len(), 1);
+        assert_eq!(
+            result.partition_health_states[0].aggregated_health_state,
+            HealthState::Warning
+        );
     }
 }

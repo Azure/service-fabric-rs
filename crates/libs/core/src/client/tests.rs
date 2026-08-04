@@ -74,6 +74,54 @@ async fn test_fabric_client() {
         }
     }
 
+    // test deployed application / deployed service package health.
+    // There is no "list deployed applications" query yet, so this just
+    // exercises the new HealthClient APIs against the first node using a
+    // well-known app name; a not-found style error is expected and fine when
+    // EchoApp isn't provisioned in this environment.
+    {
+        let hc = c.get_health_manager();
+        let nodes = qc
+            .get_node_list(&NodeQueryDescription::default(), timeout, None)
+            .await
+            .unwrap();
+        if let Some(node) = nodes.nodes.first() {
+            let app_desc = crate::types::DeployedApplicationHealthQueryDescription {
+                application_name: Uri::from("fabric:/EchoApp"),
+                node_name: node.name.clone(),
+                ..Default::default()
+            };
+            match hc
+                .get_deployed_application_health(&app_desc, timeout, None)
+                .await
+            {
+                Ok(health) => {
+                    println!("Deployed application health: {health:?}");
+                    let pkg_desc = crate::types::DeployedServicePackageHealthQueryDescription {
+                        application_name: Uri::from("fabric:/EchoApp"),
+                        node_name: node.name.clone(),
+                        service_manifest_name: WString::from("EchoServicePkg"),
+                        ..Default::default()
+                    };
+                    match hc
+                        .get_deployed_service_package_health(&pkg_desc, timeout, None)
+                        .await
+                    {
+                        Ok(pkg_health) => {
+                            println!("Deployed service package health: {pkg_health:?}")
+                        }
+                        Err(e) => println!(
+                            "Deployed service package health not available (expected if the service manifest name doesn't match): {e:?}"
+                        ),
+                    }
+                }
+                Err(e) => println!(
+                    "Deployed application health not available (expected if EchoApp isn't deployed on this node): {e:?}"
+                ),
+            }
+        }
+    }
+
     let smgr = c.get_service_manager();
     // test resolve echo app
     {

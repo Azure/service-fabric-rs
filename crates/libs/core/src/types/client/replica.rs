@@ -20,15 +20,15 @@ use mssf_com::{
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED, FABRIC_QUERY_SERVICE_REPLICA_STATUS_INBUILD,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_INVALID, FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_STANDBY, FABRIC_REMOVE_REPLICA_DESCRIPTION,
-        FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_KIND_STATEFUL,
-        FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
-        FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
+        FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_KIND_SELF_RECONFIGURING,
+        FABRIC_SERVICE_KIND_STATEFUL, FABRIC_SERVICE_KIND_STATELESS,
+        FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION, FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
         FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM,
         FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
     },
 };
 
-use crate::types::{HealthState, ReplicaRole};
+use crate::types::{HealthState, HealthStateFilterFlags, ReplicaRole};
 
 use super::{QueryReplicatorOperationName, QueryServiceOperationName};
 
@@ -514,6 +514,106 @@ impl From<&mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH>
             health_events: unsafe { value.HealthEvents.as_ref() }.map_or(vec![], |list| {
                 crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
             }),
+        }
+    }
+}
+
+// FABRIC_REPLICA_HEALTH_STATES_FILTER
+#[derive(Debug, Clone)]
+pub struct ReplicaHealthStatesFilter {
+    pub health_state_filter: HealthStateFilterFlags,
+}
+
+impl GetRaw<mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATES_FILTER>
+    for ReplicaHealthStatesFilter
+{
+    fn get_raw(&self) -> mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATES_FILTER {
+        mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATES_FILTER {
+            HealthStateFilter: self.health_state_filter.bits() as u32,
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+// FABRIC_REPLICA_HEALTH_STATE
+#[derive(Debug, Clone)]
+pub enum ReplicaHealthState {
+    Stateful(StatefulServiceReplicaHealthState),
+    Stateless(StatelessServiceInstanceHealthState),
+    SelfReconfiguring(SelfReconfiguringServiceInstanceHealthState),
+    Invalid,
+}
+
+// FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_STATE
+#[derive(Debug, Clone)]
+pub struct StatefulServiceReplicaHealthState {
+    pub partition_id: GUID,
+    pub replica_id: i64,
+    pub aggregated_health_state: HealthState,
+    // TODO: UnhealthyEvaluations
+}
+
+// FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_STATE
+#[derive(Debug, Clone)]
+pub struct StatelessServiceInstanceHealthState {
+    pub partition_id: GUID,
+    pub instance_id: i64,
+    pub aggregated_health_state: HealthState,
+    // TODO: UnhealthyEvaluations
+}
+
+// FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_STATE
+#[derive(Debug, Clone)]
+pub struct SelfReconfiguringServiceInstanceHealthState {
+    pub partition_id: GUID,
+    pub instance_id: i64,
+    pub aggregated_health_state: HealthState,
+    // TODO: UnhealthyEvaluations
+}
+
+impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE> for ReplicaHealthState {
+    fn from(value: &mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE) -> Self {
+        match value.Kind {
+            FABRIC_SERVICE_KIND_STATEFUL => {
+                let raw = unsafe {
+                    (value.Value
+                        as *const mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_STATE)
+                        .as_ref()
+                        .unwrap()
+                };
+                Self::Stateful(StatefulServiceReplicaHealthState {
+                    partition_id: raw.PartitionId,
+                    replica_id: raw.ReplicaId,
+                    aggregated_health_state: (&raw.AggregatedHealthState).into(),
+                })
+            }
+            FABRIC_SERVICE_KIND_STATELESS => {
+                let raw = unsafe {
+                    (value.Value
+                        as *const mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_STATE)
+                        .as_ref()
+                        .unwrap()
+                };
+                Self::Stateless(StatelessServiceInstanceHealthState {
+                    partition_id: raw.PartitionId,
+                    instance_id: raw.InstanceId,
+                    aggregated_health_state: (&raw.AggregatedHealthState).into(),
+                })
+            }
+            FABRIC_SERVICE_KIND_SELF_RECONFIGURING => {
+                let raw = unsafe {
+                    (value.Value
+                        as *const mssf_com::FabricTypes::FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_STATE)
+                        .as_ref()
+                        .unwrap()
+                };
+                Self::SelfReconfiguring(SelfReconfiguringServiceInstanceHealthState {
+                    partition_id: raw.PartitionId,
+                    instance_id: raw.InstanceId,
+                    aggregated_health_state: (&raw.AggregatedHealthState).into(),
+                })
+            }
+            _ => Self::Invalid,
         }
     }
 }

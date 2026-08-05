@@ -55,6 +55,27 @@ impl AdsService {
         AggregatedDiscoveryServiceServer::new(self)
     }
 
+    /// Serve on an ephemeral loopback port, returning the bound address.
+    ///
+    /// Convenience for tests and single-process hosting: the caller does not
+    /// have to plumb a listener or a `tonic` server itself. The server runs on
+    /// a detached task for the lifetime of the process.
+    pub async fn serve_on_ephemeral_loopback(self) -> std::io::Result<SocketAddr> {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await?;
+        let addr = listener.local_addr()?;
+        let svc = self.into_server();
+        tokio::spawn(async move {
+            if let Err(e) = tonic::transport::Server::builder()
+                .add_service(svc)
+                .serve_with_incoming(tokio_stream::wrappers::TcpListenerStream::new(listener))
+                .await
+            {
+                tracing::error!(error = %e, "ads server stopped");
+            }
+        });
+        Ok(addr)
+    }
+
     /// Build the resources for one type URL at a given endpoint state.
     ///
     /// Returns an empty vector when the request names a resource this mapping

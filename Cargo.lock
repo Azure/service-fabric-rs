@@ -1366,9 +1366,12 @@ dependencies = [
 name = "samples_reflection"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "clap",
  "http",
+ "http-body",
  "mssf-core",
+ "mssf-net",
  "mssf-util",
  "prost",
  "test-log",
@@ -1377,6 +1380,7 @@ dependencies = [
  "tonic",
  "tonic-prost",
  "tonic-prost-build",
+ "tonic-xds",
  "tracing",
  "tracing-subscriber",
  "trait-variant",

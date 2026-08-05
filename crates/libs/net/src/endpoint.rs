@@ -147,7 +147,10 @@ mod tests {
 
     #[test]
     fn host_port_displays_as_host_colon_port() {
-        assert_eq!(HostPort::new("localhost", 20001).to_string(), "localhost:20001");
+        assert_eq!(
+            HostPort::new("localhost", 20001).to_string(),
+            "localhost:20001"
+        );
     }
 
     #[tokio::test]

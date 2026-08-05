@@ -35,6 +35,7 @@ pub mod ads;
 pub mod config;
 pub mod endpoint;
 pub mod error;
+pub mod fabric;
 pub mod resources;
 
 pub use crate::address::{AddressError, AddressInterpreter, host_port_interpreter};
@@ -44,3 +45,4 @@ pub use crate::endpoint::{
     EndpointSnapshot, EndpointSource, HostPort, ScriptedEndpointHandle, ScriptedEndpointSource,
 };
 pub use crate::error::Error;
+pub use crate::fabric::{FabricEndpointSource, classify_resolve_error};

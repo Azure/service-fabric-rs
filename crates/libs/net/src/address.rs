@@ -80,7 +80,10 @@ mod tests {
     #[test]
     fn accepts_host_and_port() {
         let f = host_port_interpreter();
-        assert_eq!(f("localhost:20001").unwrap(), HostPort::new("localhost", 20001));
+        assert_eq!(
+            f("localhost:20001").unwrap(),
+            HostPort::new("localhost", 20001)
+        );
         assert_eq!(f("10.0.0.4:1").unwrap(), HostPort::new("10.0.0.4", 1));
     }
 

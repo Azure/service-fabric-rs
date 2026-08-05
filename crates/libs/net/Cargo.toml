@@ -39,6 +39,7 @@ tokio = { workspace = true, features = [
     "net",
     "macros",
 ] }
+tokio-stream = { workspace = true, features = ["net"] }
 tonic-prost = { workspace = true }
 tonic-xds = { workspace = true }
 tracing-subscriber = { workspace = true }

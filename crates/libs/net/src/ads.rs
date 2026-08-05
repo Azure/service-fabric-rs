@@ -23,9 +23,9 @@ use envoy_types::pb::envoy::service::discovery::v3::{
     },
 };
 use envoy_types::pb::google::protobuf::Any;
+use futures::Stream;
 use prost::Message;
 use tokio::sync::watch;
-use futures::Stream;
 use tonic::{Request, Response, Status};
 
 use crate::config::XdsMapping;
@@ -66,7 +66,8 @@ impl AdsService {
         type_url: &str,
         resource_names: &[String],
     ) -> Vec<Any> {
-        let wants = |name: &str| resource_names.is_empty() || resource_names.iter().any(|n| n == name);
+        let wants =
+            |name: &str| resource_names.is_empty() || resource_names.iter().any(|n| n == name);
 
         match type_url {
             LISTENER_TYPE_URL => {
@@ -75,14 +76,20 @@ impl AdsService {
                 if matches!(snapshot, EndpointSnapshot::NotFound) || !wants(mapping.xds_name()) {
                     return vec![];
                 }
-                vec![any(LISTENER_TYPE_URL, build_listener(mapping).encode_to_vec())]
+                vec![any(
+                    LISTENER_TYPE_URL,
+                    build_listener(mapping).encode_to_vec(),
+                )]
             }
             CLUSTER_TYPE_URL => {
                 if matches!(snapshot, EndpointSnapshot::NotFound) || !wants(&mapping.cluster_name())
                 {
                     return vec![];
                 }
-                vec![any(CLUSTER_TYPE_URL, build_cluster(mapping).encode_to_vec())]
+                vec![any(
+                    CLUSTER_TYPE_URL,
+                    build_cluster(mapping).encode_to_vec(),
+                )]
             }
             ENDPOINT_TYPE_URL => {
                 if !wants(&mapping.cluster_name()) {

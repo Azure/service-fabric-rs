@@ -90,7 +90,6 @@ pub fn build_listener(mapping: &XdsMapping) -> Listener {
         name: mapping.xds_name().to_string(),
         api_listener: Some(ApiListener {
             api_listener: Some(prost_types_any(HCM_TYPE_URL, hcm.encode_to_vec())),
-            ..Default::default()
         }),
         ..Default::default()
     }
@@ -192,8 +191,7 @@ mod tests {
         let l = build_listener(&mapping());
         let any = l.api_listener.unwrap().api_listener.unwrap();
         let hcm = HttpConnectionManager::decode(any.value.as_slice()).unwrap();
-        let http_connection_manager::RouteSpecifier::RouteConfig(rc) =
-            hcm.route_specifier.unwrap()
+        let http_connection_manager::RouteSpecifier::RouteConfig(rc) = hcm.route_specifier.unwrap()
         else {
             panic!("expected inline route config");
         };
@@ -205,8 +203,7 @@ mod tests {
         let l = build_listener(&mapping());
         let any = l.api_listener.unwrap().api_listener.unwrap();
         let hcm = HttpConnectionManager::decode(any.value.as_slice()).unwrap();
-        let http_connection_manager::RouteSpecifier::RouteConfig(rc) =
-            hcm.route_specifier.unwrap()
+        let http_connection_manager::RouteSpecifier::RouteConfig(rc) = hcm.route_specifier.unwrap()
         else {
             panic!("expected inline route config");
         };

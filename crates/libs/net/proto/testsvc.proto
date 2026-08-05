@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package testsvc;
+
+// A stand-in service used only by `mssf-net`'s cluster-free tests. Each
+// instance is started with a distinct name so a test can tell which backend
+// an xDS-routed call actually reached.
+service Identity {
+  rpc WhoAmI (WhoAmIRequest) returns (WhoAmIReply);
+}
+
+message WhoAmIRequest {}
+
+message WhoAmIReply {
+  // The name the answering server was started with.
+  string name = 1;
+}

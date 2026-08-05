@@ -1,0 +1,47 @@
+[package]
+name = "mssf-net"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+documentation.workspace = true
+repository.workspace = true
+readme = "README.md"
+authors.workspace = true
+
+description = "Experimental Service Fabric naming to gRPC xDS (ADS) mapping"
+
+# Experimental prototype depending on a pre-release xDS crate; not published.
+publish = false
+
+[dependencies]
+async-trait = { workspace = true }
+async-stream = { workspace = true }
+envoy-types = { workspace = true }
+futures = { workspace = true }
+prost = { workspace = true }
+tokio = { workspace = true, features = ["sync", "rt", "time", "net", "macros"] }
+tonic = { workspace = true }
+tracing = { workspace = true }
+mssf-core = { workspace = true, default-features = false }
+# NOTE: deliberately WITHOUT the `tonic` feature. `resolve`/`retry` live behind the
+# default `tokio` feature, while the incumbent `mssf_util::tonic` module (which this
+# crate is intended to eventually supersede) is a separate, non-default feature.
+# This pin structurally guarantees the successor does not link the incumbent.
+mssf-util = { workspace = true, default-features = true }
+
+[dev-dependencies]
+test-log = { workspace = true }
+tokio = { workspace = true, features = [
+    "sync",
+    "rt",
+    "rt-multi-thread",
+    "time",
+    "net",
+    "macros",
+] }
+tonic-prost = { workspace = true }
+tonic-xds = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[build-dependencies]
+tonic-prost-build = { workspace = true }

@@ -5,6 +5,7 @@ members = [
     "crates/samples/*",
     "crates/libs/com",
     "crates/libs/core",
+    "crates/libs/net",
     "crates/libs/pal",
     "crates/libs/util",
     "tests/mssf-tests",
@@ -17,6 +18,7 @@ package.license = "MIT"
 
 [workspace.dependencies]
 async-trait = "0.1"
+async-stream = "0.3"
 bitflags = "2"
 clap = { version = "4", features = ["derive"] }
 config = { version = "0.15", default-features = false }
@@ -47,6 +49,8 @@ test-log = { version = "0.2", default-features = false , features = ["trace"]}
 tonic = "0.14"
 tonic-prost = "0.14"
 tonic-prost-build = "0.14"
+tonic-xds = "0.1.0-alpha.2"
+envoy-types = "0.7"
 prost = "0.14"
 trait-variant = "0.1"
 arc-swap = "1"
@@ -67,5 +71,6 @@ windows-core = "0.62"
 # crates in this repo
 mssf-com = { version = "0.6", path = "./crates/libs/com", default-features = false }
 mssf-core = { version = "0.8", path = "./crates/libs/core", default-features = false }
+mssf-net = { version = "0.1", path = "./crates/libs/net", default-features = true }
 mssf-pal = { version = "0.5", path = "./crates/libs/pal", default-features = true }
 mssf-util = { version = "0.9", path = "./crates/libs/util", default-features = true }

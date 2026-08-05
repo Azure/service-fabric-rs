@@ -238,6 +238,29 @@ it cannot happen in `Drop`), release the client, then delay.
 A test that also builds its own admin `FabricClient` must additionally apply
 `fabric_client_drop_hack` to that handle; `shutdown` covers only the source's.
 
+## Server lifecycle and shutdown
+
+`AdsService::serve_on_ephemeral_loopback` / `serve_with_listener` return a
+`ServerHandle` rather than a bare address. The handle owns the serving task:
+
+- `shutdown()` signals a graceful stop and **awaits** the task, so a serving
+  error surfaces instead of being swallowed by a detached `tokio::spawn`.
+- `Drop` aborts the task, so a server can never outlive the scope that started
+  it. The type is `#[must_use]` to make an accidental drop visible.
+
+One subtlety makes this non-optional. An ADS stream is long-lived by design,
+and `tonic`'s graceful shutdown waits for open connections to drain — so a
+server with a connected xDS client would **hang forever** on shutdown unless
+the streams are told to end. `AdsService` therefore carries an internal
+"stopping" flag; the shutdown signal sets it *before* returning, each stream
+selects on it and breaks, connections drain, and the task completes.
+
+If you mount the service on your own `tonic` server instead, take
+`AdsService::stopper()` **before** `into_server()` and call `stop()` as part of
+your shutdown signal — otherwise you will reproduce that hang.
+`tests/scripted_ads.rs` has a regression test that shuts down with a live
+client still attached.
+
 ## Testing
 
 | Test | Location | Needs a cluster? |

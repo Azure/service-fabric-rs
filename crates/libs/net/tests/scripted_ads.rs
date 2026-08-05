@@ -17,7 +17,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 
-use mssf_net::ads::{AdsService, bootstrap_json};
+use mssf_net::ads::{AdsService, ServerHandle, bootstrap_json};
 use mssf_net::{
     EndpointSnapshot, HostPort, ScriptedEndpointSource, XdsMapping, host_port_interpreter,
 };
@@ -51,36 +51,68 @@ impl Identity for NamedIdentity {
     }
 }
 
+/// A stand-in backend and its serving task.
+///
+/// Mirrors [`mssf_net::ads::ServerHandle`]: the task is owned, stopped by an
+/// explicit signal, and **awaited**, so a test never leaves a detached server
+/// running and a serving failure is not swallowed.
+#[must_use = "dropping the handle aborts the backend; call shutdown() to stop it"]
+struct BackendHandle {
+    addr: SocketAddr,
+    shutdown: Option<tokio::sync::oneshot::Sender<()>>,
+    task: Option<tokio::task::JoinHandle<Result<(), tonic::transport::Error>>>,
+}
+
+impl BackendHandle {
+    async fn shutdown(mut self) {
+        if let Some(tx) = self.shutdown.take() {
+            let _ = tx.send(());
+        }
+        if let Some(task) = self.task.take() {
+            task.await
+                .expect("backend task panicked")
+                .expect("backend server failed");
+        }
+    }
+}
+
+impl Drop for BackendHandle {
+    fn drop(&mut self) {
+        if let Some(task) = self.task.take() {
+            task.abort();
+        }
+    }
+}
+
 /// Start a stand-in backend on an ephemeral loopback port.
-async fn start_backend(name: &str) -> SocketAddr {
+async fn start_backend(name: &str) -> BackendHandle {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
     let svc = IdentityServer::new(NamedIdentity {
         name: name.to_string(),
     });
-    tokio::spawn(async move {
+    let (tx, rx) = tokio::sync::oneshot::channel::<()>();
+    let task = tokio::spawn(async move {
         tonic::transport::Server::builder()
             .add_service(svc)
-            .serve_with_incoming(TcpListenerStream::new(listener))
+            .serve_with_incoming_shutdown(TcpListenerStream::new(listener), async {
+                let _ = rx.await;
+            })
             .await
-            .unwrap();
     });
-    addr
+    BackendHandle {
+        addr,
+        shutdown: Some(tx),
+        task: Some(task),
+    }
 }
 
 /// Start the ADS server on an ephemeral loopback port.
-async fn start_ads(mapping: XdsMapping, source: Arc<ScriptedEndpointSource>) -> SocketAddr {
-    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let addr = listener.local_addr().unwrap();
-    let svc = AdsService::new(mapping, source).into_server();
-    tokio::spawn(async move {
-        tonic::transport::Server::builder()
-            .add_service(svc)
-            .serve_with_incoming(TcpListenerStream::new(listener))
-            .await
-            .unwrap();
-    });
-    addr
+async fn start_ads(mapping: XdsMapping, source: Arc<ScriptedEndpointSource>) -> ServerHandle {
+    AdsService::new(mapping, source)
+        .serve_on_ephemeral_loopback()
+        .await
+        .expect("failed to start the ADS server")
 }
 
 fn mapping() -> XdsMapping {
@@ -182,12 +214,12 @@ async fn stock_xds_client_routes_and_follows_relocation() {
     let b = start_backend("backend-b").await;
 
     let (source, handle) = ScriptedEndpointSource::new(EndpointSnapshot::Primary(HostPort::new(
-        a.ip().to_string(),
-        a.port(),
+        a.addr.ip().to_string(),
+        a.addr.port(),
     )));
     let ads = start_ads(mapping(), source).await;
 
-    let mut client = xds_client(ads, "xds:///reflection");
+    let mut client = xds_client(ads.addr(), "xds:///reflection");
 
     // Initial routing.
     let first = who_am_i_until_ok(&mut client, Duration::from_secs(20)).await;
@@ -196,10 +228,46 @@ async fn stock_xds_client_routes_and_follows_relocation() {
     // Relocate. The already-created client must follow, with neither the
     // client nor the ADS server restarted.
     handle.set(EndpointSnapshot::Primary(HostPort::new(
-        b.ip().to_string(),
-        b.port(),
+        b.addr.ip().to_string(),
+        b.addr.port(),
     )));
     who_am_i_until(&mut client, "backend-b", Duration::from_secs(20)).await;
+
+    drop(client);
+    ads.shutdown().await.expect("ads server failed");
+    a.shutdown().await;
+    b.shutdown().await;
+}
+
+/// Regression: an ADS stream is long-lived, and graceful shutdown waits for
+/// open connections to drain. If the service does not end its streams on
+/// shutdown, `ServerHandle::shutdown` blocks forever.
+#[tokio::test]
+#[test_log::test]
+async fn ads_server_shuts_down_with_a_live_client_attached() {
+    let a = start_backend("backend-a").await;
+    let (source, _handle) = ScriptedEndpointSource::new(EndpointSnapshot::Primary(HostPort::new(
+        a.addr.ip().to_string(),
+        a.addr.port(),
+    )));
+    let ads = start_ads(mapping(), source).await;
+
+    // Establish a real ADS stream before stopping.
+    let mut client = xds_client(ads.addr(), "xds:///reflection");
+    assert_eq!(
+        who_am_i_until_ok(&mut client, Duration::from_secs(20)).await,
+        "backend-a"
+    );
+
+    // Deliberately do NOT drop the client first: shutting down while a client
+    // still holds the stream is the case that used to hang.
+    tokio::time::timeout(Duration::from_secs(15), ads.shutdown())
+        .await
+        .expect("ads shutdown timed out with a client attached")
+        .expect("ads server failed");
+
+    drop(client);
+    a.shutdown().await;
 }
 
 /// SC-004: the transient no-primary window fails calls in a bounded way
@@ -211,11 +279,11 @@ async fn no_primary_fails_bounded_then_recovers() {
     let a = start_backend("backend-a").await;
 
     let (source, handle) = ScriptedEndpointSource::new(EndpointSnapshot::Primary(HostPort::new(
-        a.ip().to_string(),
-        a.port(),
+        a.addr.ip().to_string(),
+        a.addr.port(),
     )));
     let ads = start_ads(mapping(), source).await;
-    let mut client = xds_client(ads, "xds:///reflection");
+    let mut client = xds_client(ads.addr(), "xds:///reflection");
 
     assert_eq!(
         who_am_i_until_ok(&mut client, Duration::from_secs(20)).await,
@@ -229,10 +297,14 @@ async fn no_primary_fails_bounded_then_recovers() {
 
     // Recovery.
     handle.set(EndpointSnapshot::Primary(HostPort::new(
-        a.ip().to_string(),
-        a.port(),
+        a.addr.ip().to_string(),
+        a.addr.port(),
     )));
     who_am_i_until(&mut client, "backend-a", Duration::from_secs(20)).await;
+
+    drop(client);
+    ads.shutdown().await.expect("ads server failed");
+    a.shutdown().await;
 }
 
 /// SC-007: a name this ADS server has no mapping for fails in a bounded way
@@ -242,12 +314,16 @@ async fn no_primary_fails_bounded_then_recovers() {
 async fn unknown_resource_name_fails_bounded() {
     let a = start_backend("backend-a").await;
     let (source, _handle) = ScriptedEndpointSource::new(EndpointSnapshot::Primary(HostPort::new(
-        a.ip().to_string(),
-        a.port(),
+        a.addr.ip().to_string(),
+        a.addr.port(),
     )));
     let ads = start_ads(mapping(), source).await;
 
-    let mut client = xds_client(ads, "xds:///no-such-service");
+    let mut client = xds_client(ads.addr(), "xds:///no-such-service");
     let failure = who_am_i_until_err(&mut client, Duration::from_secs(20)).await;
     tracing::info!(%failure, "observed unknown-resource failure");
+
+    drop(client);
+    ads.shutdown().await.expect("ads server failed");
+    a.shutdown().await;
 }

@@ -27,6 +27,7 @@ use mssf_core::{
     client::FabricClient,
     types::{DeleteServiceDescription, Uri},
 };
+use mssf_net::ads::ServerHandle;
 use mssf_net::endpoint::EndpointSource;
 use mssf_net::{
     AddressError, AddressInterpreter, AdsService, FabricEndpointSource, HostPort, XdsMapping,
@@ -65,7 +66,7 @@ fn reflection_interpreter() -> AddressInterpreter {
 }
 
 /// Start the ADS server on an ephemeral loopback port.
-async fn start_ads(mapping: XdsMapping, source: Arc<FabricEndpointSource>) -> std::net::SocketAddr {
+async fn start_ads(mapping: XdsMapping, source: Arc<FabricEndpointSource>) -> ServerHandle {
     AdsService::new(mapping, source)
         .serve_on_ephemeral_loopback()
         .await
@@ -180,7 +181,8 @@ async fn xds_client_recovers_after_primary_restart() {
     let ads = start_ads(mapping, source.clone()).await;
 
     // A completely stock xDS client. No SF types, no SF metadata.
-    let bootstrap = BootstrapConfig::from_json(&bootstrap_json(ads, "mssf-net-live-test")).unwrap();
+    let bootstrap =
+        BootstrapConfig::from_json(&bootstrap_json(ads.addr(), "mssf-net-live-test")).unwrap();
     let target = XdsUri::parse(&format!("xds:///{XDS_NAME}")).unwrap();
     let channel = XdsChannelBuilder::new(XdsChannelConfig::new(target).with_bootstrap(bootstrap))
         .build_grpc_channel()
@@ -212,8 +214,12 @@ async fn xds_client_recovers_after_primary_restart() {
         "recovered on the new primary"
     );
 
-    // Teardown. Both FabricClients are subject to issue #184: the source owns
-    // one (released by `shutdown`), and this test owns the admin one.
+    // Teardown, in dependency order: drop the client so its connections close,
+    // stop and AWAIT the ADS server, then release the endpoint source. Both
+    // FabricClients are subject to issue #184 -- the source owns one (released
+    // by its own `shutdown`), and this test owns the admin one.
+    drop(client);
+    ads.shutdown().await.expect("ads server failed");
     source.shutdown().await;
 
     fc.get_service_manager()

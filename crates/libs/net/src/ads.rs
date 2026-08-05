@@ -40,6 +40,13 @@ use crate::resources::{
 pub struct AdsService {
     mapping: Arc<XdsMapping>,
     source: Arc<dyn EndpointSource>,
+    /// Set to `true` to end every open ADS stream.
+    ///
+    /// Necessary for shutdown to terminate: an ADS stream is long-lived by
+    /// design, and `tonic`'s graceful shutdown waits for open connections to
+    /// drain. Without a way to end the streams, a graceful stop would block
+    /// forever.
+    shutdown: Arc<watch::Sender<bool>>,
 }
 
 impl AdsService {
@@ -48,33 +55,137 @@ impl AdsService {
         Self {
             mapping: Arc::new(mapping),
             source,
+            shutdown: Arc::new(watch::channel(false).0),
         }
     }
 
     /// Wrap as a mountable gRPC service.
+    ///
+    /// When mounting on a caller-owned server, use [`AdsService::stopper`]
+    /// first so the streams can be ended at shutdown.
     pub fn into_server(self) -> AggregatedDiscoveryServiceServer<Self> {
         AggregatedDiscoveryServiceServer::new(self)
     }
 
-    /// Serve on an ephemeral loopback port, returning the bound address.
+    /// A handle that ends all open ADS streams when invoked.
+    ///
+    /// Take this *before* [`AdsService::into_server`] if you are mounting the
+    /// service on your own `tonic` server; call it as part of your shutdown
+    /// signal, or graceful shutdown will hang on the open streams.
+    pub fn stopper(&self) -> AdsStopper {
+        AdsStopper {
+            shutdown: self.shutdown.clone(),
+        }
+    }
+}
+
+/// Ends all open ADS streams for one [`AdsService`].
+#[derive(Clone)]
+pub struct AdsStopper {
+    shutdown: Arc<watch::Sender<bool>>,
+}
+
+impl AdsStopper {
+    /// Signal every open ADS stream to end.
+    pub fn stop(&self) {
+        let _ = self.shutdown.send(true);
+    }
+}
+
+/// A running ADS server.
+///
+/// Owns the serving task and its shutdown trigger. Dropping the handle aborts
+/// the task, so a server can never outlive the scope that started it; prefer
+/// [`ServerHandle::shutdown`], which signals a graceful stop and **awaits** the
+/// task so serving errors surface rather than being swallowed.
+#[must_use = "dropping the handle aborts the server; call shutdown() to stop it gracefully"]
+pub struct ServerHandle {
+    addr: SocketAddr,
+    // `Option` because `shutdown` consumes both, and a type with a `Drop` impl
+    // cannot have fields moved out of it.
+    shutdown: Option<tokio::sync::oneshot::Sender<()>>,
+    task: Option<tokio::task::JoinHandle<Result<(), tonic::transport::Error>>>,
+}
+
+impl ServerHandle {
+    /// The address the server is bound to.
+    pub fn addr(&self) -> SocketAddr {
+        self.addr
+    }
+
+    /// Signal a graceful shutdown and wait for the server task to finish.
+    ///
+    /// Returns the serving result: `Err` if the server itself failed, or if the
+    /// task panicked or was cancelled.
+    pub async fn shutdown(mut self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        // The receiver is only dropped when the task has already exited, in
+        // which case there is nothing to signal.
+        if let Some(tx) = self.shutdown.take() {
+            let _ = tx.send(());
+        }
+        let Some(task) = self.task.take() else {
+            return Ok(());
+        };
+        match task.await {
+            Ok(Ok(())) => Ok(()),
+            Ok(Err(e)) => Err(Box::new(e)),
+            Err(join) => Err(Box::new(join)),
+        }
+    }
+}
+
+impl Drop for ServerHandle {
+    fn drop(&mut self) {
+        // Best-effort: a handle dropped without `shutdown()` must not leave a
+        // detached server running for the rest of the process. `shutdown` takes
+        // the task, so this only fires on the un-awaited path.
+        if let Some(task) = self.task.take() {
+            task.abort();
+        }
+    }
+}
+
+impl AdsService {
+    /// Serve on an ephemeral loopback port.
     ///
     /// Convenience for tests and single-process hosting: the caller does not
-    /// have to plumb a listener or a `tonic` server itself. The server runs on
-    /// a detached task for the lifetime of the process.
-    pub async fn serve_on_ephemeral_loopback(self) -> std::io::Result<SocketAddr> {
+    /// have to plumb a listener or a `tonic` server itself. The returned
+    /// [`ServerHandle`] owns the task and must be used to stop it.
+    pub async fn serve_on_ephemeral_loopback(self) -> std::io::Result<ServerHandle> {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await?;
+        self.serve_with_listener(listener).await
+    }
+
+    /// Serve on a caller-supplied listener.
+    pub async fn serve_with_listener(
+        self,
+        listener: tokio::net::TcpListener,
+    ) -> std::io::Result<ServerHandle> {
         let addr = listener.local_addr()?;
+        let stopper = self.stopper();
         let svc = self.into_server();
-        tokio::spawn(async move {
-            if let Err(e) = tonic::transport::Server::builder()
+        let (tx, rx) = tokio::sync::oneshot::channel::<()>();
+        let task = tokio::spawn(async move {
+            tonic::transport::Server::builder()
                 .add_service(svc)
-                .serve_with_incoming(tokio_stream::wrappers::TcpListenerStream::new(listener))
+                .serve_with_incoming_shutdown(
+                    tokio_stream::wrappers::TcpListenerStream::new(listener),
+                    async move {
+                        // A dropped sender also means "stop".
+                        let _ = rx.await;
+                        // End the open ADS streams *before* returning, so the
+                        // graceful shutdown that follows has connections that
+                        // can actually drain.
+                        stopper.stop();
+                    },
+                )
                 .await
-            {
-                tracing::error!(error = %e, "ads server stopped");
-            }
         });
-        Ok(addr)
+        Ok(ServerHandle {
+            addr,
+            shutdown: Some(tx),
+            task: Some(task),
+        })
     }
 
     /// Build the resources for one type URL at a given endpoint state.
@@ -170,6 +281,7 @@ impl AggregatedDiscoveryService for AdsService {
         let mut inbound = request.into_inner();
         let mapping = self.mapping.clone();
         let mut rx: watch::Receiver<EndpointSnapshot> = self.source.subscribe();
+        let mut stopping = self.shutdown.subscribe();
 
         let outbound = async_stream::try_stream! {
             let mut version = Versioning(0);
@@ -179,7 +291,22 @@ impl AggregatedDiscoveryService for AdsService {
             let mut subscriptions: HashMap<String, Vec<String>> = HashMap::new();
 
             loop {
+                // Already stopping (e.g. a stream opened during shutdown).
+                if *stopping.borrow() {
+                    break;
+                }
+
                 tokio::select! {
+                    // The server is shutting down: end the stream so the
+                    // connection can drain and graceful shutdown can complete.
+                    changed = stopping.changed() => {
+                        // An error means the service was dropped -- also stop.
+                        if changed.is_err() || *stopping.borrow() {
+                            tracing::debug!("ads stream ending for shutdown");
+                            break;
+                        }
+                    }
+
                     // A request from the client.
                     msg = inbound.message() => {
                         let req = match msg {

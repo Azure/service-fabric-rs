@@ -15,6 +15,7 @@
 //! does the absolute minimum there — a non-blocking `send_replace` of the raw
 //! notification — and interprets addresses on a Tokio task instead.
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -167,6 +168,10 @@ impl FabricEndpointSource {
         // 3. Drive interpretation of notifications on a Tokio task.
         let interp = mapping.interpreter().clone();
         let pub_tx = tx.clone();
+        // Set *before* the first publish, so the seeding step below can detect
+        // "a notification has already won" without a torn check.
+        let published = Arc::new(AtomicBool::new(false));
+        let task_published = published.clone();
         tokio::spawn(async move {
             while raw_rx.changed().await.is_ok() {
                 let latest = raw_rx.borrow_and_update().clone();
@@ -178,16 +183,34 @@ impl FabricEndpointSource {
                     snapshot_from_endpoints(&n.endpoints, &interp)
                 };
                 tracing::debug!(?snapshot, "notification produced a new endpoint state");
+                task_published.store(true, Ordering::SeqCst);
                 pub_tx.send_replace(snapshot);
             }
         });
 
         // 4. Seed with an initial resolve, but never clobber a state a
         //    notification has already published.
+        //
+        //    The check and the write must be one atomic step against the
+        //    publishing channel. Checking the *raw* channel and then writing the
+        //    published one is two operations on two channels with writers on
+        //    other threads, so a notification could land in between and be
+        //    overwritten by this older resolve result -- and since SF only sends
+        //    further notifications on subsequent changes, that stale state would
+        //    be sticky. `send_if_modified` holds the channel's write lock across
+        //    the closure, which closes the window: either the flag is already set
+        //    (the notification won, we skip), or it is not, in which case the
+        //    task has not published yet and its later send correctly supersedes
+        //    ours.
         let seeded = Self::initial_resolve(&client, &uri, mapping.interpreter(), timeout).await;
-        if raw_tx.borrow().is_none() {
-            tx.send_replace(seeded);
-        }
+        tx.send_if_modified(|current| {
+            if published.load(Ordering::SeqCst) {
+                false
+            } else {
+                *current = seeded;
+                true
+            }
+        });
 
         Ok(Arc::new(Self {
             rx,

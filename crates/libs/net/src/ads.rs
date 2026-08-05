@@ -12,6 +12,7 @@
 //! Delta/incremental xDS is not implemented; State-of-the-World is sufficient
 //! for the gRPC xDS clients this targets.
 
+use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -133,6 +134,20 @@ fn any(type_url: &str, value: Vec<u8>) -> Any {
     }
 }
 
+/// Whether a request is a new subscription (needing a response) rather than an
+/// ACK of a previous response.
+///
+/// The discriminator is `response_nonce`, **not** `version_info`. A client that
+/// re-establishes its ADS stream retains the last version it accepted and
+/// replays it in the bootstrap request for each subscribed type, with an empty
+/// nonce. Treating a non-empty version as an ACK would make the server ignore
+/// every request on the reconnected stream, so it would send nothing and never
+/// learn the stream's subscriptions -- silently and permanently stalling
+/// discovery for that client.
+fn is_subscription_request(req: &DiscoveryRequest) -> bool {
+    req.response_nonce.is_empty()
+}
+
 /// Per-stream monotonic version/nonce counter.
 struct Versioning(u64);
 
@@ -158,8 +173,10 @@ impl AggregatedDiscoveryService for AdsService {
 
         let outbound = async_stream::try_stream! {
             let mut version = Versioning(0);
-            // The EDS resource names this stream has subscribed to, if any.
-            let mut eds_subscription: Option<Vec<String>> = None;
+            // Resource names this stream has subscribed to, per type URL.
+            // Tracked for every type (not just EDS) so a state change can be
+            // pushed to whatever the client actually asked for.
+            let mut subscriptions: HashMap<String, Vec<String>> = HashMap::new();
 
             loop {
                 tokio::select! {
@@ -176,6 +193,11 @@ impl AggregatedDiscoveryService for AdsService {
                             }
                         };
 
+                        // Record the subscription BEFORE any early return, so
+                        // ACKs still keep our view of what the client wants.
+                        subscriptions
+                            .insert(req.type_url.clone(), req.resource_names.clone());
+
                         if let Some(err) = req.error_detail.as_ref() {
                             // NACK: log and do not advance state.
                             tracing::warn!(
@@ -187,13 +209,10 @@ impl AggregatedDiscoveryService for AdsService {
                             continue;
                         }
 
-                        // Plain ACK: nothing to send.
-                        if !req.version_info.is_empty() {
+                        // ACK/NACK is discriminated by `response_nonce`, NOT by
+                        // `version_info` -- see `is_subscription_request`.
+                        if !is_subscription_request(&req) {
                             continue;
-                        }
-
-                        if req.type_url == ENDPOINT_TYPE_URL {
-                            eds_subscription = Some(req.resource_names.clone());
                         }
 
                         let snapshot = rx.borrow().clone();
@@ -210,26 +229,35 @@ impl AggregatedDiscoveryService for AdsService {
                         };
                     }
 
-                    // The endpoint changed: push EDS to a subscribed stream.
+                    // The endpoint state changed: push to every subscribed type.
                     changed = rx.changed() => {
                         if changed.is_err() {
                             // Source dropped; nothing more will ever be pushed.
                             break;
                         }
-                        let Some(names) = eds_subscription.clone() else { continue };
                         let snapshot = rx.borrow_and_update().clone();
-                        let resources = Self::resources_for(
-                            &mapping, &snapshot, ENDPOINT_TYPE_URL, &names,
-                        );
-                        let (v, nonce) = version.next();
-                        tracing::debug!(?snapshot, "pushing updated endpoints");
-                        yield DiscoveryResponse {
-                            version_info: v,
-                            type_url: ENDPOINT_TYPE_URL.to_string(),
-                            nonce,
-                            resources,
-                            ..Default::default()
-                        };
+                        tracing::debug!(?snapshot, "pushing updated resources");
+
+                        // Push all subscribed types, not just EDS. A transition
+                        // into or out of `NotFound` changes whether the Listener
+                        // and Cluster exist at all, and a SotW client never
+                        // re-requests LDS on its own -- so an EDS-only push would
+                        // leave a client that saw `NotFound` with a permanently
+                        // deleted listener even after the service came back.
+                        for type_url in [LISTENER_TYPE_URL, CLUSTER_TYPE_URL, ENDPOINT_TYPE_URL] {
+                            let Some(names) = subscriptions.get(type_url) else { continue };
+                            let resources = Self::resources_for(
+                                &mapping, &snapshot, type_url, names,
+                            );
+                            let (v, nonce) = version.next();
+                            yield DiscoveryResponse {
+                                version_info: v,
+                                type_url: type_url.to_string(),
+                                nonce,
+                                resources,
+                                ..Default::default()
+                            };
+                        }
                     }
                 }
             }
@@ -390,5 +418,70 @@ mod tests {
         assert!(j.contains("http://127.0.0.1:18000"));
         assert!(j.contains("\"id\": \"test-node\""));
         assert!(j.contains("xds_v3"));
+    }
+
+    /// Regression: a reconnecting client replays its retained `version_info`
+    /// with an EMPTY `response_nonce`. Discriminating ACKs on `version_info`
+    /// would make the server ignore every request on the new stream, stalling
+    /// discovery permanently. The nonce is the correct discriminator.
+    #[test]
+    fn ack_is_discriminated_by_nonce_not_version() {
+        let reconnect = DiscoveryRequest {
+            version_info: "7".to_string(),
+            response_nonce: String::new(),
+            type_url: LISTENER_TYPE_URL.to_string(),
+            ..Default::default()
+        };
+        assert!(
+            is_subscription_request(&reconnect),
+            "a replayed version with no nonce is a subscription, not an ACK"
+        );
+
+        let ack = DiscoveryRequest {
+            version_info: "7".to_string(),
+            response_nonce: "7".to_string(),
+            type_url: LISTENER_TYPE_URL.to_string(),
+            ..Default::default()
+        };
+        assert!(!is_subscription_request(&ack), "a nonce present means ACK");
+
+        let initial = DiscoveryRequest {
+            version_info: String::new(),
+            response_nonce: String::new(),
+            type_url: LISTENER_TYPE_URL.to_string(),
+            ..Default::default()
+        };
+        assert!(is_subscription_request(&initial));
+    }
+
+    /// Regression: `NotFound` withholds the Listener, which a SotW client
+    /// treats as a deletion and never re-requests. So a change must push every
+    /// subscribed type, not EDS alone, or a client that saw `NotFound` stays
+    /// broken forever once the service comes back.
+    #[test]
+    fn recovering_from_not_found_requires_listener_and_cluster_again() {
+        let m = mapping();
+
+        // While NotFound, LDS and CDS are empty.
+        assert!(
+            AdsService::resources_for(&m, &EndpointSnapshot::NotFound, LISTENER_TYPE_URL, &[])
+                .is_empty()
+        );
+        assert!(
+            AdsService::resources_for(&m, &EndpointSnapshot::NotFound, CLUSTER_TYPE_URL, &[])
+                .is_empty()
+        );
+
+        // Once a primary exists they must be populated again -- which only
+        // reaches the client if the push covers these type URLs.
+        let snap = EndpointSnapshot::Primary(HostPort::new("h", 1));
+        assert_eq!(
+            AdsService::resources_for(&m, &snap, LISTENER_TYPE_URL, &[]).len(),
+            1
+        );
+        assert_eq!(
+            AdsService::resources_for(&m, &snap, CLUSTER_TYPE_URL, &[]).len(),
+            1
+        );
     }
 }

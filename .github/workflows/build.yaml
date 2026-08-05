@@ -69,6 +69,12 @@ jobs:
     - name: Run cargo clippy
       run: cargo +${{ matrix.rust-version }} clippy -- -D warnings
 
+    # Runs BEFORE the cluster exists, which is the point: mssf-net's tests
+    # prove the SF -> xDS mapping end-to-end against a stock xDS client with
+    # no Service Fabric runtime and no FabricClient.
+    - name: Run mssf-net tests (no cluster)
+      run: cargo +${{ matrix.rust-version }} test -p mssf-net
+
     - name: run cmake
       run: > 
         cmake . -DCMAKE_BUILD_TYPE=Debug -B build
@@ -146,6 +152,10 @@ jobs:
       
       - name: Run cargo clippy
         run: cargo +${{ matrix.rust-version }} clippy --all-targets -- -D warnings
+
+      # See the equivalent step in the Windows job: no cluster required.
+      - name: Run mssf-net tests (no cluster)
+        run: cargo +${{ matrix.rust-version }} test -p mssf-net
 
       - name: run cmake
         run: > 

@@ -80,24 +80,54 @@ async fn start_ads(mapping: XdsMapping, source: Arc<FabricEndpointSource>) -> st
 /// filtering by this test's partition is required — a naive "find any primary"
 /// could match another service's primary and pass even if xDS had routed us to
 /// a secondary.
-fn serving_replica(
+fn find_serving_replica(
     resp: &samples_reflection::grpc::hello_world::GetReplicasResponse,
     partition_id: mssf_core::GUID,
-) -> (i64, i32) {
+) -> Option<(i64, i32)> {
     let want = format!("{partition_id:?}");
     let mine: Vec<_> = resp
         .replicas
         .iter()
         .filter(|r| r.partition_id.eq_ignore_ascii_case(&want))
         .collect();
-    assert_eq!(
-        mine.len(),
-        1,
-        "expected exactly one replica entry for partition {want}, got {mine:?} \
-         (full response: {:?})",
-        resp.replicas
-    );
-    (mine[0].replica_id, mine[0].role)
+    match mine.len() {
+        0 => None,
+        1 => Some((mine[0].replica_id, mine[0].role)),
+        _ => panic!("expected at most one replica entry for partition {want}, got {mine:?}"),
+    }
+}
+
+/// Poll until the serving process reports **our** partition's primary.
+///
+/// A bare `get_replicas` call is not sufficient on its own: it succeeds as soon
+/// as *some* process answers, and immediately after a failover that process may
+/// legitimately report an empty registry (the replica has not re-registered, or
+/// xDS has not yet pushed the new endpoint). Retrying only on transport failure
+/// would therefore accept a response that says nothing about our partition.
+async fn serving_primary_until(
+    client: &mut GreeterClient<tonic_xds::XdsChannelGrpc>,
+    partition_id: mssf_core::GUID,
+    timeout: Duration,
+) -> i64 {
+    let deadline = tokio::time::Instant::now() + timeout;
+    loop {
+        let resp = get_replicas_until_ok(client, Duration::from_secs(30)).await;
+        let found = find_serving_replica(&resp, partition_id);
+        if let Some((replica_id, role)) = found
+            && role == ReplicaRole::Primary as i32
+        {
+            return replica_id;
+        }
+        if tokio::time::Instant::now() >= deadline {
+            panic!(
+                "no primary for partition {partition_id:?} within {timeout:?}; \
+                 last match: {found:?}, full response: {:?}",
+                resp.replicas
+            );
+        }
+        tracing::debug!(?found, "not our primary yet; retrying");
+        tokio::time::sleep(Duration::from_millis(500)).await;
+    }
 }
 
 /// SC-001/002/003/008/009: a stock xDS client reaches the reflection service's
@@ -157,14 +187,10 @@ async fn xds_client_recovers_after_primary_restart() {
         .unwrap();
     let mut client = GreeterClient::new(channel);
 
-    // Steady state: we reach the primary.
-    let before = get_replicas_until_ok(&mut client, Duration::from_secs(60)).await;
-    let (replica_before, role_before) = serving_replica(&before, partition_id);
-    assert_eq!(
-        role_before,
-        ReplicaRole::Primary as i32,
-        "xds must route to the primary, not a secondary"
-    );
+    // Steady state: we reach the primary. The helper asserts both the role and
+    // the partition isolation.
+    let replica_before =
+        serving_primary_until(&mut client, partition_id, Duration::from_secs(60)).await;
     tracing::info!(replica_before, "steady-state primary");
 
     // Trigger a genuine relocation.
@@ -174,13 +200,8 @@ async fn xds_client_recovers_after_primary_restart() {
 
     // The same client, against the same ADS server, must reach the new primary
     // without either being restarted.
-    let after = get_replicas_until_ok(&mut client, Duration::from_secs(60)).await;
-    let (replica_after, role_after) = serving_replica(&after, partition_id);
-    assert_eq!(
-        role_after,
-        ReplicaRole::Primary as i32,
-        "after failover xds must again route to the primary"
-    );
+    let replica_after =
+        serving_primary_until(&mut client, partition_id, Duration::from_secs(90)).await;
     assert_ne!(
         replica_before, replica_after,
         "after restart_replica the serving replica must have changed"

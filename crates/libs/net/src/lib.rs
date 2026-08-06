@@ -39,7 +39,7 @@ pub mod fabric;
 pub mod resources;
 
 pub use crate::address::{AddressError, AddressInterpreter, host_port_interpreter};
-pub use crate::ads::{AdsService, bootstrap_json};
+pub use crate::ads::{AdsService, ServerHandle, ShutdownError, bootstrap_json};
 pub use crate::config::XdsMapping;
 pub use crate::endpoint::{
     EndpointSnapshot, EndpointSource, HostPort, ScriptedEndpointHandle, ScriptedEndpointSource,

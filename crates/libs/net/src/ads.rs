@@ -98,6 +98,33 @@ impl AdsService {
     }
 }
 
+/// Failure stopping an ADS server.
+#[derive(Debug)]
+pub enum ShutdownError {
+    /// The server itself failed while serving.
+    Serve(tonic::transport::Error),
+    /// The serving task panicked or was cancelled.
+    Join(tokio::task::JoinError),
+}
+
+impl std::fmt::Display for ShutdownError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ShutdownError::Serve(e) => write!(f, "ads server failed: {e}"),
+            ShutdownError::Join(e) => write!(f, "ads server task did not complete: {e}"),
+        }
+    }
+}
+
+impl std::error::Error for ShutdownError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            ShutdownError::Serve(e) => Some(e),
+            ShutdownError::Join(e) => Some(e),
+        }
+    }
+}
+
 /// A running ADS server.
 ///
 /// Owns the serving task and the token that stops it. Dropping the handle
@@ -132,15 +159,15 @@ impl ServerHandle {
     ///
     /// Returns the serving result: `Err` if the server itself failed, or if the
     /// task panicked or was cancelled.
-    pub async fn shutdown(mut self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn shutdown(mut self) -> Result<(), ShutdownError> {
         self.token.cancel();
         let Some(task) = self.task.take() else {
             return Ok(());
         };
         match task.await {
             Ok(Ok(())) => Ok(()),
-            Ok(Err(e)) => Err(Box::new(e)),
-            Err(join) => Err(Box::new(join)),
+            Ok(Err(e)) => Err(ShutdownError::Serve(e)),
+            Err(join) => Err(ShutdownError::Join(join)),
         }
     }
 }

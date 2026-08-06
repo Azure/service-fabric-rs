@@ -2,7 +2,7 @@
 
 Status: Proposal / experiment. Nothing shipped.
 
-Date: 2026-06-04 (last updated 2026-07-16)
+Date: 2026-06-04 (last updated 2026-07-20)
 
 Owners: mssf maintainers
 
@@ -43,6 +43,49 @@ path is fine and this proposal is optional.
 
 Phase 0 still validates the chosen client(s) against a minimal ADS
 source before building anything.
+
+## Central design principle
+
+> **This is THE principle the rest of this proposal derives from.**
+> The xDS agent — and the sibling
+> [HTTP reverse proxy](./HttpReverseProxy.md) — are **thin
+> discovery/routing components, not smart middleboxes that add
+> correctness logic.** Two facets:
+>
+> 1. **Thin layer (naming-only).** The layer exposes **only what SF
+>    Naming natively provides** — primary/secondary/any replica
+>    resolution, partition resolution, and notification-driven
+>    failover. It does **not** invent or synthesize capabilities Naming
+>    lacks: no priority-failover/fallback aggregation, no
+>    persisted-snapshot durable recovery. When a client wants behavior
+>    the layer doesn't provide, the **client adapts** (retry with a
+>    different `mssf-partition-role`, retry on `Unavailable`) rather
+>    than the layer manufacturing it.
+> 2. **Fat replica.** Each service replica owns its own correctness and
+>    behavior — write-safety (a secondary returns `NotPrimary`),
+>    terminating its own connection/stream when it stops being primary
+>    (the proxy stays passive on failover), handling role changes, and
+>    honoring idempotency. This is **already** how SF services are
+>    written; the design leans on it deliberately.
+
+The concrete design decisions below all follow from this principle:
+
+- Role set = exactly what Naming resolves
+  (`primary`/`secondary`/`any`); no invented `failover` aggregation — a
+  client wanting fallback retries with a different role.
+  ([Partition key semantics](#partition-key-semantics))
+- Absent/unmatched role ⇒ primary (fail-safe); the replica still
+  enforces write-safety via `NotPrimary`.
+  ([Partition key semantics](#partition-key-semantics))
+- Failover = naming-driven EDS re-push; not an xDS priority construct.
+  ([Failover signal](#failover-signal))
+- Control-plane-driven health only; the server never self-reports into
+  EDS. ([Server-side ORCA reports](#server-side-orca-reports-optional-for-richer-signals))
+- Singleton / discovery-tier restart handled like any SF service
+  restart (re-resolve from Naming); no bespoke durable recovery.
+  ([Freshness: PUSH + PULL](#freshness-push--pull-like-sf-yarp))
+- Reverse proxy is passive on failover; the backend replica terminates
+  its own stream. ([HTTP reverse proxy](./HttpReverseProxy.md#the-proxy))
 
 ## Background
 
@@ -86,12 +129,19 @@ plumbing to talk to SF services.
    ([LDS/RDS/CDS/EDS](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol#resource-types)).
 3. Map SF stateful semantics (primary / secondary / partition
    key) onto standard xDS resources — `round_robin` for
-   stateless, priority-routing for primary-with-fallback, and
-   RDS `Route` matching on the partition key to select the owning
+   stateless, a primary-only single-endpoint EDS whose failover is
+   a naming-driven re-push (never a priority/fallback aggregation),
+   and RDS `Route` matching on the partition key to select the owning
    partition (which then reuses the same primary LB).
-4. Stay incremental: ship a minimum viable EDS-only experiment
-   first; add RDS/CDS sophistication and ORCA only when a real
-   workload needs them.
+4. Stay incremental: ship a minimal but *complete* xDS chain
+   first — a gRPC `xds:///` channel always resolves
+   LDS→RDS→CDS→EDS, so the wire minimum is all four resource
+   types (a Listener with an `ApiListener`/HCM, a trivial
+   single-vhost `RouteConfiguration`, one fixed `ROUND_ROBIN`
+   `Cluster`, and EDS from SF naming). The economy is in the
+   *content* — few resources, no partition/priority logic — not
+   in omitting resource types. Add RDS/CDS sophistication and
+   ORCA only when a real workload needs them.
 
 ## Non-Goals
 
@@ -285,6 +335,17 @@ over the local loopback/UDS ADS endpoint. Node-local gRPC clients
 are unchanged — they still point at `127.0.0.1` / a UDS via
 `GRPC_XDS_BOOTSTRAP` and speak vanilla xDS.
 
+Note the tradeoff: because the discovery singleton owns a
+cluster-wide `fabric:` catch-all, it translates and holds **every**
+service in the cluster, subscribed or not — so its translation and
+memory cost scales with the *total* number of cluster services, not
+with what any client asked for. The "lazy on first subscribe"
+economy of the mapping table applies to the **single-tier** agent;
+it does not hold for the two-tier discovery singleton. The
+filtered/on-demand relay option above mitigates only the *relay*
+side (per-node snapshot size), not the singleton's full-cluster
+translation.
+
 Crucially, only the **config** takes the extra hop (control tier →
 relay). Client RPCs still connect **directly** to the target
 replica's endpoint, exactly as in the single-tier form — the
@@ -348,6 +409,18 @@ policy already proposed for the agent moves into the control tier
 unchanged; the relays simply mirror whatever snapshot they last
 received.
 
+A discovery-tier restart is handled like any other SF service
+restart: SF Naming is the source of truth, so on restart the control
+tier re-resolves and rebuilds its snapshot from Naming. Consumers
+(relays or direct clients) treat the momentary unavailability exactly
+as they treat any SF Naming resolution — they retry until resolution
+succeeds; existing consumers keep serving their already-received
+snapshot during the gap, and new consumers simply retry until the tier
+is back. No bespoke durable/persisted recovery mechanism is needed
+(and none would be a Naming feature) — per the
+[central design principle](#central-design-principle), the layer offers
+only what Naming provides.
+
 ### Tradeoffs and when to choose it
 
 | | Single-tier (per-node agent) | Two-tier (central discovery) |
@@ -400,7 +473,8 @@ This is a topology refinement layered on the existing
   `InstanceCount=1`) and reduce `mssf-xds-agent` to a snapshot
   relay. The translation code is unchanged; only *where it runs*
   and *how the snapshot reaches the node* change.
-- **Phases 3–5** (partitioning, priority routing, ORCA/LRS) then
+- **Phases 3–5** (partitioning, naming-driven primary failover +
+  read-from-secondary, ORCA/LRS) then
   implement **once** in the control tier and fan out to every relay
   for free.
 
@@ -415,46 +489,53 @@ xDS has four resource types gRPC consumes:
 
 ### URI scheme and routing strategy
 
-> **The whole strategy in one place.** Service identity and
-> per-channel policy live in the **URI**; anything that varies per
-> request lives in a **header**.
+> **The whole strategy in one place.** Service identity lives in the
+> **URI**; anything that varies per request lives in a **header**.
 >
 > | Concern | Where | Mechanism |
 > |---|---|---|
 > | Which service | URI path | `xds:///fabric/<app>/<service>` becomes the xDS resource (Listener) name |
-> | Per-channel policy (primary-only vs. read-from-secondary, listener pick) | URI resource-name convention | a distinct resource name the agent maps to a cluster — **not** a query param |
-> | Which partition (per request) | `mssf-partition-key` header | RDS route match: `Range` for Int64, `String::Exact` for Named |
+> | Which partition (per request) | `mssf-partition-key` header | RDS route match: `Range` for Int64, `String::Exact` for Named (see [Partition key semantics](#partition-key-semantics)) |
+> | Which replica role (per request) | `mssf-partition-role` header | RDS route match on `primary` (default) / `secondary` / `any`; **absent or unmatched ⇒ primary** (see [Partition key semantics](#partition-key-semantics)) |
 >
 > The URI is bound once when the channel is built and survives
-> failover; a partition key changes per call, so it cannot ride in
-> the URI.
+> failover; a partition key and a replica role both change per call,
+> so they cannot ride in the URI. A caller that wants a *hard*
+> read-only channel installs a client-side metadata interceptor that
+> stamps `mssf-partition-role: secondary` on every call (see
+> [LB policy mapping](#lb-policy-mapping)) — this replaces the old
+> dedicated `-secondary` resource name and keeps per-channel
+> ergonomics without a second listener.
 
 `tonic-xds`'s
 [`XdsUri`](https://docs.rs/tonic-xds/latest/tonic_xds/struct.XdsUri.html)
 keeps only a `target: String` and validates just the `xds`
 scheme, so **query params are dropped** — `?role=` / `?partition=`
-cannot carry routing intent. Encode per-channel selectors in the
-resource name; do per-request partition selection with the header
-(see [LB policy mapping](#lb-policy-mapping)).
+cannot carry routing intent. Do per-request partition selection with
+the `mssf-partition-key` header and per-request replica-role
+selection with the `mssf-partition-role` header (see
+[LB policy mapping](#lb-policy-mapping)).
 
 Examples:
 
 | URI | Meaning |
 |---|---|
 | `xds:///fabric/MyApp/Greeter` | resolve the service; default LB. Partition (if any) selected per-request via the `mssf-partition-key` header. |
-| `xds:///fabric/MyApp/Kv` | partitioned `KvStore`; the client sets `mssf-partition-key: user:42` per call and RDS routes it to the owning partition's cluster. |
+| `xds:///fabric/MyApp/KvStore` | partitioned `KvStore` (Int64); the client sets `mssf-partition-key: 42` (a decimal i64) per call and RDS routes it to the partition whose range covers 42. See [Partition key semantics](#partition-key-semantics). |
+| `xds:///fabric/MyApp/KvStore` + `mssf-partition-role: secondary` | same plain target, **read-from-secondary**; RDS matches both headers and routes the request to the selected partition's `...-secondary` `ROUND_ROBIN` cluster. `any` targets all replicas of the partition; **absent/unmatched ⇒ primary** (write-safe default). A client wanting a hard read-only channel stamps this header on every call via a metadata interceptor. See [LB policy mapping](#lb-policy-mapping). |
 
 ### Mapping table
 
 | SF concept | xDS resource | Notes |
 |---|---|---|
-| Fabric URI (`fabric:/App/Svc`) | `Listener` name | One listener per URI; created lazily on first subscribe. |
+| Fabric URI (`fabric:/App/Svc`) | `Listener` name | One listener per URI. **Single-tier:** created lazily on first subscribe. **Two-tier:** the discovery singleton's cluster-wide `fabric:` catch-all translates *every* service eagerly (see [Two-tier translation cost](#applying-the-split-to-xds)). |
 | Partition (`PartitionKeyType::*`) | `RouteConfiguration` → `Cluster` selection | Singleton: one cluster. Int64/Named: one `Route` per partition, matched on the `mssf-partition-key` request header. |
-| `ServiceEndpointRole::StatefulPrimary` | `Cluster` name `...-primary` + `Priority 0` in EDS | Optionally aggregated with secondaries (Priority 1) for failover routing. |
-| `ServiceEndpointRole::StatefulSecondary` | `Cluster` name `...-secondary` + EDS with `round_robin` | For read-from-secondary patterns. |
+| Replica role (`mssf-partition-role`) | `RouteConfiguration` `Route` header match → per-partition `Cluster` variant | Within a partition — where `P` denotes the primary replica and `S1, S2, …` the secondaries (`S` generically) — the role header picks the cluster: `primary` (default) → `...-primary` (`{P}`); `secondary` → `...-secondary` (`{S1, S2, …}`); `any` → the all-replicas cluster (`{P, S1, S2, …}`). **Absent/unmatched ⇒ primary** (write-safe). For a **stateless** service `any` is the only meaningful value and maps to the single instance cluster; `primary`/`secondary` collapse to that same instance set. The xDS layer exposes only the replica roles SF Naming resolves and does **not** synthesize a failover/fallback cluster (see [LB policy mapping](#lb-policy-mapping)). |
+| `ServiceEndpointRole::StatefulPrimary` | `Cluster` name `...-primary` (`{P}`) — **primary-only single-endpoint EDS** (`Priority 0` only) | Selected by `mssf-partition-role: primary` (the default). Failover is the **EDS re-push** when naming re-publishes the promoted primary; **never** aggregated with a Priority-1 secondaries tier (that would silently break write-safety). |
+| `ServiceEndpointRole::StatefulSecondary` | `Cluster` name `...-secondary` + EDS with `round_robin` | Opt-in read routes only, **never** the default/`primary` write path: `secondary` → this `...-secondary` `ROUND_ROBIN` cluster (`{S1, S2, …}`); `any` → a ROUND_ROBIN cluster spanning primary + secondaries (`{P, S1, S2, …}`). These two read clusters are **distinct** from each other. |
 | `ResolvedServiceEndpoint.address` (URL string) | `LbEndpoint.endpoint.address` | Agent parses the SF endpoint string; see [Endpoint address parsing](#endpoint-address-parsing). Fails the resource if unparseable. |
 | `ResolvedServicePartition` version bump (notification) | EDS `DiscoveryResponse` push | Standard xDS push semantics; no client polling. |
-| `ServicePartitionAccessStatus::NotPrimary` (server side) | `HealthStatus::UNHEALTHY` on the endpoint | Removes endpoint from active set without dropping the connection; gRPC LB will pick another. |
+| Server returns `ServicePartitionAccessStatus::NotPrimary` (stale primary) | endpoint's EDS `HealthStatus` flips **only when the agent re-resolves and pushes** | The server does **not** self-report into EDS. The client sees an RPC error and retries / [re-resolves](#forced-re-resolve-on-client-observed-failure); the endpoint's EDS health changes control-plane-side once the notification stream tells the agent the primary moved. |
 | Resolve returns **no endpoints** (`FABRIC_E_SERVICE_OFFLINE`) | see [Offline / empty-endpoint window](#offline--empty-endpoint-window) | Service restarting or removed; the resolver in `resolve.rs` retries this case. |
 | `ServicePartitionInformation` (Int64/Named ranges) | `Route` match on `mssf-partition-key` → per-partition `Cluster` | Partition **selection** only. Within the chosen cluster, routing is identical to the singleton stateful-primary case. |
 
@@ -481,9 +562,12 @@ during that window:
 
 The agent should **not** tear down the ADS resource entirely on a
 transient empty result — that would force clients to re-subscribe
-and lose the fast reconnect path. Phase 1 implements
-hold-last-known-good + staleness timeout; the confirmed-removal
-push lands with notifications in Phase 2.
+and lose the fast reconnect path. Hold-last-known-good is a bounded
+*serve-until-stale* reflection of Naming's transient state, **not**
+persisted/durable recovery (the
+[central design principle](#central-design-principle)). Phase 1
+implements it + staleness timeout; the confirmed-removal push lands
+with notifications in Phase 2.
 
 ### Endpoint address parsing
 
@@ -515,8 +599,8 @@ validates it against the `echomain` and `kvstore` samples.
 |---|---|---|
 | Stateless service, fan out | `ROUND_ROBIN` | default |
 | Stateless service, latency-aware | `LEAST_REQUEST` | `choice_count=2` |
-| Stateful primary only | `ROUND_ROBIN` over a 1-endpoint EDS | primary cluster only |
-| Stateful primary with read-from-secondary | priority-aggregated cluster: P0 = primary, P1 = secondaries | `PriorityLoadAssignment` + per-call route choice |
+| Stateful primary only (**the write-safe default/`primary` route**) | `ROUND_ROBIN` over a 1-endpoint EDS | primary cluster only (`{P}`); failover is the **EDS re-push** when naming re-publishes the promoted primary |
+| Stateful read-from-secondary / all-replicas reads | `secondary` → a `...-secondary` `ROUND_ROBIN` cluster (`{S1, S2, …}`); `any` → an all-replicas `ROUND_ROBIN` cluster (`{P, S1, S2, …}`); selected **per-request** (default `primary`) | see note below — the xDS layer offers only the roles SF Naming resolves, no priority-aggregated failover cluster |
 | Partitioned stateful (Int64/Named) | **same as the two rows above, applied to the selected partition's cluster** | partition is chosen by RDS first; see below |
 
 > **Partitioned routing = partition selection (RDS) + the ordinary
@@ -536,7 +620,7 @@ validates it against the `echomain` and `kvstore` samples.
 >    optional ownership check.
 > 2. **Route within the partition.** Once the cluster is chosen,
 >    routing is *identical* to the singleton stateful-primary case
->    (1-endpoint primary EDS, or primary+secondary priority), with
+>    (1-endpoint primary EDS), with
 >    the same EDS-push failover. Nothing partition-specific.
 >
 > **`RING_HASH` is not used** — SF partitions are authoritative key
@@ -544,6 +628,217 @@ validates it against the `echomain` and `kvstore` samples.
 > honor exact boundaries or the one-primary-per-partition rule.
 > Phase 3 adds only the RDS selection layer and reuses the
 > Phase 1/4 primary LB unchanged.
+
+> **No priority-aggregated failover cluster.** A tempting but rejected
+> option is an xDS *priority* tier (P0 = primary, P1 = secondaries in one
+> aggregated cluster). Per xDS semantics P1 receives **no** traffic while
+> P0 is healthy above the over-provisioning threshold, so such a tier
+> gives primary-with-failover, *not* load-spreading — and it is a
+> **failover aggregation that SF Naming itself does not offer**. Per the
+> governing principle (see [Partition key semantics](#partition-key-semantics)),
+> **the xDS layer exposes only the replica roles SF Naming resolves
+> (`primary`/`secondary`/`any`) and does not synthesize failover/fallback
+> aggregation.** So there is **no** selectable `failover` role or cluster.
+> A client that wants fallback (read the primary but tolerate a secondary
+> when the primary is unavailable) achieves it by **retrying with a
+> different `mssf-partition-role` value** — a client responsibility, not a
+> server/routing feature. The default/`primary` route uses a
+> **primary-only single-endpoint EDS** whose failover is the naming-driven
+> **EDS re-push** (naming re-publishes the promoted primary), never a
+> silent shift onto an unpromoted secondary.
+>
+> **Read-from-secondary** deliberately sends healthy-path reads to
+> secondaries. It is *not* expressed with priorities, and it is a
+> **per-request** choice carried in the `mssf-partition-role`
+> header (`primary` (default) / `secondary` / `any`),
+> *not* a resource-name convention. RDS matches the role header **in
+> addition to** the `mssf-partition-key` match, so partition
+> selection is unchanged and orthogonal: for a **singleton
+> (non-partitioned)** service the role match selects, within the
+> one default route, the `...-primary`, `...-secondary`, or all-replicas
+> (`any`) cluster; for a
+> **partitioned** service each
+> partition's `Route`s fan out by role to *that partition's*
+> `...-primary` / `...-secondary` / all-replicas
+> cluster (partition
+> N's own replicas), never one flat secondary cluster. **When the
+> header is absent or its value matches no role route, the request
+> falls through to that partition's primary cluster** — the role routes
+> are emitted ahead of a key-only primary fallback (see the RDS route
+> ordering under [Partition key semantics](#partition-key-semantics)), so
+> the plain `xds:///fabric/App/Svc` target stays primary-only just as the
+> old `-secondary` suffix did for free, and writes are never silently
+> steered onto a secondary. A caller wanting a hard read-only channel
+> stamps `mssf-partition-role: secondary` on every call via a client-side
+> metadata interceptor (the per-channel replacement for a dedicated
+> `-secondary` resource name). The correctness backstop is unchanged: the
+> header is a routing *hint*, and SF still returns `NotPrimary` if a write
+> lands on a secondary.
+
+### Partition key semantics
+
+The `mssf-partition-key` header value is **not** an arbitrary
+business key — it must be in the **same domain as the service's SF
+partition scheme**, because the agent builds the `Route`s directly
+from SF's live partition information
+([`ServicePartitionInformation`](../../crates/libs/core/src/types/common/partition.rs)).
+SF supports exactly three schemes
+([`PartitionKeyType`](../../crates/libs/core/src/client/svc_mgmt_client.rs)):
+
+| SF scheme | `mssf-partition-key` value | Route built by the agent |
+|---|---|---|
+| `Singleton` | *omitted* | one default `Route`; no matcher |
+| `Int64Range` | a **decimal `i64`** (e.g. `42`) | one `Range` matcher per partition from its `low_key`/`high_key` (inclusive SF `[low, high]` → half-open `[low, high+1)`; see the `i64::MAX` boundary rule below) |
+| `Named` | the **exact partition name** | one `String::Exact` matcher per partition name (case-sensitive) |
+
+Consequences and rules:
+
+- **`i64::MAX` boundary (top partition).** SF Int64 ranges are
+  inclusive, so the highest partition's `high_key` is
+  `9223372036854775807` (`i64::MAX`). The naive `[low, high+1)`
+  conversion overflows xDS's **signed** `Int64Range.end`, which
+  cannot represent `i64::MAX + 1`. The agent must special-case this:
+  emit the top partition as a `Range [low, i64::MAX)` **plus** a
+  string `exact_match` on the header value `"9223372036854775807"`
+  (the `i64::MAX` boundary), both pointing at the same top-partition
+  cluster. Do **not** substitute an open-ended default/catch-all
+  `Route` for this boundary: a catch-all would also match missing,
+  malformed, and otherwise unmatched partition-key headers and route
+  them to the top partition, contradicting the fail-closed rules
+  below. The mandatory exact string route matches only the boundary
+  value, preserving the promised full-`i64` key range without an
+  overflowed or wrapped `end`.
+- **No transform/hashing layer.** The client sends the *same* i64
+  or name it would pass to
+  [`resolve_service_partition(name, PartitionKeyType::Int64(k) | String(n))`](../../crates/libs/util/src/resolve.rs).
+  SF does not hash for you; mapping a business entity
+  (`user:42`) to an `i64` or a partition name is the
+  **application's** job, done before setting the header. If a
+  business-key→partition-key transform is ever wanted, it belongs
+  in a client helper, not the agent — the agent only mirrors SF's
+  partition boundaries.
+- **Routes are derived from the live scheme.** The agent enumerates
+  the service's partitions and emits one `Route`/`Cluster` per
+  partition. On **repartition** it must re-emit the
+  `RouteConfiguration` so the matchers keep mirroring SF exactly;
+  stale ranges would mis-route silently.
+- **Malformed / mismatched key.** A non-integer header on an
+  `Int64Range` service, or an unknown name on a `Named` service,
+  matches no `Route`. Define this as a hard client error
+  (`Unavailable`/`InvalidArgument`) rather than a silent fallback
+  to an arbitrary partition.
+- **Missing key on a partitioned service.** No default partition is
+  safe to assume for a partitioned stateful service. Either require
+  the header (fail closed) or route to an explicit
+  `-unpartitioned`/error cluster; do **not** pick partition 0.
+- **Replica role (`mssf-partition-role`) — a second, orthogonal
+  reserved header.** This header selects the *replica class* within
+  the already-selected partition, independent of `mssf-partition-key`.
+  Allowed values are exactly `primary` (default), `secondary`, and
+  `any`; the
+  agent emits, per partition, an extra `Route` header match that maps
+  `secondary` → the partition's `...-secondary` `ROUND_ROBIN` cluster (`{S1, S2, …}`)
+  and `any` → a `ROUND_ROBIN` cluster spanning primary + secondaries (`{P, S1, S2, …}`),
+  with `primary` selecting the `...-primary` cluster (`{P}`).
+  For a
+  **stateless** service `any` is the only meaningful value and maps to
+  the single instance cluster; `primary`/`secondary` collapse
+  to that
+  same instance set.
+
+  **Governing principle** (the [central design principle](#central-design-principle)
+  applied to roles). The xDS layer exposes **only** the replica
+  roles SF Naming actually resolves — primary, secondary, or all
+  replicas — and does **not** synthesize any failover/fallback
+  aggregation (there is no priority-aggregated cluster and no
+  selectable `failover` role, because SF Naming offers none). A client
+  that wants fallback — e.g. read the primary but tolerate a secondary
+  when the primary is unavailable — obtains it by **retrying with a
+  different `mssf-partition-role` value**. That is a client
+  responsibility, not a server/routing feature.
+
+  **Unlike `mssf-partition-key`, this header fails
+  *safe*, not closed:** when it is **absent** *or* **present but its
+  value matches no role route** (e.g. a misspelled `read-only`), the
+  request falls through to the partition's **primary** cluster — one
+  authoritative rule that covers both the absent and the
+  present-but-unrecognized cases, consistent with the first-match RDS
+  ordering below (the role routes precede the key-only primary
+  fallback, so any unmatched role value lands on primary). This
+  preserves the write-safety guarantee the old `-secondary` resource
+  name gave for free — the plain `xds:///fabric/App/Svc` target is
+  primary-only unless a caller opts into secondary/any reads.
+
+  **One exception — topology-blind SLB paths fail *closed*.** The
+  fail-*safe*-to-primary default assumes a topology-aware backend that
+  can actually reach the partition's primary. It does **not** hold on
+  a flat, topology-blind `@slb` VIP (Scenario C in the
+  [SLB proposal](./GrpcXdsSlb.md#scenario-c--direct-via-slb-port-mapping-translation)),
+  where a default-primary request would land on an arbitrary replica.
+  There the role instead **fails closed** and requires an explicit
+  `mssf-partition-role: any`. This variant is per-resource (the RDS
+  policy is emitted per advertised `xds:///` target), so the
+  topology-blind `@slb` resource carries the fail-closed policy while
+  the ordinary topology-aware resource keeps the fail-safe default.
+  The final correctness backstop is unchanged: the header is a routing
+  hint and SF returns `NotPrimary` if a write reaches a secondary.
+- **RDS route ordering (how absent-⇒-primary is actually built).**
+  RDS routes are **first-match-wins**, and a single `Route` can match
+  the partition key **and** the role header together. The fail-*safe*
+  role default therefore depends entirely on ordering the role-specific
+  routes **before** the key-only primary fallback; a broad/primary
+  route placed ahead of them would shadow the role routes. The agent
+  emits, **for each partition** (key `K` = its `Range`/`String::Exact`
+  matcher), in this exact order:
+
+  1. `key == K` **and** `role == secondary` → K's `...-secondary`
+     cluster (`{S1, S2, …}`)
+  2. `key == K` **and** `role == any` → K's all-replicas cluster (`{P, S1, S2, …}`)
+  3. *(optional, explicit)* `key == K` **and** `role == primary` → K's
+     `...-primary` cluster (`{P}`)
+  4. `key == K` (no role matcher) → K's `...-primary` cluster (`{P}`)
+     — **fallback** for absent/unmatched role
+
+  Every one of these four still carries the `key == K` matcher, so the
+  **role fails safe while the key stays fail-closed**: a missing or
+  malformed partition key matches **none** of a partition's routes
+  (rejected per the malformed/missing-key rules above), and is never
+  routed to the primary of some arbitrary partition. For a **singleton
+  (non-partitioned)** service the same order applies without the key
+  matcher: `role == secondary`, then `role == any`, then optional
+  `role == primary`, then a **no-matcher primary fallback** last.
+
+  The `i64::MAX` boundary must be **duplicated the same way**: the four
+  routes above are emitted once with the top partition's
+  `Range [low, i64::MAX)` matcher **and** once with a
+  `String::Exact "9223372036854775807"` matcher, in the same
+  secondary → any → (primary) → key-only-primary order, so
+  the boundary
+  value keeps both role selection and the fail-closed key behavior.
+- **Value encoding.** Header values are ASCII strings: Int64 keys
+  are decimal (optionally negative, full `i64` range); Named keys
+  are the partition name verbatim; `mssf-partition-role` is one of
+  `primary` / `secondary` / `any`. Reserve the `mssf-` prefix for
+  these SF routing headers (`mssf-partition-key` and
+  `mssf-partition-role`).
+- **Not an authorization boundary (untrusted addressing primitive).**
+  `mssf-partition-key` (and `mssf-partition-role`) are **caller-supplied
+  routing hints**, validated only for *well-formedness*, never for
+  *entitlement*: the caller picks which partition it addresses, and the
+  routing layer faithfully delivers to it. Under a partition-per-tenant
+  layout this is a cross-tenant addressing (IDOR) risk — changing the
+  key value reads/writes another tenant's partition if the backend
+  assumes the routing layer already scoped the request. The routing
+  layer does **not** scope it. In multi-tenant contexts,
+  **partition/authority-level authorization is required** — enforced by
+  the backend on every request and/or by the ADS authorization posture
+  (see [Security](#security)) that scopes which authorities/partitions a
+  given identity may address at all. Add a conformance test that
+  caller-A carrying tenant-B's key is rejected by the backend.
+
+This contract is validated in Phase 3 against the `KvStore`
+sample (Int64 partitioning); a Named-partition sample should be
+added to cover the `String::Exact` path.
 
 ## Failover signal
 
@@ -557,8 +852,13 @@ signal is not needed under xDS. Two mechanisms, used together:
 The agent registers a notification filter for the URI. When SF
 naming says "primary moved from N1 to N2," the agent emits a
 fresh EDS `DiscoveryResponse` with updated endpoint addresses
-(or with the old primary marked `HealthStatus::DRAINING`).
-gRPC's LB picks the new primary on the next request.
+(optionally reflecting the old primary as `HealthStatus::DRAINING`
+when SF's `ChangeRole` gives advance notice — a passive reflection of
+the naming event, not a health state the agent synthesizes).
+gRPC's LB picks the new primary on the next request. This is
+naming-driven failover — per the
+[central design principle](#central-design-principle), an EDS re-push,
+not an xDS priority construct the layer would have to invent.
 
 ### Server-side ORCA reports (optional, for richer signals)
 
@@ -566,10 +866,20 @@ A server that's lost its primary role can emit an
 [ORCA](https://github.com/cncf/xds/blob/main/xds/data/orca/v3/orca_load_report.proto)
 load report with a custom utility metric (e.g.
 `mssf.role.degraded = 1`). gRPC's `weighted_round_robin` /
-`xds_wrr` LB honors per-endpoint utility. The agent doesn't
-need to know about the event; the data plane self-adjusts.
+`xds_wrr` LB honors per-endpoint utility.
 
-ORCA is additive; the push-driven path is the primary mechanism.
+**ORCA does not self-report EDS health and does not switch replica
+roles on the client.** A degraded utility metric only *deweights* an
+already-known endpoint within a generic WRR pool; it cannot identify
+the promoted replacement primary, cannot create the new primary's EDS
+endpoint, and is not a role-state transition. The **authoritative**
+failover mechanism stays [push-driven](#push-driven-preferred):
+control-plane notification → SF re-resolve → EDS push. To stay
+consistent with that model, ORCA is used **only as a trigger** — a
+same-signal hint that prompts the SF-facing tier to re-resolve and
+push a fresh snapshot — never as a client-side role switch or a
+server self-reporting its own EDS membership. It is additive; the
+push-driven path is the primary mechanism.
 
 ## Failover walkthrough — primary moves N1 → N2
 
@@ -611,7 +921,7 @@ sequenceDiagram
     SF-->>Agent: ServiceNotification<br/>(RSP version bump,<br/> primary now N2)
 
     Note over Agent: Translate to xDS
-    Agent->>Agent: build new EDS resource:<br/>endpoints = [N2], version v+1<br/>(optionally mark N1 DRAINING<br/> in a transitional push)
+    Agent->>Agent: build new EDS resource:<br/>endpoints = [N2], version v+1<br/>(optionally reflect N1 DRAINING<br/> if SF gave advance notice)
     Agent-->>Xds: DiscoveryResponse(EDS, v+1)
     Xds-->>Agent: DiscoveryRequest ACK(v+1)
 
@@ -651,7 +961,7 @@ secondary. Three sub-cases:
 | **N1 process crashes (no graceful role-change)** | Steps 7–8 don't happen first; instead the open HTTP/2 connection fails. `tonic-xds` evicts the N1 subchannel on TCP error. The agent still gets a notification within seconds and pushes EDS v+1. Order is reversed but the destination is the same. |
 | **N2 not yet ready when push arrives** | Step 14 fails until N2 accepts connections. `tonic-xds` keeps the subchannel in `CONNECTING` and surfaces `Unavailable` to picks until ready. Client retries succeed once N2 transitions. |
 | **Notification delivery delayed** | Steady-state lag (sub-second on a healthy cluster). Requests in the gap may hit N1 and bounce with `Code::Unavailable` until the push lands. Caller-side retry policy covers the window. |
-| **Old primary marked `DRAINING` first, removed in a second push** | Two `DiscoveryResponse`s instead of one. `tonic-xds` stops picking N1 for new RPCs immediately at the `DRAINING` push; in-flight requests finish; the second push (endpoint removed) closes the idle subchannel. Useful for graceful shedding when SF gives advance notice. |
+| **Old primary reflected as `DRAINING` first, removed in a second push** | Two `DiscoveryResponse`s instead of one, used only when SF's `ChangeRole` gives advance notice. `tonic-xds` stops picking N1 for **new** RPCs immediately at the `DRAINING` push — that routing signal is all the agent does; whether an in-flight request completes or is terminated is the **replica's** call (it finishes as secondary or returns `NotPrimary`), not a drain the agent orchestrates. The second push (endpoint removed) closes the idle subchannel. |
 | **Multiple concurrent failovers (e.g. primary plus a secondary)** | Each is one notification → one EDS push, versioned and ACKed independently via ADS. The dataplane converges on the last-pushed state. |
 
 ### Why this is "automatic" from the client's perspective
@@ -846,11 +1156,18 @@ Four near-term caveats:
 - Validate that the chosen gRPC-xDS clients accept a minimal ADS
   source (some early versions require LRS, ALS, etc.).
 
-### Phase 1 — Minimal `mssf-xds-agent`, EDS only
+### Phase 1 — Minimal `mssf-xds-agent`, complete LDS→RDS→CDS→EDS chain
 
 - Crate: `crates/tools/mssf-xds-agent` (a new binary).
-- Speaks ADS, serves only `Listener` (stub) + `Cluster` (one
-  per URI, fixed `ROUND_ROBIN`) + `EDS` (from SF naming).
+- Speaks ADS, serving the full minimal chain a gRPC `xds:///`
+  channel needs to come up: a `Listener` carrying an
+  `ApiListener`/`HttpConnectionManager`, a trivial single-vhost
+  `RouteConfiguration` (its `domains` match the target, one
+  default route → the cluster), one fixed `ROUND_ROBIN` `Cluster`
+  per URI, and `EDS` (from SF naming). No partition or priority
+  logic yet — that is the Phase 1 economy, not omitting resource
+  types (a stub Listener with no HCM/route never lets the channel
+  resolve, so nothing would be testable "EDS-only").
 - One `FabricClient` shared across all URIs.
 - Selector logic (which endpoints to include, role filter) is
   keyed off the resource name (the `target`), since query params
@@ -896,15 +1213,57 @@ Four near-term caveats:
   (exact Int64-range / named-key match, **not** hashing).
 - Within each partition's cluster, reuse the Phase 1 primary LB
   unchanged — partition routing adds no new LB policy.
-- Validate against `KvStore` sample (Int64 partitioning).
+- Validate against `KvStore` sample (Int64 partitioning), including
+  the `i64::MAX` top-partition boundary (confirm the highest
+  partition's `high_key` does not overflow `Int64Range.end`).
 
-### Phase 4 — Priority routing (primary + secondaries)
+### Phase 4 — Naming-driven primary failover + read-from-secondary
 
-- Aggregate primary + secondaries into one cluster with
-  priorities. Default route → P0 (primary). Read-only route
-  (header gated) → P0/P1.
-- Maps directly to "read-from-secondary" without server-side
-  changes.
+- **Primary failover (the default/`primary` route):** the default
+  route points at a **primary-only, single-endpoint EDS cluster**.
+  Its failover is the **EDS re-push** — when naming promotes and
+  re-publishes a new primary, the control tier pushes the new
+  endpoint (optionally reflecting the old one as draining when SF
+  gives advance notice) and gRPC reconnects. The
+  default route is **never** aggregated with a secondaries tier:
+  an SF secondary is not a promoted primary until naming re-publishes
+  it, so silently shifting the write path onto a secondary would
+  break the write-safe guarantee. This is naming-driven failover,
+  *not* load-spreading.
+- **Read-from-secondary (secondary-safe reads, opt-in):** for
+  read-only workloads, the client sets the `mssf-partition-role`
+  header per request (`primary` (default) / `secondary` / `any`).
+  Each opt-in value selects a **distinct** read cluster,
+  and **none** is ever wired onto the default/`primary` write path:
+  `secondary` → a `...-secondary` `ROUND_ROBIN` cluster (`{S1, S2, …}`); `any` → an
+  all-replicas `ROUND_ROBIN` cluster (`{P, S1, S2, …}`). RDS
+  matches the role header **in
+  addition to** `mssf-partition-key`, so partition selection is
+  unchanged. For a **singleton** service the role match selects,
+  within the one default route, the `...-primary` (`{P}`), `...-secondary`
+  `ROUND_ROBIN` (`{S1, S2, …}`), or all-replicas (`any`, `{P, S1, S2, …}`) cluster. For a
+  **partitioned** service each partition's `Route`s fan out by role to
+  *that partition's* `...-primary` / `...-secondary` / all-replicas
+  cluster rather than one flat secondary cluster. Steering reads onto
+  secondaries — round-robin (`secondary`/`any`) — is a *per-request
+  header* choice on an opt-in read route, never the default write path.
+  **When the header is absent or unmatched the request falls through
+  to primary**, so write-safety is preserved by default (the role
+  routes are emitted ahead of a key-only primary fallback per the [RDS
+  route ordering](#partition-key-semantics), so a broad primary route
+  cannot shadow them and a missing/malformed key still fails closed); a
+  caller wanting a hard read-only channel stamps `mssf-partition-role:
+  secondary` via a client-side metadata interceptor (the replacement
+  for the old `-secondary` resource name).
+- **No synthesized failover/fallback** (the
+  [central design principle](#central-design-principle) in action). The
+  xDS layer offers only the
+  roles SF Naming resolves (`primary`/`secondary`/`any`); it does not
+  build a priority-aggregated failover cluster. A client wanting
+  fallback retries with a different `mssf-partition-role` value (see
+  [Partition key semantics](#partition-key-semantics)).
+- Both are achieved with no server-side changes; the server still
+  returns `NotPrimary` if a write lands on a secondary.
 
 ### Phase 5 — Optional ORCA + LRS
 
@@ -963,16 +1322,70 @@ receive xDS snapshots and re-serve them locally.
 
 ## Security
 
-- Local-only by default (loopback TCP or UDS). Cross-node xDS
-  traffic is **not** a goal; every node has its own agent. A UDS
-  listener additionally restricts access by filesystem
-  permissions.
+- Single-tier: local-only (loopback TCP or UDS). Cross-node xDS
+  traffic is **not** a goal in this form — every node has its own
+  agent, and a UDS listener additionally restricts access by
+  filesystem permissions.
+- Two-tier: the discovery→relay snapshot channel **is**
+  cross-node xDS traffic, and it carries the whole cluster's
+  LDS/RDS/CDS/EDS topology. It reaches only the SF-deployed relay
+  instances and the client-facing hop on each node stays loopback/UDS.
+- **Discovery→relay channel authentication (security gate, not an
+  open-ended deferral).** The relay holds no `FabricClient` and
+  re-serves **verbatim** whatever snapshot arrives, so an
+  unauthenticated channel is a **config-poisoning** surface: a
+  same-network adversary that claims the discovery address (especially
+  during a singleton-restart race) could push a poisoned EDS snapshot
+  and redirect client RPCs — **including writes** — to attacker
+  endpoints. A network boundary alone is a single point of failure,
+  not defense-in-depth. The gate before the two-tier form is exposed
+  beyond a single-tenant, fully-trusted internal network is:
+  1. **First verify** whether SF's inter-node transport already
+     provides **mutual authentication** for this channel. The docs
+     currently claim only network *scoping*, not mutual auth — this
+     must be confirmed, not assumed.
+  2. **If it does not**, require **control-tier-identity-pinned mTLS**
+     on the discovery→relay channel (the relay pins the control tier's
+     identity and rejects any other snapshot source) **before** the
+     two-tier form is exposed publicly or multi-tenant. This is the
+     recommended resolution of the ship-now-vs-mTLS-first timing
+     trade-off; network-boundary trust is acceptable **only** for a
+     fully-trusted single-tenant internal
+     deployment with the residual risk explicitly signed off.
+- **ADS authorization (which resources, not just who).** Authenticating
+  the caller is **not sufficient**: the discovery tier owns a
+  cluster-wide `fabric:` catch-all, so a single authenticated principal
+  (or one leaked credential) could otherwise enumerate **every**
+  service/partition/endpoint — full-topology reconnaissance as the
+  blast radius of one credential. Two supported postures, stated
+  explicitly:
+  - **Trusted-first-party posture (default for this proposal).** The
+    ADS frontend is served **only** to fully-trusted first-party
+    consumers (per-node relays, the SF-deployed proxy fleet) that are
+    already entitled to the whole topology. No per-identity scoping is
+    required *because no untrusted identity is admitted.*
+  - **Scoped posture (required before any untrusted/multi-tenant
+    exposure).** Add a **per-identity authorization layer** that scopes
+    the served snapshot (per-authority / per-app), so differently-scoped
+    credentials receive **strictly different** resource sets. A public
+    or multi-tenant ADS frontend **must not** ship on authN alone.
+    This also backstops the `mssf-partition-key`
+    [cross-tenant addressing risk](#partition-key-semantics).
 - The agent runs as a service account with FabricClient
   credentials. Standard SF security boundaries apply. In the
   two-tier form only the control tier holds those credentials; the
   per-node relay has no naming access.
-- xDS-level mTLS / RBAC is deferred (Future work). Until then,
-  xDS data is host-trust scoped.
+- **Separate trust anchor for external clients.** Any credential
+  provisioned to an off-node / external ADS client (see the SLB
+  proposal's off-node bootstrap) **must not** chain to the cluster
+  management CA and **must not** be valid for SF management or node
+  transport. Reusing cluster certs / distributing the cluster CA to
+  external clients merges a low-trust topology reader into the cluster
+  administration trust domain. Issue external ADS/proxy clients from a
+  **dedicated, narrowly-scoped trust anchor**, not the cluster CA.
+- xDS-level mTLS / RBAC hardening beyond the gates above is tracked in
+  Future work (SDS-distributed certs); until then, single-tier xDS
+  data stays host-trust scoped.
 
 ## Open questions
 
@@ -1001,7 +1414,9 @@ receive xDS snapshots and re-serve them locally.
 
 - **mTLS / SDS** via xDS Secret Discovery Service.
 - **Fault injection / circuit breakers** from
-  `Cluster.outlier_detection` (free once xDS is in place).
+  `Cluster.outlier_detection` (free once xDS is in place) — an
+  optional client-side convenience that never supersedes
+  naming-driven failover or the replica's `NotPrimary` write-safety.
 - **gRPC RLS** (Route Lookup Service) for very-dynamic routing
   if a workload needs it.
 - **Upstream contributions to `tonic-xds`.** Anything we have

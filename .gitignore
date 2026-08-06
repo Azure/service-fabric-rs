@@ -4,6 +4,7 @@ bin
 obj
 .windows
 .paw
+.reviews
 
 # cargo stuff
 target

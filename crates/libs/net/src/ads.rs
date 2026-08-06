@@ -27,6 +27,7 @@ use envoy_types::pb::google::protobuf::Any;
 use futures::Stream;
 use prost::Message;
 use tokio::sync::watch;
+use tokio_util::sync::CancellationToken;
 use tonic::{Request, Response, Status};
 
 use crate::config::XdsMapping;
@@ -40,70 +41,71 @@ use crate::resources::{
 pub struct AdsService {
     mapping: Arc<XdsMapping>,
     source: Arc<dyn EndpointSource>,
-    /// Set to `true` to end every open ADS stream.
+    /// Cancelling ends every open ADS stream and stops the server.
     ///
-    /// Necessary for shutdown to terminate: an ADS stream is long-lived by
-    /// design, and `tonic`'s graceful shutdown waits for open connections to
-    /// drain. Without a way to end the streams, a graceful stop would block
-    /// forever.
-    shutdown: Arc<watch::Sender<bool>>,
+    /// An ADS stream is long-lived by design, and `tonic`'s graceful shutdown
+    /// waits for open connections to drain — so without a way to end the
+    /// streams, a graceful stop would block forever. One token drives both:
+    /// the streams observe it and finish, and it doubles as the server's
+    /// shutdown signal.
+    token: CancellationToken,
 }
 
 impl AdsService {
-    /// Create the service.
+    /// Create the service with its own cancellation token.
     pub fn new(mapping: XdsMapping, source: Arc<dyn EndpointSource>) -> Self {
+        Self::with_cancellation(mapping, source, CancellationToken::new())
+    }
+
+    /// Create the service driven by a caller-supplied cancellation token.
+    ///
+    /// Use this to tie the server's lifetime to an existing scope — for
+    /// example an SF service's `close(cancellation_token)`, so the ADS server
+    /// stops when the replica does. To adapt from this crate's
+    /// [`mssf_core::runtime::executor::BoxedCancelToken`], see
+    /// `mssf_util::tokio::TokioCancelToken`, which wraps the same underlying
+    /// [`CancellationToken`] and can convert in both directions.
+    pub fn with_cancellation(
+        mapping: XdsMapping,
+        source: Arc<dyn EndpointSource>,
+        token: CancellationToken,
+    ) -> Self {
         Self {
             mapping: Arc::new(mapping),
             source,
-            shutdown: Arc::new(watch::channel(false).0),
+            token,
         }
+    }
+
+    /// A clone of the token that stops this service.
+    ///
+    /// Take this *before* [`AdsService::into_server`] if you are mounting the
+    /// service on your own `tonic` server, and cancel it as part of your
+    /// shutdown signal — otherwise graceful shutdown will hang on the open
+    /// ADS streams.
+    pub fn cancellation_token(&self) -> CancellationToken {
+        self.token.clone()
     }
 
     /// Wrap as a mountable gRPC service.
-    ///
-    /// When mounting on a caller-owned server, use [`AdsService::stopper`]
-    /// first so the streams can be ended at shutdown.
     pub fn into_server(self) -> AggregatedDiscoveryServiceServer<Self> {
         AggregatedDiscoveryServiceServer::new(self)
-    }
-
-    /// A handle that ends all open ADS streams when invoked.
-    ///
-    /// Take this *before* [`AdsService::into_server`] if you are mounting the
-    /// service on your own `tonic` server; call it as part of your shutdown
-    /// signal, or graceful shutdown will hang on the open streams.
-    pub fn stopper(&self) -> AdsStopper {
-        AdsStopper {
-            shutdown: self.shutdown.clone(),
-        }
-    }
-}
-
-/// Ends all open ADS streams for one [`AdsService`].
-#[derive(Clone)]
-pub struct AdsStopper {
-    shutdown: Arc<watch::Sender<bool>>,
-}
-
-impl AdsStopper {
-    /// Signal every open ADS stream to end.
-    pub fn stop(&self) {
-        let _ = self.shutdown.send(true);
     }
 }
 
 /// A running ADS server.
 ///
-/// Owns the serving task and its shutdown trigger. Dropping the handle aborts
-/// the task, so a server can never outlive the scope that started it; prefer
-/// [`ServerHandle::shutdown`], which signals a graceful stop and **awaits** the
-/// task so serving errors surface rather than being swallowed.
-#[must_use = "dropping the handle aborts the server; call shutdown() to stop it gracefully"]
+/// Owns the serving task and the token that stops it. Dropping the handle
+/// cancels the token and aborts the task, so a server can never outlive the
+/// scope that started it; prefer [`ServerHandle::shutdown`], which cancels and
+/// then **awaits** the task so serving errors surface rather than being
+/// swallowed.
+#[must_use = "dropping the handle stops the server; call shutdown() to stop it gracefully"]
 pub struct ServerHandle {
     addr: SocketAddr,
-    // `Option` because `shutdown` consumes both, and a type with a `Drop` impl
-    // cannot have fields moved out of it.
-    shutdown: Option<tokio::sync::oneshot::Sender<()>>,
+    token: CancellationToken,
+    // `Option` because `shutdown` consumes the handle, and a type with a
+    // `Drop` impl cannot have fields moved out of it.
     task: Option<tokio::task::JoinHandle<Result<(), tonic::transport::Error>>>,
 }
 
@@ -113,16 +115,20 @@ impl ServerHandle {
         self.addr
     }
 
-    /// Signal a graceful shutdown and wait for the server task to finish.
+    /// A clone of the token that stops this server.
+    ///
+    /// Cancelling it is equivalent to calling [`ServerHandle::shutdown`],
+    /// except that it does not wait for the task.
+    pub fn cancellation_token(&self) -> CancellationToken {
+        self.token.clone()
+    }
+
+    /// Cancel and wait for the server task to finish.
     ///
     /// Returns the serving result: `Err` if the server itself failed, or if the
     /// task panicked or was cancelled.
     pub async fn shutdown(mut self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        // The receiver is only dropped when the task has already exited, in
-        // which case there is nothing to signal.
-        if let Some(tx) = self.shutdown.take() {
-            let _ = tx.send(());
-        }
+        self.token.cancel();
         let Some(task) = self.task.take() else {
             return Ok(());
         };
@@ -137,8 +143,10 @@ impl ServerHandle {
 impl Drop for ServerHandle {
     fn drop(&mut self) {
         // Best-effort: a handle dropped without `shutdown()` must not leave a
-        // detached server running for the rest of the process. `shutdown` takes
-        // the task, so this only fires on the un-awaited path.
+        // server running for the rest of the process. Cancel first so the task
+        // can finish cleanly if it is scheduled before the abort lands;
+        // `shutdown` takes the task, so this only fires on the un-awaited path.
+        self.token.cancel();
         if let Some(task) = self.task.take() {
             task.abort();
         }
@@ -162,28 +170,23 @@ impl AdsService {
         listener: tokio::net::TcpListener,
     ) -> std::io::Result<ServerHandle> {
         let addr = listener.local_addr()?;
-        let stopper = self.stopper();
+        let token = self.cancellation_token();
         let svc = self.into_server();
-        let (tx, rx) = tokio::sync::oneshot::channel::<()>();
+        let signal = token.clone();
         let task = tokio::spawn(async move {
             tonic::transport::Server::builder()
                 .add_service(svc)
                 .serve_with_incoming_shutdown(
                     tokio_stream::wrappers::TcpListenerStream::new(listener),
-                    async move {
-                        // A dropped sender also means "stop".
-                        let _ = rx.await;
-                        // End the open ADS streams *before* returning, so the
-                        // graceful shutdown that follows has connections that
-                        // can actually drain.
-                        stopper.stop();
-                    },
+                    // The same cancellation that ends the open ADS streams also
+                    // triggers the graceful stop, so connections can drain.
+                    signal.cancelled_owned(),
                 )
                 .await
         });
         Ok(ServerHandle {
             addr,
-            shutdown: Some(tx),
+            token,
             task: Some(task),
         })
     }
@@ -281,7 +284,7 @@ impl AggregatedDiscoveryService for AdsService {
         let mut inbound = request.into_inner();
         let mapping = self.mapping.clone();
         let mut rx: watch::Receiver<EndpointSnapshot> = self.source.subscribe();
-        let mut stopping = self.shutdown.subscribe();
+        let token = self.token.clone();
 
         let outbound = async_stream::try_stream! {
             let mut version = Versioning(0);
@@ -291,20 +294,17 @@ impl AggregatedDiscoveryService for AdsService {
             let mut subscriptions: HashMap<String, Vec<String>> = HashMap::new();
 
             loop {
-                // Already stopping (e.g. a stream opened during shutdown).
-                if *stopping.borrow() {
+                // Already cancelled (e.g. a stream opened during shutdown).
+                if token.is_cancelled() {
                     break;
                 }
 
                 tokio::select! {
-                    // The server is shutting down: end the stream so the
-                    // connection can drain and graceful shutdown can complete.
-                    changed = stopping.changed() => {
-                        // An error means the service was dropped -- also stop.
-                        if changed.is_err() || *stopping.borrow() {
-                            tracing::debug!("ads stream ending for shutdown");
-                            break;
-                        }
+                    // The server is stopping: end the stream so the connection
+                    // can drain and graceful shutdown can complete.
+                    _ = token.cancelled() => {
+                        tracing::debug!("ads stream ending: cancelled");
+                        break;
                     }
 
                     // A request from the client.

@@ -23,6 +23,7 @@ use mssf_net::{
 };
 use tokio::net::TcpListener;
 use tokio_stream::wrappers::TcpListenerStream;
+use tokio_util::sync::CancellationToken;
 use tonic::{Request, Response, Status};
 use tonic_xds::{BootstrapConfig, XdsChannelBuilder, XdsChannelConfig, XdsUri};
 
@@ -264,6 +265,42 @@ async fn ads_server_shuts_down_with_a_live_client_attached() {
     tokio::time::timeout(Duration::from_secs(15), ads.shutdown())
         .await
         .expect("ads shutdown timed out with a client attached")
+        .expect("ads server failed");
+
+    drop(client);
+    a.shutdown().await;
+}
+
+/// A caller-supplied cancellation token stops the server, so an ADS server can
+/// be tied to an existing scope (e.g. an SF replica's `close`) rather than
+/// needing its own bespoke shutdown plumbing.
+#[tokio::test]
+#[test_log::test]
+async fn caller_supplied_cancellation_token_stops_the_server() {
+    let a = start_backend("backend-a").await;
+    let (source, _handle) = ScriptedEndpointSource::new(EndpointSnapshot::Primary(HostPort::new(
+        a.addr.ip().to_string(),
+        a.addr.port(),
+    )));
+
+    let token = CancellationToken::new();
+    let ads = AdsService::with_cancellation(mapping(), source, token.clone())
+        .serve_on_ephemeral_loopback()
+        .await
+        .expect("failed to start the ADS server");
+
+    let mut client = xds_client(ads.addr(), "xds:///reflection");
+    assert_eq!(
+        who_am_i_until_ok(&mut client, Duration::from_secs(20)).await,
+        "backend-a"
+    );
+
+    // Cancel the caller's token rather than calling shutdown().
+    token.cancel();
+
+    tokio::time::timeout(Duration::from_secs(15), ads.shutdown())
+        .await
+        .expect("server did not stop after the caller's token was cancelled")
         .expect("ads server failed");
 
     drop(client);

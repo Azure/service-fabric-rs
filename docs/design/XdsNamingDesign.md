@@ -240,26 +240,37 @@ A test that also builds its own admin `FabricClient` must additionally apply
 
 ## Server lifecycle and shutdown
 
+Shutdown is driven by a single [`tokio_util::sync::CancellationToken`], matching
+this repository's existing cancellation convention (`BoxedCancelToken` in
+`mssf-core`, wrapped by `mssf_util::tokio::TokioCancelToken`, which converts in
+both directions).
+
 `AdsService::serve_on_ephemeral_loopback` / `serve_with_listener` return a
 `ServerHandle` rather than a bare address. The handle owns the serving task:
 
-- `shutdown()` signals a graceful stop and **awaits** the task, so a serving
-  error surfaces instead of being swallowed by a detached `tokio::spawn`.
-- `Drop` aborts the task, so a server can never outlive the scope that started
-  it. The type is `#[must_use]` to make an accidental drop visible.
+- `shutdown()` cancels the token and **awaits** the task, so a serving error
+  surfaces instead of being swallowed by a detached `tokio::spawn`.
+- `Drop` cancels and aborts, so a server can never outlive the scope that
+  started it. The type is `#[must_use]`.
+- `cancellation_token()` exposes the token for callers who want to stop the
+  server from elsewhere.
 
-One subtlety makes this non-optional. An ADS stream is long-lived by design,
-and `tonic`'s graceful shutdown waits for open connections to drain — so a
-server with a connected xDS client would **hang forever** on shutdown unless
-the streams are told to end. `AdsService` therefore carries an internal
-"stopping" flag; the shutdown signal sets it *before* returning, each stream
-selects on it and breaks, connections drain, and the task completes.
+One token covers two jobs, which is why a single primitive is the right fit.
+An ADS stream is long-lived by design, and `tonic`'s graceful shutdown waits for
+open connections to drain — so a server with a connected xDS client would **hang
+forever** if only the accept loop were stopped. Cancellation both ends the open
+streams (each selects on `cancelled()`) and serves as the graceful-shutdown
+signal, so connections drain and the task completes.
 
-If you mount the service on your own `tonic` server instead, take
-`AdsService::stopper()` **before** `into_server()` and call `stop()` as part of
-your shutdown signal — otherwise you will reproduce that hang.
-`tests/scripted_ads.rs` has a regression test that shuts down with a live
-client still attached.
+`AdsService::with_cancellation(mapping, source, token)` accepts a caller-supplied
+token, so the server's lifetime can be tied to an existing scope — for example
+an SF service's `close(cancellation_token)`, so the ADS server stops when the
+replica does. If you mount the service on your own `tonic` server, take
+`AdsService::cancellation_token()` **before** `into_server()` and cancel it as
+part of your shutdown signal — otherwise you will reproduce that hang.
+
+`tests/scripted_ads.rs` covers both paths: shutting down with a live client
+still attached, and stopping via a caller-supplied token.
 
 ## Testing
 

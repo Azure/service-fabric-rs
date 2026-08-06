@@ -291,6 +291,15 @@ wins the race with probability 1, so no black-box test distinguishes the two.
 Separation is by crate location, matching existing repository convention — no
 `#[ignore]` or feature flag needed.
 
+In CI, the cluster-backed jobs (`build` on Windows, `build-devcontainer`) run
+`cargo test --all` after provisioning a onebox, which already covers this
+crate. The one added step is in `build-azl3`, which has no Service Fabric
+installed and otherwise runs no tests at all: it is both the only test execution
+in that job and the strongest available proof that the mapping needs no SF
+runtime. Deliberately *not* duplicated into the Windows job — that runner has SF
+installed, so running there before the cluster starts would only show "no
+cluster", and `cargo test --all` already executes these tests.
+
 `scripted_ads.rs` is the crux. It starts two stand-in backends and the ADS
 server on ephemeral loopback ports, points a **stock, unmodified** `tonic-xds`
 channel at it, and asserts:

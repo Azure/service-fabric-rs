@@ -32,6 +32,23 @@ impl std::fmt::Debug for XdsMapping {
 }
 
 impl XdsMapping {
+    /// Create a mapping whose xDS resource name **is** the SF service URI.
+    ///
+    /// This is usually what you want: clients then target
+    /// `xds:///fabric:/App/Service`, so the name a caller writes is the service
+    /// it wants and there is no alias to keep in sync. Verified end-to-end —
+    /// `:` and `/` are fine in xDS resource names.
+    ///
+    /// Use [`XdsMapping::new`] when you deliberately want a short alias
+    /// (`xds:///myservice`) decoupled from the SF URI.
+    pub fn for_service_uri(
+        service_uri: impl Into<String>,
+        interpreter: AddressInterpreter,
+    ) -> Result<Self, Error> {
+        let service_uri = service_uri.into();
+        Self::new(service_uri.clone(), service_uri, interpreter)
+    }
+
     /// Create a mapping, validating the names.
     pub fn new(
         xds_name: impl Into<String>,
@@ -101,5 +118,21 @@ mod tests {
         let m = XdsMapping::new("n", "fabric:/A/B", host_port_interpreter()).unwrap();
         assert_eq!(m.xds_name(), "n");
         assert_eq!(m.service_uri(), "fabric:/A/B");
+    }
+
+    /// The SF URI doubles as the xDS name, so clients target
+    /// `xds:///fabric:/App/Service` with no alias to maintain.
+    #[test]
+    fn for_service_uri_uses_the_uri_as_the_xds_name() {
+        let m = XdsMapping::for_service_uri("fabric:/MyApp/MyService", host_port_interpreter())
+            .unwrap();
+        assert_eq!(m.xds_name(), "fabric:/MyApp/MyService");
+        assert_eq!(m.service_uri(), "fabric:/MyApp/MyService");
+        assert_eq!(m.cluster_name(), "fabric:/MyApp/MyService-primary");
+    }
+
+    #[test]
+    fn for_service_uri_rejects_an_empty_uri() {
+        assert!(XdsMapping::for_service_uri("", host_port_interpreter()).is_err());
     }
 }

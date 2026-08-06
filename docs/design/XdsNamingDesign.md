@@ -132,6 +132,16 @@ bespoke debouncing. Two further properties matter:
 | No primary right now | **empty but valid** `ClusterLoadAssignment` |
 | Service does not exist | `Listener` withheld from the LDS response |
 
+`<xds_name>` may be the SF service URI verbatim — `xds:///fabric:/App/Service`,
+which is the shape the proposal calls for. `:` and `/` are legal in xDS resource
+names, and the target string is retained unmodified by the client, so the name a
+caller targets can simply *be* the service it wants, with no alias table to keep
+in sync. `XdsMapping::for_service_uri` builds that form;
+`XdsMapping::new` keeps them independent when a short alias is preferred. Note
+this is also why the virtual host uses `domains: ["*"]`: the whole target string
+becomes the authority, so a literal domain match would have to reproduce it
+exactly.
+
 ### Fixed values, and the NACK traps they avoid
 
 These are not stylistic. Each one prevents a client-side rejection:

@@ -365,6 +365,43 @@ async fn shutdown_completes_under_continuous_endpoint_churn() {
     b.shutdown().await;
 }
 
+/// The xDS resource name can be the SF service URI itself.
+///
+/// This is the shape the proposal wants — `xds:///fabric:/App/Service` — and it
+/// matters because it removes the need for a separate alias: the name a client
+/// targets *is* the service it wants, so there is no mapping table to keep in
+/// sync. Verified end-to-end rather than assumed: the Listener/Cluster names
+/// carry `:` and `/`, and virtual-host matching sees the whole string as the
+/// authority (which is why the vhost domain is `*`).
+#[tokio::test]
+#[test_log::test]
+async fn xds_name_can_be_the_fabric_service_uri() {
+    const SERVICE_URI: &str = "fabric:/MyApp/MyService";
+
+    let a = start_backend("backend-a").await;
+    let (source, _handle) = ScriptedEndpointSource::new(EndpointSnapshot::Primary(HostPort::new(
+        a.addr.ip().to_string(),
+        a.addr.port(),
+    )));
+
+    // Name the xDS resource after the SF service URI verbatim.
+    let mapping = XdsMapping::new(SERVICE_URI, SERVICE_URI, host_port_interpreter()).unwrap();
+    let ads = AdsService::new(mapping, source)
+        .serve_on_ephemeral_loopback()
+        .await
+        .expect("failed to start the ADS server");
+
+    let mut client = xds_client(ads.addr(), &format!("xds:///{SERVICE_URI}"));
+    assert_eq!(
+        who_am_i_until_ok(&mut client, Duration::from_secs(20)).await,
+        "backend-a"
+    );
+
+    drop(client);
+    ads.shutdown().await.expect("ads server failed");
+    a.shutdown().await;
+}
+
 /// SC-004: the transient no-primary window fails calls in a bounded way
 /// (rather than hanging or silently succeeding against a stale address), and
 /// recovers once an endpoint is published again.

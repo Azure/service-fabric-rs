@@ -272,6 +272,14 @@ part of your shutdown signal — otherwise you will reproduce that hang.
 `tests/scripted_ads.rs` covers both paths: shutting down with a live client
 still attached, and stopping via a caller-supplied token.
 
+The stream's `select!` is `biased;` with cancellation first. Unbiased `select!`
+picks a random ready branch, so under steady traffic shutdown latency would be
+random and a stream could keep emitting responses after cancellation. Biasing
+makes it deterministic — once cancelled, the stream ends at the next poll and
+does no further work — which matters because shutdown blocks on these streams
+draining. Note this is about determinism, not liveness: an unbiased select still
+wins the race with probability 1, so no black-box test distinguishes the two.
+
 ## Testing
 
 | Test | Location | Needs a cluster? |

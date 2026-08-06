@@ -305,6 +305,16 @@ impl AggregatedDiscoveryService for AdsService {
                 }
 
                 tokio::select! {
+                    // Poll in order, cancellation first. The default is a
+                    // *random* ready branch, so under steady traffic (client
+                    // requests, or endpoint churn) shutdown latency becomes
+                    // random and the stream can emit further responses after
+                    // cancellation. Biasing makes it deterministic: once
+                    // cancelled, the stream ends at the next poll and does no
+                    // further work. Shutdown blocks on these streams draining,
+                    // so bounded latency here bounds shutdown.
+                    biased;
+
                     // The server is stopping: end the stream so the connection
                     // can drain and graceful shutdown can complete.
                     _ = token.cancelled() => {

@@ -307,6 +307,64 @@ async fn caller_supplied_cancellation_token_stops_the_server() {
     a.shutdown().await;
 }
 
+/// Shutdown completes promptly while the stream is under continuous load.
+///
+/// Note this is a smoke test, not a proof of the `biased;` ordering: with
+/// unbiased `select!` the cancellation branch still wins with probability 1
+/// (it loses n polls with probability ~0.5^n), so a black-box test cannot
+/// distinguish the two. `biased;` is there for *determinism* — bounded
+/// shutdown latency and no responses emitted after cancellation — rather than
+/// to convert a hang into a non-hang. This test guards the coarser property
+/// that shutdown is not blocked by ongoing work.
+#[tokio::test]
+#[test_log::test]
+async fn shutdown_completes_under_continuous_endpoint_churn() {
+    let a = start_backend("backend-a").await;
+    let b = start_backend("backend-b").await;
+
+    let (source, handle) = ScriptedEndpointSource::new(EndpointSnapshot::Primary(HostPort::new(
+        a.addr.ip().to_string(),
+        a.addr.port(),
+    )));
+    let ads = start_ads(mapping(), source).await;
+
+    let mut client = xds_client(ads.addr(), "xds:///reflection");
+    assert_eq!(
+        who_am_i_until_ok(&mut client, Duration::from_secs(20)).await,
+        "backend-a"
+    );
+
+    // Keep the watch branch permanently ready by flipping the endpoint in a
+    // tight loop for the duration of the shutdown.
+    let churn_stop = CancellationToken::new();
+    let churn_guard = churn_stop.clone();
+    let (a_addr, b_addr) = (a.addr, b.addr);
+    let churn = tokio::spawn(async move {
+        let mut flip = false;
+        while !churn_guard.is_cancelled() {
+            let addr = if flip { a_addr } else { b_addr };
+            handle.set(EndpointSnapshot::Primary(HostPort::new(
+                addr.ip().to_string(),
+                addr.port(),
+            )));
+            flip = !flip;
+            tokio::task::yield_now().await;
+        }
+    });
+
+    tokio::time::timeout(Duration::from_secs(15), ads.shutdown())
+        .await
+        .expect("shutdown did not complete while the stream was under load")
+        .expect("ads server failed");
+
+    churn_stop.cancel();
+    churn.await.expect("churn task panicked");
+
+    drop(client);
+    a.shutdown().await;
+    b.shutdown().await;
+}
+
 /// SC-004: the transient no-primary window fails calls in a bounded way
 /// (rather than hanging or silently succeeding against a stale address), and
 /// recovers once an endpoint is published again.

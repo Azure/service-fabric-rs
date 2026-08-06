@@ -38,6 +38,11 @@ use crate::resources::{
 };
 
 /// Serves one [`XdsMapping`] over ADS, backed by an [`EndpointSource`].
+///
+/// **One mapping per service instance.** Serving several SF services requires
+/// several `AdsService`s on separate ports. This is a limitation of this crate,
+/// not of xDS — see the "Known limitations" section of
+/// `docs/design/XdsNamingDesign.md` for what lifting it would involve.
 pub struct AdsService {
     mapping: Arc<XdsMapping>,
     source: Arc<dyn EndpointSource>,

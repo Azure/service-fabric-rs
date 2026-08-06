@@ -318,7 +318,20 @@ The test creates and deletes its own service, so re-runs are idempotent.
 
 ## Known limitations and deferred work
 
-- One mapped service per server instance.
+- **One mapped service per ADS server.** `AdsService` holds exactly one
+  `XdsMapping` and one `EndpointSource`, so serving N services means N ADS
+  servers on N ports. Note the SF-side cost is unchanged either way — one
+  `FabricClient` and one notification filter *per service* — but the naming load
+  is the same concern the proposal's two-tier design addresses, so this matters
+  at cluster scale.
+
+  The limitation is this crate's, not xDS's: xDS is designed for one control
+  plane serving many resources, clients subscribe by resource name, and
+  `resources_for` already filters on `resource_names`. Lifting it means (a) a
+  map of xDS name → (mapping, source), (b) **returning every subscribed Listener
+  and Cluster in one response** — both are `ALL_RESOURCES_REQUIRED_IN_SOTW`, so
+  emitting a subset silently deletes the others on the client — and (c) fanning
+  in over N `watch` receivers to push only the affected cluster's EDS.
 - Singleton partition only; no partition-key routing.
 - Primary only; secondaries are never exposed.
 - The xDS client crate is pre-release (`0.1.0-alpha.2`); its error *text* is not

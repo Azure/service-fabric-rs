@@ -28,6 +28,7 @@ use mssf_core::{ErrorCode, client::svc_mgmt_client::FilterIdHandle};
 use mssf_util::resolve::ServicePartitionResolver;
 use mssf_util::retry::OperationRetryer;
 use tokio::sync::watch;
+use tokio_util::sync::CancellationToken;
 
 use crate::address::AddressInterpreter;
 use crate::config::XdsMapping;
@@ -109,6 +110,9 @@ pub struct FabricEndpointSource {
 struct Releasable {
     client: FabricClient,
     filter: FilterIdHandle,
+    /// Stops the notification-interpreting task.
+    task_token: CancellationToken,
+    task: tokio::task::JoinHandle<()>,
 }
 
 impl FabricEndpointSource {
@@ -172,19 +176,40 @@ impl FabricEndpointSource {
         // "a notification has already won" without a torn check.
         let published = Arc::new(AtomicBool::new(false));
         let task_published = published.clone();
-        tokio::spawn(async move {
-            while raw_rx.changed().await.is_ok() {
-                let latest = raw_rx.borrow_and_update().clone();
-                let Some(n) = latest else { continue };
-                // An empty endpoint list means the service was removed.
-                let snapshot = if n.endpoints.is_empty() {
-                    EndpointSnapshot::NotFound
-                } else {
-                    snapshot_from_endpoints(&n.endpoints, &interp)
-                };
-                tracing::debug!(?snapshot, "notification produced a new endpoint state");
-                task_published.store(true, Ordering::SeqCst);
-                pub_tx.send_replace(snapshot);
+        // Stopping the task is explicit rather than inferred. It would in fact
+        // exit on its own once every sender drops (the callback closure owned by
+        // the FabricClient holds the last one), but that couples teardown to a
+        // non-obvious ownership chain; an owned token plus the JoinHandle lets
+        // `shutdown` stop and *await* it directly.
+        let task_token = CancellationToken::new();
+        let loop_token = task_token.clone();
+        let task = tokio::spawn(async move {
+            loop {
+                tokio::select! {
+                    // Cancellation first, so teardown is not delayed by a burst
+                    // of notifications.
+                    biased;
+
+                    _ = loop_token.cancelled() => break,
+
+                    changed = raw_rx.changed() => {
+                        if changed.is_err() {
+                            // All senders dropped; nothing more can arrive.
+                            break;
+                        }
+                        let latest = raw_rx.borrow_and_update().clone();
+                        let Some(n) = latest else { continue };
+                        // An empty endpoint list means the service was removed.
+                        let snapshot = if n.endpoints.is_empty() {
+                            EndpointSnapshot::NotFound
+                        } else {
+                            snapshot_from_endpoints(&n.endpoints, &interp)
+                        };
+                        tracing::debug!(?snapshot, "notification produced a new endpoint state");
+                        task_published.store(true, Ordering::SeqCst);
+                        pub_tx.send_replace(snapshot);
+                    }
+                }
             }
         });
 
@@ -214,7 +239,12 @@ impl FabricEndpointSource {
 
         Ok(Arc::new(Self {
             rx,
-            releasable: Mutex::new(Some(Releasable { client, filter })),
+            releasable: Mutex::new(Some(Releasable {
+                client,
+                filter,
+                task_token,
+                task,
+            })),
         }))
     }
 
@@ -246,16 +276,31 @@ impl EndpointSource for FabricEndpointSource {
         self.rx.clone()
     }
 
-    /// Unregister the filter, release the client, then delay.
+    /// Stop the interpretation task, unregister the filter, release the client,
+    /// then delay.
     ///
-    /// The ordering matters: unregistration is async (so it cannot happen in
-    /// `Drop`), and the delay before the client is fully released works around
-    /// issue #184.
+    /// The ordering matters: the task is stopped and awaited first so nothing
+    /// publishes during teardown, unregistration is async (so it cannot happen
+    /// in `Drop`), and the delay before the client is fully released works
+    /// around issue #184.
     async fn shutdown(self: Arc<Self>) {
         let taken = self.releasable.lock().unwrap().take();
-        let Some(Releasable { client, filter }) = taken else {
+        let Some(Releasable {
+            client,
+            filter,
+            task_token,
+            task,
+        }) = taken
+        else {
             return;
         };
+
+        // Stop interpreting notifications before tearing down the source of
+        // them, and await so no publish races the rest of shutdown.
+        task_token.cancel();
+        if let Err(e) = task.await {
+            tracing::warn!(error = ?e, "notification task did not complete cleanly");
+        }
 
         if let Err(e) = client
             .get_service_manager()

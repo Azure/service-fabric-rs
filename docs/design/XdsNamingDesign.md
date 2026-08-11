@@ -359,6 +359,23 @@ The test creates and deletes its own service, so re-runs are idempotent.
   and Cluster in one response** — both are `ALL_RESOURCES_REQUIRED_IN_SOTW`, so
   emitting a subset silently deletes the others on the client — and (c) fanning
   in over N `watch` receivers to push only the affected cluster's EDS.
+
+  When it lands, **validate that xDS names are unique across mappings**. The
+  `<xds_name>-primary` cluster derivation is itself injective (appending a
+  constant suffix cannot make two distinct names collide), but a registry keyed
+  by bare name rather than by `(type_url, name)` would conflate a Listener and a
+  Cluster that happen to share a string.
+- **A NACK is logged and then forgotten.** `stream_aggregated_resources` traces
+  the `error_detail` and does not advance state, which is correct, but a
+  persistently rejected resource is never re-sent and raises no metric or health
+  signal. That makes it the hardest failure to diagnose in the field: the client
+  silently has no route while the server looks healthy. A real deployment wants
+  a counter and, on repeated NACKs for the same resource, a surfaced error.
+- **`protoc` is required to build this crate**, not just to test it: `build.rs`
+  compiles the test-only `proto/testsvc.proto` on every build. Acceptable here
+  because CI already installs `protoc` for the other crates, but a consumer
+  building only the library pays for a test fixture. Moving the stand-in service
+  behind a cargo feature (or into a separate test crate) would remove it.
 - Singleton partition only; no partition-key routing.
 - Primary only; secondaries are never exposed.
 - The xDS client crate is pre-release (`0.1.0-alpha.2`); its error *text* is not

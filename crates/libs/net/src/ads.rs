@@ -364,8 +364,16 @@ impl AggregatedDiscoveryService for AdsService {
 
                         // Record the subscription BEFORE any early return, so
                         // ACKs still keep our view of what the client wants.
-                        subscriptions
+                        // Keep the previous set: a client may change its
+                        // resource set on an *existing* stream, and that
+                        // request carries the last nonce (i.e. looks like an
+                        // ACK) once the type has seen a response. Comparing
+                        // against the previous set is what distinguishes
+                        // "re-subscribe" from "plain ACK".
+                        let previous = subscriptions
                             .insert(req.type_url.clone(), req.resource_names.clone());
+                        let resources_changed =
+                            previous.as_deref() != Some(req.resource_names.as_slice());
 
                         if let Some(err) = req.error_detail.as_ref() {
                             // NACK: log and do not advance state.
@@ -379,8 +387,12 @@ impl AggregatedDiscoveryService for AdsService {
                         }
 
                         // ACK/NACK is discriminated by `response_nonce`, NOT by
-                        // `version_info` -- see `is_subscription_request`.
-                        if !is_subscription_request(&req) {
+                        // `version_info` -- see `is_subscription_request`. A
+                        // request that also *changes* the resource set is a new
+                        // subscription regardless of the nonce, and must be
+                        // answered or the client waits forever for a resource
+                        // it will otherwise only see on the next state change.
+                        if !is_subscription_request(&req) && !resources_changed {
                             continue;
                         }
 
@@ -453,6 +465,9 @@ impl AggregatedDiscoveryService for AdsService {
 /// `BootstrapConfig::from_json` is the only public, non-environment-variable
 /// way to configure the client, so this helper exists to feed it.
 pub fn bootstrap_json(ads_addr: SocketAddr, node_id: &str) -> String {
+    // `ads_addr` is a `SocketAddr`, so its Display is always JSON-safe;
+    // `node_id` is caller-supplied and is not.
+    let node_id = escape_json_string(node_id);
     format!(
         r#"{{
   "xds_servers": [
@@ -465,6 +480,24 @@ pub fn bootstrap_json(ads_addr: SocketAddr, node_id: &str) -> String {
   "node": {{"id": "{node_id}"}}
 }}"#
     )
+}
+
+/// Escape a string for embedding in a JSON string literal (RFC 8259 §7).
+fn escape_json_string(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            // All other control characters must be escaped as \u00XX.
+            c if (c as u32) < 0x20 => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out
 }
 
 #[cfg(test)]
@@ -587,6 +620,68 @@ mod tests {
         assert!(j.contains("http://127.0.0.1:18000"));
         assert!(j.contains("\"id\": \"test-node\""));
         assert!(j.contains("xds_v3"));
+    }
+
+    /// A node id containing JSON metacharacters must not corrupt the document.
+    #[test]
+    fn bootstrap_json_escapes_the_node_id() {
+        let j = bootstrap_json("127.0.0.1:1".parse().unwrap(), r#"a"b\c"#);
+        assert!(
+            j.contains(r#""id": "a\"b\\c""#),
+            "quote and backslash must be escaped, got: {j}"
+        );
+
+        // Control characters too.
+        let j = bootstrap_json("127.0.0.1:1".parse().unwrap(), "a\nb\u{1}c");
+        assert!(j.contains(r#""id": "a\nb\u0001c""#), "got: {j}");
+
+        // The result must still parse as the bootstrap the client expects.
+        let cfg = tonic_xds::BootstrapConfig::from_json(&bootstrap_json(
+            "127.0.0.1:1".parse().unwrap(),
+            r#"weird"id"#,
+        ));
+        assert!(cfg.is_ok(), "escaped bootstrap must still parse: {cfg:?}");
+    }
+
+    /// A client may change its resource set on an existing stream; that request
+    /// carries the last nonce, so it looks like an ACK. It must still be
+    /// answered, or the client waits for a resource it never receives.
+    #[test]
+    fn resource_set_change_is_answered_even_with_a_nonce() {
+        // Plain ACK: same resource set, nonce present -> no response needed.
+        let mut subs: HashMap<String, Vec<String>> = HashMap::new();
+        subs.insert(LISTENER_TYPE_URL.to_string(), vec!["a".to_string()]);
+
+        let ack = DiscoveryRequest {
+            version_info: "1".to_string(),
+            response_nonce: "1".to_string(),
+            type_url: LISTENER_TYPE_URL.to_string(),
+            resource_names: vec!["a".to_string()],
+            ..Default::default()
+        };
+        let previous = subs.insert(ack.type_url.clone(), ack.resource_names.clone());
+        let changed = previous.as_deref() != Some(ack.resource_names.as_slice());
+        assert!(!changed, "same set is a plain ACK");
+        assert!(
+            !is_subscription_request(&ack) && !changed,
+            "would be skipped"
+        );
+
+        // Re-subscribe: different resource set, nonce still present.
+        let resub = DiscoveryRequest {
+            version_info: "1".to_string(),
+            response_nonce: "1".to_string(),
+            type_url: LISTENER_TYPE_URL.to_string(),
+            resource_names: vec!["a".to_string(), "b".to_string()],
+            ..Default::default()
+        };
+        let previous = subs.insert(resub.type_url.clone(), resub.resource_names.clone());
+        let changed = previous.as_deref() != Some(resub.resource_names.as_slice());
+        assert!(changed, "an added resource name must be seen as a change");
+        assert!(
+            !is_subscription_request(&resub) && changed,
+            "nonce says ACK, but the changed set must still be answered"
+        );
     }
 
     /// Regression: a reconnecting client replays its retained `version_info`

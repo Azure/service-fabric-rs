@@ -111,29 +111,46 @@ instance — construct it with
 ### Serving several services from one control plane
 
 Clients subscribe by resource name, so one ADS server can publish any number of
-services. Register them and hand the registry to the server:
+services. Build **one** `FabricNaming` — one `FabricClient` for the whole
+process — and derive a source per service from it:
 
 ```rust
-use mssf_net::{AdsService, ServiceRegistry};
+use mssf_net::{AdsService, FabricNaming, ServiceRegistry};
+
+let naming = FabricNaming::new(vec![WString::from("localhost:19000")])?;
+
+let orders = naming.source_for(&orders_mapping, Duration::from_secs(10)).await?;
+let inventory = naming.source_for(&inventory_mapping, Duration::from_secs(10)).await?;
 
 let registry = ServiceRegistry::builder()
-    .add(orders_mapping, orders_source.clone())?
-    .add(inventory_mapping, inventory_source.clone())?
+    .add(orders_mapping, orders.clone())?
+    .add(inventory_mapping, inventory.clone())?
     .build()?;
 
 let server = AdsService::from_registry(registry)
     .serve_on_ephemeral_loopback()
     .await?;
+
+// ... serve ...
+
+server.shutdown().await?;
+orders.shutdown().await;     // drops its filter and notification route
+inventory.shutdown().await;
+naming.shutdown().await;     // releases the one FabricClient
 ```
 
 Clients then target `xds:///fabric:/MyApp/Orders` and
 `xds:///fabric:/MyApp/Inventory` through the *same* bootstrap, and each service's
-failovers are pushed independently. Duplicate xDS names are rejected by `add`,
-so a configuration mistake fails at startup rather than silently shadowing a
-route.
+failovers are pushed independently.
 
-Each `FabricEndpointSource` still owns its own `FabricClient` and notification
-filter, so this consolidates ports and streams, not SF-side naming load.
+Sharing the client matters: SF installs the notification callback when the
+client is **built**, so a client per service would also mean a naming connection
+and a callback per service. `FabricNaming` installs one callback that dispatches
+by service name instead. Registering the same SF service twice is rejected —
+two sources would race for the same notifications.
+
+Duplicate xDS names are likewise rejected by `add`, so a configuration mistake
+fails at startup rather than silently shadowing a route.
 `AdsService::from_registry_with_cancellation(registry, token)` is the
 cancellation-aware form.
 
@@ -179,8 +196,6 @@ Deliberately a prototype:
 
 - Stateful **singleton partition, primary only** — no partition-key routing and
   no secondaries.
-- One `FabricClient` and one notification filter per registered service; there
-  is no shared SF-facing tier.
 - No TLS/mTLS, RDS, delta xDS, federation, or load reporting.
 - No agent/relay deployment shape; the ADS server is hosted in-process.
 - The registry is fixed at build time — no dynamic add/remove while serving.

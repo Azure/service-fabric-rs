@@ -44,8 +44,8 @@ See also the broader proposal: [`docs/proposal/GrpcXds.md`](../proposal/GrpcXds.
 ## Non-Goals
 
 - Dynamic registration: the set of mapped services is fixed at build time.
-- A shared SF-facing tier: each mapped service still owns its own
-  `FabricClient` and notification filter.
+- A cluster-wide SF-facing tier: the `FabricClient` is shared per *process*,
+  not per cluster.
 - Multiple partitions, partition keys, stateless services, secondaries, or
   read-from-secondary routing.
 - RDS, delta/incremental xDS, federation (`xdstp://`), or LRS/ORCA load
@@ -75,7 +75,7 @@ therefore structurally guarantees the successor does not link the incumbent.
 | `registry.rs` | `ServiceRegistry` — the set of services one ADS server publishes |
 | `resources.rs` | Pure LDS / CDS / EDS construction |
 | `ads.rs` | The SotW ADS service, and `bootstrap_json` |
-| `fabric.rs` | `FabricEndpointSource` — the SF-backed source |
+| `fabric.rs` | `FabricNaming` (one shared `FabricClient`) and `FabricEndpointSource` |
 
 ## Architecture
 
@@ -246,13 +246,64 @@ quietly reimplement them.
 
 ### What this does not consolidate
 
-Each `FabricEndpointSource` still owns its own `FabricClient` and its own
-notification filter. Multi-service serving consolidates *ports and streams*, not
-SF-side naming load; collapsing N registrations into one cluster-wide
-subscription is the two-tier discovery work in the proposal.
+`FabricNaming` gives the whole process **one** `FabricClient` and one
+notification callback, so the SF-side cost of mapping N services is one naming
+connection and N filters — not N of everything. What is still not consolidated
+is *cluster-wide*: every node running this crate maintains its own filters.
+Collapsing those into one cluster-wide subscription with a relay is the
+two-tier discovery work in the proposal.
 
 The registry is also immutable once built — there is no dynamic
 registration while serving.
+
+## One `FabricClient` for the process
+
+SF installs the service-notification callback when the `FabricClient` is
+**built**; it cannot be attached afterwards. A naive "one source owns one
+client" design therefore silently makes the callback per-service too, and N
+mapped services become N naming connections and N callbacks — precisely the
+naming load this work exists to reduce.
+
+`FabricNaming` owns the client and installs a single callback that dispatches on
+`service_name` through a `HashMap` of per-service `watch` senders.
+`FabricNaming::source_for` claims a name in that map, registers the SF filter,
+and returns the source; `FabricEndpointSource::new` remains for the
+single-service case, where it simply builds a private `FabricNaming` and marks
+the source as owning it.
+
+Registering the same SF service twice is **rejected**. Both sources would
+register a filter and then race for the same notifications, with only one
+winning the route — starving the other silently. Note the check keys on the SF
+service URI, not the xDS name: two different xDS aliases for one service collide
+here even though the registry would accept them.
+
+The dispatch table is generic over its payload purely so the routing rules can
+be unit-tested without constructing a `ServiceNotification`, which wraps a COM
+object.
+
+### Callback constraints, revisited
+
+The callback still runs synchronously on an SF COM thread, so the shared path is
+a read-lock, one hash lookup and a non-blocking `send_replace`. Two details
+matter: the lock is an `RwLock` so concurrent notifications never serialize
+against each other (writes happen only when a source is added or removed), and a
+poisoned lock is **recovered rather than unwrapped** — unwinding out of a COM
+callback is undefined behaviour, so a panic there is not an acceptable failure
+mode.
+
+### Teardown order
+
+Sources first, then the naming host:
+
+1. each `FabricEndpointSource::shutdown` stops its interpretation task,
+   unregisters its filter, and drops its route — the route last, so a
+   notification arriving mid-teardown has nowhere to go rather than reaching a
+   half-torn source;
+2. `FabricNaming::shutdown` releases the client and applies the issue #184
+   delay, once.
+
+A source that owns its naming (the single-service constructor) does step 2
+itself, so existing single-service callers are unaffected.
 
 ## Endpoint state: three values, not two
 
@@ -443,10 +494,10 @@ The test creates and deletes its own service, so re-runs are idempotent.
 
 ## Known limitations and deferred work
 
-- **One `FabricClient` and one notification filter per registered service.**
-  Multi-service serving consolidated ports and ADS streams, not SF-side naming
-  load — which is the concern the proposal's two-tier design addresses, and the
-  one that matters at cluster scale.
+- **One `FabricClient` per process, not per cluster.** Every node running this
+  crate keeps its own naming connection and its own filters. Collapsing those
+  into one cluster-wide subscription plus a relay is the proposal's two-tier
+  design, and is what matters at cluster scale.
 - **The registry is fixed at build time.** Services cannot be added or removed
   while the server runs. Lifting this means making the registry observable and
   re-pushing LDS/CDS to every open stream on a change, since both are

@@ -23,6 +23,9 @@
 //! - [`config`] — the per-service mapping configuration.
 //! - [`registry`] — the set of services one ADS server publishes.
 //!
+//! - [`fabric`] — `FabricNaming`, one shared `FabricClient`, and the SF-backed
+//!   [`FabricEndpointSource`].
+//!
 //! # Experimental
 //!
 //! This crate is experimental and there is **no stable API guarantee**: items
@@ -50,5 +53,5 @@ pub use crate::endpoint::{
     EndpointSnapshot, EndpointSource, HostPort, ScriptedEndpointHandle, ScriptedEndpointSource,
 };
 pub use crate::error::Error;
-pub use crate::fabric::{FabricEndpointSource, classify_resolve_error};
+pub use crate::fabric::{FabricEndpointSource, FabricNaming, classify_resolve_error};
 pub use crate::registry::{RegisteredService, ServiceRegistry, ServiceRegistryBuilder};

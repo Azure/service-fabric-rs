@@ -30,8 +30,8 @@ use mssf_core::{
 use mssf_net::ads::ServerHandle;
 use mssf_net::endpoint::{EndpointSnapshot, EndpointSource};
 use mssf_net::{
-    AddressError, AddressInterpreter, AdsService, FabricEndpointSource, HostPort, ServiceRegistry,
-    XdsMapping, bootstrap_json,
+    AddressError, AddressInterpreter, AdsService, FabricEndpointSource, FabricNaming, HostPort,
+    ServiceRegistry, XdsMapping, bootstrap_json,
 };
 use samples_reflection::grpc::ReflectionUrl;
 use samples_reflection::grpc::hello_world::{ReplicaRole, greeter_client::GreeterClient};
@@ -295,17 +295,15 @@ fn snapshot_of(source: &Arc<FabricEndpointSource>) -> EndpointSnapshot {
     source.subscribe().borrow().clone()
 }
 
-/// Two SF services published by **one** ADS server, each with its own
-/// `FabricEndpointSource`.
+/// Two SF services published by **one** ADS server, sharing **one**
+/// `FabricClient`.
 ///
 /// What this adds over `tests/scripted_ads.rs`, which already covers the
 /// registry, the ALL_RESOURCES_REQUIRED rule and routing isolation with
-/// scripted sources: this is the only test where **two `FabricEndpointSource`s
-/// exist in one process**. That means two `FabricClient`s and two SF
-/// notification filters registered simultaneously, plus their teardown
-/// ordering under issue #184. The per-callback `service_name` filter in
-/// `fabric.rs` only *means* anything when several filters coexist, and nothing
-/// else exercises that.
+/// scripted sources: this is the only test that exercises [`FabricNaming`]
+/// against a real cluster — one client, one notification callback, two
+/// filters, dispatching to two sources by service name. It also covers the
+/// teardown ordering (sources, then the shared client) under issue #184.
 ///
 /// The load-bearing assertion is the failover one: relocating A's primary must
 /// leave B's published endpoint and serving replica **unchanged**, which is
@@ -338,21 +336,36 @@ async fn two_services_share_one_ads_server() {
     // `xds:///fabric:/ReflectionApp/XdsMultiA` with no alias to maintain.
     let mapping_a = XdsMapping::for_service_uri(SERVICE_URI_A, reflection_interpreter()).unwrap();
     let mapping_b = XdsMapping::for_service_uri(SERVICE_URI_B, reflection_interpreter()).unwrap();
+    // A distinct xDS name for the same SF service, to prove the duplicate
+    // check keys on the service, not on the xDS name.
+    let mapping_a_again =
+        XdsMapping::new("alias-for-a", SERVICE_URI_A, reflection_interpreter()).unwrap();
 
-    let source_a = FabricEndpointSource::new(
-        &mapping_a,
-        vec![WString::from("localhost:19000")],
-        Duration::from_secs(10),
-    )
-    .await
-    .expect("failed to build svc-a's endpoint source");
-    let source_b = FabricEndpointSource::new(
-        &mapping_b,
-        vec![WString::from("localhost:19000")],
-        Duration::from_secs(10),
-    )
-    .await
-    .expect("failed to build svc-b's endpoint source");
+    // ONE FabricClient for both services. SF installs the notification
+    // callback when the client is built, so a client per service would also
+    // mean a naming connection and a callback per service -- exactly the cost
+    // that serving many services from one ADS server is meant to avoid.
+    let naming = FabricNaming::new(vec![WString::from("localhost:19000")])
+        .expect("failed to build the shared naming client");
+
+    let source_a = naming
+        .source_for(&mapping_a, Duration::from_secs(10))
+        .await
+        .expect("failed to build svc-a's endpoint source");
+    let source_b = naming
+        .source_for(&mapping_b, Duration::from_secs(10))
+        .await
+        .expect("failed to build svc-b's endpoint source");
+
+    // A second source for a service already mapped on this client would race
+    // for the same notifications, so it is refused.
+    assert!(
+        naming
+            .source_for(&mapping_a_again, Duration::from_secs(10))
+            .await
+            .is_err(),
+        "a duplicate source for the same service must be rejected"
+    );
 
     let registry = ServiceRegistry::builder()
         .add(mapping_a, source_a.clone())
@@ -444,14 +457,15 @@ async fn two_services_share_one_ads_server() {
     );
 
     // Teardown in dependency order: clients, then the server, then both
-    // sources (each owns a FabricClient subject to issue #184), then the
-    // services, then the admin client. Two sources releasing two FabricClients
-    // is precisely the path this test exists to exercise.
+    // sources (each drops its notification filter and route), and only then
+    // the shared naming client, which is what actually releases the single
+    // FabricClient under issue #184.
     drop(client_a);
     drop(client_b);
     ads.shutdown().await.expect("ads server failed");
     source_a.shutdown().await;
     source_b.shutdown().await;
+    naming.shutdown().await;
 
     delete_service(&fc, &uri_a).await;
     delete_service(&fc, &uri_b).await;

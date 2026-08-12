@@ -19,7 +19,7 @@ use mssf_core::WString;
 use mssf_net::endpoint::EndpointSource;
 use mssf_net::{
     AddressError, AddressInterpreter, AdsService, EndpointSnapshot, FabricEndpointSource, HostPort,
-    ScriptedEndpointSource, XdsMapping, host_port_interpreter,
+    ScriptedEndpointSource, ServiceRegistry, XdsMapping, host_port_interpreter,
 };
 
 /// README — "Hosting the mapping".
@@ -42,6 +42,29 @@ async fn readme_host_example() -> Result<(), Box<dyn std::error::Error>> {
 
     server.shutdown().await?;
     source.shutdown().await;
+    Ok(())
+}
+
+/// README — "Serving several services from one control plane".
+#[allow(dead_code)]
+async fn readme_multi_service_example(
+    orders_mapping: XdsMapping,
+    orders_source: Arc<dyn EndpointSource>,
+    inventory_mapping: XdsMapping,
+    inventory_source: Arc<dyn EndpointSource>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let registry = ServiceRegistry::builder()
+        .add(orders_mapping, orders_source.clone())?
+        .add(inventory_mapping, inventory_source.clone())?
+        .build()?;
+
+    let server = AdsService::from_registry(registry)
+        .serve_on_ephemeral_loopback()
+        .await?;
+
+    server.shutdown().await?;
+    orders_source.shutdown().await;
+    inventory_source.shutdown().await;
     Ok(())
 }
 

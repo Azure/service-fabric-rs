@@ -43,7 +43,9 @@ See also the broader proposal: [`docs/proposal/GrpcXds.md`](../proposal/GrpcXds.
 
 ## Non-Goals
 
-- Multiple mapped services per server instance.
+- Dynamic registration: the set of mapped services is fixed at build time.
+- A shared SF-facing tier: each mapped service still owns its own
+  `FabricClient` and notification filter.
 - Multiple partitions, partition keys, stateless services, secondaries, or
   read-from-secondary routing.
 - RDS, delta/incremental xDS, federation (`xdstp://`), or LRS/ORCA load
@@ -70,6 +72,7 @@ therefore structurally guarantees the successor does not link the incumbent.
 | `endpoint.rs` | `HostPort`, `EndpointSnapshot`, the `EndpointSource` trait, `ScriptedEndpointSource` |
 | `address.rs` | `AddressInterpreter` — pluggable interpretation of the opaque SF address |
 | `config.rs` | `XdsMapping` — one SF service ↔ one xDS resource name |
+| `registry.rs` | `ServiceRegistry` — the set of services one ADS server publishes |
 | `resources.rs` | Pure LDS / CDS / EDS construction |
 | `ads.rs` | The SotW ADS service, and `bootstrap_json` |
 | `fabric.rs` | `FabricEndpointSource` — the SF-backed source |
@@ -79,9 +82,9 @@ therefore structurally guarantees the successor does not link the incumbent.
 ```
  SF Naming ──notify──► FabricEndpointSource ──watch──► AdsService ──ADS──► stock xDS client
                           (fabric.rs)                    (ads.rs)                │
-                                                                                │ direct gRPC
-                                                                                ▼
-                                                                        primary replica
+                                                        serves a                │ direct gRPC
+                                                   ServiceRegistry              ▼
+                                                     (registry.rs)      primary replica
 ```
 
 Only *configuration* flows through this crate. Client RPCs go **directly** to
@@ -107,8 +110,10 @@ The minimum accepted chain is therefore **LDS → CDS → EDS**.
 
 ### Why State-of-the-World, not delta
 
-Delta xDS is `unimplemented` in the target client. SotW is sufficient, and for a
-single mapped service the "send everything" semantics cost nothing.
+Delta xDS is `unimplemented` in the target client. SotW is sufficient, and at
+this scale the "send everything" semantics cost little — though see
+[Serving several services](#serving-several-services) for the one place where
+they are genuinely dangerous.
 
 ### Why a `watch` channel
 
@@ -155,6 +160,66 @@ These are not stylistic. Each one prevents a client-side rejection:
 
 Each of these has a dedicated unit test in `resources.rs`, so a regression is
 caught without needing a live client to reject it.
+
+## Serving several services
+
+One ADS server publishes any number of services. Clients subscribe by resource
+name, so this is what xDS is designed for; `ServiceRegistry` holds the set and
+`AdsService::from_registry` serves it. The single-service constructors remain as
+one-entry sugar.
+
+### The index is keyed by `(type_url, name)`, not by name
+
+Each entry contributes two names — a `Listener` named `<xds_name>` and a
+`Cluster` named `<xds_name>-primary`, which EDS reuses. Deriving the cluster
+name by appending a constant suffix is injective, so distinct xDS names can
+never produce colliding cluster names; unique `xds_name` is therefore the only
+rule the builder has to enforce, and it does so at registration time, where a
+configuration mistake is cheap to diagnose.
+
+What a bare-name index *would* get wrong is the cross-type case: a mapping named
+`x-primary` has a Listener whose name equals the Cluster of a different mapping
+named `x`. Both are legitimate and must resolve to different entries. Including
+the type URL in the key makes conflating them impossible rather than merely
+unlikely.
+
+### LDS and CDS carry the whole subscribed set; EDS carries only what changed
+
+This is the sharpest correctness constraint in the multi-service design.
+Listeners and Clusters are `ALL_RESOURCES_REQUIRED_IN_SOTW`: a response that
+omits a resource the client is subscribed to is not a no-op, it is a
+**deletion**. So any LDS or CDS response must enumerate every subscribed entry —
+including when the response was triggered by a change to just one of them.
+Pushing only the changed service's Listener would silently break every *other*
+service on that stream.
+
+EDS has no such rule; it is tracked per-resource. An endpoint change therefore
+pushes exactly one `ClusterLoadAssignment`, for the cluster that actually moved.
+
+`tests/scripted_ads.rs` guards this directly: it relocates one service's
+endpoint and then asserts a *second* service's client still routes.
+
+### Fan-in across sources
+
+Each entry has its own `watch::Receiver`, and a stream awaits the first change
+across all of them. `watch::Receiver::changed` is cancel-safe, so the fan-in set
+is rebuilt on each loop iteration rather than held across them — which would
+otherwise require a self-referential future. The resolved snapshot is returned
+by the fan-in future itself, releasing the mutable borrow before the handler
+runs.
+
+The registry is non-empty by construction, which is load-bearing: the underlying
+`select_all` panics on an empty set.
+
+### What this does not consolidate
+
+Each `FabricEndpointSource` still owns its own `FabricClient` and its own
+notification filter. Multi-service serving consolidates *ports and streams*, not
+SF-side naming load; collapsing N registrations into one cluster-wide
+subscription is the two-tier discovery work in the proposal.
+
+The registry is also immutable once built — there is no dynamic
+registration while serving.
 
 ## Endpoint state: three values, not two
 
@@ -345,26 +410,14 @@ The test creates and deletes its own service, so re-runs are idempotent.
 
 ## Known limitations and deferred work
 
-- **One mapped service per ADS server.** `AdsService` holds exactly one
-  `XdsMapping` and one `EndpointSource`, so serving N services means N ADS
-  servers on N ports. Note the SF-side cost is unchanged either way — one
-  `FabricClient` and one notification filter *per service* — but the naming load
-  is the same concern the proposal's two-tier design addresses, so this matters
-  at cluster scale.
-
-  The limitation is this crate's, not xDS's: xDS is designed for one control
-  plane serving many resources, clients subscribe by resource name, and
-  `resources_for` already filters on `resource_names`. Lifting it means (a) a
-  map of xDS name → (mapping, source), (b) **returning every subscribed Listener
-  and Cluster in one response** — both are `ALL_RESOURCES_REQUIRED_IN_SOTW`, so
-  emitting a subset silently deletes the others on the client — and (c) fanning
-  in over N `watch` receivers to push only the affected cluster's EDS.
-
-  When it lands, **validate that xDS names are unique across mappings**. The
-  `<xds_name>-primary` cluster derivation is itself injective (appending a
-  constant suffix cannot make two distinct names collide), but a registry keyed
-  by bare name rather than by `(type_url, name)` would conflate a Listener and a
-  Cluster that happen to share a string.
+- **One `FabricClient` and one notification filter per registered service.**
+  Multi-service serving consolidated ports and ADS streams, not SF-side naming
+  load — which is the concern the proposal's two-tier design addresses, and the
+  one that matters at cluster scale.
+- **The registry is fixed at build time.** Services cannot be added or removed
+  while the server runs. Lifting this means making the registry observable and
+  re-pushing LDS/CDS to every open stream on a change, since both are
+  `ALL_RESOURCES_REQUIRED_IN_SOTW`.
 - **A NACK is logged and then forgotten.** `stream_aggregated_resources` traces
   the `error_detail` and does not advance state, which is correct, but a
   persistently rejected resource is never re-sent and raises no metric or health

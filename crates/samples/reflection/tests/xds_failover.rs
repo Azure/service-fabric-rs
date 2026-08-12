@@ -28,10 +28,10 @@ use mssf_core::{
     types::{DeleteServiceDescription, Uri},
 };
 use mssf_net::ads::ServerHandle;
-use mssf_net::endpoint::EndpointSource;
+use mssf_net::endpoint::{EndpointSnapshot, EndpointSource};
 use mssf_net::{
-    AddressError, AddressInterpreter, AdsService, FabricEndpointSource, HostPort, XdsMapping,
-    bootstrap_json,
+    AddressError, AddressInterpreter, AdsService, FabricEndpointSource, HostPort, ServiceRegistry,
+    XdsMapping, bootstrap_json,
 };
 use samples_reflection::grpc::ReflectionUrl;
 use samples_reflection::grpc::hello_world::{ReplicaRole, greeter_client::GreeterClient};
@@ -231,5 +231,229 @@ async fn xds_client_recovers_after_primary_restart() {
         .await
         .expect("failed to delete the test service");
 
+    fabric_client_drop_hack(fc).await;
+}
+
+// ---- two services, one ADS server -----------------------------------------
+
+const SERVICE_URI_A: &str = "fabric:/ReflectionApp/XdsMultiA";
+const SERVICE_URI_B: &str = "fabric:/ReflectionApp/XdsMultiB";
+
+/// Delete `uri` if it exists, then create it with a 3-replica set.
+///
+/// Returns the partition id once the service is ready.
+async fn recreate_service(fc: &FabricClient, uri: &Uri) -> mssf_core::GUID {
+    if let Err(e) = fc
+        .get_service_manager()
+        .delete_service2(
+            &DeleteServiceDescription::new(uri.clone()),
+            Duration::from_secs(10),
+            None,
+        )
+        .await
+    {
+        tracing::debug!(?e, %uri, "pre-cleanup delete (expected if service doesn't exist)");
+    }
+
+    TestCreateUpdateClient::new(fc.clone())
+        .create_service(
+            uri,
+            &mssf_core::types::PartitionSchemeDescription::Singleton,
+            TestPartitionReplicaLayout::TargetMinAux(3, 3, 0),
+        )
+        .await;
+
+    wait_for_ready(fc, uri).await
+}
+
+async fn delete_service(fc: &FabricClient, uri: &Uri) {
+    fc.get_service_manager()
+        .delete_service2(
+            &DeleteServiceDescription::new(uri.clone()),
+            Duration::from_secs(10),
+            None,
+        )
+        .await
+        .unwrap_or_else(|e| panic!("failed to delete {uri}: {e:?}"));
+}
+
+/// Build a stock xDS client for `target` against `ads_addr`.
+fn xds_greeter(
+    ads_addr: std::net::SocketAddr,
+    target: &str,
+) -> GreeterClient<tonic_xds::XdsChannelGrpc> {
+    let bootstrap =
+        BootstrapConfig::from_json(&bootstrap_json(ads_addr, "mssf-net-live-multi")).unwrap();
+    let uri = XdsUri::parse(target).unwrap();
+    let channel = XdsChannelBuilder::new(XdsChannelConfig::new(uri).with_bootstrap(bootstrap))
+        .build_grpc_channel()
+        .unwrap();
+    GreeterClient::new(channel)
+}
+
+fn snapshot_of(source: &Arc<FabricEndpointSource>) -> EndpointSnapshot {
+    source.subscribe().borrow().clone()
+}
+
+/// Two SF services published by **one** ADS server, each with its own
+/// `FabricEndpointSource`.
+///
+/// What this adds over `tests/scripted_ads.rs`, which already covers the
+/// registry, the ALL_RESOURCES_REQUIRED rule and routing isolation with
+/// scripted sources: this is the only test where **two `FabricEndpointSource`s
+/// exist in one process**. That means two `FabricClient`s and two SF
+/// notification filters registered simultaneously, plus their teardown
+/// ordering under issue #184. The per-callback `service_name` filter in
+/// `fabric.rs` only *means* anything when several filters coexist, and nothing
+/// else exercises that.
+///
+/// The load-bearing assertion is the failover one: relocating A's primary must
+/// leave B's published endpoint and serving replica **unchanged**, which is
+/// what proves the two notification paths do not cross-talk.
+///
+/// Note what is deliberately *not* asserted. The reflection sample runs one
+/// gRPC server per activated process with a process-wide replica registry, so
+/// if SF happens to co-locate A's and B's primaries, both clients reach the
+/// same endpoint and no response content can tell them apart. Likewise A's
+/// endpoint only moves if its new primary lands in a different process. The
+/// test detects and logs both cases rather than pretending to discriminate;
+/// the assertions it does make hold either way. Endpoint-level isolation is
+/// proven exhaustively and deterministically in `mssf-net`'s
+/// `tests/scripted_ads.rs`, which is where that belongs.
+#[tokio::test]
+#[test_log::test]
+async fn two_services_share_one_ads_server() {
+    let fc = FabricClient::builder()
+        .with_connection_strings(vec![WString::from("localhost:19000")])
+        .build()
+        .unwrap();
+    let uri_a = Uri::from(SERVICE_URI_A);
+    let uri_b = Uri::from(SERVICE_URI_B);
+
+    let partition_a = recreate_service(&fc, &uri_a).await;
+    let partition_b = recreate_service(&fc, &uri_b).await;
+    assert_ne!(partition_a, partition_b);
+
+    // The SF URI doubles as the xDS resource name, so clients target
+    // `xds:///fabric:/ReflectionApp/XdsMultiA` with no alias to maintain.
+    let mapping_a = XdsMapping::for_service_uri(SERVICE_URI_A, reflection_interpreter()).unwrap();
+    let mapping_b = XdsMapping::for_service_uri(SERVICE_URI_B, reflection_interpreter()).unwrap();
+
+    let source_a = FabricEndpointSource::new(
+        &mapping_a,
+        vec![WString::from("localhost:19000")],
+        Duration::from_secs(10),
+    )
+    .await
+    .expect("failed to build svc-a's endpoint source");
+    let source_b = FabricEndpointSource::new(
+        &mapping_b,
+        vec![WString::from("localhost:19000")],
+        Duration::from_secs(10),
+    )
+    .await
+    .expect("failed to build svc-b's endpoint source");
+
+    let registry = ServiceRegistry::builder()
+        .add(mapping_a, source_a.clone())
+        .unwrap()
+        .add(mapping_b, source_b.clone())
+        .unwrap()
+        .build()
+        .unwrap();
+
+    let ads = AdsService::from_registry(registry)
+        .serve_on_ephemeral_loopback()
+        .await
+        .expect("failed to start the ADS server");
+
+    // Two stock xDS clients, one bootstrap, one ADS server.
+    let mut client_a = xds_greeter(ads.addr(), &format!("xds:///{SERVICE_URI_A}"));
+    let mut client_b = xds_greeter(ads.addr(), &format!("xds:///{SERVICE_URI_B}"));
+
+    let replica_a_before =
+        serving_primary_until(&mut client_a, partition_a, Duration::from_secs(60)).await;
+    let replica_b_before =
+        serving_primary_until(&mut client_b, partition_b, Duration::from_secs(60)).await;
+
+    let endpoint_a_before = snapshot_of(&source_a);
+    let endpoint_b_before = snapshot_of(&source_b);
+    tracing::info!(
+        ?endpoint_a_before,
+        ?endpoint_b_before,
+        replica_a_before,
+        replica_b_before,
+        "steady state",
+    );
+    if endpoint_a_before == endpoint_b_before {
+        tracing::warn!(
+            "svc-a and svc-b are co-located in one activated process; this run \
+             cannot discriminate routing by response content"
+        );
+    }
+
+    // Relocate only A's primary.
+    TestClient::with_uri(fc.clone(), uri_a.clone())
+        .restart_primary_wait_for_replica_id_change(partition_a)
+        .await;
+
+    // A recovers on a different replica, without the client or server
+    // restarting.
+    let replica_a_after =
+        serving_primary_until(&mut client_a, partition_a, Duration::from_secs(90)).await;
+    assert_ne!(
+        replica_a_before, replica_a_after,
+        "after restart_replica svc-a must be served by a different replica"
+    );
+
+    // B is untouched: still routing, and its published endpoint never moved.
+    // A stale or cross-wired notification filter would show up here.
+    let replica_b_after =
+        serving_primary_until(&mut client_b, partition_b, Duration::from_secs(60)).await;
+    assert_eq!(
+        replica_b_before, replica_b_after,
+        "svc-b's primary must not have changed"
+    );
+    assert_eq!(
+        endpoint_b_before,
+        snapshot_of(&source_b),
+        "svc-a's failover must not perturb svc-b's endpoint"
+    );
+
+    // Log rather than assert: whether A's *endpoint* moves depends on whether
+    // SF placed the new primary in a different activated process. The replica
+    // id changing is the guaranteed signal; the endpoint changing is the
+    // stronger one when it happens, and is what makes "B unchanged" a contrast
+    // rather than a tautology.
+    let endpoint_a_after = snapshot_of(&source_a);
+    if endpoint_a_after == endpoint_a_before {
+        tracing::warn!(
+            ?endpoint_a_after,
+            "svc-a's new primary landed in the same process, so its endpoint is \
+             unchanged; this run proves replica movement but not endpoint movement"
+        );
+    }
+
+    tracing::info!(
+        replica_a_before,
+        replica_a_after,
+        replica_b_after,
+        ?endpoint_a_before,
+        ?endpoint_a_after,
+        "svc-a failed over; svc-b undisturbed",
+    );
+
+    // Teardown in dependency order: clients, then the server, then both
+    // sources (each owns a FabricClient subject to issue #184), then the
+    // services, then the admin client. Two sources releasing two FabricClients
+    // is precisely the path this test exists to exercise.
+    drop(client_a);
+    drop(client_b);
+    ads.shutdown().await.expect("ads server failed");
+    source_a.shutdown().await;
+    source_b.shutdown().await;
+
+    delete_service(&fc, &uri_a).await;
+    delete_service(&fc, &uri_b).await;
     fabric_client_drop_hack(fc).await;
 }

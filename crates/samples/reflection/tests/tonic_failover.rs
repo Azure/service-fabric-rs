@@ -23,127 +23,18 @@
 use std::time::Duration;
 
 use mssf_core::{
-    GUID, WString,
-    client::{FabricClient, svc_mgmt_client::PartitionKeyType},
+    WString,
+    client::FabricClient,
     types::{DeleteServiceDescription, Uri},
 };
-use mssf_util::resolve::ServicePartitionResolver;
-use mssf_util::tonic::TargetChannel;
-use tonic::Request;
 
-use samples_reflection::grpc::{
-    MSSF_PARTITION_ID_HEADER, build_primary_channel,
-    hello_world::{WriteRequest, greeter_client::GreeterClient},
-};
+use samples_reflection::grpc::{build_primary_channel, hello_world::greeter_client::GreeterClient};
 use samples_reflection::test_admin::{
-    TestClient, TestCreateUpdateClient, TestPartitionReplicaLayout,
+    TestClient, TestCreateUpdateClient, TestPartitionReplicaLayout, fabric_client_drop_hack,
+    wait_for_ready, write_until_ok,
 };
 
 const SERVICE_URI: &str = "fabric:/ReflectionApp/TonicFailoverTest";
-
-/// Invalid memory access https://github.com/Azure/service-fabric-rs/issues/184
-/// happens when this test finishes. Delaying the process clean
-/// up is helping with the issue. Mirrors the helper of the same
-/// name in [`failover.rs`](failover.rs).
-async fn fabric_client_drop_hack(fc: FabricClient) {
-    tokio::time::sleep(Duration::from_secs(5)).await;
-    drop(fc);
-    tokio::time::sleep(Duration::from_secs(1)).await;
-}
-
-/// Resolve the test service until it has the full target
-/// replica set, then return the singleton partition id.
-/// Panics if the service is not ready within 60 seconds.
-async fn wait_for_ready(fc: &FabricClient, uri: &Uri) -> GUID {
-    tokio::time::timeout(Duration::from_secs(60), async {
-        let retryer = mssf_util::retry::OperationRetryer::builder().build();
-        let srv = ServicePartitionResolver::new(fc.clone(), retryer);
-        let mut prev = None;
-        loop {
-            let rsp = srv
-                .resolve(uri, &PartitionKeyType::None, prev.as_ref(), None, None)
-                .await
-                .unwrap();
-            if rsp.endpoints.len() >= 3 {
-                // Find the partition id by querying SF for the
-                // service partitions (RSP doesn't carry it
-                // directly).
-                let tc = TestClient::with_uri(fc.clone(), uri.clone());
-                let (_, single) = tc.get_partition().await.unwrap();
-                return single.id;
-            }
-            prev = Some(rsp);
-            tracing::debug!("Waiting for service to be ready...");
-            tokio::time::sleep(Duration::from_secs(1)).await;
-        }
-    })
-    .await
-    .expect("service did not become ready within 60s")
-}
-
-/// Build a `Write` request with the required
-/// `mssf-partition-id` metadata header. The header value uses
-/// the GUID's `Debug` formatting (the canonical hyphenated UUID
-/// representation, e.g. `{12345678-1234-1234-1234-1234567890ab}`)
-/// so the server's `uuid::Uuid::parse_str` accepts it.
-fn write_request(partition_id: GUID, payload: &str) -> Request<WriteRequest> {
-    let mut req = Request::new(WriteRequest {
-        payload: payload.to_string(),
-    });
-    // Debug format is `{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}`;
-    // strip the surrounding braces so `Uuid::parse_str` accepts
-    // the plain hyphenated form.
-    let raw = format!("{:?}", partition_id);
-    let header_value = raw.trim_matches(|c| c == '{' || c == '}').to_string();
-    req.metadata_mut().insert(
-        MSSF_PARTITION_ID_HEADER,
-        header_value.parse().expect("valid ascii UUID"),
-    );
-    req
-}
-
-/// Try `write` repeatedly until success or `timeout` elapses.
-/// Only retries on `Unavailable` and `Unknown` (transport-level)
-/// errors — these are the surfaces the failover channel is
-/// designed to recover from. Any other gRPC status code is
-/// considered a non-retryable bug and panics immediately.
-async fn write_until_ok(
-    client: &mut GreeterClient<TargetChannel>,
-    partition_id: GUID,
-    payload: &str,
-    timeout: Duration,
-) -> String {
-    let deadline = tokio::time::Instant::now() + timeout;
-    let mut attempt = 0usize;
-    let mut last_err: Option<tonic::Status>;
-    loop {
-        match client.write(write_request(partition_id, payload)).await {
-            Ok(resp) => {
-                let acked_by = resp.into_inner().acked_by;
-                tracing::info!(attempt, %acked_by, "write succeeded");
-                return acked_by;
-            }
-            Err(status)
-                if status.code() == tonic::Code::Unavailable
-                    || status.code() == tonic::Code::Unknown =>
-            {
-                tracing::info!(attempt, ?status, "write returned retryable error");
-                last_err = Some(status);
-            }
-            Err(status) => {
-                panic!("write returned non-retryable error: {status:?}");
-            }
-        }
-        attempt += 1;
-        if tokio::time::Instant::now() >= deadline {
-            panic!(
-                "write did not succeed within {timeout:?}; last error: {:?}",
-                last_err
-            );
-        }
-        tokio::time::sleep(Duration::from_millis(500)).await;
-    }
-}
 
 /// End-to-end failover via `restart_replica`. Exercises the
 /// design's [`Case 1 — connection lost`](../../docs/design/TonicConnectorDesign.md#case-1--connection-lost-transport-level).

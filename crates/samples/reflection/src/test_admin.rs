@@ -531,3 +531,168 @@ impl TestCreateUpdateClient {
             .expect("update failed");
     }
 }
+
+// ===== Extracted failover scaffolding ============================
+//
+// These helpers were previously private to
+// `tests/tonic_failover.rs`. They are public here so that other
+// integration tests -- notably the xDS failover test, which
+// exercises the successor path in `mssf-net` -- drive the *same*
+// scenario definition rather than a reimplementation of it.
+//
+// The retry helpers are generic over the channel type: the
+// incumbent path uses `mssf_util::tonic::TargetChannel` while the
+// xDS path uses `tonic_xds::XdsChannelGrpc`, and both must be able
+// to share one definition.
+
+use crate::grpc::MSSF_PARTITION_ID_HEADER;
+use crate::grpc::hello_world::{
+    GetReplicasRequest, GetReplicasResponse, WriteRequest, greeter_client::GreeterClient,
+};
+use bytes::Bytes;
+use http_body::Body;
+use mssf_util::resolve::ServicePartitionResolver;
+use tonic::Request;
+
+type StdError = Box<dyn std::error::Error + Send + Sync + 'static>;
+
+/// Invalid memory access <https://github.com/Azure/service-fabric-rs/issues/184>
+/// happens when a test finishes. Delaying the process clean up
+/// helps with the issue.
+pub async fn fabric_client_drop_hack(fc: FabricClient) {
+    tokio::time::sleep(Duration::from_secs(5)).await;
+    drop(fc);
+    tokio::time::sleep(Duration::from_secs(1)).await;
+}
+
+/// Resolve the test service until it has the full target replica
+/// set, then return the singleton partition id. Panics if the
+/// service is not ready within 60 seconds.
+pub async fn wait_for_ready(fc: &FabricClient, uri: &Uri) -> GUID {
+    wait_for_ready_with(fc, uri, 3).await
+}
+
+/// As [`wait_for_ready`], but waits for `min_endpoints` endpoints.
+pub async fn wait_for_ready_with(fc: &FabricClient, uri: &Uri, min_endpoints: usize) -> GUID {
+    tokio::time::timeout(Duration::from_secs(60), async {
+        let retryer = mssf_util::retry::OperationRetryer::builder().build();
+        let srv = ServicePartitionResolver::new(fc.clone(), retryer);
+        let mut prev = None;
+        loop {
+            let rsp = srv
+                .resolve(uri, &PartitionKeyType::None, prev.as_ref(), None, None)
+                .await
+                .unwrap();
+            if rsp.endpoints.len() >= min_endpoints {
+                // Find the partition id by querying SF for the service
+                // partitions (RSP doesn't carry it directly).
+                let tc = TestClient::with_uri(fc.clone(), uri.clone());
+                let (_, single) = tc.get_partition().await.unwrap();
+                return single.id;
+            }
+            prev = Some(rsp);
+            tracing::debug!("Waiting for service to be ready...");
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    })
+    .await
+    .expect("service did not become ready within 60s")
+}
+
+/// Build a `Write` request with the required `mssf-partition-id`
+/// metadata header.
+///
+/// Note this header is SF-specific: the xDS proof deliberately
+/// uses metadata-free RPCs instead.
+pub fn write_request(partition_id: GUID, payload: &str) -> Request<WriteRequest> {
+    let mut req = Request::new(WriteRequest {
+        payload: payload.to_string(),
+    });
+    // Debug format is `{xxxxxxxx-...}`; strip the braces so the
+    // server's `Uuid::parse_str` accepts the plain hyphenated form.
+    let raw = format!("{:?}", partition_id);
+    let header_value = raw.trim_matches(|c| c == '{' || c == '}').to_string();
+    req.metadata_mut().insert(
+        MSSF_PARTITION_ID_HEADER,
+        header_value.parse().expect("valid ascii UUID"),
+    );
+    req
+}
+
+/// Try `write` repeatedly until success or `timeout` elapses.
+///
+/// Only retries `Unavailable` and `Unknown` (transport-level)
+/// errors -- the surfaces a failover-aware channel is designed to
+/// recover from. Any other status is a non-retryable bug.
+pub async fn write_until_ok<T>(
+    client: &mut GreeterClient<T>,
+    partition_id: GUID,
+    payload: &str,
+    timeout: Duration,
+) -> String
+where
+    T: tonic::client::GrpcService<tonic::body::Body>,
+    T::Error: Into<StdError>,
+    T::ResponseBody: Body<Data = Bytes> + Send + 'static,
+    <T::ResponseBody as Body>::Error: Into<StdError> + Send,
+{
+    let deadline = tokio::time::Instant::now() + timeout;
+    let mut attempt = 0usize;
+    loop {
+        let last_err = match client.write(write_request(partition_id, payload)).await {
+            Ok(resp) => {
+                let acked_by = resp.into_inner().acked_by;
+                tracing::info!(attempt, %acked_by, "write succeeded");
+                return acked_by;
+            }
+            Err(status)
+                if status.code() == tonic::Code::Unavailable
+                    || status.code() == tonic::Code::Unknown =>
+            {
+                tracing::info!(attempt, ?status, "write returned retryable error");
+                format!("{status:?}")
+            }
+            Err(status) => panic!("write returned non-retryable error: {status:?}"),
+        };
+        attempt += 1;
+        if tokio::time::Instant::now() >= deadline {
+            panic!("write did not succeed within {timeout:?}; last error: {last_err}");
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await;
+    }
+}
+
+/// Call `GetReplicas` until it succeeds or `timeout` elapses.
+///
+/// Unlike [`write_until_ok`] this requires **no SF-specific request
+/// metadata**, which is what makes it usable as the observation
+/// vehicle for the "zero SF-specific client code" claim.
+pub async fn get_replicas_until_ok<T>(
+    client: &mut GreeterClient<T>,
+    timeout: Duration,
+) -> GetReplicasResponse
+where
+    T: tonic::client::GrpcService<tonic::body::Body>,
+    T::Error: Into<StdError>,
+    T::ResponseBody: Body<Data = Bytes> + Send + 'static,
+    <T::ResponseBody as Body>::Error: Into<StdError> + Send,
+{
+    let deadline = tokio::time::Instant::now() + timeout;
+    loop {
+        // Bound each call: a discovery-backed channel can block
+        // while it has no usable endpoint, so a loop that only
+        // checked the deadline after the call returned could hang.
+        let call = client.get_replicas(Request::new(GetReplicasRequest {
+            partition_id: String::new(),
+        }));
+        let last_err = match tokio::time::timeout(Duration::from_secs(5), call).await {
+            Ok(Ok(resp)) => return resp.into_inner(),
+            Ok(Err(status)) => format!("{status}"),
+            Err(_) => "call exceeded 5s".to_string(),
+        };
+        if tokio::time::Instant::now() >= deadline {
+            panic!("get_replicas did not succeed within {timeout:?}; last: {last_err}");
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await;
+    }
+}

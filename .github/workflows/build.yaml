@@ -147,6 +147,13 @@ jobs:
       - name: Run cargo clippy
         run: cargo +${{ matrix.rust-version }} clippy --all-targets -- -D warnings
 
+      # This job has no Service Fabric installed and no cluster, and otherwise
+      # runs no tests at all -- so this is both the only test execution here and
+      # the strongest proof that mssf-net's SF -> xDS mapping needs no SF
+      # runtime. The Windows job already covers execution via `cargo test --all`.
+      - name: Run mssf-net tests (no Service Fabric)
+        run: cargo +${{ matrix.rust-version }} test -p mssf-net
+
       - name: run cmake
         run: > 
           cmake . -DCMAKE_BUILD_TYPE=Debug -B build

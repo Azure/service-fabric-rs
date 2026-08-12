@@ -260,19 +260,33 @@ impl AdsService {
         type_url: &str,
         resource_names: &[String],
     ) -> Vec<Any> {
-        let wants =
-            |name: &str| resource_names.is_empty() || resource_names.iter().any(|n| n == name);
+        // An empty request set is xDS's wildcard: everything of this type.
+        // Otherwise resolve each requested name through the registry's
+        // `(type_url, name)` index, so name resolution has exactly one
+        // implementation. Sorting restores registry order; dedup tolerates a
+        // client naming the same resource twice.
+        let selected: Vec<usize> = if resource_names.is_empty() {
+            (0..registry.len()).collect()
+        } else {
+            let mut selected: Vec<usize> = resource_names
+                .iter()
+                .filter_map(|name| registry.index_of(type_url, name))
+                .collect();
+            selected.sort_unstable();
+            selected.dedup();
+            selected
+        };
 
         let mut out = Vec::new();
-        for (entry, snapshot) in registry.entries().iter().zip(snapshots) {
-            let mapping = entry.mapping();
+        for i in selected {
+            let mapping = registry.entries()[i].mapping();
+            let snapshot = &snapshots[i];
             match type_url {
                 LISTENER_TYPE_URL => {
                     // A missing service withholds the Listener. Because
                     // Listeners are "all resources required" in SotW, omission
                     // is a deletion.
-                    if matches!(snapshot, EndpointSnapshot::NotFound) || !wants(mapping.xds_name())
-                    {
+                    if matches!(snapshot, EndpointSnapshot::NotFound) {
                         continue;
                     }
                     out.push(any(
@@ -281,9 +295,7 @@ impl AdsService {
                     ));
                 }
                 CLUSTER_TYPE_URL => {
-                    if matches!(snapshot, EndpointSnapshot::NotFound)
-                        || !wants(&mapping.cluster_name())
-                    {
+                    if matches!(snapshot, EndpointSnapshot::NotFound) {
                         continue;
                     }
                     out.push(any(
@@ -292,9 +304,6 @@ impl AdsService {
                     ));
                 }
                 ENDPOINT_TYPE_URL => {
-                    if !wants(&mapping.cluster_name()) {
-                        continue;
-                    }
                     out.push(any(
                         ENDPOINT_TYPE_URL,
                         build_endpoints(mapping, snapshot).encode_to_vec(),
@@ -314,24 +323,63 @@ fn any(type_url: &str, value: Vec<u8>) -> Any {
     }
 }
 
-/// Await the next endpoint change across every registered service.
+/// Await the next endpoint change across the still-live registered services.
 ///
-/// Returns the entry index and its new snapshot, or `None` once a source has
-/// been dropped (nothing can revive it, and `changed()` would then complete
-/// immediately forever).
+/// Returns the index of the entry that changed.
 ///
-/// This exists as a standalone future rather than inline in the `select!`
-/// because the fan-in borrows `receivers` mutably for as long as it is alive;
-/// resolving the new snapshot here releases that borrow before the caller's
-/// handler runs. `changed()` is cancel-safe, so rebuilding the set on every
+/// A source whose sender has been dropped is retired from the fan-in rather
+/// than ending the stream. This matters far more with several services than it
+/// did with one: a closed receiver reports "changed" immediately and forever,
+/// and because every reconnecting stream re-subscribes to the same dead
+/// channel, one torn-down source would otherwise break every *other* service
+/// on the server, permanently.
+///
+/// A retired source is deliberately **not** published as `NotFound`. A dropped
+/// sender is a host-process lifecycle event, not naming reporting that the
+/// service is gone, and `NotFound` is a permanent deletion on the client. The
+/// last published state is served instead.
+///
+/// If every source is gone this never resolves, leaving the `select!`'s other
+/// branches -- cancellation above all -- free to run.
+///
+/// This is a standalone future rather than inline in the `select!` because the
+/// fan-in borrows `receivers` mutably for as long as it is alive; resolving
+/// here releases that borrow before the caller's handler runs.
+/// `watch::Receiver::changed` is cancel-safe, so rebuilding the set on every
 /// call is correct.
 async fn next_endpoint_change(
     receivers: &mut [watch::Receiver<EndpointSnapshot>],
-) -> Option<(usize, EndpointSnapshot)> {
-    let (result, which, _) =
-        select_all(receivers.iter_mut().map(|rx| Box::pin(rx.changed()))).await;
-    result.ok()?;
-    Some((which, receivers[which].borrow_and_update().clone()))
+    alive: &mut [bool],
+) -> usize {
+    loop {
+        let pending: Vec<_> = receivers
+            .iter_mut()
+            .enumerate()
+            .filter(|(i, _)| alive[*i])
+            .map(|(i, rx)| Box::pin(async move { (i, rx.changed().await) }))
+            .collect();
+
+        if pending.is_empty() {
+            std::future::pending::<()>().await;
+        }
+
+        let ((which, result), _, _) = select_all(pending).await;
+        if result.is_ok() {
+            receivers[which].borrow_and_update();
+            return which;
+        }
+
+        tracing::debug!(
+            entry = which,
+            "endpoint source dropped; retiring it from the fan-in"
+        );
+        alive[which] = false;
+    }
+}
+
+/// Every registered service's current snapshot, in registry order.
+fn current_snapshots(readers: &[watch::Receiver<EndpointSnapshot>]) -> Vec<EndpointSnapshot> {
+    readers.iter().map(|rx| rx.borrow().clone()).collect()
 }
 
 /// Whether a request is a new subscription (needing a response) rather than an
@@ -374,17 +422,22 @@ impl AggregatedDiscoveryService for AdsService {
             .iter()
             .map(|e| e.source().subscribe())
             .collect();
+        // Independent clones used only for reading. `changed()` needs `&mut`,
+        // and that borrow lives for as long as the fan-in future does -- which
+        // is the whole `select!` -- so no arm can read through the same
+        // handles. Reading through clones keeps every response built from the
+        // live value rather than a cached copy that could drift.
+        let readers: Vec<watch::Receiver<EndpointSnapshot>> = receivers.to_vec();
+        let mut alive: Vec<bool> = vec![true; receivers.len()];
         let token = self.token.clone();
 
         let outbound = async_stream::try_stream! {
             let mut version = Versioning(0);
-            // Latest known snapshot per registry entry, kept in registry order.
-            // Held separately from the receivers so the change handler does not
-            // have to re-borrow them while the fan-in future is alive.
-            let mut snapshots: Vec<EndpointSnapshot> = receivers
-                .iter_mut()
-                .map(|rx| rx.borrow_and_update().clone())
-                .collect();
+            // Mark the seeded values seen, so the fan-in does not immediately
+            // report a change the client is about to be told about anyway.
+            for rx in receivers.iter_mut() {
+                rx.borrow_and_update();
+            }
             // Resource names this stream has subscribed to, per type URL.
             // Tracked for every type (not just EDS) so a state change can be
             // pushed to whatever the client actually asked for.
@@ -461,6 +514,7 @@ impl AggregatedDiscoveryService for AdsService {
                             continue;
                         }
 
+                        let snapshots = current_snapshots(&readers);
                         let resources = Self::resources_for(
                             &registry, &snapshots, &req.type_url, &req.resource_names,
                         );
@@ -475,17 +529,12 @@ impl AggregatedDiscoveryService for AdsService {
                     }
 
                     // Some service's endpoint state changed.
-                    changed = next_endpoint_change(&mut receivers) => {
-                        let Some((which, snapshot)) = changed else {
-                            // A source was dropped; nothing more will ever be
-                            // pushed for it and the fan-in would spin on the
-                            // closed channel. Nothing can revive it, so end the
-                            // stream rather than serve a frozen view.
-                            tracing::debug!("ads stream ending: an endpoint source was dropped");
-                            break;
-                        };
-                        tracing::debug!(entry = which, ?snapshot, "pushing updated resources");
-                        snapshots[which] = snapshot;
+                    which = next_endpoint_change(&mut receivers, &mut alive) => {
+                        let snapshots = current_snapshots(&readers);
+                        tracing::debug!(
+                            entry = which, snapshot = ?snapshots[which], "pushing updated resources",
+                        );
+
                         // Push all subscribed types, not just EDS. A transition
                         // into or out of `NotFound` changes whether the Listener
                         // and Cluster exist at all, and a SotW client never
@@ -494,20 +543,38 @@ impl AggregatedDiscoveryService for AdsService {
                         // deleted listener even after the service came back.
                         //
                         // LDS and CDS carry the *whole* subscribed set because
-                        // they are "all resources required"; EDS is tracked
-                        // per-resource, so it carries only the cluster that
-                        // actually changed.
-                        let changed_cluster = registry.entries()[which].mapping().cluster_name();
+                        // they are "all resources required": a response that
+                        // omitted a subscribed Listener would delete it on the
+                        // client, so pushing only the service that changed
+                        // would break every other service on this stream. EDS
+                        // is tracked per-resource, so it carries only the
+                        // cluster that actually changed.
+                        let changed_mapping = registry.entries()[which].mapping();
+                        let changed_listener = changed_mapping.xds_name().to_string();
+                        let changed_cluster = changed_mapping.cluster_name();
+
                         for type_url in [LISTENER_TYPE_URL, CLUSTER_TYPE_URL, ENDPOINT_TYPE_URL] {
                             let Some(names) = subscriptions.get(type_url) else { continue };
+
+                            // An empty request set is the wildcard, and always
+                            // wants the update. Otherwise a stream that is not
+                            // subscribed to the changed service has nothing new
+                            // to learn, and re-sending its unchanged set would
+                            // make every service's churn cost every client a
+                            // response.
+                            let changed_name = if type_url == LISTENER_TYPE_URL {
+                                &changed_listener
+                            } else {
+                                &changed_cluster
+                            };
+                            if !names.is_empty() && !names.contains(changed_name) {
+                                continue;
+                            }
+
                             let names: Vec<String> = if type_url == ENDPOINT_TYPE_URL {
-                                // An empty request set means "wildcard", so it
-                                // must be narrowed explicitly, not passed on.
-                                if names.is_empty() || names.contains(&changed_cluster) {
-                                    vec![changed_cluster.clone()]
-                                } else {
-                                    continue;
-                                }
+                                // Narrow the wildcard explicitly: only the
+                                // cluster that moved needs a new assignment.
+                                vec![changed_cluster.clone()]
                             } else {
                                 names.clone()
                             };

@@ -196,20 +196,53 @@ service on that stream.
 EDS has no such rule; it is tracked per-resource. An endpoint change therefore
 pushes exactly one `ClusterLoadAssignment`, for the cluster that actually moved.
 
-`tests/scripted_ads.rs` guards this directly: it relocates one service's
-endpoint and then asserts a *second* service's client still routes.
+`tests/scripted_ads.rs` guards this directly, and the guard had to be built
+carefully: each `tonic-xds` client opens its *own* ADS stream subscribed only to
+its own target, so two clients cannot observe a cross-service deletion no matter
+how badly the server behaves. The real guard,
+`a_change_repeats_every_subscribed_listener`, therefore speaks the ADS protocol
+directly, puts both Listeners on **one** stream, changes one service, and
+asserts the pushed LDS response still enumerates both. It was verified to fail —
+reporting `["svc-a"]` — when the push is narrowed to the changed entry.
+
+A stream that is subscribed to *neither* the changed Listener nor the changed
+Cluster is skipped entirely. Re-sending its unchanged set would be correct but
+would make every service's churn cost every client a response.
 
 ### Fan-in across sources
 
 Each entry has its own `watch::Receiver`, and a stream awaits the first change
 across all of them. `watch::Receiver::changed` is cancel-safe, so the fan-in set
 is rebuilt on each loop iteration rather than held across them — which would
-otherwise require a self-referential future. The resolved snapshot is returned
-by the fan-in future itself, releasing the mutable borrow before the handler
-runs.
+otherwise require a self-referential future. The registry is non-empty by
+construction, which is load-bearing: the underlying `select_all` panics on an
+empty set.
 
-The registry is non-empty by construction, which is load-bearing: the underlying
-`select_all` panics on an empty set.
+Reads go through *separate cloned receivers*. `changed()` needs `&mut`, and that
+borrow lives for as long as the fan-in future does — the whole `select!` — so no
+arm could otherwise read the current state. Cloning is an `Arc` bump and means
+every response is built from the live value rather than a cached copy that could
+drift out of step with the registry.
+
+**A source whose sender is dropped is retired from the fan-in, not fatal.** A
+closed `watch` channel reports "changed" immediately and forever, so a dead
+source would spin; worse, because every reconnecting stream re-subscribes to the
+same dead channel, one torn-down source would break every *other* service on the
+server, permanently. That blast radius is new with multi-service and is the
+reason for the `alive` mask. A retired entry is deliberately **not** published as
+`NotFound`: a dropped sender is a host-process lifecycle event, not naming
+reporting the service gone, and `NotFound` is a permanent client-side deletion.
+Its last published state is served instead. If every source retires, the fan-in
+simply never resolves, leaving cancellation free to run.
+
+### Name resolution has one implementation
+
+`resources_for` resolves a non-wildcard request through
+`ServiceRegistry::index_of` rather than scanning entries and re-deriving names.
+The wildcard (empty `resource_names`) case still means "every entry", which no
+index can express. Routing the named case through the index keeps the
+`(type_url, name)` rules in exactly one place instead of having the serving path
+quietly reimplement them.
 
 ### What this does not consolidate
 
@@ -418,6 +451,12 @@ The test creates and deletes its own service, so re-runs are idempotent.
   while the server runs. Lifting this means making the registry observable and
   re-pushing LDS/CDS to every open stream on a change, since both are
   `ALL_RESOURCES_REQUIRED_IN_SOTW`.
+- **The fan-in boxes one future per live entry per wakeup.** At prototype scale
+  (a handful of services) this is not worth optimizing, and the obvious
+  alternative — `WatchStream` in a `StreamMap` — yields its initial value
+  immediately, which would produce a spurious push on every stream. If the
+  service count grows enough for this to matter, the fix is a hand-rolled
+  `poll_fn` over the receivers, not a stream adapter.
 - **A NACK is logged and then forgotten.** `stream_aggregated_resources` traces
   the `error_detail` and does not advance state, which is correct, but a
   persistently rejected resource is never re-sent and raises no metric or health

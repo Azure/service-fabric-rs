@@ -17,14 +17,18 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 
+use envoy_types::pb::envoy::config::listener::v3::Listener;
+use envoy_types::pb::envoy::service::discovery::v3::aggregated_discovery_service_client::AggregatedDiscoveryServiceClient;
+use envoy_types::pb::envoy::service::discovery::v3::{DiscoveryRequest, DiscoveryResponse};
 use mssf_net::ads::{AdsService, ServerHandle, bootstrap_json};
 use mssf_net::resources::{CLUSTER_TYPE_URL, LISTENER_TYPE_URL};
 use mssf_net::{
     EndpointSnapshot, EndpointSource, HostPort, ScriptedEndpointHandle, ScriptedEndpointSource,
     ServiceRegistry, XdsMapping, host_port_interpreter,
 };
+use prost::Message;
 use tokio::net::TcpListener;
-use tokio_stream::wrappers::TcpListenerStream;
+use tokio_stream::wrappers::{ReceiverStream, TcpListenerStream};
 use tokio_util::sync::CancellationToken;
 use tonic::{Request, Response, Status};
 use tonic_xds::{BootstrapConfig, XdsChannelBuilder, XdsChannelConfig, XdsUri};
@@ -481,9 +485,10 @@ struct TwoServices {
     backend_b: BackendHandle,
     source_a: Arc<ScriptedEndpointSource>,
     source_b: Arc<ScriptedEndpointSource>,
-    handle_a: ScriptedEndpointHandle,
+    /// `Option` so a test can drop the only sender and close `svc-a`'s channel.
+    handle_a: Option<ScriptedEndpointHandle>,
     /// Held rather than used: the handle owns the watch sender, so dropping the
-    /// last one closes the channel and ends every ADS stream.
+    /// last one closes the channel.
     _handle_b: ScriptedEndpointHandle,
 }
 
@@ -514,9 +519,22 @@ impl TwoServices {
             backend_b,
             source_a,
             source_b,
-            handle_a,
+            handle_a: Some(handle_a),
             _handle_b,
         }
+    }
+
+    /// Publish a new endpoint for `svc-a`.
+    fn set_a(&self, snapshot: EndpointSnapshot) {
+        self.handle_a
+            .as_ref()
+            .expect("svc-a's handle was dropped")
+            .set(snapshot);
+    }
+
+    /// Drop the only sender for `svc-a`, closing its watch channel.
+    fn drop_handle_a(&mut self) {
+        self.handle_a = None;
     }
 
     /// Clients for both services, built from the **same** bootstrap — i.e. the
@@ -576,10 +594,13 @@ async fn two_services_on_one_ads_server_route_independently() {
 /// Relocating one service must not disturb any other service on the same
 /// server.
 ///
-/// This is the regression guard for the ALL_RESOURCES_REQUIRED trap: Listeners
-/// and Clusters are ALL_RESOURCES_REQUIRED_IN_SOTW, so a push that carried only
-/// the changed service's Listener would silently DELETE `svc-b`'s Listener on
-/// the client and break it, even though nothing about `svc-b` changed.
+/// Note this is an **isolation** test, not a proof of the
+/// ALL_RESOURCES_REQUIRED rule: each `tonic-xds` client opens its own ADS
+/// stream with its own single-resource subscription, so a subset push on one
+/// stream cannot delete the other's Listener. What it does prove is that the
+/// per-entry fan-in routes a change to the right entry and leaves the rest
+/// alone. `a_change_repeats_every_subscribed_listener` below is the actual
+/// guard for the deletion trap, on a single shared stream.
 #[tokio::test]
 #[test_log::test]
 async fn relocating_one_service_leaves_the_other_routing() {
@@ -597,7 +618,7 @@ async fn relocating_one_service_leaves_the_other_routing() {
 
     // Move only svc-a, on the live streams: neither client nor server restarts.
     let c = start_backend("backend-c").await;
-    env.handle_a.set(primary(c.addr));
+    env.set_a(primary(c.addr));
 
     who_am_i_until(&mut a, "backend-c", Duration::from_secs(20)).await;
     who_am_i_until(&mut b, "backend-b", Duration::from_secs(20)).await;
@@ -629,7 +650,7 @@ async fn not_found_for_one_service_leaves_the_other_routing() {
         "backend-b"
     );
 
-    env.handle_a.set(EndpointSnapshot::NotFound);
+    env.set_a(EndpointSnapshot::NotFound);
 
     let failure = who_am_i_until_err(&mut a, Duration::from_secs(20)).await;
     tracing::info!(%failure, "observed not-found failure for svc-a");
@@ -676,4 +697,157 @@ fn from_registry_round_trips_the_registered_services() {
         registry.index_of(CLUSTER_TYPE_URL, "svc-a-primary"),
         Some(0)
     );
+}
+
+// ---- protocol-level: the ALL_RESOURCES_REQUIRED rule -----------------------
+
+/// Drive a raw ADS stream, subscribed to both Listeners at once.
+///
+/// The `tonic-xds` client opens one stream per channel and subscribes only to
+/// its own target, so it structurally cannot observe a cross-service deletion.
+/// Speaking the protocol directly is the only way to put two subscriptions on
+/// one stream and see what a change actually pushes.
+async fn open_ads_stream(
+    ads_addr: SocketAddr,
+    requests: tokio::sync::mpsc::Receiver<DiscoveryRequest>,
+) -> tonic::Streaming<DiscoveryResponse> {
+    let channel = tonic::transport::Channel::from_shared(format!("http://{ads_addr}"))
+        .unwrap()
+        .connect()
+        .await
+        .expect("failed to connect to the ADS server");
+
+    AggregatedDiscoveryServiceClient::new(channel)
+        .stream_aggregated_resources(ReceiverStream::new(requests))
+        .await
+        .expect("failed to open the ADS stream")
+        .into_inner()
+}
+
+/// Read responses until one carries `type_url`, or panic.
+async fn next_response_of_type(
+    stream: &mut tonic::Streaming<DiscoveryResponse>,
+    type_url: &str,
+    timeout: Duration,
+) -> DiscoveryResponse {
+    let deadline = tokio::time::Instant::now() + timeout;
+    loop {
+        let remaining = deadline.saturating_duration_since(tokio::time::Instant::now());
+        let next = tokio::time::timeout(remaining, stream.message())
+            .await
+            .unwrap_or_else(|_| panic!("no {type_url} response within {timeout:?}"))
+            .expect("ads stream failed");
+        match next {
+            Some(resp) if resp.type_url == type_url => return resp,
+            Some(_) => continue,
+            None => panic!("ads stream closed while waiting for {type_url}"),
+        }
+    }
+}
+
+fn listener_names(resp: &DiscoveryResponse) -> Vec<String> {
+    let mut names: Vec<String> = resp
+        .resources
+        .iter()
+        .map(|r| Listener::decode(r.value.as_slice()).unwrap().name)
+        .collect();
+    names.sort();
+    names
+}
+
+/// **The** regression guard for the ALL_RESOURCES_REQUIRED trap.
+///
+/// One stream subscribes to both `svc-a` and `svc-b`. Only `svc-a` then moves.
+/// Listeners are ALL_RESOURCES_REQUIRED_IN_SOTW, so the resulting LDS response
+/// must still enumerate BOTH: a response carrying only `svc-a` would not be a
+/// partial update, it would silently DELETE `svc-b`'s Listener on the client
+/// and break a service that never changed.
+///
+/// Verified to fail as intended by narrowing the LDS push to the changed entry,
+/// which makes the assertion below report `["svc-a"]`.
+#[tokio::test]
+#[test_log::test]
+async fn a_change_repeats_every_subscribed_listener() {
+    let env = TwoServices::start().await;
+
+    let (tx, rx) = tokio::sync::mpsc::channel::<DiscoveryRequest>(8);
+    let mut stream = open_ads_stream(env.ads.addr(), rx).await;
+
+    // Subscribe to both Listeners on this one stream. An empty nonce marks it
+    // as a new subscription rather than an ACK.
+    tx.send(DiscoveryRequest {
+        type_url: LISTENER_TYPE_URL.to_string(),
+        resource_names: vec!["svc-a".to_string(), "svc-b".to_string()],
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let initial =
+        next_response_of_type(&mut stream, LISTENER_TYPE_URL, Duration::from_secs(10)).await;
+    assert_eq!(
+        listener_names(&initial),
+        ["svc-a", "svc-b"],
+        "the initial subscription must be answered with both Listeners"
+    );
+
+    // ACK, so the server does not treat the next request as a re-subscription.
+    tx.send(DiscoveryRequest {
+        type_url: LISTENER_TYPE_URL.to_string(),
+        resource_names: vec!["svc-a".to_string(), "svc-b".to_string()],
+        version_info: initial.version_info.clone(),
+        response_nonce: initial.nonce.clone(),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    // Move only svc-a.
+    let c = start_backend("backend-c").await;
+    env.set_a(primary(c.addr));
+
+    let pushed =
+        next_response_of_type(&mut stream, LISTENER_TYPE_URL, Duration::from_secs(10)).await;
+    assert_eq!(
+        listener_names(&pushed),
+        ["svc-a", "svc-b"],
+        "a change to svc-a must repeat svc-b's Listener; omitting it deletes it",
+    );
+
+    drop(tx);
+    env.shutdown().await;
+    c.shutdown().await;
+}
+
+/// A source torn down must not take the rest of the server with it.
+///
+/// A closed `watch` channel reports "changed" immediately and forever, and
+/// every reconnecting stream re-subscribes to it — so a source that ended the
+/// stream would break every *other* service on the server, permanently. The
+/// retired entry keeps serving its last known state.
+#[tokio::test]
+#[test_log::test]
+async fn dropping_one_source_leaves_the_other_serving() {
+    let mut env = TwoServices::start().await;
+    let (mut a, mut b) = env.clients();
+
+    assert_eq!(
+        who_am_i_until_ok(&mut a, Duration::from_secs(20)).await,
+        "backend-a"
+    );
+    assert_eq!(
+        who_am_i_until_ok(&mut b, Duration::from_secs(20)).await,
+        "backend-b"
+    );
+
+    // Drop svc-a's sender: its channel closes while the streams are live.
+    env.drop_handle_a();
+
+    // svc-b is unaffected, and svc-a still serves its last known endpoint.
+    who_am_i_until(&mut b, "backend-b", Duration::from_secs(20)).await;
+    who_am_i_until(&mut a, "backend-a", Duration::from_secs(20)).await;
+
+    drop(a);
+    drop(b);
+    env.shutdown().await;
 }

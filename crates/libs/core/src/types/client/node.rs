@@ -4,8 +4,10 @@
 // ------------------------------------------------------------
 
 use crate::mem::{BoxPool, GetRawWithBoxPool};
+use crate::types::HealthState;
 use crate::{WString, types::Uri};
 use bitflags::bitflags;
+use mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS;
 use mssf_com::{
     FabricClient::IFabricGetNodeListResult2,
     FabricTypes::{
@@ -116,9 +118,9 @@ pub struct NodeQueryResultItem {
     pub node_type: WString,
     pub code_version: WString,
     pub config_version: WString,
-    // pub node_status
+    pub status: NodeStatus,
     pub node_up_time_in_seconds: i64,
-    // pub AggregatedHealthState
+    pub health_state: HealthState,
     pub is_seed_node: bool,
     pub upgrade_domain: WString,
     pub fault_domain: Uri,
@@ -145,7 +147,9 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for NodeQueryResultItem {
             node_type: WString::from(raw.NodeType),
             code_version: WString::from(raw.CodeVersion),
             config_version: WString::from(raw.ConfigVersion),
+            status: value.NodeStatus.into(),
             node_up_time_in_seconds: raw.NodeUpTimeInSeconds,
+            health_state: (&value.AggregatedHealthState).into(),
             is_seed_node: raw.IsSeedNode,
             upgrade_domain: WString::from(raw.UpgradeDomain),
             fault_domain: Uri::from(raw.FaultDomain),
@@ -166,6 +170,34 @@ impl From<FABRIC_NODE_ID> for NodeId {
         Self {
             low: value.Low,
             high: value.High,
+        }
+    }
+}
+
+// FABRIC_QUERY_NODE_STATUS
+#[derive(Debug, Clone, Copy)]
+#[repr(i32)]
+pub enum NodeStatus {
+    Up = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_UP.0,
+    Down = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DOWN.0,
+    Enabling = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_ENABLING.0,
+    Disabled = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DISABLED.0,
+    Disabling = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DISABLING.0,
+    Removed = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_REMOVED.0,
+    Unknown = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_UNKNOWN.0,
+    Invalid = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_INVALID.0,
+}
+impl From<FABRIC_QUERY_NODE_STATUS> for NodeStatus {
+    fn from(value: FABRIC_QUERY_NODE_STATUS) -> Self {
+        match value {
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_UP => NodeStatus::Up,
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DOWN => NodeStatus::Down,
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_ENABLING => NodeStatus::Enabling,
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DISABLED => NodeStatus::Disabled,
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DISABLING => NodeStatus::Disabling,
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_REMOVED => NodeStatus::Removed,
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_UNKNOWN => NodeStatus::Unknown,
+            _ => NodeStatus::Invalid,
         }
     }
 }

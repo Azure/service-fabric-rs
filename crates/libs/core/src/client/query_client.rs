@@ -163,6 +163,44 @@ impl QueryClient {
             cancellation_token,
         )
     }
+
+    fn get_deployed_application_list_internal(
+        &self,
+        desc: &mssf_com::FabricTypes::FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<
+        crate::Result<mssf_com::FabricClient::IFabricGetDeployedApplicationListResult>,
+    > {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetDeployedApplicationList(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetDeployedApplicationList(ctx) },
+            cancellation_token,
+        )
+    }
+
+    fn get_deployed_service_package_list_internal(
+        &self,
+        desc: &mssf_com::FabricTypes::FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<
+        crate::Result<mssf_com::FabricClient::IFabricGetDeployedServicePackageListResult>,
+    > {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            move |callback| unsafe {
+                com1.BeginGetDeployedServicePackageList(desc, timeout_milliseconds, callback)
+            },
+            move |ctx| unsafe { com2.EndGetDeployedServicePackageList(ctx) },
+            cancellation_token,
+        )
+    }
 }
 
 impl From<IFabricQueryClient13> for QueryClient {
@@ -289,5 +327,39 @@ impl QueryClient {
         }
         .await??;
         Ok(DeployedServiceReplicaDetailQueryResult::new(com))
+    }
+
+    /// Lists the applications deployed on a node.
+    pub async fn get_deployed_application_list(
+        &self,
+        desc: &crate::types::DeployedApplicationQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::DeployedApplicationList> {
+        let com = {
+            let raw: mssf_com::FabricTypes::FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION =
+                desc.into();
+            let timeout_ms = timeout.as_millis() as u32;
+            self.get_deployed_application_list_internal(&raw, timeout_ms, cancellation_token)
+        }
+        .await??;
+        Ok(crate::types::DeployedApplicationList::from(&com))
+    }
+
+    /// Lists the service packages deployed for an application on a node.
+    pub async fn get_deployed_service_package_list(
+        &self,
+        desc: &crate::types::DeployedServicePackageQueryDescription,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::DeployedServicePackageList> {
+        let com = {
+            let raw: mssf_com::FabricTypes::FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION =
+                desc.into();
+            let timeout_ms = timeout.as_millis() as u32;
+            self.get_deployed_service_package_list_internal(&raw, timeout_ms, cancellation_token)
+        }
+        .await??;
+        Ok(crate::types::DeployedServicePackageList::from(&com))
     }
 }

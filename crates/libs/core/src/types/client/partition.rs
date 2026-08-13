@@ -119,6 +119,24 @@ impl ServicePartitionQueryResultItem {
             ServicePartitionQueryResultItem::Invalid => HealthState::Invalid,
         }
     }
+    pub fn get_partition_information(&self) -> Option<&ServicePartitionInformation> {
+        match self {
+            ServicePartitionQueryResultItem::Stateful(stateful) => {
+                Some(&stateful.partition_information)
+            }
+            ServicePartitionQueryResultItem::Stateless(stateless) => {
+                Some(&stateless.partition_information)
+            }
+            ServicePartitionQueryResultItem::Invalid => None,
+        }
+    }
+    pub fn get_partition_status(&self) -> ServicePartitionStatus {
+        match self {
+            ServicePartitionQueryResultItem::Stateful(stateful) => stateful.partition_status,
+            ServicePartitionQueryResultItem::Stateless(stateless) => stateless.partition_status,
+            ServicePartitionQueryResultItem::Invalid => ServicePartitionStatus::Invalid,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

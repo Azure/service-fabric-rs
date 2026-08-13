@@ -1117,6 +1117,27 @@ impl ServiceQueryResultItem {
             ServiceQueryResultItem::Stateless(item) => &item.service_name,
         }
     }
+
+    pub fn get_service_type_name(&self) -> &WString {
+        match self {
+            ServiceQueryResultItem::Stateful(item) => &item.service_type_name,
+            ServiceQueryResultItem::Stateless(item) => &item.service_type_name,
+        }
+    }
+
+    pub fn get_service_manifest_version(&self) -> &WString {
+        match self {
+            ServiceQueryResultItem::Stateful(item) => &item.service_manifest_version,
+            ServiceQueryResultItem::Stateless(item) => &item.service_manifest_version,
+        }
+    }
+
+    pub fn get_service_status(&self) -> QueryServiceStatus {
+        match self {
+            ServiceQueryResultItem::Stateful(item) => item.service_status,
+            ServiceQueryResultItem::Stateless(item) => item.service_status,
+        }
+    }
 }
 
 // FABRIC_QUERY_SERVICE_STATUS

@@ -3,13 +3,21 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-use mssf_com::FabricClient::IFabricDeployedServicePackageHealthResult;
+use mssf_com::FabricClient::{
+    IFabricDeployedServicePackageHealthResult, IFabricGetDeployedServicePackageListResult,
+};
 use mssf_com::FabricTypes::{
     FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH,
     FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_QUERY_DESCRIPTION,
     FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_QUERY_DESCRIPTION_EX1,
     FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_STATE,
     FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_STATES_FILTER,
+    FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION,
+    FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM, FABRIC_DEPLOYMENT_STATUS,
+    FABRIC_DEPLOYMENT_STATUS_ACTIVATING, FABRIC_DEPLOYMENT_STATUS_ACTIVE,
+    FABRIC_DEPLOYMENT_STATUS_DEACTIVATING, FABRIC_DEPLOYMENT_STATUS_DOWNLOADING,
+    FABRIC_DEPLOYMENT_STATUS_FAILED, FABRIC_DEPLOYMENT_STATUS_INVALID,
+    FABRIC_DEPLOYMENT_STATUS_RAN_TO_COMPLETION, FABRIC_DEPLOYMENT_STATUS_UPGRADING,
 };
 use windows_core::{PCWSTR, WString};
 
@@ -145,6 +153,94 @@ impl From<&FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH> for DeployedServicePackageHea
     }
 }
 
+// FABRIC_DEPLOYMENT_STATUS
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DeploymentStatus {
+    Invalid,
+    Downloading,
+    Activating,
+    Active,
+    Upgrading,
+    Deactivating,
+    RanToCompletion,
+    Failed,
+}
+
+impl From<FABRIC_DEPLOYMENT_STATUS> for DeploymentStatus {
+    fn from(value: FABRIC_DEPLOYMENT_STATUS) -> Self {
+        match value {
+            FABRIC_DEPLOYMENT_STATUS_DOWNLOADING => Self::Downloading,
+            FABRIC_DEPLOYMENT_STATUS_ACTIVATING => Self::Activating,
+            FABRIC_DEPLOYMENT_STATUS_ACTIVE => Self::Active,
+            FABRIC_DEPLOYMENT_STATUS_UPGRADING => Self::Upgrading,
+            FABRIC_DEPLOYMENT_STATUS_DEACTIVATING => Self::Deactivating,
+            FABRIC_DEPLOYMENT_STATUS_RAN_TO_COMPLETION => Self::RanToCompletion,
+            FABRIC_DEPLOYMENT_STATUS_FAILED => Self::Failed,
+            FABRIC_DEPLOYMENT_STATUS_INVALID => Self::Invalid,
+            _ => Self::Invalid,
+        }
+    }
+}
+
+/// FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION
+#[derive(Debug, Clone, Default)]
+pub struct DeployedServicePackageQueryDescription {
+    pub node_name: WString,
+    pub application_name: Uri,
+    pub service_manifest_name_filter: Option<WString>,
+}
+
+impl From<&DeployedServicePackageQueryDescription>
+    for FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION
+{
+    fn from(value: &DeployedServicePackageQueryDescription) -> Self {
+        Self {
+            NodeName: value.node_name.as_pcwstr(),
+            ApplicationName: value.application_name.as_raw(),
+            ServiceManifestNameFilter: value
+                .service_manifest_name_filter
+                .as_ref()
+                .map_or(PCWSTR::null(), |s| s.as_pcwstr()),
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
+/// FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM
+#[derive(Debug, Clone)]
+pub struct DeployedServicePackageQueryResultItem {
+    pub service_manifest_name: WString,
+    pub service_manifest_version: WString,
+    pub status: DeploymentStatus,
+}
+
+impl From<&FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM>
+    for DeployedServicePackageQueryResultItem
+{
+    fn from(value: &FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM) -> Self {
+        Self {
+            service_manifest_name: WString::from(value.ServiceManifestName),
+            service_manifest_version: WString::from(value.ServiceManifestVersion),
+            status: value.DeployedServicePackageStatus.into(),
+        }
+    }
+}
+
+/// IFabricGetDeployedServicePackageListResult
+#[derive(Debug, Clone)]
+pub struct DeployedServicePackageList {
+    pub items: Vec<DeployedServicePackageQueryResultItem>,
+}
+
+impl From<&IFabricGetDeployedServicePackageListResult> for DeployedServicePackageList {
+    fn from(value: &IFabricGetDeployedServicePackageListResult) -> Self {
+        let items = unsafe { value.get_DeployedServicePackageList().as_ref() }
+            .map(|list| crate::iter::vec_from_raw_com(list.Count as usize, list.Items))
+            .unwrap_or_default();
+        Self { items }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -195,5 +291,37 @@ mod tests {
             raw.HealthStateFilter,
             HealthStateFilterFlags::WARNING.bits() as u32
         );
+    }
+
+    #[test]
+    fn test_deployed_service_package_query_description_raw() {
+        let desc = DeployedServicePackageQueryDescription {
+            node_name: WString::from("Node1"),
+            application_name: Uri::from("fabric:/App1"),
+            service_manifest_name_filter: Some(WString::from("Pkg1")),
+        };
+        let raw = FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION::from(&desc);
+        assert_eq!(WString::from(raw.NodeName).to_string_lossy(), "Node1");
+        assert_eq!(Uri::from(raw.ApplicationName).to_string(), "fabric:/App1");
+        assert_eq!(
+            WString::from(raw.ServiceManifestNameFilter).to_string_lossy(),
+            "Pkg1"
+        );
+    }
+
+    #[test]
+    fn test_deployed_service_package_query_result_item_from_raw() {
+        let manifest_name = WString::from("Pkg1");
+        let manifest_version = WString::from("1.0.0");
+        let raw = FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM {
+            ServiceManifestName: manifest_name.as_pcwstr(),
+            ServiceManifestVersion: manifest_version.as_pcwstr(),
+            DeployedServicePackageStatus: FABRIC_DEPLOYMENT_STATUS_ACTIVE,
+            Reserved: std::ptr::null_mut(),
+        };
+        let item = DeployedServicePackageQueryResultItem::from(&raw);
+        assert_eq!(item.service_manifest_name.to_string_lossy(), "Pkg1");
+        assert_eq!(item.service_manifest_version.to_string_lossy(), "1.0.0");
+        assert_eq!(item.status, DeploymentStatus::Active);
     }
 }

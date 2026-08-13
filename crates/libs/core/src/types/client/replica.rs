@@ -118,6 +118,20 @@ impl ServiceReplicaQueryResultItem {
             ServiceReplicaQueryResultItem::Invalid => HealthState::Invalid,
         }
     }
+    pub fn get_replica_status(&self) -> QueryServiceReplicaStatus {
+        match self {
+            ServiceReplicaQueryResultItem::Stateful(stateful) => stateful.replica_status,
+            ServiceReplicaQueryResultItem::Stateless(stateless) => stateless.replica_status,
+            ServiceReplicaQueryResultItem::Invalid => QueryServiceReplicaStatus::Invalid,
+        }
+    }
+    pub fn get_node_name(&self) -> Option<&WString> {
+        match self {
+            ServiceReplicaQueryResultItem::Stateful(stateful) => Some(&stateful.node_name),
+            ServiceReplicaQueryResultItem::Stateless(stateless) => Some(&stateless.node_name),
+            ServiceReplicaQueryResultItem::Invalid => None,
+        }
+    }
 }
 
 // FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM
@@ -461,6 +475,24 @@ impl ReplicaHealth {
         match self {
             ReplicaHealth::Stateful(stateful) => stateful.aggregated_health_state,
             ReplicaHealth::Stateless(stateless) => stateless.aggregated_health_state,
+        }
+    }
+    pub fn get_health_events(&self) -> &Vec<super::HealthEvent> {
+        match self {
+            ReplicaHealth::Stateful(stateful) => &stateful.health_events,
+            ReplicaHealth::Stateless(stateless) => &stateless.health_events,
+        }
+    }
+    pub fn get_replica_or_instance_id(&self) -> i64 {
+        match self {
+            ReplicaHealth::Stateful(stateful) => stateful.replica_id,
+            ReplicaHealth::Stateless(stateless) => stateless.instance_id,
+        }
+    }
+    pub fn get_partition_id(&self) -> GUID {
+        match self {
+            ReplicaHealth::Stateful(stateful) => stateful.partition_id,
+            ReplicaHealth::Stateless(stateless) => stateless.partition_id,
         }
     }
 }

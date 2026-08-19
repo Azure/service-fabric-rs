@@ -1181,8 +1181,12 @@ pub struct StatefulServiceQueryResultItem {
     pub service_manifest_version: WString,
     pub has_persisted_state: bool,
     pub health_state: HealthState,
+    // ex1
     pub service_status: QueryServiceStatus,
+    // ex2
     pub is_service_group: bool,
+    // ex3
+    // TODO: Metadata
 }
 
 impl From<&mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM>
@@ -1221,8 +1225,12 @@ pub struct StatelessServiceQueryResultItem {
     pub service_type_name: WString,
     pub service_manifest_version: WString,
     pub health_state: HealthState,
+    // ex1
     pub service_status: QueryServiceStatus,
+    // ex2
     pub is_service_group: bool,
+    // ex3
+    // TODO: Metadata
 }
 
 impl From<&mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM>

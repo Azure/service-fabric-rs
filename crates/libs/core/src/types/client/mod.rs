@@ -42,7 +42,7 @@ pub use property::{
 
 mod service;
 pub use service::{
-    DeleteServiceDescription, NamedRepartitionDescription, ServiceDescription,
+    DeleteServiceDescription, NamedRepartitionDescription, QueryServiceStatus, ServiceDescription,
     ServiceHealthQueryDescription, ServiceHealthResult, ServiceHealthState,
     ServiceHealthStatesFilter, ServiceListResult, ServiceQueryDescription, ServiceQueryResultItem,
     ServiceRepartitionDescription, ServiceUpdateDescription, StatefulServiceDescription,

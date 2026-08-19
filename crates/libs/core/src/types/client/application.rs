@@ -180,11 +180,16 @@ pub struct ApplicationQueryResultItem {
     pub application_type_version: WString,
     pub status: ApplicationStatus,
     pub health_state: HealthState,
-    // TODO: support other fields
-    // pub application_parameters: Option<Vec<(WString, WString)>>,
+    // TODO: ApplicationParameters: Vec<(WString, WString)>,
+    // ex1
     pub upgrade_type_version: WString,
-    // pub upgrade_parameters: WString,
+    // TODO: UpgradeParameters
+    // ex2
     pub application_definition_kind: ApplicationDefinitionKind,
+    // ex3
+    // TODO: ManagedApplicationIdentity
+    // ex4
+    // TODO: Metadata
 }
 
 impl From<&FABRIC_APPLICATION_QUERY_RESULT_ITEM> for ApplicationQueryResultItem {

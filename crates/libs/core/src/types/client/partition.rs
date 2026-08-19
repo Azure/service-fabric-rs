@@ -9,19 +9,8 @@ use crate::{
     types::{LoadMetricReport, PagingStatus, Uri},
 };
 use mssf_com::{
-    FabricClient::{IFabricGetPartitionListResult2, IFabricGetPartitionLoadInformationResult},
-    FabricTypes::{
-        FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION, FABRIC_QUERY_SERVICE_PARTITION_STATUS,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_DELETING,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_IN_QUORUM_LOSS,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_INVALID,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_NOT_READY,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_RECONFIGURING, FABRIC_SERVICE_KIND_STATEFUL,
-        FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
-        FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM,
-        FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM,
-        FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM,
+    FabricClient::{IFabricGetPartitionListResult2, IFabricGetPartitionLoadInformationResult}, FabricTypes::{
+        FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION, FABRIC_QUERY_SERVICE_PARTITION_STATUS, FABRIC_QUERY_SERVICE_PARTITION_STATUS_DELETING, FABRIC_QUERY_SERVICE_PARTITION_STATUS_IN_QUORUM_LOSS, FABRIC_QUERY_SERVICE_PARTITION_STATUS_INVALID, FABRIC_QUERY_SERVICE_PARTITION_STATUS_NOT_READY, FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY, FABRIC_QUERY_SERVICE_PARTITION_STATUS_RECONFIGURING, FABRIC_SERVICE_KIND_STATEFUL, FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION, FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM, FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM, FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM, FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX1,
     },
 };
 
@@ -207,19 +196,25 @@ pub struct StatelessServicePartitionQueryResult {
     pub instance_count: u32,
     pub health_state: HealthState,
     pub partition_status: ServicePartitionStatus,
-    // TODO: reserved fields
-    // pub Reserved: *mut core::ffi::c_void,
+    // ex1
+    pub min_instance_count: i32,
+    pub min_instance_percentage: i32,
 }
 
 impl From<&FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM>
     for StatelessServicePartitionQueryResult
 {
     fn from(value: &FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM) -> Self {
+        let ex1 = unsafe {
+            (value.Reserved as *const FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX1).as_ref()
+        }.unwrap();
         Self {
             partition_information: unsafe { value.PartitionInformation.as_ref().unwrap().into() },
             instance_count: value.InstanceCount,
             health_state: (&value.HealthState).into(),
             partition_status: (&value.PartitionStatus).into(),
+            min_instance_count: ex1.MinInstanceCount,
+            min_instance_percentage: ex1.MinInstancePercentage,
         }
     }
 }
@@ -475,5 +470,41 @@ mod tests {
             ReplicaHealthState::Stateful(s) => assert_eq!(s.replica_id, 42),
             _ => panic!("expected stateful replica health state"),
         }
+    }
+
+    #[test]
+    fn test_stateless_service_partition_query_result_from_raw() {
+        let partition_id = GUID::from_u128(0x11111111_2222_3333_4444_555555555555);
+        let singleton_info = mssf_com::FabricTypes::FABRIC_SINGLETON_PARTITION_INFORMATION {
+            Id: partition_id,
+            Reserved: std::ptr::null_mut(),
+        };
+        let partition_information = mssf_com::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION {
+            Kind: mssf_com::FabricTypes::FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
+            Value: std::ptr::addr_of!(singleton_info) as *mut _,
+        };
+        let ex1 = FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX1 {
+            MinInstanceCount: 1,
+            MinInstancePercentage: 50,
+            Reserved: std::ptr::null_mut(),
+        };
+        let raw = FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM {
+            PartitionInformation: std::ptr::addr_of!(partition_information),
+            InstanceCount: 3,
+            HealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
+            PartitionStatus: FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY,
+            Reserved: std::ptr::addr_of!(ex1) as *mut _,
+        };
+
+        let result = StatelessServicePartitionQueryResult::from(&raw);
+        assert_eq!(
+            result.partition_information.get_partition_id(),
+            partition_id
+        );
+        assert_eq!(result.instance_count, 3);
+        assert_eq!(result.health_state, HealthState::Ok);
+        assert_eq!(result.partition_status, ServicePartitionStatus::Ready);
+        assert_eq!(result.min_instance_count, 1);
+        assert_eq!(result.min_instance_percentage, 50);
     }
 }

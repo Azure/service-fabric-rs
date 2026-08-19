@@ -11,20 +11,8 @@ use crate::{
     types::{ApplicationHealthPolicy, PagingStatus, ServicePartitionAccessStatus},
 };
 use mssf_com::{
-    FabricClient::{IFabricGetDeployedServiceReplicaDetailResult, IFabricGetReplicaListResult2},
-    FabricTypes::{
-        FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION,
-        FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM,
-        FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
-        FABRIC_QUERY_SERVICE_REPLICA_STATUS, FABRIC_QUERY_SERVICE_REPLICA_STATUS_DOWN,
-        FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED, FABRIC_QUERY_SERVICE_REPLICA_STATUS_INBUILD,
-        FABRIC_QUERY_SERVICE_REPLICA_STATUS_INVALID, FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
-        FABRIC_QUERY_SERVICE_REPLICA_STATUS_STANDBY, FABRIC_REMOVE_REPLICA_DESCRIPTION,
-        FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_KIND_SELF_RECONFIGURING,
-        FABRIC_SERVICE_KIND_STATEFUL, FABRIC_SERVICE_KIND_STATELESS,
-        FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION, FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
-        FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM,
-        FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
+    FabricClient::{IFabricGetDeployedServiceReplicaDetailResult, IFabricGetReplicaListResult2}, FabricTypes::{
+        FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION, FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM, FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM, FABRIC_QUERY_SERVICE_REPLICA_STATUS, FABRIC_QUERY_SERVICE_REPLICA_STATUS_DOWN, FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED, FABRIC_QUERY_SERVICE_REPLICA_STATUS_INBUILD, FABRIC_QUERY_SERVICE_REPLICA_STATUS_INVALID, FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY, FABRIC_QUERY_SERVICE_REPLICA_STATUS_STANDBY, FABRIC_REMOVE_REPLICA_DESCRIPTION, FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_KIND_SELF_RECONFIGURING, FABRIC_SERVICE_KIND_STATEFUL, FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION, FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM, FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM, FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM_EX1, FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
     },
 };
 
@@ -144,13 +132,17 @@ pub struct StatefulServiceReplicaQueryResult {
     pub replica_address: WString,
     pub node_name: WString,
     pub last_in_build_duration_in_seconds: i64,
-    // pub Reserved: *mut core::ffi::c_void,
+    // ex1
+    pub previous_replica_role: ReplicaRole,
 }
 
 impl From<&FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM>
     for StatefulServiceReplicaQueryResult
 {
     fn from(value: &FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM) -> Self {
+        let ex1 = unsafe {
+            (value.Reserved as *const FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM_EX1).as_ref()
+        }.unwrap();
         Self {
             replica_id: value.ReplicaId,
             replica_role: (&value.ReplicaRole).into(),
@@ -159,6 +151,7 @@ impl From<&FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM>
             replica_address: WString::from(value.ReplicaAddress),
             node_name: WString::from(value.NodeName),
             last_in_build_duration_in_seconds: value.LastInBuildDurationInSeconds,
+            previous_replica_role: (&ex1.PreviousReplicaRole).into(),
         }
     }
 }
@@ -647,5 +640,40 @@ impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE> for ReplicaHealth
             }
             _ => Self::Invalid,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_stateful_service_replica_query_result_from_raw() {
+        let replica_address = WString::from("127.0.0.1:1234");
+        let node_name = WString::from("Node1");
+        let ex1 = FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM_EX1 {
+            PreviousReplicaRole: mssf_com::FabricTypes::FABRIC_REPLICA_ROLE_IDLE_SECONDARY,
+            Reserved: std::ptr::null_mut(),
+        };
+        let raw = FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM {
+            ReplicaId: 42,
+            ReplicaRole: mssf_com::FabricTypes::FABRIC_REPLICA_ROLE_PRIMARY,
+            ReplicaStatus: FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
+            AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
+            ReplicaAddress: replica_address.as_pcwstr(),
+            NodeName: node_name.as_pcwstr(),
+            LastInBuildDurationInSeconds: 99,
+            Reserved: std::ptr::addr_of!(ex1) as *mut _,
+        };
+
+        let result = StatefulServiceReplicaQueryResult::from(&raw);
+        assert_eq!(result.replica_id, 42);
+        assert_eq!(result.replica_role, ReplicaRole::Primary);
+        assert_eq!(result.replica_status, QueryServiceReplicaStatus::Ready);
+        assert_eq!(result.aggregated_health_state, HealthState::Ok);
+        assert_eq!(result.replica_address.to_string_lossy(), "127.0.0.1:1234");
+        assert_eq!(result.node_name.to_string_lossy(), "Node1");
+        assert_eq!(result.last_in_build_duration_in_seconds, 99);
+        assert_eq!(result.previous_replica_role, ReplicaRole::IdleSecondary);
     }
 }

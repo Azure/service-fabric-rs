@@ -8,7 +8,7 @@
 use crate::{PCWSTR, WString};
 use mssf_com::FabricTypes::{
     FABRIC_LOAD_METRIC, FABRIC_MOVE_COST, FABRIC_MOVE_COST_HIGH, FABRIC_MOVE_COST_LOW,
-    FABRIC_MOVE_COST_MEDIUM, FABRIC_MOVE_COST_ZERO,
+    FABRIC_MOVE_COST_MEDIUM, FABRIC_MOVE_COST_VERYHIGH, FABRIC_MOVE_COST_ZERO,
 };
 use std::marker::PhantomData;
 
@@ -64,7 +64,7 @@ pub enum MoveCost {
     Low,
     Medium,
     High,
-    // VeryHigh,
+    VeryHigh,
 }
 
 impl From<FABRIC_MOVE_COST> for MoveCost {
@@ -74,8 +74,7 @@ impl From<FABRIC_MOVE_COST> for MoveCost {
             FABRIC_MOVE_COST_LOW => Self::Low,
             FABRIC_MOVE_COST_MEDIUM => Self::Medium,
             FABRIC_MOVE_COST_HIGH => Self::High,
-            // Not supported in rust yet
-            // FABRIC_MOVE_COST_VERYHIGH =>Self::VeryHigh,
+            FABRIC_MOVE_COST_VERYHIGH => Self::VeryHigh,
             _ => Self::Zero,
         }
     }
@@ -88,6 +87,7 @@ impl From<MoveCost> for FABRIC_MOVE_COST {
             MoveCost::Low => FABRIC_MOVE_COST_LOW,
             MoveCost::Medium => FABRIC_MOVE_COST_MEDIUM,
             MoveCost::High => FABRIC_MOVE_COST_HIGH,
+            MoveCost::VeryHigh => FABRIC_MOVE_COST_VERYHIGH,
         }
     }
 }

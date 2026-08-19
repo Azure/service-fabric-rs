@@ -7,7 +7,11 @@ use mssf_com::FabricClient::{
     IFabricDeployedApplicationHealthResult, IFabricGetDeployedApplicationListResult,
 };
 use mssf_com::FabricTypes::{
-    FABRIC_DEPLOYED_APPLICATION_HEALTH, FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION, FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION_EX1, FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION, FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM, FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX, FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX2,
+    FABRIC_DEPLOYED_APPLICATION_HEALTH, FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION,
+    FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION_EX1,
+    FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION, FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM,
+    FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX,
+    FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX2,
 };
 use windows_core::WString;
 
@@ -152,14 +156,14 @@ pub struct DeployedApplicationQueryResultItem {
 
 impl From<&FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM> for DeployedApplicationQueryResultItem {
     fn from(value: &FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM) -> Self {
-        let ex1 = 
-            unsafe {
-                (value.Reserved as *const FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX).as_ref()
-            }.unwrap();
-        let ex2 =
-            unsafe { 
-                (ex1.Reserved as *const FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX2).as_ref()
-            }.unwrap();
+        let ex1 = unsafe {
+            (value.Reserved as *const FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX).as_ref()
+        }
+        .unwrap();
+        let ex2 = unsafe {
+            (ex1.Reserved as *const FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX2).as_ref()
+        }
+        .unwrap();
         Self {
             application_name: Uri::from(value.ApplicationName),
             application_type_name: WString::from(value.ApplicationTypeName),

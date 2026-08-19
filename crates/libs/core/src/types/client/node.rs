@@ -17,16 +17,16 @@ use mssf_com::{
         FABRIC_NODE_QUERY_RESULT_ITEM_EX2, FABRIC_NODE_QUERY_RESULT_ITEM_EX3,
         FABRIC_NODE_QUERY_RESULT_ITEM_EX4, FABRIC_NODE_QUERY_RESULT_ITEM_EX5,
         FABRIC_NODE_QUERY_RESULT_ITEM_EX6, FABRIC_NODE_QUERY_RESULT_ITEM_EX7,
-        FABRIC_NODE_QUERY_RESULT_ITEM_EX8, FABRIC_NODE_QUERY_RESULT_ITEM_EX9,
-        FABRIC_PAGING_STATUS, FABRIC_QUERY_NODE_STATUS_FILTER_ALL, 
-        FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT, FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED, 
-        FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING, FABRIC_QUERY_NODE_STATUS_FILTER_DOWN, 
-        FABRIC_QUERY_NODE_STATUS_FILTER_ENABLING, FABRIC_QUERY_NODE_STATUS_FILTER_REMOVED, 
-        FABRIC_QUERY_NODE_STATUS_FILTER_UNKNOWN, FABRIC_QUERY_NODE_STATUS_FILTER_UP,
+        FABRIC_NODE_QUERY_RESULT_ITEM_EX8, FABRIC_NODE_QUERY_RESULT_ITEM_EX9, FABRIC_PAGING_STATUS,
+        FABRIC_QUERY_NODE_STATUS_FILTER_ALL, FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT,
+        FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED, FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING,
+        FABRIC_QUERY_NODE_STATUS_FILTER_DOWN, FABRIC_QUERY_NODE_STATUS_FILTER_ENABLING,
+        FABRIC_QUERY_NODE_STATUS_FILTER_REMOVED, FABRIC_QUERY_NODE_STATUS_FILTER_UNKNOWN,
+        FABRIC_QUERY_NODE_STATUS_FILTER_UP,
     },
 };
-use windows_core::Win32::Foundation::FILETIME;
 use std::ffi::c_void;
+use windows_core::Win32::Foundation::FILETIME;
 
 #[derive(Debug, Default, Clone)]
 pub struct PagingStatus {
@@ -163,27 +163,20 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for NodeQueryResultItem {
                 .as_ref()
                 .unwrap()
         };
-        let ex3 = unsafe {
-            (ex2.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX3).as_ref()
-        }.unwrap();
-        let ex4 = unsafe {
-            (ex3.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX4).as_ref()
-        }.unwrap();
-        let ex5 = unsafe {
-            (ex4.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX5).as_ref()
-        }.unwrap();
-        let ex6 = unsafe {
-            (ex5.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX6).as_ref()
-        }.unwrap();
-        let ex7 = unsafe {
-            (ex6.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX7).as_ref()
-        }.unwrap();
-        let ex8 = unsafe {
-            (ex7.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX8).as_ref()
-        }.unwrap();
-        let ex9 = unsafe {
-            (ex8.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX9).as_ref()
-        }.unwrap();
+        let ex3 =
+            unsafe { (ex2.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX3).as_ref() }.unwrap();
+        let ex4 =
+            unsafe { (ex3.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX4).as_ref() }.unwrap();
+        let ex5 =
+            unsafe { (ex4.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX5).as_ref() }.unwrap();
+        let ex6 =
+            unsafe { (ex5.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX6).as_ref() }.unwrap();
+        let ex7 =
+            unsafe { (ex6.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX7).as_ref() }.unwrap();
+        let ex8 =
+            unsafe { (ex7.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX8).as_ref() }.unwrap();
+        let ex9 =
+            unsafe { (ex8.Reserved as *const FABRIC_NODE_QUERY_RESULT_ITEM_EX9).as_ref() }.unwrap();
         NodeQueryResultItem {
             name: WString::from(raw.NodeName),
             ip_address_or_fqdn: WString::from(raw.IpAddressOrFQDN),

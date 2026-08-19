@@ -13,7 +13,9 @@ use mssf_com::FabricTypes::{
     FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_STATE,
     FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH_STATES_FILTER,
     FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_DESCRIPTION,
-    FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM, FABRIC_DEPLOYMENT_STATUS,
+    FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM,
+    FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX1,
+    FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX2, FABRIC_DEPLOYMENT_STATUS,
     FABRIC_DEPLOYMENT_STATUS_ACTIVATING, FABRIC_DEPLOYMENT_STATUS_ACTIVE,
     FABRIC_DEPLOYMENT_STATUS_DEACTIVATING, FABRIC_DEPLOYMENT_STATUS_DOWNLOADING,
     FABRIC_DEPLOYMENT_STATUS_FAILED, FABRIC_DEPLOYMENT_STATUS_INVALID,
@@ -212,16 +214,31 @@ pub struct DeployedServicePackageQueryResultItem {
     pub service_manifest_name: WString,
     pub service_manifest_version: WString,
     pub status: DeploymentStatus,
+    // ex1
+    pub service_package_activation_id: WString,
+    // ex2
+    pub health_state: HealthState,
 }
 
 impl From<&FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM>
     for DeployedServicePackageQueryResultItem
 {
     fn from(value: &FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM) -> Self {
+        let ex1 = unsafe {
+            (value.Reserved as *const FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX1)
+                .as_ref()
+        }
+        .unwrap();
+        let ex2 = unsafe {
+            (ex1.Reserved as *const FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX2).as_ref()
+        }
+        .unwrap();
         Self {
             service_manifest_name: WString::from(value.ServiceManifestName),
             service_manifest_version: WString::from(value.ServiceManifestVersion),
             status: value.DeployedServicePackageStatus.into(),
+            service_package_activation_id: WString::from(ex1.ServicePackageActivationId),
+            health_state: (&ex2.HealthState).into(),
         }
     }
 }
@@ -313,15 +330,29 @@ mod tests {
     fn test_deployed_service_package_query_result_item_from_raw() {
         let manifest_name = WString::from("Pkg1");
         let manifest_version = WString::from("1.0.0");
+        let activation_id = WString::from("activation-1");
+        let ex2 = FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX2 {
+            HealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
+            Reserved: std::ptr::null_mut(),
+        };
+        let ex1 = FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX1 {
+            ServicePackageActivationId: activation_id.as_pcwstr(),
+            Reserved: std::ptr::addr_of!(ex2) as *mut _,
+        };
         let raw = FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM {
             ServiceManifestName: manifest_name.as_pcwstr(),
             ServiceManifestVersion: manifest_version.as_pcwstr(),
             DeployedServicePackageStatus: FABRIC_DEPLOYMENT_STATUS_ACTIVE,
-            Reserved: std::ptr::null_mut(),
+            Reserved: std::ptr::addr_of!(ex1) as *mut _,
         };
         let item = DeployedServicePackageQueryResultItem::from(&raw);
         assert_eq!(item.service_manifest_name.to_string_lossy(), "Pkg1");
         assert_eq!(item.service_manifest_version.to_string_lossy(), "1.0.0");
         assert_eq!(item.status, DeploymentStatus::Active);
+        assert_eq!(
+            item.service_package_activation_id.to_string_lossy(),
+            "activation-1"
+        );
+        assert_eq!(item.health_state, HealthState::Ok);
     }
 }

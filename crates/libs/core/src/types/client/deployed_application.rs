@@ -10,6 +10,8 @@ use mssf_com::FabricTypes::{
     FABRIC_DEPLOYED_APPLICATION_HEALTH, FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION,
     FABRIC_DEPLOYED_APPLICATION_HEALTH_QUERY_DESCRIPTION_EX1,
     FABRIC_DEPLOYED_APPLICATION_QUERY_DESCRIPTION, FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM,
+    FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX,
+    FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX2,
 };
 use windows_core::WString;
 
@@ -144,14 +146,32 @@ pub struct DeployedApplicationQueryResultItem {
     pub application_name: Uri,
     pub application_type_name: WString,
     pub status: super::DeploymentStatus,
+    // ex1
+    pub work_directory: WString,
+    pub log_directory: WString,
+    pub temp_directory: WString,
+    // ex2
+    pub health_state: HealthState,
 }
 
 impl From<&FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM> for DeployedApplicationQueryResultItem {
     fn from(value: &FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM) -> Self {
+        let ex1 = unsafe {
+            (value.Reserved as *const FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX).as_ref()
+        }
+        .unwrap();
+        let ex2 = unsafe {
+            (ex1.Reserved as *const FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX2).as_ref()
+        }
+        .unwrap();
         Self {
             application_name: Uri::from(value.ApplicationName),
             application_type_name: WString::from(value.ApplicationTypeName),
             status: value.DeployedApplicationStatus.into(),
+            work_directory: WString::from(ex1.WorkDirectory),
+            log_directory: WString::from(ex1.LogDirectory),
+            temp_directory: WString::from(ex1.TempDirectory),
+            health_state: (&ex2.HealthState).into(),
         }
     }
 }
@@ -233,15 +253,32 @@ mod tests {
     fn test_deployed_application_query_result_item_from_raw() {
         let app_name = Uri::from("fabric:/App1");
         let app_type_name = WString::from("AppType1");
+        let work_directory = WString::from("work_dir");
+        let log_directory = WString::from("log_dir");
+        let temp_directory = WString::from("temp_dir");
+        let ex2 = FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX2 {
+            HealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
+            Reserved: std::ptr::null_mut(),
+        };
+        let ex1 = FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX {
+            WorkDirectory: work_directory.as_pcwstr(),
+            LogDirectory: log_directory.as_pcwstr(),
+            TempDirectory: temp_directory.as_pcwstr(),
+            Reserved: std::ptr::addr_of!(ex2) as *mut _,
+        };
         let raw = FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM {
             ApplicationName: app_name.as_raw(),
             ApplicationTypeName: app_type_name.as_pcwstr(),
             DeployedApplicationStatus: mssf_com::FabricTypes::FABRIC_DEPLOYMENT_STATUS_ACTIVE,
-            Reserved: std::ptr::null_mut(),
+            Reserved: std::ptr::addr_of!(ex1) as *mut _,
         };
         let item = DeployedApplicationQueryResultItem::from(&raw);
         assert_eq!(item.application_name.to_string(), "fabric:/App1");
         assert_eq!(item.application_type_name.to_string_lossy(), "AppType1");
         assert_eq!(item.status, crate::types::DeploymentStatus::Active);
+        assert_eq!(item.work_directory.to_string_lossy(), "work_dir");
+        assert_eq!(item.log_directory.to_string_lossy(), "log_dir");
+        assert_eq!(item.temp_directory.to_string_lossy(), "temp_dir");
+        assert_eq!(item.health_state, HealthState::Ok);
     }
 }

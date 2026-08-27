@@ -231,8 +231,10 @@ impl From<&FABRIC_HEALTH_EVENT> for HealthEvent {
             health_information: unsafe { value.HealthInformation.as_ref().unwrap().into() },
             source_utc_timestamp: try_filetime_to_system_time(value.SourceUtcTimestamp)
                 .unwrap_or(SystemTime::UNIX_EPOCH),
-            last_modified_utc_timestamp: try_filetime_to_system_time(value.LastModifiedUtcTimestamp)
-                .unwrap_or(SystemTime::UNIX_EPOCH),
+            last_modified_utc_timestamp: try_filetime_to_system_time(
+                value.LastModifiedUtcTimestamp,
+            )
+            .unwrap_or(SystemTime::UNIX_EPOCH),
             is_expired: value.IsExpired,
         }
     }

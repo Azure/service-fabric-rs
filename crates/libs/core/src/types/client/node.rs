@@ -195,7 +195,8 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for NodeQueryResultItem {
             is_stopped: ex4.IsStopped,
             node_down_time_in_seconds: ex5.NodeDownTimeInSeconds,
             node_up_at: try_filetime_to_system_time(ex6.NodeUpAt).unwrap_or(SystemTime::UNIX_EPOCH),
-            node_down_at: try_filetime_to_system_time(ex6.NodeDownAt).unwrap_or(SystemTime::UNIX_EPOCH),
+            node_down_at: try_filetime_to_system_time(ex6.NodeDownAt)
+                .unwrap_or(SystemTime::UNIX_EPOCH),
             infrastructure_placement_id: WString::from(ex7.InfrastructurePlacementID),
             is_node_by_node_upgrade_in_progress: ex9.IsNodeByNodeUpgradeInProgress,
         }

@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use std::time::SystemTime;
+
 use mssf_com::{
     FabricClient::IFabricNameEnumerationResult,
     FabricTypes::{
@@ -16,6 +18,7 @@ use mssf_com::{
 };
 use windows_core::WString;
 
+use crate::time::filetime_to_system_time;
 use crate::types::Uri;
 
 pub struct NameEnumerationResult {
@@ -80,7 +83,7 @@ pub struct NamedPropertyMetadata {
     pub property_type_id: PropertyTypeId,
     pub value_size: i32,
     pub sequence_number: i64,
-    pub last_modified_utc: windows_core::Win32::Foundation::FILETIME,
+    pub last_modified_utc: SystemTime,
     pub name: Uri,
 }
 
@@ -91,7 +94,8 @@ impl NamedPropertyMetadata {
             property_type_id: ptr.TypeId.into(),
             value_size: ptr.ValueSize,
             sequence_number: ptr.SequenceNumber,
-            last_modified_utc: ptr.LastModifiedUtc,
+            last_modified_utc: filetime_to_system_time(ptr.LastModifiedUtc)
+                .unwrap_or(SystemTime::UNIX_EPOCH),
             name: Uri::from(ptr.Name),
         }
     }

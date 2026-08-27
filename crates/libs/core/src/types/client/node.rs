@@ -4,6 +4,7 @@
 // ------------------------------------------------------------
 
 use crate::mem::{BoxPool, GetRawWithBoxPool};
+use crate::time::filetime_to_system_time;
 use crate::types::HealthState;
 use crate::{WString, types::Uri};
 use bitflags::bitflags;
@@ -26,7 +27,7 @@ use mssf_com::{
     },
 };
 use std::ffi::c_void;
-use windows_core::Win32::Foundation::FILETIME;
+use std::time::SystemTime;
 
 #[derive(Debug, Default, Clone)]
 pub struct PagingStatus {
@@ -139,8 +140,8 @@ pub struct NodeQueryResultItem {
     // ex5
     pub node_down_time_in_seconds: i64,
     // ex6
-    pub node_up_at: FILETIME,
-    pub node_down_at: FILETIME,
+    pub node_up_at: SystemTime,
+    pub node_down_at: SystemTime,
     // ex7
     pub infrastructure_placement_id: WString,
     // ex8
@@ -193,8 +194,8 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for NodeQueryResultItem {
             node_instance_id: ex2.NodeInstanceId,
             is_stopped: ex4.IsStopped,
             node_down_time_in_seconds: ex5.NodeDownTimeInSeconds,
-            node_up_at: ex6.NodeUpAt,
-            node_down_at: ex6.NodeDownAt,
+            node_up_at: filetime_to_system_time(ex6.NodeUpAt).unwrap_or(SystemTime::UNIX_EPOCH),
+            node_down_at: filetime_to_system_time(ex6.NodeDownAt).unwrap_or(SystemTime::UNIX_EPOCH),
             infrastructure_placement_id: WString::from(ex7.InfrastructurePlacementID),
             is_node_by_node_upgrade_in_progress: ex9.IsNodeByNodeUpgradeInProgress,
         }
@@ -247,6 +248,8 @@ impl From<FABRIC_QUERY_NODE_STATUS> for NodeStatus {
 
 #[cfg(test)]
 mod tests {
+    use windows_core::Win32::Foundation::FILETIME;
+
     use super::*;
 
     #[test]
@@ -341,17 +344,19 @@ mod tests {
         assert_eq!(item.node_down_time_in_seconds, 123);
         assert_eq!(
             item.node_up_at,
-            FILETIME {
+            filetime_to_system_time(FILETIME {
                 dwLowDateTime: 100,
                 dwHighDateTime: 200,
-            }
+            })
+            .unwrap()
         );
         assert_eq!(
             item.node_down_at,
-            FILETIME {
+            filetime_to_system_time(FILETIME {
                 dwLowDateTime: 300,
                 dwHighDateTime: 400,
-            }
+            })
+            .unwrap()
         );
         assert_eq!(
             item.infrastructure_placement_id.to_string_lossy(),

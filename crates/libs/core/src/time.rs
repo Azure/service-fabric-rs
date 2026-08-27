@@ -44,3 +44,31 @@ pub(crate) fn try_filetime_to_system_time(filetime: FILETIME) -> Option<SystemTi
         UNIX_EPOCH.checked_sub(delta)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_filetime_unix_epoch() {
+        // FILETIME for 1970-01-01 00:00:00 UTC, i.e. the Unix epoch itself.
+        let filetime = FILETIME {
+            dwLowDateTime: 3_577_643_008,
+            dwHighDateTime: 27_111_902,
+        };
+
+        assert_eq!(try_filetime_to_system_time(filetime), Some(UNIX_EPOCH));
+    }
+
+    #[test]
+    fn test_filetime_after_unix_epoch() {
+        // FILETIME for May 12 2026 10:29:43.004771 UTC.
+        let filetime = FILETIME {
+            dwLowDateTime: 1_057_701_854,
+            dwHighDateTime: 31_252_986,
+        };
+
+        let expected = UNIX_EPOCH + Duration::new(1_778_581_783, 4_771_000);
+        assert_eq!(try_filetime_to_system_time(filetime), Some(expected));
+    }
+}

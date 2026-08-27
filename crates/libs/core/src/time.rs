@@ -19,7 +19,7 @@ const FILETIME_UNIX_EPOCH_OFFSET_TICKS: u64 = 116_444_736_000_000_000;
 /// 100-nanosecond precision. Both epochs denote UTC instants, although
 /// [`SystemTime`] itself has no timezone. Returns [`None`] when the result is
 /// outside the range supported by the current platform.
-pub(crate) fn filetime_to_system_time(filetime: FILETIME) -> Option<SystemTime> {
+pub(crate) fn try_filetime_to_system_time(filetime: FILETIME) -> Option<SystemTime> {
     // FILETIME represents one unsigned 64-bit tick count as separate high and
     // low 32-bit words. Shifting the high word restores bits 32 through 63.
     let ticks = (u64::from(filetime.dwHighDateTime) << 32) | u64::from(filetime.dwLowDateTime);

@@ -15,7 +15,7 @@ use mssf_com::FabricTypes::{
 use std::time::SystemTime;
 
 use crate::mem::{BoxPool, GetRaw, GetRawWithBoxPool};
-use crate::time::filetime_to_system_time;
+use crate::time::try_filetime_to_system_time;
 use crate::{GUID, WString};
 
 use crate::types::{HealthInformation, HealthState, Uri};
@@ -229,9 +229,9 @@ impl From<&FABRIC_HEALTH_EVENT> for HealthEvent {
     fn from(value: &FABRIC_HEALTH_EVENT) -> Self {
         Self {
             health_information: unsafe { value.HealthInformation.as_ref().unwrap().into() },
-            source_utc_timestamp: filetime_to_system_time(value.SourceUtcTimestamp)
+            source_utc_timestamp: try_filetime_to_system_time(value.SourceUtcTimestamp)
                 .unwrap_or(SystemTime::UNIX_EPOCH),
-            last_modified_utc_timestamp: filetime_to_system_time(value.LastModifiedUtcTimestamp)
+            last_modified_utc_timestamp: try_filetime_to_system_time(value.LastModifiedUtcTimestamp)
                 .unwrap_or(SystemTime::UNIX_EPOCH),
             is_expired: value.IsExpired,
         }

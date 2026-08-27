@@ -4,7 +4,7 @@
 // ------------------------------------------------------------
 
 use crate::mem::{BoxPool, GetRawWithBoxPool};
-use crate::time::filetime_to_system_time;
+use crate::time::try_filetime_to_system_time;
 use crate::types::HealthState;
 use crate::{WString, types::Uri};
 use bitflags::bitflags;
@@ -194,8 +194,8 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for NodeQueryResultItem {
             node_instance_id: ex2.NodeInstanceId,
             is_stopped: ex4.IsStopped,
             node_down_time_in_seconds: ex5.NodeDownTimeInSeconds,
-            node_up_at: filetime_to_system_time(ex6.NodeUpAt).unwrap_or(SystemTime::UNIX_EPOCH),
-            node_down_at: filetime_to_system_time(ex6.NodeDownAt).unwrap_or(SystemTime::UNIX_EPOCH),
+            node_up_at: try_filetime_to_system_time(ex6.NodeUpAt).unwrap_or(SystemTime::UNIX_EPOCH),
+            node_down_at: try_filetime_to_system_time(ex6.NodeDownAt).unwrap_or(SystemTime::UNIX_EPOCH),
             infrastructure_placement_id: WString::from(ex7.InfrastructurePlacementID),
             is_node_by_node_upgrade_in_progress: ex9.IsNodeByNodeUpgradeInProgress,
         }
@@ -344,7 +344,7 @@ mod tests {
         assert_eq!(item.node_down_time_in_seconds, 123);
         assert_eq!(
             item.node_up_at,
-            filetime_to_system_time(FILETIME {
+            try_filetime_to_system_time(FILETIME {
                 dwLowDateTime: 100,
                 dwHighDateTime: 200,
             })
@@ -352,7 +352,7 @@ mod tests {
         );
         assert_eq!(
             item.node_down_at,
-            filetime_to_system_time(FILETIME {
+            try_filetime_to_system_time(FILETIME {
                 dwLowDateTime: 300,
                 dwHighDateTime: 400,
             })

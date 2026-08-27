@@ -29,7 +29,7 @@ use mssf_com::{
     },
 };
 
-use crate::time::filetime_to_system_time;
+use crate::time::try_filetime_to_system_time;
 use crate::types::{HealthState, HealthStateFilterFlags, ReplicaRole};
 
 use super::{QueryReplicatorOperationName, QueryServiceOperationName};
@@ -284,7 +284,7 @@ impl DeployedStatefulServiceReplicaDetailQueryResult {
             partition_id: value.PartitionId,
             replica_id: value.ReplicaId,
             current_service_operation: (value.CurrentServiceOperation).into(),
-            current_service_operation_start_time_utc: filetime_to_system_time(
+            current_service_operation_start_time_utc: try_filetime_to_system_time(
                 value.CurrentServiceOperationStartTimeUtc,
             )
             .unwrap_or(SystemTime::UNIX_EPOCH),

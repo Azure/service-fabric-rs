@@ -8,7 +8,7 @@
 use std::time::SystemTime;
 
 use crate::WString;
-use crate::time::filetime_to_system_time;
+use crate::time::try_filetime_to_system_time;
 use mssf_com::FabricTypes::FABRIC_LOAD_METRIC_REPORT;
 
 /// Wrapper for FABRIC_LOAD_METRIC_REPORT
@@ -24,7 +24,7 @@ impl From<&FABRIC_LOAD_METRIC_REPORT> for LoadMetricReport {
         Self {
             name: WString::from(value.Name),
             value: value.Value,
-            last_reported_utc: filetime_to_system_time(value.LastReportedUtc)
+            last_reported_utc: try_filetime_to_system_time(value.LastReportedUtc)
                 .unwrap_or(SystemTime::UNIX_EPOCH),
         }
     }

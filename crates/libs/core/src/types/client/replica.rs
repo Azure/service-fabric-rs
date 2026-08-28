@@ -29,6 +29,7 @@ use mssf_com::{
     },
 };
 
+use crate::time::try_filetime_to_system_time;
 use crate::types::{HealthState, HealthStateFilterFlags, ReplicaRole};
 
 use super::{QueryReplicatorOperationName, QueryServiceOperationName};
@@ -283,7 +284,10 @@ impl DeployedStatefulServiceReplicaDetailQueryResult {
             partition_id: value.PartitionId,
             replica_id: value.ReplicaId,
             current_service_operation: (value.CurrentServiceOperation).into(),
-            current_service_operation_start_time_utc: SystemTime::UNIX_EPOCH, // TODO: convert Win32 FILETIME to SystemTime in Unix or Win32 depending on the platform
+            current_service_operation_start_time_utc: try_filetime_to_system_time(
+                value.CurrentServiceOperationStartTimeUtc,
+            )
+            .unwrap_or(SystemTime::UNIX_EPOCH),
             current_replicator_operation: (value.CurrentReplicatorOperation).into(),
             read_status: (value.ReadStatus).into(),
             write_status: (value.WriteStatus).into(),

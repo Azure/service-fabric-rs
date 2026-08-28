@@ -12,9 +12,10 @@ use mssf_com::FabricTypes::{
     FABRIC_NODE_HEALTH_STATES_FILTER, FABRIC_SERVICE_TYPE_HEALTH_POLICY,
     FABRIC_SERVICE_TYPE_HEALTH_POLICY_MAP, FABRIC_SERVICE_TYPE_HEALTH_POLICY_MAP_ITEM,
 };
-use windows_core::Win32::Foundation::FILETIME;
+use std::time::SystemTime;
 
 use crate::mem::{BoxPool, GetRaw, GetRawWithBoxPool};
+use crate::time::try_filetime_to_system_time;
 use crate::{GUID, WString};
 
 use crate::types::{HealthInformation, HealthState, Uri};
@@ -219,8 +220,8 @@ impl NodeHealthResult {
 #[derive(Debug, Clone)]
 pub struct HealthEvent {
     pub health_information: HealthInformation,
-    pub source_utc_timestamp: FILETIME,
-    pub last_modified_utc_timestamp: FILETIME,
+    pub source_utc_timestamp: SystemTime,
+    pub last_modified_utc_timestamp: SystemTime,
     pub is_expired: bool,
 }
 
@@ -228,8 +229,12 @@ impl From<&FABRIC_HEALTH_EVENT> for HealthEvent {
     fn from(value: &FABRIC_HEALTH_EVENT) -> Self {
         Self {
             health_information: unsafe { value.HealthInformation.as_ref().unwrap().into() },
-            source_utc_timestamp: value.SourceUtcTimestamp,
-            last_modified_utc_timestamp: value.LastModifiedUtcTimestamp,
+            source_utc_timestamp: try_filetime_to_system_time(value.SourceUtcTimestamp)
+                .unwrap_or(SystemTime::UNIX_EPOCH),
+            last_modified_utc_timestamp: try_filetime_to_system_time(
+                value.LastModifiedUtcTimestamp,
+            )
+            .unwrap_or(SystemTime::UNIX_EPOCH),
             is_expired: value.IsExpired,
         }
     }

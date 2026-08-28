@@ -37,6 +37,7 @@ pub mod mem;
 pub mod runtime;
 pub mod strings;
 pub mod sync;
+mod time;
 pub mod types;
 
 // Rename the mssf_pal dependency

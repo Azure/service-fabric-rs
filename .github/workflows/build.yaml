@@ -22,7 +22,7 @@ jobs:
       rust-versions: ${{ steps.set-versions.outputs.rust-versions }}
       rust-max-version: ${{ steps.set-versions.outputs.rust-max-version }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Read max Rust version from rust-toolchain.toml
         id: set-versions
@@ -42,7 +42,7 @@ jobs:
       matrix:
         rust-version: ${{ fromJSON(needs.setup.outputs.rust-versions) }}
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Show cmake version
       run: cmake --version
@@ -56,7 +56,7 @@ jobs:
     - name: Remove rust toolchain file to avoid conflict
       run: rm rust-toolchain.toml
 
-    - uses: Swatinem/rust-cache@v2
+    - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
     - uses: taiki-e/install-action@protoc
 
@@ -120,7 +120,7 @@ jobs:
           tdnf install --noplugins --skipsignature -y \
             tar unzip ca-certificates gcc glibc-devel binutils make protobuf-compiler
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Remove rust toolchain file to avoid conflict
         run: rm -f rust-toolchain.toml
@@ -131,7 +131,7 @@ jobs:
           toolchain: ${{ matrix.rust-version }}
           components: rustfmt, clippy
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
       - name: Install cmake
         uses: lukka/get-cmake@latest
@@ -178,7 +178,7 @@ jobs:
         run: df -h
 
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Configure Docker to use /mnt directory
         run: |
@@ -208,7 +208,7 @@ jobs:
           echo "/tmp/artifacts/coredumps/core.%e.%p.%h.%t" | sudo tee /proc/sys/kernel/core_pattern
 
       - name: Run in Dev Container
-        uses: devcontainers/ci@v0.3
+        uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
           # This env var is used in the docker-compose.yml to set the rust version in the container
           RUST_VERSION: ${{ matrix.rust-version }}
@@ -279,7 +279,7 @@ jobs:
 
       - name: Upload core dumps artifact if exists
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: artifacts-${{ matrix.devcontainer-type }}-rust${{ matrix.rust-version }}-run${{ github.run_id }}-attempt${{ github.run_attempt }}
           path: artifacts.tar.gz
@@ -289,7 +289,7 @@ jobs:
     needs: setup
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Show cmake version
       run: cmake --version
@@ -300,7 +300,7 @@ jobs:
         toolchain: ${{ needs.setup.outputs.rust-max-version }}
         components: rustfmt, clippy
 
-    - uses: Swatinem/rust-cache@v2
+    - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
     - uses: taiki-e/install-action@protoc
 

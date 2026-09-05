@@ -6,7 +6,7 @@
 //! State-of-the-World Aggregated Discovery Service (ADS).
 //!
 //! Serves the resource graph built by [`crate::resources`] and *pushes* a fresh
-//! `ClusterLoadAssignment` to every connected stream whenever the mapped
+//! `ClusterLoadAssignment` to every connected stream whenever a mapped
 //! service's authoritative endpoint changes.
 //!
 //! Delta/incremental xDS is not implemented; State-of-the-World is sufficient
@@ -25,6 +25,7 @@ use envoy_types::pb::envoy::service::discovery::v3::{
 };
 use envoy_types::pb::google::protobuf::Any;
 use futures::Stream;
+use futures::future::select_all;
 use prost::Message;
 use tokio::sync::watch;
 use tokio_util::sync::CancellationToken;
@@ -32,20 +33,20 @@ use tonic::{Request, Response, Status};
 
 use crate::config::XdsMapping;
 use crate::endpoint::{EndpointSnapshot, EndpointSource};
+use crate::registry::ServiceRegistry;
 use crate::resources::{
     CLUSTER_TYPE_URL, ENDPOINT_TYPE_URL, LISTENER_TYPE_URL, build_cluster, build_endpoints,
     build_listener,
 };
 
-/// Serves one [`XdsMapping`] over ADS, backed by an [`EndpointSource`].
+/// Serves a [`ServiceRegistry`] over ADS, backed by each entry's
+/// [`EndpointSource`].
 ///
-/// **One mapping per service instance.** Serving several SF services requires
-/// several `AdsService`s on separate ports. This is a limitation of this crate,
-/// not of xDS — see the "Known limitations" section of
-/// `docs/design/XdsNamingDesign.md` for what lifting it would involve.
+/// One server publishes any number of services; clients subscribe by resource
+/// name. Use [`AdsService::new`] for the single-service case, or
+/// [`AdsService::from_registry`] to serve several.
 pub struct AdsService {
-    mapping: Arc<XdsMapping>,
-    source: Arc<dyn EndpointSource>,
+    registry: Arc<ServiceRegistry>,
     /// Cancelling ends every open ADS stream and stops the server.
     ///
     /// An ADS stream is long-lived by design, and `tonic`'s graceful shutdown
@@ -57,12 +58,12 @@ pub struct AdsService {
 }
 
 impl AdsService {
-    /// Create the service with its own cancellation token.
+    /// Create a single-service instance with its own cancellation token.
     pub fn new(mapping: XdsMapping, source: Arc<dyn EndpointSource>) -> Self {
         Self::with_cancellation(mapping, source, CancellationToken::new())
     }
 
-    /// Create the service driven by a caller-supplied cancellation token.
+    /// Create a single-service instance driven by a caller-supplied token.
     ///
     /// Use this to tie the server's lifetime to an existing scope — for
     /// example an SF service's `close(cancellation_token)`, so the ADS server
@@ -75,11 +76,28 @@ impl AdsService {
         source: Arc<dyn EndpointSource>,
         token: CancellationToken,
     ) -> Self {
+        Self::from_registry_with_cancellation(ServiceRegistry::single(mapping, source), token)
+    }
+
+    /// Serve every service in `registry`, with a fresh cancellation token.
+    pub fn from_registry(registry: ServiceRegistry) -> Self {
+        Self::from_registry_with_cancellation(registry, CancellationToken::new())
+    }
+
+    /// Serve every service in `registry`, driven by a caller-supplied token.
+    pub fn from_registry_with_cancellation(
+        registry: ServiceRegistry,
+        token: CancellationToken,
+    ) -> Self {
         Self {
-            mapping: Arc::new(mapping),
-            source,
+            registry: Arc::new(registry),
             token,
         }
+    }
+
+    /// The services this server publishes.
+    pub fn registry(&self) -> &ServiceRegistry {
+        &self.registry
     }
 
     /// A clone of the token that stops this service.
@@ -223,53 +241,78 @@ impl AdsService {
         })
     }
 
-    /// Build the resources for one type URL at a given endpoint state.
+    /// Build the resources for one type URL across every registered service.
     ///
-    /// Returns an empty vector when the request names a resource this mapping
-    /// does not serve, which the client reports as resource-not-found. The
-    /// Listener is likewise withheld when the service does not exist.
+    /// `snapshots` is parallel to `registry.entries()`.
+    ///
+    /// Returns an empty vector when the request names only resources this
+    /// server does not publish, which the client reports as resource-not-found.
+    /// A `NotFound` entry withholds *its own* Listener and Cluster and leaves
+    /// the others untouched.
+    ///
+    /// The full subscribed set is always returned for a given type. Listeners
+    /// and Clusters are "all resources required" in State-of-the-World, so
+    /// answering with a subset silently **deletes** the omitted ones on the
+    /// client.
     fn resources_for(
-        mapping: &XdsMapping,
-        snapshot: &EndpointSnapshot,
+        registry: &ServiceRegistry,
+        snapshots: &[EndpointSnapshot],
         type_url: &str,
         resource_names: &[String],
     ) -> Vec<Any> {
-        let wants =
-            |name: &str| resource_names.is_empty() || resource_names.iter().any(|n| n == name);
+        // An empty request set is xDS's wildcard: everything of this type.
+        // Otherwise resolve each requested name through the registry's
+        // `(type_url, name)` index, so name resolution has exactly one
+        // implementation. Sorting restores registry order; dedup tolerates a
+        // client naming the same resource twice.
+        let selected: Vec<usize> = if resource_names.is_empty() {
+            (0..registry.len()).collect()
+        } else {
+            let mut selected: Vec<usize> = resource_names
+                .iter()
+                .filter_map(|name| registry.index_of(type_url, name))
+                .collect();
+            selected.sort_unstable();
+            selected.dedup();
+            selected
+        };
 
-        match type_url {
-            LISTENER_TYPE_URL => {
-                // A missing service withholds the Listener. Because Listeners
-                // are "all resources required" in SotW, omission is a deletion.
-                if matches!(snapshot, EndpointSnapshot::NotFound) || !wants(mapping.xds_name()) {
-                    return vec![];
+        let mut out = Vec::new();
+        for i in selected {
+            let mapping = registry.entries()[i].mapping();
+            let snapshot = &snapshots[i];
+            match type_url {
+                LISTENER_TYPE_URL => {
+                    // A missing service withholds the Listener. Because
+                    // Listeners are "all resources required" in SotW, omission
+                    // is a deletion.
+                    if matches!(snapshot, EndpointSnapshot::NotFound) {
+                        continue;
+                    }
+                    out.push(any(
+                        LISTENER_TYPE_URL,
+                        build_listener(mapping).encode_to_vec(),
+                    ));
                 }
-                vec![any(
-                    LISTENER_TYPE_URL,
-                    build_listener(mapping).encode_to_vec(),
-                )]
-            }
-            CLUSTER_TYPE_URL => {
-                if matches!(snapshot, EndpointSnapshot::NotFound) || !wants(&mapping.cluster_name())
-                {
-                    return vec![];
+                CLUSTER_TYPE_URL => {
+                    if matches!(snapshot, EndpointSnapshot::NotFound) {
+                        continue;
+                    }
+                    out.push(any(
+                        CLUSTER_TYPE_URL,
+                        build_cluster(mapping).encode_to_vec(),
+                    ));
                 }
-                vec![any(
-                    CLUSTER_TYPE_URL,
-                    build_cluster(mapping).encode_to_vec(),
-                )]
-            }
-            ENDPOINT_TYPE_URL => {
-                if !wants(&mapping.cluster_name()) {
-                    return vec![];
+                ENDPOINT_TYPE_URL => {
+                    out.push(any(
+                        ENDPOINT_TYPE_URL,
+                        build_endpoints(mapping, snapshot).encode_to_vec(),
+                    ));
                 }
-                vec![any(
-                    ENDPOINT_TYPE_URL,
-                    build_endpoints(mapping, snapshot).encode_to_vec(),
-                )]
+                _ => return vec![],
             }
-            _ => vec![],
         }
+        out
     }
 }
 
@@ -278,6 +321,65 @@ fn any(type_url: &str, value: Vec<u8>) -> Any {
         type_url: type_url.to_string(),
         value,
     }
+}
+
+/// Await the next endpoint change across the still-live registered services.
+///
+/// Returns the index of the entry that changed.
+///
+/// A source whose sender has been dropped is retired from the fan-in rather
+/// than ending the stream. This matters far more with several services than it
+/// did with one: a closed receiver reports "changed" immediately and forever,
+/// and because every reconnecting stream re-subscribes to the same dead
+/// channel, one torn-down source would otherwise break every *other* service
+/// on the server, permanently.
+///
+/// A retired source is deliberately **not** published as `NotFound`. A dropped
+/// sender is a host-process lifecycle event, not naming reporting that the
+/// service is gone, and `NotFound` is a permanent deletion on the client. The
+/// last published state is served instead.
+///
+/// If every source is gone this never resolves, leaving the `select!`'s other
+/// branches -- cancellation above all -- free to run.
+///
+/// This is a standalone future rather than inline in the `select!` because the
+/// fan-in borrows `receivers` mutably for as long as it is alive; resolving
+/// here releases that borrow before the caller's handler runs.
+/// `watch::Receiver::changed` is cancel-safe, so rebuilding the set on every
+/// call is correct.
+async fn next_endpoint_change(
+    receivers: &mut [watch::Receiver<EndpointSnapshot>],
+    alive: &mut [bool],
+) -> usize {
+    loop {
+        let pending: Vec<_> = receivers
+            .iter_mut()
+            .enumerate()
+            .filter(|(i, _)| alive[*i])
+            .map(|(i, rx)| Box::pin(async move { (i, rx.changed().await) }))
+            .collect();
+
+        if pending.is_empty() {
+            std::future::pending::<()>().await;
+        }
+
+        let ((which, result), _, _) = select_all(pending).await;
+        if result.is_ok() {
+            receivers[which].borrow_and_update();
+            return which;
+        }
+
+        tracing::debug!(
+            entry = which,
+            "endpoint source dropped; retiring it from the fan-in"
+        );
+        alive[which] = false;
+    }
+}
+
+/// Every registered service's current snapshot, in registry order.
+fn current_snapshots(readers: &[watch::Receiver<EndpointSnapshot>]) -> Vec<EndpointSnapshot> {
+    readers.iter().map(|rx| rx.borrow().clone()).collect()
 }
 
 /// Whether a request is a new subscription (needing a response) rather than an
@@ -314,12 +416,28 @@ impl AggregatedDiscoveryService for AdsService {
         request: Request<tonic::Streaming<DiscoveryRequest>>,
     ) -> Result<Response<Self::StreamAggregatedResourcesStream>, Status> {
         let mut inbound = request.into_inner();
-        let mapping = self.mapping.clone();
-        let mut rx: watch::Receiver<EndpointSnapshot> = self.source.subscribe();
+        let registry = self.registry.clone();
+        let mut receivers: Vec<watch::Receiver<EndpointSnapshot>> = registry
+            .entries()
+            .iter()
+            .map(|e| e.source().subscribe())
+            .collect();
+        // Independent clones used only for reading. `changed()` needs `&mut`,
+        // and that borrow lives for as long as the fan-in future does -- which
+        // is the whole `select!` -- so no arm can read through the same
+        // handles. Reading through clones keeps every response built from the
+        // live value rather than a cached copy that could drift.
+        let readers: Vec<watch::Receiver<EndpointSnapshot>> = receivers.to_vec();
+        let mut alive: Vec<bool> = vec![true; receivers.len()];
         let token = self.token.clone();
 
         let outbound = async_stream::try_stream! {
             let mut version = Versioning(0);
+            // Mark the seeded values seen, so the fan-in does not immediately
+            // report a change the client is about to be told about anyway.
+            for rx in receivers.iter_mut() {
+                rx.borrow_and_update();
+            }
             // Resource names this stream has subscribed to, per type URL.
             // Tracked for every type (not just EDS) so a state change can be
             // pushed to whatever the client actually asked for.
@@ -396,9 +514,9 @@ impl AggregatedDiscoveryService for AdsService {
                             continue;
                         }
 
-                        let snapshot = rx.borrow().clone();
+                        let snapshots = current_snapshots(&readers);
                         let resources = Self::resources_for(
-                            &mapping, &snapshot, &req.type_url, &req.resource_names,
+                            &registry, &snapshots, &req.type_url, &req.resource_names,
                         );
                         let (v, nonce) = version.next();
                         yield DiscoveryResponse {
@@ -410,14 +528,12 @@ impl AggregatedDiscoveryService for AdsService {
                         };
                     }
 
-                    // The endpoint state changed: push to every subscribed type.
-                    changed = rx.changed() => {
-                        if changed.is_err() {
-                            // Source dropped; nothing more will ever be pushed.
-                            break;
-                        }
-                        let snapshot = rx.borrow_and_update().clone();
-                        tracing::debug!(?snapshot, "pushing updated resources");
+                    // Some service's endpoint state changed.
+                    which = next_endpoint_change(&mut receivers, &mut alive) => {
+                        let snapshots = current_snapshots(&readers);
+                        tracing::debug!(
+                            entry = which, snapshot = ?snapshots[which], "pushing updated resources",
+                        );
 
                         // Push all subscribed types, not just EDS. A transition
                         // into or out of `NotFound` changes whether the Listener
@@ -425,10 +541,45 @@ impl AggregatedDiscoveryService for AdsService {
                         // re-requests LDS on its own -- so an EDS-only push would
                         // leave a client that saw `NotFound` with a permanently
                         // deleted listener even after the service came back.
+                        //
+                        // LDS and CDS carry the *whole* subscribed set because
+                        // they are "all resources required": a response that
+                        // omitted a subscribed Listener would delete it on the
+                        // client, so pushing only the service that changed
+                        // would break every other service on this stream. EDS
+                        // is tracked per-resource, so it carries only the
+                        // cluster that actually changed.
+                        let changed_mapping = registry.entries()[which].mapping();
+                        let changed_listener = changed_mapping.xds_name().to_string();
+                        let changed_cluster = changed_mapping.cluster_name();
+
                         for type_url in [LISTENER_TYPE_URL, CLUSTER_TYPE_URL, ENDPOINT_TYPE_URL] {
                             let Some(names) = subscriptions.get(type_url) else { continue };
+
+                            // An empty request set is the wildcard, and always
+                            // wants the update. Otherwise a stream that is not
+                            // subscribed to the changed service has nothing new
+                            // to learn, and re-sending its unchanged set would
+                            // make every service's churn cost every client a
+                            // response.
+                            let changed_name = if type_url == LISTENER_TYPE_URL {
+                                &changed_listener
+                            } else {
+                                &changed_cluster
+                            };
+                            if !names.is_empty() && !names.contains(changed_name) {
+                                continue;
+                            }
+
+                            let names: Vec<String> = if type_url == ENDPOINT_TYPE_URL {
+                                // Narrow the wildcard explicitly: only the
+                                // cluster that moved needs a new assignment.
+                                vec![changed_cluster.clone()]
+                            } else {
+                                names.clone()
+                            };
                             let resources = Self::resources_for(
-                                &mapping, &snapshot, type_url, names,
+                                &registry, &snapshots, type_url, &names,
                             );
                             let (v, nonce) = version.next();
                             yield DiscoveryResponse {
@@ -512,26 +663,36 @@ mod tests {
         XdsMapping::new("reflection", "fabric:/App/Svc", host_port_interpreter()).unwrap()
     }
 
+    fn scripted() -> Arc<dyn EndpointSource> {
+        ScriptedEndpointSource::new(EndpointSnapshot::NoPrimary).0
+    }
+
+    /// `resources_for` over a one-service registry, which is what most of these
+    /// cases are about. Multi-service behaviour is covered separately below.
+    fn resources_for_one(snap: &EndpointSnapshot, type_url: &str, names: &[String]) -> Vec<Any> {
+        let registry = ServiceRegistry::single(mapping(), scripted());
+        AdsService::resources_for(&registry, std::slice::from_ref(snap), type_url, names)
+    }
+
     fn decode_cla(resources: &[Any]) -> ClusterLoadAssignment {
         ClusterLoadAssignment::decode(resources[0].value.as_slice()).unwrap()
     }
 
     #[test]
     fn serves_listener_cluster_and_endpoints_for_wildcard_requests() {
-        let m = mapping();
         let snap = EndpointSnapshot::Primary(HostPort::new("h", 1));
 
-        let l = AdsService::resources_for(&m, &snap, LISTENER_TYPE_URL, &[]);
+        let l = resources_for_one(&snap, LISTENER_TYPE_URL, &[]);
         assert_eq!(l.len(), 1);
         assert_eq!(
             Listener::decode(l[0].value.as_slice()).unwrap().name,
             "reflection"
         );
 
-        let c = AdsService::resources_for(&m, &snap, CLUSTER_TYPE_URL, &[]);
+        let c = resources_for_one(&snap, CLUSTER_TYPE_URL, &[]);
         assert_eq!(c.len(), 1);
 
-        let e = AdsService::resources_for(&m, &snap, ENDPOINT_TYPE_URL, &[]);
+        let e = resources_for_one(&snap, ENDPOINT_TYPE_URL, &[]);
         assert_eq!(decode_cla(&e).endpoints.len(), 1);
     }
 
@@ -539,39 +700,30 @@ mod tests {
     /// reports as resource-not-found rather than hanging.
     #[test]
     fn unknown_resource_name_yields_empty_response() {
-        let m = mapping();
         let snap = EndpointSnapshot::Primary(HostPort::new("h", 1));
         let names = vec!["some-other-service".to_string()];
 
-        assert!(AdsService::resources_for(&m, &snap, LISTENER_TYPE_URL, &names).is_empty());
-        assert!(AdsService::resources_for(&m, &snap, CLUSTER_TYPE_URL, &names).is_empty());
-        assert!(AdsService::resources_for(&m, &snap, ENDPOINT_TYPE_URL, &names).is_empty());
+        assert!(resources_for_one(&snap, LISTENER_TYPE_URL, &names).is_empty());
+        assert!(resources_for_one(&snap, CLUSTER_TYPE_URL, &names).is_empty());
+        assert!(resources_for_one(&snap, ENDPOINT_TYPE_URL, &names).is_empty());
     }
 
     /// NotFound withholds the Listener; because Listeners are "all resources
     /// required" in SotW, omission is a deletion on the client.
     #[test]
     fn not_found_withholds_the_listener() {
-        let m = mapping();
         let snap = EndpointSnapshot::NotFound;
-        assert!(AdsService::resources_for(&m, &snap, LISTENER_TYPE_URL, &[]).is_empty());
+        assert!(resources_for_one(&snap, LISTENER_TYPE_URL, &[]).is_empty());
     }
 
     /// NoPrimary keeps a valid Listener and Cluster but empties the endpoints,
     /// so the client reports "no ready endpoints" rather than a missing route.
     #[test]
     fn no_primary_keeps_listener_but_empties_endpoints() {
-        let m = mapping();
         let snap = EndpointSnapshot::NoPrimary;
-        assert_eq!(
-            AdsService::resources_for(&m, &snap, LISTENER_TYPE_URL, &[]).len(),
-            1
-        );
-        assert_eq!(
-            AdsService::resources_for(&m, &snap, CLUSTER_TYPE_URL, &[]).len(),
-            1
-        );
-        let e = AdsService::resources_for(&m, &snap, ENDPOINT_TYPE_URL, &[]);
+        assert_eq!(resources_for_one(&snap, LISTENER_TYPE_URL, &[]).len(), 1);
+        assert_eq!(resources_for_one(&snap, CLUSTER_TYPE_URL, &[]).len(), 1);
+        let e = resources_for_one(&snap, ENDPOINT_TYPE_URL, &[]);
         assert_eq!(e.len(), 1, "the EDS resource must still exist");
         assert!(
             decode_cla(&e).endpoints.is_empty(),
@@ -581,9 +733,94 @@ mod tests {
 
     #[test]
     fn unknown_type_url_yields_nothing() {
-        let m = mapping();
         let snap = EndpointSnapshot::NoPrimary;
-        assert!(AdsService::resources_for(&m, &snap, "type.googleapis.com/nope", &[]).is_empty());
+        assert!(resources_for_one(&snap, "type.googleapis.com/nope", &[]).is_empty());
+    }
+
+    // ---- multi-service -------------------------------------------------
+
+    fn two_service_registry() -> ServiceRegistry {
+        ServiceRegistry::builder()
+            .add(
+                XdsMapping::new("a", "fabric:/App/A", host_port_interpreter()).unwrap(),
+                scripted(),
+            )
+            .unwrap()
+            .add(
+                XdsMapping::new("b", "fabric:/App/B", host_port_interpreter()).unwrap(),
+                scripted(),
+            )
+            .unwrap()
+            .build()
+            .unwrap()
+    }
+
+    fn listener_names(resources: &[Any]) -> Vec<String> {
+        resources
+            .iter()
+            .map(|r| Listener::decode(r.value.as_slice()).unwrap().name)
+            .collect()
+    }
+
+    /// A wildcard request must return *every* registered Listener: Listeners
+    /// are "all resources required" in SotW, so returning a subset would delete
+    /// the rest on the client.
+    #[test]
+    fn wildcard_returns_every_registered_service() {
+        let registry = two_service_registry();
+        let snaps = vec![
+            EndpointSnapshot::Primary(HostPort::new("ha", 1)),
+            EndpointSnapshot::Primary(HostPort::new("hb", 2)),
+        ];
+
+        let l = AdsService::resources_for(&registry, &snaps, LISTENER_TYPE_URL, &[]);
+        assert_eq!(listener_names(&l), vec!["a", "b"]);
+        assert_eq!(
+            AdsService::resources_for(&registry, &snaps, CLUSTER_TYPE_URL, &[]).len(),
+            2
+        );
+        assert_eq!(
+            AdsService::resources_for(&registry, &snaps, ENDPOINT_TYPE_URL, &[]).len(),
+            2
+        );
+    }
+
+    #[test]
+    fn a_named_request_returns_only_that_service() {
+        let registry = two_service_registry();
+        let snaps = vec![
+            EndpointSnapshot::Primary(HostPort::new("ha", 1)),
+            EndpointSnapshot::Primary(HostPort::new("hb", 2)),
+        ];
+
+        let l = AdsService::resources_for(&registry, &snaps, LISTENER_TYPE_URL, &["b".to_string()]);
+        assert_eq!(listener_names(&l), vec!["b"]);
+
+        let e = AdsService::resources_for(
+            &registry,
+            &snaps,
+            ENDPOINT_TYPE_URL,
+            &["a-primary".to_string()],
+        );
+        assert_eq!(e.len(), 1);
+        assert_eq!(decode_cla(&e).cluster_name, "a-primary");
+    }
+
+    /// One service disappearing must not take its neighbours' routing with it.
+    #[test]
+    fn not_found_on_one_service_leaves_the_other_intact() {
+        let registry = two_service_registry();
+        let snaps = vec![
+            EndpointSnapshot::NotFound,
+            EndpointSnapshot::Primary(HostPort::new("hb", 2)),
+        ];
+
+        let l = AdsService::resources_for(&registry, &snaps, LISTENER_TYPE_URL, &[]);
+        assert_eq!(listener_names(&l), vec!["b"]);
+        assert_eq!(
+            AdsService::resources_for(&registry, &snaps, CLUSTER_TYPE_URL, &[]).len(),
+            1
+        );
     }
 
     #[test]
@@ -601,8 +838,8 @@ mod tests {
         let (src, handle) = ScriptedEndpointSource::new(EndpointSnapshot::NoPrimary);
         let svc = AdsService::new(mapping(), src.clone());
 
-        let mut a = svc.source.subscribe();
-        let mut b = svc.source.subscribe();
+        let mut a = svc.registry().entries()[0].source().subscribe();
+        let mut b = svc.registry().entries()[0].source().subscribe();
 
         handle.set(EndpointSnapshot::Primary(HostPort::new("moved", 9)));
 
@@ -724,28 +961,14 @@ mod tests {
     /// broken forever once the service comes back.
     #[test]
     fn recovering_from_not_found_requires_listener_and_cluster_again() {
-        let m = mapping();
-
         // While NotFound, LDS and CDS are empty.
-        assert!(
-            AdsService::resources_for(&m, &EndpointSnapshot::NotFound, LISTENER_TYPE_URL, &[])
-                .is_empty()
-        );
-        assert!(
-            AdsService::resources_for(&m, &EndpointSnapshot::NotFound, CLUSTER_TYPE_URL, &[])
-                .is_empty()
-        );
+        assert!(resources_for_one(&EndpointSnapshot::NotFound, LISTENER_TYPE_URL, &[]).is_empty());
+        assert!(resources_for_one(&EndpointSnapshot::NotFound, CLUSTER_TYPE_URL, &[]).is_empty());
 
         // Once a primary exists they must be populated again -- which only
         // reaches the client if the push covers these type URLs.
         let snap = EndpointSnapshot::Primary(HostPort::new("h", 1));
-        assert_eq!(
-            AdsService::resources_for(&m, &snap, LISTENER_TYPE_URL, &[]).len(),
-            1
-        );
-        assert_eq!(
-            AdsService::resources_for(&m, &snap, CLUSTER_TYPE_URL, &[]).len(),
-            1
-        );
+        assert_eq!(resources_for_one(&snap, LISTENER_TYPE_URL, &[]).len(), 1);
+        assert_eq!(resources_for_one(&snap, CLUSTER_TYPE_URL, &[]).len(), 1);
     }
 }

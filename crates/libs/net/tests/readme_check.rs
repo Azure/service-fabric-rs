@@ -18,8 +18,9 @@ use std::time::Duration;
 use mssf_core::WString;
 use mssf_net::endpoint::EndpointSource;
 use mssf_net::{
-    AddressError, AddressInterpreter, AdsService, EndpointSnapshot, FabricEndpointSource, HostPort,
-    ScriptedEndpointSource, XdsMapping, host_port_interpreter,
+    AddressError, AddressInterpreter, AdsService, EndpointSnapshot, FabricEndpointSource,
+    FabricNaming, HostPort, ScriptedEndpointSource, ServiceRegistry, XdsMapping,
+    host_port_interpreter,
 };
 
 /// README — "Hosting the mapping".
@@ -42,6 +43,37 @@ async fn readme_host_example() -> Result<(), Box<dyn std::error::Error>> {
 
     server.shutdown().await?;
     source.shutdown().await;
+    Ok(())
+}
+
+/// README — "Serving several services from one control plane".
+#[allow(dead_code)]
+async fn readme_multi_service_example(
+    orders_mapping: XdsMapping,
+    inventory_mapping: XdsMapping,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let naming = FabricNaming::new(vec![WString::from("localhost:19000")])?;
+
+    let orders = naming
+        .source_for(&orders_mapping, Duration::from_secs(10))
+        .await?;
+    let inventory = naming
+        .source_for(&inventory_mapping, Duration::from_secs(10))
+        .await?;
+
+    let registry = ServiceRegistry::builder()
+        .add(orders_mapping, orders.clone())?
+        .add(inventory_mapping, inventory.clone())?
+        .build()?;
+
+    let server = AdsService::from_registry(registry)
+        .serve_on_ephemeral_loopback()
+        .await?;
+
+    server.shutdown().await?;
+    orders.shutdown().await;
+    inventory.shutdown().await;
+    naming.shutdown().await;
     Ok(())
 }
 

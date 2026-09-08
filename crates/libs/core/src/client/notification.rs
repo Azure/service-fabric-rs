@@ -14,7 +14,7 @@ use super::svc_mgmt_client::ResolvedServiceEndpoint;
 
 /// Rust trait to turn rust code into IFabricServiceNotificationEventHandler.
 /// Not exposed to user
-pub trait ServiceNotificationEventHandler: 'static {
+pub trait ServiceNotificationEventHandler: Send + Sync + 'static {
     fn on_notification(&self, notification: ServiceNotification) -> crate::Result<()>;
 }
 
@@ -153,14 +153,14 @@ where
 /// This isn't strictly required by the implementation as written. But it leaves open the door to non-lambda implementations in future.
 pub struct LambdaServiceNotificationHandler<T>
 where
-    T: Fn(ServiceNotification) -> crate::Result<()> + 'static,
+    T: Fn(ServiceNotification) -> crate::Result<()> + Send + Sync + 'static,
 {
     f: T,
 }
 
 impl<T> LambdaServiceNotificationHandler<T>
 where
-    T: Fn(ServiceNotification) -> crate::Result<()> + 'static,
+    T: Fn(ServiceNotification) -> crate::Result<()> + Send + Sync + 'static,
 {
     pub fn new(f: T) -> Self {
         Self { f }
@@ -169,7 +169,7 @@ where
 
 impl<T> ServiceNotificationEventHandler for LambdaServiceNotificationHandler<T>
 where
-    T: Fn(ServiceNotification) -> crate::Result<()> + 'static,
+    T: Fn(ServiceNotification) -> crate::Result<()> + Send + Sync + 'static,
 {
     fn on_notification(&self, notification: ServiceNotification) -> crate::Result<()> {
         (self.f)(notification)

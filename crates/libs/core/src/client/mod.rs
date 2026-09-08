@@ -131,7 +131,10 @@ fn create_local_client_internal<T: Interface>(
     Ok(client)
 }
 
-// Builder for FabricClient
+/// Builder for [`FabricClient`].
+///
+/// Service Fabric may invoke callbacks concurrently on arbitrary threads, so
+/// captured state must be thread-safe.
 pub struct FabricClientBuilder {
     sn_handler: Option<IFabricServiceNotificationEventHandler>,
     cc_handler: Option<LambdaClientConnectionNotificationHandler>,
@@ -176,7 +179,7 @@ impl FabricClientBuilder {
     ///
     pub fn with_on_service_notification<T>(self, f: T) -> Self
     where
-        T: Fn(ServiceNotification) -> crate::Result<()> + 'static,
+        T: Fn(ServiceNotification) -> crate::Result<()> + Send + Sync + 'static,
     {
         let handler = LambdaServiceNotificationHandler::new(f);
         self.with_service_notification_handler(handler)
@@ -185,7 +188,7 @@ impl FabricClientBuilder {
     /// When FabricClient connects to the SF cluster, this callback is invoked.
     pub fn with_on_client_connect<T>(mut self, f: T) -> Self
     where
-        T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+        T: Fn(&GatewayInformationResult) -> crate::Result<()> + Send + Sync + 'static,
     {
         if self.cc_handler.is_none() {
             self.cc_handler = Some(LambdaClientConnectionNotificationHandler::new());
@@ -200,7 +203,7 @@ impl FabricClientBuilder {
     /// This callback is not called on Drop of FabricClient.
     pub fn with_on_client_disconnect<T>(mut self, f: T) -> Self
     where
-        T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static,
+        T: Fn(&GatewayInformationResult) -> crate::Result<()> + Send + Sync + 'static,
     {
         if self.cc_handler.is_none() {
             self.cc_handler = Some(LambdaClientConnectionNotificationHandler::new());
@@ -219,7 +222,10 @@ impl FabricClientBuilder {
     /// is invoked for AAD auth.
     pub fn with_on_claims_retrieval<T>(mut self, f: T) -> Self
     where
-        T: Fn(connection::ClaimsRetrievalMetadata) -> crate::Result<crate::WString> + 'static,
+        T: Fn(connection::ClaimsRetrievalMetadata) -> crate::Result<crate::WString>
+            + Send
+            + Sync
+            + 'static,
     {
         if self.cc_handler.is_none() {
             self.cc_handler = Some(LambdaClientConnectionNotificationHandler::new());

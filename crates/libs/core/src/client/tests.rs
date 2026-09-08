@@ -5,7 +5,10 @@
 
 // contains tests for generated fabric client
 
-use std::time::Duration;
+use std::{
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 
 use crate::{WString, client::FabricClient, sync::SimpleCancelToken, types::Uri};
 use mssf_com::FabricTypes::FABRIC_E_SERVICE_DOES_NOT_EXIST;
@@ -15,6 +18,33 @@ use crate::{
     error::ErrorCode,
     types::{NodeQueryDescription, NodeStatusFilter, PagedQueryDescription},
 };
+
+#[test]
+fn thread_safe_callback_captures_are_supported() {
+    let state = Arc::new(Mutex::new(0));
+    let on_service_notification = Arc::clone(&state);
+    let on_client_connect = Arc::clone(&state);
+    let on_client_disconnect = Arc::clone(&state);
+    let on_claims_retrieval = Arc::clone(&state);
+
+    let _builder = FabricClient::builder()
+        .with_on_service_notification(move |_| {
+            *on_service_notification.lock().unwrap() += 1;
+            Ok(())
+        })
+        .with_on_client_connect(move |_| {
+            *on_client_connect.lock().unwrap() += 1;
+            Ok(())
+        })
+        .with_on_client_disconnect(move |_| {
+            *on_client_disconnect.lock().unwrap() += 1;
+            Ok(())
+        })
+        .with_on_claims_retrieval(move |_| {
+            *on_claims_retrieval.lock().unwrap() += 1;
+            Ok(WString::new())
+        });
+}
 
 #[tokio::test]
 async fn test_fabric_client() {

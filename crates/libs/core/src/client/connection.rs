@@ -16,7 +16,7 @@ use crate::{WString, types::NodeId};
 
 /// Internal trait that rust code implements that can be bridged into IFabricClientConnectionEventHandler.
 /// Not exposed to user.
-pub trait ClientConnectionEventHandler: 'static {
+pub trait ClientConnectionEventHandler: Send + Sync + 'static {
     fn on_connected(&self, info: &GatewayInformationResult) -> crate::Result<()>;
     fn on_disconnected(&self, info: &GatewayInformationResult) -> crate::Result<()>;
     fn on_claims_retrieval(&self, metadata: ClaimsRetrievalMetadata) -> crate::Result<WString>;
@@ -117,19 +117,22 @@ where
 /// Connection notification function signature to avoid code repeatition.
 /// Trait alias feature in rust (not yet stable) would eliminate this trait definition.
 pub trait ConnectionNotificationFn:
-    Fn(&GatewayInformationResult) -> crate::Result<()> + 'static
+    Fn(&GatewayInformationResult) -> crate::Result<()> + Send + Sync + 'static
 {
 }
-impl<T: Fn(&GatewayInformationResult) -> crate::Result<()> + 'static> ConnectionNotificationFn
-    for T
+impl<T> ConnectionNotificationFn for T where
+    T: Fn(&GatewayInformationResult) -> crate::Result<()> + Send + Sync + 'static
 {
 }
 
 pub trait ClaimsRetrievalFn:
-    Fn(ClaimsRetrievalMetadata) -> crate::Result<WString> + 'static
+    Fn(ClaimsRetrievalMetadata) -> crate::Result<WString> + Send + Sync + 'static
 {
 }
-impl<T: Fn(ClaimsRetrievalMetadata) -> crate::Result<WString> + 'static> ClaimsRetrievalFn for T {}
+impl<T> ClaimsRetrievalFn for T where
+    T: Fn(ClaimsRetrievalMetadata) -> crate::Result<WString> + Send + Sync + 'static
+{
+}
 
 /// Lambda implementation of the ClientConnectionEventHandler trait.
 /// This is used in FabricClientBuilder to build handler from functions.

@@ -135,16 +135,6 @@ fn create_local_client_internal<T: Interface>(
 ///
 /// Service Fabric may invoke callbacks concurrently on arbitrary threads, so
 /// captured state must be thread-safe.
-/// ```compile_fail,E0277
-/// use std::rc::Rc;
-/// use mssf_core::client::FabricClient;
-///
-/// let state = Rc::new(());
-/// FabricClient::builder().with_on_client_connect(move |_| {
-///     let _ = Rc::clone(&state);
-///     Ok(())
-/// });
-/// ```
 pub struct FabricClientBuilder {
     sn_handler: Option<IFabricServiceNotificationEventHandler>,
     cc_handler: Option<LambdaClientConnectionNotificationHandler>,

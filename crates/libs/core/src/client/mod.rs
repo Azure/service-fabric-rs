@@ -133,37 +133,15 @@ fn create_local_client_internal<T: Interface>(
 
 /// Builder for [`FabricClient`].
 ///
-/// # Callback threading
-///
-/// Service Fabric dispatches client callbacks on thread-pool threads. Callback
-/// invocations can cross threads and may overlap, so callback closures must be
-/// [`Send`] and [`Sync`]. Captured state that is shared or mutated should use
-/// thread-safe synchronization such as [`Arc`](std::sync::Arc) and
-/// [`Mutex`](std::sync::Mutex).
-///
-/// ```
-/// use std::sync::{Arc, Mutex};
-///
+/// Service Fabric may invoke callbacks concurrently on arbitrary threads, so
+/// captured state must be thread-safe.
+/// ```compile_fail,E0277
+/// use std::rc::Rc;
 /// use mssf_core::client::FabricClient;
 ///
-/// let state = Arc::new(Mutex::new(0));
-/// let captured = Arc::clone(&state);
-/// let _builder = FabricClient::builder().with_on_client_connect(move |_| {
-///     *captured.lock().unwrap() += 1;
-///     Ok(())
-/// });
-/// ```
-///
-/// Non-thread-safe captures are rejected:
-///
-/// ```compile_fail
-/// use std::{cell::RefCell, rc::Rc};
-///
-/// use mssf_core::client::FabricClient;
-///
-/// let state = Rc::new(RefCell::new(0));
-/// let _builder = FabricClient::builder().with_on_client_connect(move |_| {
-///     *state.borrow_mut() += 1;
+/// let state = Rc::new(());
+/// FabricClient::builder().with_on_client_connect(move |_| {
+///     let _ = Rc::clone(&state);
 ///     Ok(())
 /// });
 /// ```

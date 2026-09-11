@@ -2,6 +2,7 @@
 name = "mssf-util"
 version = "0.9.3"
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 documentation.workspace = true
 repository.workspace = true

@@ -11,6 +11,7 @@ members = [
     "tests/mssf-tests",
 ]
 package.edition = "2024"
+package.rust-version = "1.95"
 package.authors = [ "youyuanwu@outlook.com" ]
 package.documentation = "https://learn.microsoft.com/en-us/azure/service-fabric/"
 package.repository = "https://github.com/Azure/service-fabric-rs"

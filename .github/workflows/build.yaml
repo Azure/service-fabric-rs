@@ -8,14 +8,9 @@ on:
     # Temporary frequent schedule to repro some onebox issues.
     - cron: '0 */6 * * *'  # Runs every 6 hours
 
-env:
-  # Define the minimum Rust version to test
-  RUST_MIN_VERSION: '1.90.0'
-
 jobs:
-  # The 'env' context is not available in strategy/matrix definitions.
-  # This setup job acts as a bridge to convert the env var into a job output,
-  # which can then be consumed by other jobs via the 'needs' context.
+  # This setup job reads the supported versions from repository metadata and
+  # exposes them in a form that strategy matrices can consume.
   setup:
     runs-on: ubuntu-latest
     outputs:
@@ -24,12 +19,16 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Read max Rust version from rust-toolchain.toml
+      - name: Read Rust versions
         id: set-versions
         run: |
+          RUST_MIN_VERSION=$(sed -n 's/^package\.rust-version *= *"\([^"]*\)".*/\1/p' Cargo.toml)
           RUST_MAX_VERSION=$(grep '^channel' rust-toolchain.toml | sed 's/.*"\(.*\)"/\1/')
+          test -n "$RUST_MIN_VERSION"
+          test -n "$RUST_MAX_VERSION"
+          echo "RUST_MIN_VERSION=$RUST_MIN_VERSION"
           echo "RUST_MAX_VERSION=$RUST_MAX_VERSION"
-          RUST_VERSIONS='["${{ env.RUST_MIN_VERSION }}", "'"$RUST_MAX_VERSION"'"]'
+          RUST_VERSIONS='["'"$RUST_MIN_VERSION"'", "'"$RUST_MAX_VERSION"'"]'
           echo "rust-versions=$RUST_VERSIONS" >> $GITHUB_OUTPUT
           echo "rust-max-version=$RUST_MAX_VERSION" >> $GITHUB_OUTPUT
           echo "Rust versions = $RUST_VERSIONS"

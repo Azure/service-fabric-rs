@@ -191,7 +191,7 @@ impl From<&FABRIC_NODE_QUERY_RESULT_ITEM> for NodeQueryResultItem {
             upgrade_domain: WString::from(raw.UpgradeDomain),
             fault_domain: Uri::from(raw.FaultDomain),
             node_id: ex1.NodeId.into(),
-            node_instance_id: ex2.NodeInstanceId,
+            node_instance_id: ex2.NodeInstanceId.0,
             is_stopped: ex4.IsStopped,
             node_down_time_in_seconds: ex5.NodeDownTimeInSeconds,
             node_up_at: try_filetime_to_system_time(ex6.NodeUpAt).unwrap_or(SystemTime::UNIX_EPOCH),
@@ -249,7 +249,7 @@ impl From<FABRIC_QUERY_NODE_STATUS> for NodeStatus {
 
 #[cfg(test)]
 mod tests {
-    use windows_core::Win32::Foundation::FILETIME;
+    use mssf_com::{FabricTypes::FABRIC_NODE_INSTANCE_ID, Windows::Win32::FILETIME};
 
     use super::*;
 
@@ -300,7 +300,7 @@ mod tests {
             Reserved: std::ptr::addr_of!(ex4) as *mut c_void,
         };
         let ex2 = FABRIC_NODE_QUERY_RESULT_ITEM_EX2 {
-            NodeInstanceId: 42,
+            NodeInstanceId: FABRIC_NODE_INSTANCE_ID(42),
             Reserved: std::ptr::addr_of!(ex3) as *mut c_void,
         };
         let ex1 = FABRIC_NODE_QUERY_RESULT_ITEM_EX1 {

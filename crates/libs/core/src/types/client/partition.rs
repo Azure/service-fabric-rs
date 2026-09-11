@@ -459,7 +459,7 @@ mod tests {
     fn test_partition_health_result_replica_health_states() {
         let replica_state = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_STATE {
             PartitionId: GUID::zeroed(),
-            ReplicaId: 42,
+            ReplicaId: mssf_com::FabricTypes::FABRIC_REPLICA_ID(42),
             AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
             Reserved: std::ptr::null_mut(),
         };

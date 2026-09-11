@@ -380,7 +380,12 @@ impl IPrimaryReplicator for PrimaryReplicatorProxy {
         tracing::instrument(skip_all, level = "debug", ret, err)
     )]
     fn remove_replica(&self, replicaid: i64) -> crate::Result<()> {
-        unsafe { self.com_impl.RemoveReplica(mssf_com::FabricTypes::FABRIC_REPLICA_ID(replicaid)) }.ok().map_err(crate::Error::from)
+        unsafe {
+            self.com_impl
+                .RemoveReplica(mssf_com::FabricTypes::FABRIC_REPLICA_ID(replicaid))
+        }
+        .ok()
+        .map_err(crate::Error::from)
     }
 }
 
@@ -417,25 +422,35 @@ impl super::IStatefulServicePartition for StatefulServicePartition {
     fn report_load(&self, metrics: &[LoadMetric]) -> crate::Result<()> {
         let metrics_ref = LoadMetricListRef::from_slice(metrics);
         let raw = metrics_ref.as_raw_slice();
-        unsafe { self.com_impl.ReportLoad(raw.len() as u32, raw.as_ptr()) }.ok().map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportLoad(raw.len() as u32, raw.as_ptr()) }
+            .ok()
+            .map_err(crate::Error::from)
     }
 
     fn report_fault(&self, fault_type: FaultType) -> crate::Result<()> {
-        unsafe { self.com_impl.ReportFault(fault_type.into()) }.ok().map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportFault(fault_type.into()) }
+            .ok()
+            .map_err(crate::Error::from)
     }
 
     fn report_move_cost(&self, move_cost: MoveCost) -> crate::Result<()> {
-        unsafe { self.com_impl.ReportMoveCost(move_cost.into()) }.ok().map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportMoveCost(move_cost.into()) }
+            .ok()
+            .map_err(crate::Error::from)
     }
 
     fn report_partition_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
         let healthinfo_ref = &healthinfo.into();
-        unsafe { self.com_impl.ReportPartitionHealth(healthinfo_ref) }.ok().map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportPartitionHealth(healthinfo_ref) }
+            .ok()
+            .map_err(crate::Error::from)
     }
 
     fn report_replica_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
         let healthinfo_ref = &healthinfo.into();
-        unsafe { self.com_impl.ReportReplicaHealth(healthinfo_ref) }.ok().map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportReplicaHealth(healthinfo_ref) }
+            .ok()
+            .map_err(crate::Error::from)
     }
 
     fn try_get_com(

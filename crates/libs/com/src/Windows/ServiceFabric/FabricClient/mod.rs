@@ -1,13 +1,12 @@
-#[cfg(feature = "ServiceFabric_FabricTypes")]
 #[inline]
 pub unsafe fn FabricCreateClient<T>(
     connectionstringssize: u16,
-    connectionstrings: *const super::FabricTypes::LPCWSTR,
+    connectionstrings: *const windows_core::PCWSTR,
 ) -> windows_core::Result<T>
 where
     T: windows_core::Interface,
 {
-    windows_core::link!("" "C" fn FabricCreateClient(connectionstringssize : u16, connectionstrings : *const super::FabricTypes::LPCWSTR, iid : *const windows_core::GUID, fabricclient : *mut *mut core::ffi::c_void) -> windows_core::HRESULT);
+    windows_core::link!("" "C" fn FabricCreateClient(connectionstringssize : u16, connectionstrings : *const windows_core::PCWSTR, iid : *const windows_core::GUID, fabricclient : *mut *mut core::ffi::c_void) -> windows_core::HRESULT);
     let mut result__ = core::ptr::null_mut();
     unsafe {
         FabricCreateClient(
@@ -16,21 +15,20 @@ where
             &T::IID,
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
 #[inline]
 pub unsafe fn FabricCreateClient2<P2, T>(
     connectionstringssize: u16,
-    connectionstrings: *const super::FabricTypes::LPCWSTR,
+    connectionstrings: *const windows_core::PCWSTR,
     param2: P2,
 ) -> windows_core::Result<T>
 where
     P2: windows_core::Param<IFabricServiceNotificationEventHandler>,
     T: windows_core::Interface,
 {
-    windows_core::link!("" "C" fn FabricCreateClient2(connectionstringssize : u16, connectionstrings : *const super::FabricTypes::LPCWSTR, param2 : *mut core::ffi::c_void, iid : *const windows_core::GUID, fabricclient : *mut *mut core::ffi::c_void) -> windows_core::HRESULT);
+    windows_core::link!("" "C" fn FabricCreateClient2(connectionstringssize : u16, connectionstrings : *const windows_core::PCWSTR, param2 : *mut core::ffi::c_void, iid : *const windows_core::GUID, fabricclient : *mut *mut core::ffi::c_void) -> windows_core::HRESULT);
     let mut result__ = core::ptr::null_mut();
     unsafe {
         FabricCreateClient2(
@@ -40,14 +38,13 @@ where
             &T::IID,
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
 #[inline]
 pub unsafe fn FabricCreateClient3<P2, P3, T>(
     connectionstringssize: u16,
-    connectionstrings: *const super::FabricTypes::LPCWSTR,
+    connectionstrings: *const windows_core::PCWSTR,
     param2: P2,
     param3: P3,
 ) -> windows_core::Result<T>
@@ -56,7 +53,7 @@ where
     P3: windows_core::Param<IFabricClientConnectionEventHandler>,
     T: windows_core::Interface,
 {
-    windows_core::link!("" "C" fn FabricCreateClient3(connectionstringssize : u16, connectionstrings : *const super::FabricTypes::LPCWSTR, param2 : *mut core::ffi::c_void, param3 : *mut core::ffi::c_void, iid : *const windows_core::GUID, fabricclient : *mut *mut core::ffi::c_void) -> windows_core::HRESULT);
+    windows_core::link!("" "C" fn FabricCreateClient3(connectionstringssize : u16, connectionstrings : *const windows_core::PCWSTR, param2 : *mut core::ffi::c_void, param3 : *mut core::ffi::c_void, iid : *const windows_core::GUID, fabricclient : *mut *mut core::ffi::c_void) -> windows_core::HRESULT);
     let mut result__ = core::ptr::null_mut();
     unsafe {
         FabricCreateClient3(
@@ -67,7 +64,7 @@ where
             &T::IID,
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -79,7 +76,7 @@ where
     let mut result__ = core::ptr::null_mut();
     unsafe {
         FabricCreateLocalClient(&T::IID, &mut result__)
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -92,7 +89,7 @@ where
     let mut result__ = core::ptr::null_mut();
     unsafe {
         FabricCreateLocalClient2(param0.param().abi(), &T::IID, &mut result__)
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -111,7 +108,7 @@ where
             &T::IID,
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -136,7 +133,7 @@ where
             &T::IID,
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -146,7 +143,7 @@ pub unsafe fn FabricGetDefaultRollingUpgradeMonitoringPolicy()
     unsafe {
         let mut result__ = core::mem::zeroed();
         FabricGetDefaultRollingUpgradeMonitoringPolicy(&mut result__)
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 pub const FabricClient: windows_core::GUID =
@@ -158,7 +155,7 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricApplicationHealthResult, windows_core::IUnknown);
 impl IFabricApplicationHealthResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_ApplicationHealth(
         &self,
     ) -> *const super::FabricTypes::FABRIC_APPLICATION_HEALTH {
@@ -173,21 +170,21 @@ impl IFabricApplicationHealthResult {
 #[doc(hidden)]
 pub struct IFabricApplicationHealthResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_ApplicationHealth:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         ) -> *const super::FabricTypes::FABRIC_APPLICATION_HEALTH,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_ApplicationHealth: usize,
 }
 unsafe impl Send for IFabricApplicationHealthResult {}
 unsafe impl Sync for IFabricApplicationHealthResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricApplicationHealthResult_Impl: windows_core::IUnknownImpl {
     fn get_ApplicationHealth(&self) -> *const super::FabricTypes::FABRIC_APPLICATION_HEALTH;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricApplicationHealthResult_Vtbl {
     pub const fn new<Identity: IFabricApplicationHealthResult_Impl, const OFFSET: isize>() -> Self {
         unsafe extern "system" fn get_ApplicationHealth<
@@ -211,7 +208,7 @@ impl IFabricApplicationHealthResult_Vtbl {
         iid == &<IFabricApplicationHealthResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricApplicationHealthResult {}
 windows_core::imp::define_interface!(
     IFabricApplicationManagementClient,
@@ -240,7 +237,7 @@ impl IFabricApplicationManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -277,7 +274,7 @@ impl IFabricApplicationManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -314,7 +311,7 @@ impl IFabricApplicationManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -351,7 +348,7 @@ impl IFabricApplicationManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -369,7 +366,7 @@ impl IFabricApplicationManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -392,7 +389,7 @@ impl IFabricApplicationManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -432,7 +429,7 @@ impl IFabricApplicationManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -470,7 +467,7 @@ impl IFabricApplicationManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -677,7 +674,7 @@ pub trait IFabricApplicationManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginGetApplicationUpgradeProgress(
         &self,
-        applicationname: super::FabricTypes::FABRIC_URI,
+        applicationname: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -697,7 +694,7 @@ pub trait IFabricApplicationManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginDeleteApplication(
         &self,
-        applicationname: super::FabricTypes::FABRIC_URI,
+        applicationname: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -871,7 +868,7 @@ impl IFabricApplicationManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricApplicationManagementClient_Impl::BeginGetApplicationUpgradeProgress(
                     this,
-                    core::mem::transmute_copy(&applicationname),
+                    core::mem::transmute(&applicationname),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -965,7 +962,7 @@ impl IFabricApplicationManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricApplicationManagementClient_Impl::BeginDeleteApplication(
                     this,
-                    core::mem::transmute_copy(&applicationname),
+                    core::mem::transmute(&applicationname),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -1123,7 +1120,7 @@ impl IFabricApplicationManagementClient10 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -1316,7 +1313,7 @@ impl IFabricApplicationManagementClient11 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -1358,7 +1355,7 @@ impl IFabricApplicationManagementClient11 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -1397,7 +1394,7 @@ impl IFabricApplicationManagementClient11 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -1516,7 +1513,7 @@ pub trait IFabricApplicationManagementClient11_Impl:
     ) -> windows_core::Result<()>;
     fn BeginUpdateApplicationArmMetadata(
         &self,
-        applicationname: super::FabricTypes::FABRIC_URI,
+        applicationname: &super::FabricTypes::FABRIC_URI,
         description: *const super::FabricTypes::FABRIC_APPLICATION_ARM_METADATA_UPDATE_DESCRIPTION,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -1527,7 +1524,7 @@ pub trait IFabricApplicationManagementClient11_Impl:
     ) -> windows_core::Result<()>;
     fn BeginUpdateServiceArmMetadata(
         &self,
-        servicename: super::FabricTypes::FABRIC_URI,
+        servicename: &super::FabricTypes::FABRIC_URI,
         description: *const super::FabricTypes::FABRIC_SERVICE_ARM_METADATA_UPDATE_DESCRIPTION,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -1595,7 +1592,7 @@ impl IFabricApplicationManagementClient11_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricApplicationManagementClient11_Impl::BeginUpdateApplicationArmMetadata(
                     this,
-                    core::mem::transmute_copy(&applicationname),
+                    core::mem::transmute(&applicationname),
                     core::mem::transmute_copy(&description),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -1641,7 +1638,7 @@ impl IFabricApplicationManagementClient11_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricApplicationManagementClient11_Impl::BeginUpdateServiceArmMetadata(
                     this,
-                    core::mem::transmute_copy(&servicename),
+                    core::mem::transmute(&servicename),
                     core::mem::transmute_copy(&description),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -1746,7 +1743,7 @@ impl IFabricApplicationManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -1764,7 +1761,7 @@ impl IFabricApplicationManagementClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -1792,7 +1789,7 @@ impl IFabricApplicationManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -1883,7 +1880,7 @@ pub trait IFabricApplicationManagementClient2_Impl:
     ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
     fn BeginMoveNextApplicationUpgradeDomain2(
         &self,
-        applicationname: super::FabricTypes::FABRIC_URI,
+        applicationname: &super::FabricTypes::FABRIC_URI,
         nextupgradedomain: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -1966,7 +1963,7 @@ impl IFabricApplicationManagementClient2_Vtbl {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                match IFabricApplicationManagementClient2_Impl::BeginMoveNextApplicationUpgradeDomain2 (this , core::mem::transmute_copy (& applicationname) , core::mem::transmute (& nextupgradedomain) , core::mem::transmute_copy (& timeoutmilliseconds) , core::mem::transmute_copy (& callback) ,) { Ok (ok__) => { context . write (core::mem::transmute (ok__)) ; windows_core::HRESULT (0) } Err (err) => err . into () }
+                match IFabricApplicationManagementClient2_Impl::BeginMoveNextApplicationUpgradeDomain2 (this , core::mem::transmute (& applicationname) , core::mem::transmute (& nextupgradedomain) , core::mem::transmute_copy (& timeoutmilliseconds) , core::mem::transmute_copy (& callback) ,) { Ok (ok__) => { context . write (core::mem::transmute (ok__)) ; windows_core::HRESULT (0) } Err (err) => err . into () }
             }
         }
         unsafe extern "system" fn EndMoveNextApplicationUpgradeDomain2<
@@ -2050,7 +2047,7 @@ impl IFabricApplicationManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -2087,7 +2084,7 @@ impl IFabricApplicationManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -2452,7 +2449,7 @@ impl IFabricApplicationManagementClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -2643,7 +2640,7 @@ impl IFabricApplicationManagementClient5 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -2698,7 +2695,7 @@ pub trait IFabricApplicationManagementClient5_Impl:
 {
     fn BeginRollbackApplicationUpgrade(
         &self,
-        applicationname: super::FabricTypes::FABRIC_URI,
+        applicationname: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -2729,7 +2726,7 @@ impl IFabricApplicationManagementClient5_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricApplicationManagementClient5_Impl::BeginRollbackApplicationUpgrade(
                     this,
-                    core::mem::transmute_copy(&applicationname),
+                    core::mem::transmute(&applicationname),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -2820,7 +2817,7 @@ impl IFabricApplicationManagementClient6 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -2999,7 +2996,7 @@ impl IFabricApplicationManagementClient7 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -3180,7 +3177,7 @@ impl IFabricApplicationManagementClient8 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -3363,7 +3360,7 @@ impl IFabricApplicationManagementClient9 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -3514,31 +3511,26 @@ impl IFabricApplicationUpgradeProgressResult {
     #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub unsafe fn get_ApplicationName(&self) -> super::FabricTypes::FABRIC_URI {
         unsafe {
+            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_ApplicationName)(
+                windows_core::Interface::as_raw(self),
+                &mut result__,
+            );
+            result__
+        }
+    }
+    pub unsafe fn get_ApplicationTypeName(&self) -> windows_core::PCWSTR {
+        unsafe {
+            (windows_core::Interface::vtable(self).get_ApplicationTypeName)(
                 windows_core::Interface::as_raw(self),
             )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_ApplicationTypeName(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_TargetApplicationTypeVersion(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(self).get_ApplicationTypeName)(
-                windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
-        }
-    }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_TargetApplicationTypeVersion(&self) -> super::FabricTypes::LPCWSTR {
-        unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_TargetApplicationTypeVersion)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -3592,19 +3584,13 @@ pub struct IFabricApplicationUpgradeProgressResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub get_ApplicationName:
-        unsafe extern "system" fn(*mut core::ffi::c_void) -> super::FabricTypes::FABRIC_URI,
+        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::FABRIC_URI),
     #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
     get_ApplicationName: usize,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub get_ApplicationTypeName:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_ApplicationTypeName: usize,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
     pub get_TargetApplicationTypeVersion:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_TargetApplicationTypeVersion: usize,
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
     #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub get_UpgradeState:
         unsafe extern "system" fn(
@@ -3635,8 +3621,8 @@ unsafe impl Sync for IFabricApplicationUpgradeProgressResult {}
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 pub trait IFabricApplicationUpgradeProgressResult_Impl: windows_core::IUnknownImpl {
     fn get_ApplicationName(&self) -> super::FabricTypes::FABRIC_URI;
-    fn get_ApplicationTypeName(&self) -> super::FabricTypes::LPCWSTR;
-    fn get_TargetApplicationTypeVersion(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_ApplicationTypeName(&self) -> windows_core::PCWSTR;
+    fn get_TargetApplicationTypeVersion(&self) -> windows_core::PCWSTR;
     fn get_UpgradeState(&self) -> super::FabricTypes::FABRIC_APPLICATION_UPGRADE_STATE;
     fn GetUpgradeDomains(
         &self,
@@ -3659,11 +3645,12 @@ impl IFabricApplicationUpgradeProgressResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> super::FabricTypes::FABRIC_URI {
+            result__: *mut super::FabricTypes::FABRIC_URI,
+        ) {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                IFabricApplicationUpgradeProgressResult_Impl::get_ApplicationName(this)
+                *result__ = IFabricApplicationUpgradeProgressResult_Impl::get_ApplicationName(this);
             }
         }
         unsafe extern "system" fn get_ApplicationTypeName<
@@ -3671,13 +3658,11 @@ impl IFabricApplicationUpgradeProgressResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ =
-                    IFabricApplicationUpgradeProgressResult_Impl::get_ApplicationTypeName(this);
+                IFabricApplicationUpgradeProgressResult_Impl::get_ApplicationTypeName(this)
             }
         }
         unsafe extern "system" fn get_TargetApplicationTypeVersion<
@@ -3685,15 +3670,11 @@ impl IFabricApplicationUpgradeProgressResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ =
-                    IFabricApplicationUpgradeProgressResult_Impl::get_TargetApplicationTypeVersion(
-                        this,
-                    );
+                IFabricApplicationUpgradeProgressResult_Impl::get_TargetApplicationTypeVersion(this)
             }
         }
         unsafe extern "system" fn get_UpgradeState<
@@ -3797,15 +3778,11 @@ impl IFabricApplicationUpgradeProgressResult2 {
             )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_NextUpgradeDomain(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_NextUpgradeDomain(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_NextUpgradeDomain)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
 }
@@ -3820,11 +3797,8 @@ pub struct IFabricApplicationUpgradeProgressResult2_Vtbl {
         ) -> super::FabricTypes::FABRIC_ROLLING_UPGRADE_MODE,
     #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
     get_RollingUpgradeMode: usize,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub get_NextUpgradeDomain:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_NextUpgradeDomain: usize,
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
 }
 unsafe impl Send for IFabricApplicationUpgradeProgressResult2 {}
 unsafe impl Sync for IFabricApplicationUpgradeProgressResult2 {}
@@ -3833,7 +3807,7 @@ pub trait IFabricApplicationUpgradeProgressResult2_Impl:
     IFabricApplicationUpgradeProgressResult_Impl
 {
     fn get_RollingUpgradeMode(&self) -> super::FabricTypes::FABRIC_ROLLING_UPGRADE_MODE;
-    fn get_NextUpgradeDomain(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_NextUpgradeDomain(&self) -> windows_core::PCWSTR;
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricApplicationUpgradeProgressResult2_Vtbl {
@@ -3858,13 +3832,11 @@ impl IFabricApplicationUpgradeProgressResult2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ =
-                    IFabricApplicationUpgradeProgressResult2_Impl::get_NextUpgradeDomain(this);
+                IFabricApplicationUpgradeProgressResult2_Impl::get_NextUpgradeDomain(this)
             }
         }
         Self {
@@ -4160,7 +4132,7 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricChaosScheduleDescriptionResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_ChaosScheduleDescriptionResult(
         &self,
     ) -> *const super::FabricTypes::FABRIC_CHAOS_SCHEDULE_DESCRIPTION {
@@ -4175,24 +4147,24 @@ impl IFabricChaosScheduleDescriptionResult {
 #[doc(hidden)]
 pub struct IFabricChaosScheduleDescriptionResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_ChaosScheduleDescriptionResult:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         )
             -> *const super::FabricTypes::FABRIC_CHAOS_SCHEDULE_DESCRIPTION,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_ChaosScheduleDescriptionResult: usize,
 }
 unsafe impl Send for IFabricChaosScheduleDescriptionResult {}
 unsafe impl Sync for IFabricChaosScheduleDescriptionResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricChaosScheduleDescriptionResult_Impl: windows_core::IUnknownImpl {
     fn get_ChaosScheduleDescriptionResult(
         &self,
     ) -> *const super::FabricTypes::FABRIC_CHAOS_SCHEDULE_DESCRIPTION;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricChaosScheduleDescriptionResult_Vtbl {
     pub const fn new<Identity: IFabricChaosScheduleDescriptionResult_Impl, const OFFSET: isize>()
     -> Self {
@@ -4220,7 +4192,7 @@ impl IFabricChaosScheduleDescriptionResult_Vtbl {
         iid == &<IFabricChaosScheduleDescriptionResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricChaosScheduleDescriptionResult {}
 windows_core::imp::define_interface!(
     IFabricClientConnectionEventHandler,
@@ -4360,7 +4332,7 @@ impl IFabricClientConnectionEventHandler2 {
                 metadata,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -4567,7 +4539,7 @@ impl IFabricClientSettings2 {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -4808,7 +4780,7 @@ impl IFabricClusterManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -4840,7 +4812,7 @@ impl IFabricClusterManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -5066,7 +5038,7 @@ impl IFabricClusterManagementClient10 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -5084,7 +5056,7 @@ impl IFabricClusterManagementClient10 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -5263,7 +5235,7 @@ impl IFabricClusterManagementClient11 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -5301,7 +5273,7 @@ impl IFabricClusterManagementClient11 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -5336,7 +5308,7 @@ impl IFabricClusterManagementClient11 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -5354,7 +5326,7 @@ impl IFabricClusterManagementClient11 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -5698,7 +5670,7 @@ impl IFabricClusterManagementClient12 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -5716,7 +5688,7 @@ impl IFabricClusterManagementClient12 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -5903,7 +5875,7 @@ impl IFabricClusterManagementClient13 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -5943,7 +5915,7 @@ impl IFabricClusterManagementClient13 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -6221,7 +6193,7 @@ impl IFabricClusterManagementClient14 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -6239,7 +6211,7 @@ impl IFabricClusterManagementClient14 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -6427,7 +6399,7 @@ impl IFabricClusterManagementClient15 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -6445,7 +6417,7 @@ impl IFabricClusterManagementClient15 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -6641,7 +6613,7 @@ impl IFabricClusterManagementClient16 {
                 description.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -6834,7 +6806,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -6869,7 +6841,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -6907,7 +6879,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -6944,7 +6916,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -6976,7 +6948,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -6994,7 +6966,7 @@ impl IFabricClusterManagementClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -7017,7 +6989,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -7052,7 +7024,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -7090,7 +7062,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -7122,7 +7094,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -7140,7 +7112,7 @@ impl IFabricClusterManagementClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -7165,7 +7137,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -7202,7 +7174,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -7234,7 +7206,7 @@ impl IFabricClusterManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -7595,7 +7567,7 @@ pub trait IFabricClusterManagementClient2_Impl: IFabricClusterManagementClient_I
     ) -> windows_core::Result<()>;
     fn BeginRecoverServicePartitions(
         &self,
-        servicename: super::FabricTypes::FABRIC_URI,
+        servicename: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -8089,7 +8061,7 @@ impl IFabricClusterManagementClient2_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricClusterManagementClient2_Impl::BeginRecoverServicePartitions(
                     this,
-                    core::mem::transmute_copy(&servicename),
+                    core::mem::transmute(&servicename),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -8238,7 +8210,7 @@ impl IFabricClusterManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -8275,7 +8247,7 @@ impl IFabricClusterManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -8312,7 +8284,7 @@ impl IFabricClusterManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -8349,7 +8321,7 @@ impl IFabricClusterManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -8874,7 +8846,7 @@ impl IFabricClusterManagementClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9037,7 +9009,7 @@ impl IFabricClusterManagementClient5 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9210,7 +9182,7 @@ impl IFabricClusterManagementClient6 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9373,7 +9345,7 @@ impl IFabricClusterManagementClient7 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9405,7 +9377,7 @@ impl IFabricClusterManagementClient7 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9423,7 +9395,7 @@ impl IFabricClusterManagementClient7 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9443,7 +9415,7 @@ impl IFabricClusterManagementClient7 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9461,7 +9433,7 @@ impl IFabricClusterManagementClient7 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9481,7 +9453,7 @@ impl IFabricClusterManagementClient7 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9513,7 +9485,7 @@ impl IFabricClusterManagementClient7 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9980,7 +9952,7 @@ impl IFabricClusterManagementClient8 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9998,7 +9970,7 @@ impl IFabricClusterManagementClient8 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -10169,7 +10141,7 @@ impl IFabricClusterManagementClient9 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10187,7 +10159,7 @@ impl IFabricClusterManagementClient9 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10210,7 +10182,7 @@ impl IFabricClusterManagementClient9 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10228,7 +10200,7 @@ impl IFabricClusterManagementClient9 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -10455,7 +10427,7 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricDeployedApplicationHealthResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_DeployedApplicationHealth(
         &self,
     ) -> *const super::FabricTypes::FABRIC_DEPLOYED_APPLICATION_HEALTH {
@@ -10470,24 +10442,24 @@ impl IFabricDeployedApplicationHealthResult {
 #[doc(hidden)]
 pub struct IFabricDeployedApplicationHealthResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_DeployedApplicationHealth:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         )
             -> *const super::FabricTypes::FABRIC_DEPLOYED_APPLICATION_HEALTH,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_DeployedApplicationHealth: usize,
 }
 unsafe impl Send for IFabricDeployedApplicationHealthResult {}
 unsafe impl Sync for IFabricDeployedApplicationHealthResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricDeployedApplicationHealthResult_Impl: windows_core::IUnknownImpl {
     fn get_DeployedApplicationHealth(
         &self,
     ) -> *const super::FabricTypes::FABRIC_DEPLOYED_APPLICATION_HEALTH;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricDeployedApplicationHealthResult_Vtbl {
     pub const fn new<Identity: IFabricDeployedApplicationHealthResult_Impl, const OFFSET: isize>()
     -> Self {
@@ -10512,7 +10484,7 @@ impl IFabricDeployedApplicationHealthResult_Vtbl {
         iid == &<IFabricDeployedApplicationHealthResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricDeployedApplicationHealthResult {}
 windows_core::imp::define_interface!(
     IFabricDeployedServicePackageHealthResult,
@@ -10524,7 +10496,7 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricDeployedServicePackageHealthResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_DeployedServicePackageHealth(
         &self,
     ) -> *const super::FabricTypes::FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH {
@@ -10537,16 +10509,16 @@ impl IFabricDeployedServicePackageHealthResult {
 }
 #[repr(C)]
 #[doc(hidden)]
-pub struct IFabricDeployedServicePackageHealthResult_Vtbl { pub base__ : windows_core::IUnknown_Vtbl , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_DeployedServicePackageHealth : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_DeployedServicePackageHealth : usize , }
+pub struct IFabricDeployedServicePackageHealthResult_Vtbl { pub base__ : windows_core::IUnknown_Vtbl , # [cfg (all (feature = "ServiceFabric_FabricTypes" , feature = "Win32"))] pub get_DeployedServicePackageHealth : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH , # [cfg (not (all (feature = "ServiceFabric_FabricTypes" , feature = "Win32")))] get_DeployedServicePackageHealth : usize , }
 unsafe impl Send for IFabricDeployedServicePackageHealthResult {}
 unsafe impl Sync for IFabricDeployedServicePackageHealthResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricDeployedServicePackageHealthResult_Impl: windows_core::IUnknownImpl {
     fn get_DeployedServicePackageHealth(
         &self,
     ) -> *const super::FabricTypes::FABRIC_DEPLOYED_SERVICE_PACKAGE_HEALTH;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricDeployedServicePackageHealthResult_Vtbl {
     pub const fn new<
         Identity: IFabricDeployedServicePackageHealthResult_Impl,
@@ -10575,7 +10547,7 @@ impl IFabricDeployedServicePackageHealthResult_Vtbl {
         iid == &<IFabricDeployedServicePackageHealthResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricDeployedServicePackageHealthResult {}
 windows_core::imp::define_interface!(
     IFabricFaultManagementClient,
@@ -10606,7 +10578,7 @@ impl IFabricFaultManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10624,7 +10596,7 @@ impl IFabricFaultManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -10649,7 +10621,7 @@ impl IFabricFaultManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10667,7 +10639,7 @@ impl IFabricFaultManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -10692,7 +10664,7 @@ impl IFabricFaultManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10707,7 +10679,7 @@ impl IFabricFaultManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -10732,7 +10704,7 @@ impl IFabricFaultManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10750,7 +10722,7 @@ impl IFabricFaultManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -10775,7 +10747,7 @@ impl IFabricFaultManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10793,7 +10765,7 @@ impl IFabricFaultManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -10818,7 +10790,7 @@ impl IFabricFaultManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10836,7 +10808,7 @@ impl IFabricFaultManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -11427,7 +11399,7 @@ impl IFabricFaultManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -11445,7 +11417,7 @@ impl IFabricFaultManagementClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -11608,7 +11580,7 @@ impl IFabricFaultManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -11626,7 +11598,7 @@ impl IFabricFaultManagementClient3 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -12459,7 +12431,7 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricGetClusterLoadInformationResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_ClusterLoadInformation(
         &self,
     ) -> *const super::FabricTypes::FABRIC_CLUSTER_LOAD_INFORMATION {
@@ -12474,24 +12446,24 @@ impl IFabricGetClusterLoadInformationResult {
 #[doc(hidden)]
 pub struct IFabricGetClusterLoadInformationResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_ClusterLoadInformation:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         )
             -> *const super::FabricTypes::FABRIC_CLUSTER_LOAD_INFORMATION,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_ClusterLoadInformation: usize,
 }
 unsafe impl Send for IFabricGetClusterLoadInformationResult {}
 unsafe impl Sync for IFabricGetClusterLoadInformationResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricGetClusterLoadInformationResult_Impl: windows_core::IUnknownImpl {
     fn get_ClusterLoadInformation(
         &self,
     ) -> *const super::FabricTypes::FABRIC_CLUSTER_LOAD_INFORMATION;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricGetClusterLoadInformationResult_Vtbl {
     pub const fn new<Identity: IFabricGetClusterLoadInformationResult_Impl, const OFFSET: isize>()
     -> Self {
@@ -12516,7 +12488,7 @@ impl IFabricGetClusterLoadInformationResult_Vtbl {
         iid == &<IFabricGetClusterLoadInformationResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricGetClusterLoadInformationResult {}
 windows_core::imp::define_interface!(
     IFabricGetDeployedApplicationListResult,
@@ -12674,7 +12646,7 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricGetDeployedCodePackageListResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_DeployedCodePackageList(
         &self,
     ) -> *const super::FabricTypes::FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_LIST {
@@ -12687,16 +12659,16 @@ impl IFabricGetDeployedCodePackageListResult {
 }
 #[repr(C)]
 #[doc(hidden)]
-pub struct IFabricGetDeployedCodePackageListResult_Vtbl { pub base__ : windows_core::IUnknown_Vtbl , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_DeployedCodePackageList : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_LIST , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_DeployedCodePackageList : usize , }
+pub struct IFabricGetDeployedCodePackageListResult_Vtbl { pub base__ : windows_core::IUnknown_Vtbl , # [cfg (all (feature = "ServiceFabric_FabricTypes" , feature = "Win32"))] pub get_DeployedCodePackageList : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_LIST , # [cfg (not (all (feature = "ServiceFabric_FabricTypes" , feature = "Win32")))] get_DeployedCodePackageList : usize , }
 unsafe impl Send for IFabricGetDeployedCodePackageListResult {}
 unsafe impl Sync for IFabricGetDeployedCodePackageListResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricGetDeployedCodePackageListResult_Impl: windows_core::IUnknownImpl {
     fn get_DeployedCodePackageList(
         &self,
     ) -> *const super::FabricTypes::FABRIC_DEPLOYED_CODE_PACKAGE_QUERY_RESULT_LIST;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricGetDeployedCodePackageListResult_Vtbl {
     pub const fn new<
         Identity: IFabricGetDeployedCodePackageListResult_Impl,
@@ -12723,7 +12695,7 @@ impl IFabricGetDeployedCodePackageListResult_Vtbl {
         iid == &<IFabricGetDeployedCodePackageListResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricGetDeployedCodePackageListResult {}
 windows_core::imp::define_interface!(
     IFabricGetDeployedNetworkCodePackageListResult,
@@ -13958,7 +13930,7 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricGetPartitionLoadInformationResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_PartitionLoadInformation(
         &self,
     ) -> *const super::FabricTypes::FABRIC_PARTITION_LOAD_INFORMATION {
@@ -13973,24 +13945,24 @@ impl IFabricGetPartitionLoadInformationResult {
 #[doc(hidden)]
 pub struct IFabricGetPartitionLoadInformationResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_PartitionLoadInformation:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         )
             -> *const super::FabricTypes::FABRIC_PARTITION_LOAD_INFORMATION,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_PartitionLoadInformation: usize,
 }
 unsafe impl Send for IFabricGetPartitionLoadInformationResult {}
 unsafe impl Sync for IFabricGetPartitionLoadInformationResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricGetPartitionLoadInformationResult_Impl: windows_core::IUnknownImpl {
     fn get_PartitionLoadInformation(
         &self,
     ) -> *const super::FabricTypes::FABRIC_PARTITION_LOAD_INFORMATION;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricGetPartitionLoadInformationResult_Vtbl {
     pub const fn new<
         Identity: IFabricGetPartitionLoadInformationResult_Impl,
@@ -14017,7 +13989,7 @@ impl IFabricGetPartitionLoadInformationResult_Vtbl {
         iid == &<IFabricGetPartitionLoadInformationResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricGetPartitionLoadInformationResult {}
 windows_core::imp::define_interface!(
     IFabricGetProvisionedCodeVersionListResult,
@@ -14153,7 +14125,7 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricGetRepairTaskListResult, windows_core::IUnknown);
 impl IFabricGetRepairTaskListResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_Tasks(&self) -> *const super::FabricTypes::FABRIC_REPAIR_TASK_LIST {
         unsafe {
             (windows_core::Interface::vtable(self).get_Tasks)(windows_core::Interface::as_raw(self))
@@ -14164,21 +14136,21 @@ impl IFabricGetRepairTaskListResult {
 #[doc(hidden)]
 pub struct IFabricGetRepairTaskListResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_Tasks: unsafe extern "system" fn(
         *mut core::ffi::c_void,
     )
         -> *const super::FabricTypes::FABRIC_REPAIR_TASK_LIST,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_Tasks: usize,
 }
 unsafe impl Send for IFabricGetRepairTaskListResult {}
 unsafe impl Sync for IFabricGetRepairTaskListResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricGetRepairTaskListResult_Impl: windows_core::IUnknownImpl {
     fn get_Tasks(&self) -> *const super::FabricTypes::FABRIC_REPAIR_TASK_LIST;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricGetRepairTaskListResult_Vtbl {
     pub const fn new<Identity: IFabricGetRepairTaskListResult_Impl, const OFFSET: isize>() -> Self {
         unsafe extern "system" fn get_Tasks<
@@ -14202,7 +14174,7 @@ impl IFabricGetRepairTaskListResult_Vtbl {
         iid == &<IFabricGetRepairTaskListResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricGetRepairTaskListResult {}
 windows_core::imp::define_interface!(
     IFabricGetReplicaListResult,
@@ -14340,7 +14312,7 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricGetReplicaLoadInformationResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_ReplicaLoadInformation(
         &self,
     ) -> *const super::FabricTypes::FABRIC_REPLICA_LOAD_INFORMATION {
@@ -14355,24 +14327,24 @@ impl IFabricGetReplicaLoadInformationResult {
 #[doc(hidden)]
 pub struct IFabricGetReplicaLoadInformationResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_ReplicaLoadInformation:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         )
             -> *const super::FabricTypes::FABRIC_REPLICA_LOAD_INFORMATION,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_ReplicaLoadInformation: usize,
 }
 unsafe impl Send for IFabricGetReplicaLoadInformationResult {}
 unsafe impl Sync for IFabricGetReplicaLoadInformationResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricGetReplicaLoadInformationResult_Impl: windows_core::IUnknownImpl {
     fn get_ReplicaLoadInformation(
         &self,
     ) -> *const super::FabricTypes::FABRIC_REPLICA_LOAD_INFORMATION;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricGetReplicaLoadInformationResult_Vtbl {
     pub const fn new<Identity: IFabricGetReplicaLoadInformationResult_Impl, const OFFSET: isize>()
     -> Self {
@@ -14397,7 +14369,7 @@ impl IFabricGetReplicaLoadInformationResult_Vtbl {
         iid == &<IFabricGetReplicaLoadInformationResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricGetReplicaLoadInformationResult {}
 windows_core::imp::define_interface!(
     IFabricGetRollingUpgradeMonitoringPolicyResult,
@@ -14947,7 +14919,7 @@ impl IFabricHealthClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -14965,7 +14937,7 @@ impl IFabricHealthClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -14993,7 +14965,7 @@ impl IFabricHealthClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -15011,7 +14983,7 @@ impl IFabricHealthClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -15038,7 +15010,7 @@ impl IFabricHealthClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -15056,7 +15028,7 @@ impl IFabricHealthClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -15083,7 +15055,7 @@ impl IFabricHealthClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -15101,7 +15073,7 @@ impl IFabricHealthClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -15128,7 +15100,7 @@ impl IFabricHealthClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -15146,7 +15118,7 @@ impl IFabricHealthClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -15175,7 +15147,7 @@ impl IFabricHealthClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -15193,7 +15165,7 @@ impl IFabricHealthClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -15223,7 +15195,7 @@ impl IFabricHealthClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -15241,7 +15213,7 @@ impl IFabricHealthClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -15274,7 +15246,7 @@ impl IFabricHealthClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -15292,7 +15264,7 @@ impl IFabricHealthClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -15546,7 +15518,7 @@ pub trait IFabricHealthClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<IFabricNodeHealthResult>;
     fn BeginGetApplicationHealth(
         &self,
-        applicationname: super::FabricTypes::FABRIC_URI,
+        applicationname: &super::FabricTypes::FABRIC_URI,
         healthpolicy: *const super::FabricTypes::FABRIC_APPLICATION_HEALTH_POLICY,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -15557,7 +15529,7 @@ pub trait IFabricHealthClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<IFabricApplicationHealthResult>;
     fn BeginGetServiceHealth(
         &self,
-        servicename: super::FabricTypes::FABRIC_URI,
+        servicename: &super::FabricTypes::FABRIC_URI,
         healthpolicy: *const super::FabricTypes::FABRIC_APPLICATION_HEALTH_POLICY,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -15591,7 +15563,7 @@ pub trait IFabricHealthClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<IFabricReplicaHealthResult>;
     fn BeginGetDeployedApplicationHealth(
         &self,
-        applicationname: super::FabricTypes::FABRIC_URI,
+        applicationname: &super::FabricTypes::FABRIC_URI,
         nodename: &windows_core::PCWSTR,
         healthpolicy: *const super::FabricTypes::FABRIC_APPLICATION_HEALTH_POLICY,
         timeoutmilliseconds: u32,
@@ -15603,7 +15575,7 @@ pub trait IFabricHealthClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<IFabricDeployedApplicationHealthResult>;
     fn BeginGetDeployedServicePackageHealth(
         &self,
-        applicationname: super::FabricTypes::FABRIC_URI,
+        applicationname: &super::FabricTypes::FABRIC_URI,
         servicemanifestname: &windows_core::PCWSTR,
         nodename: &windows_core::PCWSTR,
         healthpolicy: *const super::FabricTypes::FABRIC_APPLICATION_HEALTH_POLICY,
@@ -15756,7 +15728,7 @@ impl IFabricHealthClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricHealthClient_Impl::BeginGetApplicationHealth(
                     this,
-                    core::mem::transmute_copy(&applicationname),
+                    core::mem::transmute(&applicationname),
                     core::mem::transmute_copy(&healthpolicy),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -15808,7 +15780,7 @@ impl IFabricHealthClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricHealthClient_Impl::BeginGetServiceHealth(
                     this,
-                    core::mem::transmute_copy(&servicename),
+                    core::mem::transmute(&servicename),
                     core::mem::transmute_copy(&healthpolicy),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -15967,7 +15939,7 @@ impl IFabricHealthClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricHealthClient_Impl::BeginGetDeployedApplicationHealth(
                     this,
-                    core::mem::transmute_copy(&applicationname),
+                    core::mem::transmute(&applicationname),
                     core::mem::transmute(&nodename),
                     core::mem::transmute_copy(&healthpolicy),
                     core::mem::transmute_copy(&timeoutmilliseconds),
@@ -16022,7 +15994,7 @@ impl IFabricHealthClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricHealthClient_Impl::BeginGetDeployedServicePackageHealth(
                     this,
-                    core::mem::transmute_copy(&applicationname),
+                    core::mem::transmute(&applicationname),
                     core::mem::transmute(&servicemanifestname),
                     core::mem::transmute(&nodename),
                     core::mem::transmute_copy(&healthpolicy),
@@ -16135,7 +16107,7 @@ impl IFabricHealthClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -16153,7 +16125,7 @@ impl IFabricHealthClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -16178,7 +16150,7 @@ impl IFabricHealthClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -16196,7 +16168,7 @@ impl IFabricHealthClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -16221,7 +16193,7 @@ impl IFabricHealthClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -16239,7 +16211,7 @@ impl IFabricHealthClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -16264,7 +16236,7 @@ impl IFabricHealthClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -16282,7 +16254,7 @@ impl IFabricHealthClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -16307,7 +16279,7 @@ impl IFabricHealthClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -16325,7 +16297,7 @@ impl IFabricHealthClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -16350,7 +16322,7 @@ impl IFabricHealthClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -16368,7 +16340,7 @@ impl IFabricHealthClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -16393,7 +16365,7 @@ impl IFabricHealthClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -16411,7 +16383,7 @@ impl IFabricHealthClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -16436,7 +16408,7 @@ impl IFabricHealthClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -16454,7 +16426,7 @@ impl IFabricHealthClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -17230,7 +17202,7 @@ impl IFabricHealthClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -17248,7 +17220,7 @@ impl IFabricHealthClient3 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -17506,7 +17478,7 @@ impl IFabricInfrastructureServiceClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -17524,7 +17496,7 @@ impl IFabricInfrastructureServiceClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -17552,7 +17524,7 @@ impl IFabricInfrastructureServiceClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -17570,7 +17542,7 @@ impl IFabricInfrastructureServiceClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -17638,7 +17610,7 @@ unsafe impl Sync for IFabricInfrastructureServiceClient {}
 pub trait IFabricInfrastructureServiceClient_Impl: windows_core::IUnknownImpl {
     fn BeginInvokeInfrastructureCommand(
         &self,
-        servicename: super::FabricTypes::FABRIC_URI,
+        servicename: &super::FabricTypes::FABRIC_URI,
         command: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -17649,7 +17621,7 @@ pub trait IFabricInfrastructureServiceClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
     fn BeginInvokeInfrastructureQuery(
         &self,
-        servicename: super::FabricTypes::FABRIC_URI,
+        servicename: &super::FabricTypes::FABRIC_URI,
         command: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -17682,7 +17654,7 @@ impl IFabricInfrastructureServiceClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricInfrastructureServiceClient_Impl::BeginInvokeInfrastructureCommand(
                     this,
-                    core::mem::transmute_copy(&servicename),
+                    core::mem::transmute(&servicename),
                     core::mem::transmute(&command),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -17734,7 +17706,7 @@ impl IFabricInfrastructureServiceClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricInfrastructureServiceClient_Impl::BeginInvokeInfrastructureQuery(
                     this,
-                    core::mem::transmute_copy(&servicename),
+                    core::mem::transmute(&servicename),
                     core::mem::transmute(&command),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -17814,7 +17786,7 @@ impl IFabricManagedIdentityClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -17832,7 +17804,7 @@ impl IFabricManagedIdentityClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -18385,7 +18357,7 @@ impl IFabricNetworkManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -18422,7 +18394,7 @@ impl IFabricNetworkManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -18459,7 +18431,7 @@ impl IFabricNetworkManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -18477,7 +18449,7 @@ impl IFabricNetworkManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -18502,7 +18474,7 @@ impl IFabricNetworkManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -18520,7 +18492,7 @@ impl IFabricNetworkManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -18545,7 +18517,7 @@ impl IFabricNetworkManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -18563,7 +18535,7 @@ impl IFabricNetworkManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -18588,7 +18560,7 @@ impl IFabricNetworkManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -18606,7 +18578,7 @@ impl IFabricNetworkManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -18631,7 +18603,7 @@ impl IFabricNetworkManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -18649,7 +18621,7 @@ impl IFabricNetworkManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -18674,7 +18646,7 @@ impl IFabricNetworkManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -18692,7 +18664,7 @@ impl IFabricNetworkManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -19421,7 +19393,7 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricNodeHealthResult, windows_core::IUnknown);
 impl IFabricNodeHealthResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_NodeHealth(&self) -> *const super::FabricTypes::FABRIC_NODE_HEALTH {
         unsafe {
             (windows_core::Interface::vtable(self).get_NodeHealth)(windows_core::Interface::as_raw(
@@ -19434,21 +19406,21 @@ impl IFabricNodeHealthResult {
 #[doc(hidden)]
 pub struct IFabricNodeHealthResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_NodeHealth: unsafe extern "system" fn(
         *mut core::ffi::c_void,
     )
         -> *const super::FabricTypes::FABRIC_NODE_HEALTH,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_NodeHealth: usize,
 }
 unsafe impl Send for IFabricNodeHealthResult {}
 unsafe impl Sync for IFabricNodeHealthResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricNodeHealthResult_Impl: windows_core::IUnknownImpl {
     fn get_NodeHealth(&self) -> *const super::FabricTypes::FABRIC_NODE_HEALTH;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricNodeHealthResult_Vtbl {
     pub const fn new<Identity: IFabricNodeHealthResult_Impl, const OFFSET: isize>() -> Self {
         unsafe extern "system" fn get_NodeHealth<
@@ -19472,7 +19444,7 @@ impl IFabricNodeHealthResult_Vtbl {
         iid == &<IFabricNodeHealthResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricNodeHealthResult {}
 windows_core::imp::define_interface!(
     IFabricNodeTransitionProgressResult,
@@ -19674,7 +19646,7 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricPartitionHealthResult, windows_core::IUnknown);
 impl IFabricPartitionHealthResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_PartitionHealth(&self) -> *const super::FabricTypes::FABRIC_PARTITION_HEALTH {
         unsafe {
             (windows_core::Interface::vtable(self).get_PartitionHealth)(
@@ -19687,21 +19659,21 @@ impl IFabricPartitionHealthResult {
 #[doc(hidden)]
 pub struct IFabricPartitionHealthResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_PartitionHealth:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         ) -> *const super::FabricTypes::FABRIC_PARTITION_HEALTH,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_PartitionHealth: usize,
 }
 unsafe impl Send for IFabricPartitionHealthResult {}
 unsafe impl Sync for IFabricPartitionHealthResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricPartitionHealthResult_Impl: windows_core::IUnknownImpl {
     fn get_PartitionHealth(&self) -> *const super::FabricTypes::FABRIC_PARTITION_HEALTH;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricPartitionHealthResult_Vtbl {
     pub const fn new<Identity: IFabricPartitionHealthResult_Impl, const OFFSET: isize>() -> Self {
         unsafe extern "system" fn get_PartitionHealth<
@@ -19725,7 +19697,7 @@ impl IFabricPartitionHealthResult_Vtbl {
         iid == &<IFabricPartitionHealthResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricPartitionHealthResult {}
 windows_core::imp::define_interface!(
     IFabricPartitionQuorumLossProgressResult,
@@ -19871,7 +19843,7 @@ impl IFabricPropertyBatchResult {
                 operationindexinrequest,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -19961,7 +19933,7 @@ impl IFabricPropertyEnumerationResult {
                 index,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -20084,7 +20056,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20121,7 +20093,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20158,7 +20130,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20203,7 +20175,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20221,7 +20193,7 @@ impl IFabricPropertyManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -20253,7 +20225,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20295,7 +20267,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20337,7 +20309,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20380,7 +20352,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20422,7 +20394,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20462,7 +20434,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20502,7 +20474,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20520,7 +20492,7 @@ impl IFabricPropertyManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -20548,7 +20520,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20566,7 +20538,7 @@ impl IFabricPropertyManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -20595,7 +20567,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20615,7 +20587,7 @@ impl IFabricPropertyManagementClient {
                 failedoperationindexinrequest as _,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -20645,7 +20617,7 @@ impl IFabricPropertyManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -20663,7 +20635,7 @@ impl IFabricPropertyManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -21030,7 +21002,7 @@ unsafe impl Sync for IFabricPropertyManagementClient {}
 pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     fn BeginCreateName(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -21040,7 +21012,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginDeleteName(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -21050,7 +21022,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginNameExists(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -21060,7 +21032,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<bool>;
     fn BeginEnumerateSubNames(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         previousresult: windows_core::Ref<IFabricNameEnumerationResult>,
         recursive: bool,
         timeoutmilliseconds: u32,
@@ -21072,7 +21044,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<IFabricNameEnumerationResult>;
     fn BeginPutPropertyBinary(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         datalength: u32,
         data: *const u8,
@@ -21085,7 +21057,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginPutPropertyInt64(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         data: i64,
         timeoutmilliseconds: u32,
@@ -21097,7 +21069,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginPutPropertyDouble(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         data: f64,
         timeoutmilliseconds: u32,
@@ -21109,7 +21081,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginPutPropertyWString(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         data: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
@@ -21121,7 +21093,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginPutPropertyGuid(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         data: *const windows_core::GUID,
         timeoutmilliseconds: u32,
@@ -21133,7 +21105,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginDeleteProperty(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -21144,7 +21116,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginGetPropertyMetadata(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -21155,7 +21127,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<IFabricPropertyMetadataResult>;
     fn BeginGetProperty(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         propertyname: &windows_core::PCWSTR,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -21166,7 +21138,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<IFabricPropertyValueResult>;
     fn BeginSubmitPropertyBatch(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         operationcount: u32,
         operations: *const super::FabricTypes::FABRIC_PROPERTY_BATCH_OPERATION,
         timeoutmilliseconds: u32,
@@ -21179,7 +21151,7 @@ pub trait IFabricPropertyManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<IFabricPropertyBatchResult>;
     fn BeginEnumerateProperties(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         includevalues: bool,
         previousresult: windows_core::Ref<IFabricPropertyEnumerationResult>,
         timeoutmilliseconds: u32,
@@ -21212,7 +21184,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginCreateName(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -21256,7 +21228,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginDeleteName(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -21300,7 +21272,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginNameExists(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -21352,7 +21324,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginEnumerateSubNames(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&previousresult),
                     core::mem::transmute_copy(&recursive),
                     core::mem::transmute_copy(&timeoutmilliseconds),
@@ -21407,7 +21379,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginPutPropertyBinary(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute(&propertyname),
                     core::mem::transmute_copy(&datalength),
                     core::mem::transmute_copy(&data),
@@ -21456,7 +21428,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginPutPropertyInt64(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute(&propertyname),
                     core::mem::transmute_copy(&data),
                     core::mem::transmute_copy(&timeoutmilliseconds),
@@ -21504,7 +21476,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginPutPropertyDouble(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute(&propertyname),
                     core::mem::transmute_copy(&data),
                     core::mem::transmute_copy(&timeoutmilliseconds),
@@ -21552,7 +21524,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginPutPropertyWString(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute(&propertyname),
                     core::mem::transmute(&data),
                     core::mem::transmute_copy(&timeoutmilliseconds),
@@ -21600,7 +21572,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginPutPropertyGuid(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute(&propertyname),
                     core::mem::transmute_copy(&data),
                     core::mem::transmute_copy(&timeoutmilliseconds),
@@ -21647,7 +21619,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginDeleteProperty(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute(&propertyname),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -21693,7 +21665,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginGetPropertyMetadata(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute(&propertyname),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -21745,7 +21717,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginGetProperty(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute(&propertyname),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -21798,7 +21770,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginSubmitPropertyBatch(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&operationcount),
                     core::mem::transmute_copy(&operations),
                     core::mem::transmute_copy(&timeoutmilliseconds),
@@ -21854,7 +21826,7 @@ impl IFabricPropertyManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient_Impl::BeginEnumerateProperties(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&includevalues),
                     core::mem::transmute_copy(&previousresult),
                     core::mem::transmute_copy(&timeoutmilliseconds),
@@ -21973,7 +21945,7 @@ impl IFabricPropertyManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22027,7 +21999,7 @@ unsafe impl Sync for IFabricPropertyManagementClient2 {}
 pub trait IFabricPropertyManagementClient2_Impl: IFabricPropertyManagementClient_Impl {
     fn BeginPutCustomPropertyOperation(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         propertyoperation: *const super::FabricTypes::FABRIC_PUT_CUSTOM_PROPERTY_OPERATION,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -22060,7 +22032,7 @@ impl IFabricPropertyManagementClient2_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricPropertyManagementClient2_Impl::BeginPutCustomPropertyOperation(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&propertyoperation),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -22113,7 +22085,7 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricPropertyMetadataResult, windows_core::IUnknown);
 impl IFabricPropertyMetadataResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_Metadata(&self) -> *const super::FabricTypes::FABRIC_NAMED_PROPERTY_METADATA {
         unsafe {
             (windows_core::Interface::vtable(self).get_Metadata)(windows_core::Interface::as_raw(
@@ -22126,22 +22098,22 @@ impl IFabricPropertyMetadataResult {
 #[doc(hidden)]
 pub struct IFabricPropertyMetadataResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_Metadata:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         )
             -> *const super::FabricTypes::FABRIC_NAMED_PROPERTY_METADATA,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_Metadata: usize,
 }
 unsafe impl Send for IFabricPropertyMetadataResult {}
 unsafe impl Sync for IFabricPropertyMetadataResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricPropertyMetadataResult_Impl: windows_core::IUnknownImpl {
     fn get_Metadata(&self) -> *const super::FabricTypes::FABRIC_NAMED_PROPERTY_METADATA;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricPropertyMetadataResult_Vtbl {
     pub const fn new<Identity: IFabricPropertyMetadataResult_Impl, const OFFSET: isize>() -> Self {
         unsafe extern "system" fn get_Metadata<
@@ -22165,7 +22137,7 @@ impl IFabricPropertyMetadataResult_Vtbl {
         iid == &<IFabricPropertyMetadataResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricPropertyMetadataResult {}
 windows_core::imp::define_interface!(
     IFabricPropertyValueResult,
@@ -22174,7 +22146,7 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricPropertyValueResult, windows_core::IUnknown);
 impl IFabricPropertyValueResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_Property(&self) -> *const super::FabricTypes::FABRIC_NAMED_PROPERTY {
         unsafe {
             (windows_core::Interface::vtable(self).get_Property)(windows_core::Interface::as_raw(
@@ -22213,8 +22185,7 @@ impl IFabricPropertyValueResult {
             .map(|| result__)
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn GetValueAsWString(&self) -> windows_core::Result<super::FabricTypes::LPCWSTR> {
+    pub unsafe fn GetValueAsWString(&self) -> windows_core::Result<windows_core::PCWSTR> {
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).GetValueAsWString)(
@@ -22239,12 +22210,12 @@ impl IFabricPropertyValueResult {
 #[doc(hidden)]
 pub struct IFabricPropertyValueResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_Property: unsafe extern "system" fn(
         *mut core::ffi::c_void,
     )
         -> *const super::FabricTypes::FABRIC_NAMED_PROPERTY,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_Property: usize,
     pub GetValueAsBinary: unsafe extern "system" fn(
         *mut core::ffi::c_void,
@@ -22255,13 +22226,10 @@ pub struct IFabricPropertyValueResult_Vtbl {
         unsafe extern "system" fn(*mut core::ffi::c_void, *mut i64) -> windows_core::HRESULT,
     pub GetValueAsDouble:
         unsafe extern "system" fn(*mut core::ffi::c_void, *mut f64) -> windows_core::HRESULT,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub GetValueAsWString: unsafe extern "system" fn(
         *mut core::ffi::c_void,
-        *mut super::FabricTypes::LPCWSTR,
+        *mut windows_core::PCWSTR,
     ) -> windows_core::HRESULT,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    GetValueAsWString: usize,
     pub GetValueAsGuid: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         *mut windows_core::GUID,
@@ -22269,16 +22237,16 @@ pub struct IFabricPropertyValueResult_Vtbl {
 }
 unsafe impl Send for IFabricPropertyValueResult {}
 unsafe impl Sync for IFabricPropertyValueResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricPropertyValueResult_Impl: windows_core::IUnknownImpl {
     fn get_Property(&self) -> *const super::FabricTypes::FABRIC_NAMED_PROPERTY;
     fn GetValueAsBinary(&self, bytecount: *mut u32) -> windows_core::Result<*mut u8>;
     fn GetValueAsInt64(&self) -> windows_core::Result<i64>;
     fn GetValueAsDouble(&self) -> windows_core::Result<f64>;
-    fn GetValueAsWString(&self) -> windows_core::Result<super::FabricTypes::LPCWSTR>;
+    fn GetValueAsWString(&self) -> windows_core::Result<windows_core::PCWSTR>;
     fn GetValueAsGuid(&self) -> windows_core::Result<windows_core::GUID>;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricPropertyValueResult_Vtbl {
     pub const fn new<Identity: IFabricPropertyValueResult_Impl, const OFFSET: isize>() -> Self {
         unsafe extern "system" fn get_Property<
@@ -22359,7 +22327,7 @@ impl IFabricPropertyValueResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            bufferedvalue: *mut super::FabricTypes::LPCWSTR,
+            bufferedvalue: *mut windows_core::PCWSTR,
         ) -> windows_core::HRESULT {
             unsafe {
                 let this: &Identity =
@@ -22406,7 +22374,7 @@ impl IFabricPropertyValueResult_Vtbl {
         iid == &<IFabricPropertyValueResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricPropertyValueResult {}
 windows_core::imp::define_interface!(
     IFabricQueryClient,
@@ -22437,7 +22405,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22455,7 +22423,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22480,7 +22448,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22498,7 +22466,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22523,7 +22491,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22541,7 +22509,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22566,7 +22534,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22584,7 +22552,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22609,7 +22577,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22627,7 +22595,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22652,7 +22620,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22670,7 +22638,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22695,7 +22663,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22713,7 +22681,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22738,7 +22706,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22756,7 +22724,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22781,7 +22749,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22799,7 +22767,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22824,7 +22792,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22842,7 +22810,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22867,7 +22835,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22885,7 +22853,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -22910,7 +22878,7 @@ impl IFabricQueryClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -22928,7 +22896,7 @@ impl IFabricQueryClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -24046,7 +24014,7 @@ impl IFabricQueryClient10 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -24064,7 +24032,7 @@ impl IFabricQueryClient10 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -24250,7 +24218,7 @@ impl IFabricQueryClient11 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -24268,7 +24236,7 @@ impl IFabricQueryClient11 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -24457,7 +24425,7 @@ impl IFabricQueryClient12 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -24475,7 +24443,7 @@ impl IFabricQueryClient12 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -24658,7 +24626,7 @@ impl IFabricQueryClient13 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -24676,7 +24644,7 @@ impl IFabricQueryClient13 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -24849,7 +24817,7 @@ impl IFabricQueryClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -24867,7 +24835,7 @@ impl IFabricQueryClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -24887,7 +24855,7 @@ impl IFabricQueryClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -24905,7 +24873,7 @@ impl IFabricQueryClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -24930,7 +24898,7 @@ impl IFabricQueryClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -24948,7 +24916,7 @@ impl IFabricQueryClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -24973,7 +24941,7 @@ impl IFabricQueryClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -24991,7 +24959,7 @@ impl IFabricQueryClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -25016,7 +24984,7 @@ impl IFabricQueryClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -25034,7 +25002,7 @@ impl IFabricQueryClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -25547,7 +25515,7 @@ impl IFabricQueryClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -25565,7 +25533,7 @@ impl IFabricQueryClient3 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -25590,7 +25558,7 @@ impl IFabricQueryClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -25608,7 +25576,7 @@ impl IFabricQueryClient3 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -25859,7 +25827,7 @@ impl IFabricQueryClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -25877,7 +25845,7 @@ impl IFabricQueryClient4 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -25902,7 +25870,7 @@ impl IFabricQueryClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -25920,7 +25888,7 @@ impl IFabricQueryClient4 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -26176,7 +26144,7 @@ impl IFabricQueryClient5 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -26194,7 +26162,7 @@ impl IFabricQueryClient5 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -26359,7 +26327,7 @@ impl IFabricQueryClient6 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -26377,7 +26345,7 @@ impl IFabricQueryClient6 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -26395,7 +26363,7 @@ impl IFabricQueryClient6 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -26413,7 +26381,7 @@ impl IFabricQueryClient6 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -26431,7 +26399,7 @@ impl IFabricQueryClient6 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -26696,7 +26664,7 @@ impl IFabricQueryClient7 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -26714,7 +26682,7 @@ impl IFabricQueryClient7 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -26890,7 +26858,7 @@ impl IFabricQueryClient8 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -26908,7 +26876,7 @@ impl IFabricQueryClient8 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -26933,7 +26901,7 @@ impl IFabricQueryClient8 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -26951,7 +26919,7 @@ impl IFabricQueryClient8 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -27212,7 +27180,7 @@ impl IFabricQueryClient9 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -27230,7 +27198,7 @@ impl IFabricQueryClient9 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -27369,7 +27337,8 @@ windows_core::imp::interface_hierarchy!(IFabricRepairManagementClient, windows_c
 impl IFabricRepairManagementClient {
     #[cfg(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     ))]
     pub unsafe fn BeginCreateRepairTask<P2>(
         &self,
@@ -27389,7 +27358,7 @@ impl IFabricRepairManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -27435,7 +27404,7 @@ impl IFabricRepairManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -27481,7 +27450,7 @@ impl IFabricRepairManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -27527,7 +27496,7 @@ impl IFabricRepairManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -27544,7 +27513,8 @@ impl IFabricRepairManagementClient {
     }
     #[cfg(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     ))]
     pub unsafe fn BeginUpdateRepairExecutionState<P2>(
         &self,
@@ -27564,7 +27534,7 @@ impl IFabricRepairManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -27610,7 +27580,7 @@ impl IFabricRepairManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -27628,7 +27598,7 @@ impl IFabricRepairManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -27638,7 +27608,8 @@ pub struct IFabricRepairManagementClient_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
     #[cfg(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     ))]
     pub BeginCreateRepairTask: unsafe extern "system" fn(
         *mut core::ffi::c_void,
@@ -27649,7 +27620,8 @@ pub struct IFabricRepairManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     #[cfg(not(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     )))]
     BeginCreateRepairTask: usize,
     #[cfg(all(
@@ -27751,7 +27723,8 @@ pub struct IFabricRepairManagementClient_Vtbl {
     EndDeleteRepairTask: usize,
     #[cfg(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     ))]
     pub BeginUpdateRepairExecutionState: unsafe extern "system" fn(
         *mut core::ffi::c_void,
@@ -27762,7 +27735,8 @@ pub struct IFabricRepairManagementClient_Vtbl {
     ) -> windows_core::HRESULT,
     #[cfg(not(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     )))]
     BeginUpdateRepairExecutionState: usize,
     #[cfg(all(
@@ -27808,7 +27782,8 @@ unsafe impl Send for IFabricRepairManagementClient {}
 unsafe impl Sync for IFabricRepairManagementClient {}
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 pub trait IFabricRepairManagementClient_Impl: windows_core::IUnknownImpl {
     fn BeginCreateRepairTask(
@@ -27874,7 +27849,8 @@ pub trait IFabricRepairManagementClient_Impl: windows_core::IUnknownImpl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl IFabricRepairManagementClient_Vtbl {
     pub const fn new<Identity: IFabricRepairManagementClient_Impl, const OFFSET: isize>() -> Self {
@@ -28194,7 +28170,8 @@ impl IFabricRepairManagementClient_Vtbl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl windows_core::RuntimeName for IFabricRepairManagementClient {}
 windows_core::imp::define_interface!(
@@ -28236,7 +28213,7 @@ impl IFabricRepairManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -28300,7 +28277,8 @@ unsafe impl Send for IFabricRepairManagementClient2 {}
 unsafe impl Sync for IFabricRepairManagementClient2 {}
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 pub trait IFabricRepairManagementClient2_Impl: IFabricRepairManagementClient_Impl {
     fn BeginUpdateRepairTaskHealthPolicy(
@@ -28316,7 +28294,8 @@ pub trait IFabricRepairManagementClient2_Impl: IFabricRepairManagementClient_Imp
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl IFabricRepairManagementClient2_Vtbl {
     pub const fn new<Identity: IFabricRepairManagementClient2_Impl, const OFFSET: isize>() -> Self {
@@ -28383,7 +28362,8 @@ impl IFabricRepairManagementClient2_Vtbl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl windows_core::RuntimeName for IFabricRepairManagementClient2 {}
 windows_core::imp::define_interface!(
@@ -28825,7 +28805,7 @@ impl IFabricSecretStoreClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -28843,7 +28823,7 @@ impl IFabricSecretStoreClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -28868,7 +28848,7 @@ impl IFabricSecretStoreClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -28886,7 +28866,7 @@ impl IFabricSecretStoreClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -28911,7 +28891,7 @@ impl IFabricSecretStoreClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -28929,7 +28909,7 @@ impl IFabricSecretStoreClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -28954,7 +28934,7 @@ impl IFabricSecretStoreClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -28972,7 +28952,7 @@ impl IFabricSecretStoreClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -29651,7 +29631,7 @@ impl IFabricServiceGroupManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -29688,7 +29668,7 @@ impl IFabricServiceGroupManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -29725,7 +29705,7 @@ impl IFabricServiceGroupManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -29743,7 +29723,7 @@ impl IFabricServiceGroupManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -29841,7 +29821,7 @@ pub trait IFabricServiceGroupManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginDeleteServiceGroup(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -29851,7 +29831,7 @@ pub trait IFabricServiceGroupManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginGetServiceGroupDescription(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -29926,7 +29906,7 @@ impl IFabricServiceGroupManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceGroupManagementClient_Impl::BeginDeleteServiceGroup(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -29970,7 +29950,7 @@ impl IFabricServiceGroupManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceGroupManagementClient_Impl::BeginGetServiceGroupDescription(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -30065,7 +30045,7 @@ impl IFabricServiceGroupManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -30121,7 +30101,7 @@ pub trait IFabricServiceGroupManagementClient2_Impl:
 {
     fn BeginUpdateServiceGroup(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         servicegroupupdatedescription : * const super::FabricTypes::FABRIC_SERVICE_GROUP_UPDATE_DESCRIPTION,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -30154,7 +30134,7 @@ impl IFabricServiceGroupManagementClient2_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceGroupManagementClient2_Impl::BeginUpdateServiceGroup(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&servicegroupupdatedescription),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -30249,7 +30229,7 @@ impl IFabricServiceGroupManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -30309,8 +30289,8 @@ pub trait IFabricServiceGroupManagementClient3_Impl:
 {
     fn BeginCreateServiceGroupFromTemplate(
         &self,
-        applicationname: super::FabricTypes::FABRIC_URI,
-        servicename: super::FabricTypes::FABRIC_URI,
+        applicationname: &super::FabricTypes::FABRIC_URI,
+        servicename: &super::FabricTypes::FABRIC_URI,
         servicetypename: &windows_core::PCWSTR,
         initializationdatasize: u32,
         initializationdata: *const u8,
@@ -30348,8 +30328,8 @@ impl IFabricServiceGroupManagementClient3_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceGroupManagementClient3_Impl::BeginCreateServiceGroupFromTemplate(
                     this,
-                    core::mem::transmute_copy(&applicationname),
-                    core::mem::transmute_copy(&servicename),
+                    core::mem::transmute(&applicationname),
+                    core::mem::transmute(&servicename),
                     core::mem::transmute(&servicetypename),
                     core::mem::transmute_copy(&initializationdatasize),
                     core::mem::transmute_copy(&initializationdata),
@@ -30442,7 +30422,7 @@ impl IFabricServiceGroupManagementClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -30581,7 +30561,7 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricServiceHealthResult, windows_core::IUnknown);
 impl IFabricServiceHealthResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_ServiceHealth(&self) -> *const super::FabricTypes::FABRIC_SERVICE_HEALTH {
         unsafe {
             (windows_core::Interface::vtable(self).get_ServiceHealth)(
@@ -30594,21 +30574,21 @@ impl IFabricServiceHealthResult {
 #[doc(hidden)]
 pub struct IFabricServiceHealthResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_ServiceHealth:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         ) -> *const super::FabricTypes::FABRIC_SERVICE_HEALTH,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_ServiceHealth: usize,
 }
 unsafe impl Send for IFabricServiceHealthResult {}
 unsafe impl Sync for IFabricServiceHealthResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricServiceHealthResult_Impl: windows_core::IUnknownImpl {
     fn get_ServiceHealth(&self) -> *const super::FabricTypes::FABRIC_SERVICE_HEALTH;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricServiceHealthResult_Vtbl {
     pub const fn new<Identity: IFabricServiceHealthResult_Impl, const OFFSET: isize>() -> Self {
         unsafe extern "system" fn get_ServiceHealth<
@@ -30632,7 +30612,7 @@ impl IFabricServiceHealthResult_Vtbl {
         iid == &<IFabricServiceHealthResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricServiceHealthResult {}
 windows_core::imp::define_interface!(
     IFabricServiceManagementClient,
@@ -30663,7 +30643,7 @@ impl IFabricServiceManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -30709,7 +30689,7 @@ impl IFabricServiceManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -30746,7 +30726,7 @@ impl IFabricServiceManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -30783,7 +30763,7 @@ impl IFabricServiceManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -30801,7 +30781,7 @@ impl IFabricServiceManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -30869,7 +30849,7 @@ impl IFabricServiceManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -30887,7 +30867,7 @@ impl IFabricServiceManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -31053,8 +31033,8 @@ pub trait IFabricServiceManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginCreateServiceFromTemplate(
         &self,
-        applicationname: super::FabricTypes::FABRIC_URI,
-        servicename: super::FabricTypes::FABRIC_URI,
+        applicationname: &super::FabricTypes::FABRIC_URI,
+        servicename: &super::FabricTypes::FABRIC_URI,
         servicetypename: &windows_core::PCWSTR,
         initializationdatasize: u32,
         initializationdata: *const u8,
@@ -31067,7 +31047,7 @@ pub trait IFabricServiceManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginDeleteService(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -31077,7 +31057,7 @@ pub trait IFabricServiceManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginGetServiceDescription(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -31087,7 +31067,7 @@ pub trait IFabricServiceManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<IFabricServiceDescriptionResult>;
     fn RegisterServicePartitionResolutionChangeHandler(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         keytype: super::FabricTypes::FABRIC_PARTITION_KEY_TYPE,
         partitionkey: *const core::ffi::c_void,
         callback: windows_core::Ref<IFabricServicePartitionResolutionChangeHandler>,
@@ -31098,7 +31078,7 @@ pub trait IFabricServiceManagementClient_Impl: windows_core::IUnknownImpl {
     ) -> windows_core::Result<()>;
     fn BeginResolveServicePartition(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         partitionkeytype: super::FabricTypes::FABRIC_PARTITION_KEY_TYPE,
         partitionkey: *const core::ffi::c_void,
         previousresult: windows_core::Ref<IFabricResolvedServicePartitionResult>,
@@ -31179,8 +31159,8 @@ impl IFabricServiceManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceManagementClient_Impl::BeginCreateServiceFromTemplate(
                     this,
-                    core::mem::transmute_copy(&applicationname),
-                    core::mem::transmute_copy(&servicename),
+                    core::mem::transmute(&applicationname),
+                    core::mem::transmute(&servicename),
                     core::mem::transmute(&servicetypename),
                     core::mem::transmute_copy(&initializationdatasize),
                     core::mem::transmute_copy(&initializationdata),
@@ -31227,7 +31207,7 @@ impl IFabricServiceManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceManagementClient_Impl::BeginDeleteService(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -31271,7 +31251,7 @@ impl IFabricServiceManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceManagementClient_Impl::BeginGetServiceDescription(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -31320,7 +31300,7 @@ impl IFabricServiceManagementClient_Vtbl {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                match IFabricServiceManagementClient_Impl::RegisterServicePartitionResolutionChangeHandler (this , core::mem::transmute_copy (& name) , core::mem::transmute_copy (& keytype) , core::mem::transmute_copy (& partitionkey) , core::mem::transmute_copy (& callback) ,) { Ok (ok__) => { callbackhandle . write (ok__) ; windows_core::HRESULT (0) } Err (err) => err . into () }
+                match IFabricServiceManagementClient_Impl::RegisterServicePartitionResolutionChangeHandler (this , core::mem::transmute (& name) , core::mem::transmute_copy (& keytype) , core::mem::transmute_copy (& partitionkey) , core::mem::transmute_copy (& callback) ,) { Ok (ok__) => { callbackhandle . write (ok__) ; windows_core::HRESULT (0) } Err (err) => err . into () }
             }
         }
         unsafe extern "system" fn UnregisterServicePartitionResolutionChangeHandler<
@@ -31354,7 +31334,7 @@ impl IFabricServiceManagementClient_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceManagementClient_Impl::BeginResolveServicePartition(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&partitionkeytype),
                     core::mem::transmute_copy(&partitionkey),
                     core::mem::transmute_copy(&previousresult),
@@ -31462,7 +31442,7 @@ impl IFabricServiceManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -31480,7 +31460,7 @@ impl IFabricServiceManagementClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -31507,7 +31487,7 @@ impl IFabricServiceManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -31593,7 +31573,7 @@ pub trait IFabricServiceManagementClient2_Impl: IFabricServiceManagementClient_I
     ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
     fn BeginUpdateService(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         serviceupdatedescription: *const super::FabricTypes::FABRIC_SERVICE_UPDATE_DESCRIPTION,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -31680,7 +31660,7 @@ impl IFabricServiceManagementClient2_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceManagementClient2_Impl::BeginUpdateService(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&serviceupdatedescription),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -31768,7 +31748,7 @@ impl IFabricServiceManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -31805,7 +31785,7 @@ impl IFabricServiceManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -32055,7 +32035,7 @@ impl IFabricServiceManagementClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -32095,7 +32075,7 @@ impl IFabricServiceManagementClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -32367,7 +32347,7 @@ impl IFabricServiceManagementClient5 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -32542,7 +32522,7 @@ impl IFabricServiceManagementClient6 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -32719,7 +32699,7 @@ impl IFabricServiceManagementClient7 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -32900,7 +32880,7 @@ impl IFabricServiceManagementClient8 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -32937,7 +32917,7 @@ impl IFabricServiceManagementClient8 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -33014,7 +32994,7 @@ unsafe impl Sync for IFabricServiceManagementClient8 {}
 pub trait IFabricServiceManagementClient8_Impl: IFabricServiceManagementClient7_Impl {
     fn BeginDisableService(
         &self,
-        servicenameuri: super::FabricTypes::FABRIC_URI,
+        servicenameuri: &super::FabricTypes::FABRIC_URI,
         disableserviceflag: super::FabricTypes::FABRIC_SERVICE_DISABLE_FLAG,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
@@ -33025,7 +33005,7 @@ pub trait IFabricServiceManagementClient8_Impl: IFabricServiceManagementClient7_
     ) -> windows_core::Result<()>;
     fn BeginEnableService(
         &self,
-        servicenameuri: super::FabricTypes::FABRIC_URI,
+        servicenameuri: &super::FabricTypes::FABRIC_URI,
         timeoutmilliseconds: u32,
         callback: windows_core::Ref<super::FabricCommon::IFabricAsyncOperationCallback>,
     ) -> windows_core::Result<super::FabricCommon::IFabricAsyncOperationContext>;
@@ -33057,7 +33037,7 @@ impl IFabricServiceManagementClient8_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceManagementClient8_Impl::BeginDisableService(
                     this,
-                    core::mem::transmute_copy(&servicenameuri),
+                    core::mem::transmute(&servicenameuri),
                     core::mem::transmute_copy(&disableserviceflag),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
@@ -33102,7 +33082,7 @@ impl IFabricServiceManagementClient8_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 match IFabricServiceManagementClient8_Impl::BeginEnableService(
                     this,
-                    core::mem::transmute_copy(&servicenameuri),
+                    core::mem::transmute(&servicenameuri),
                     core::mem::transmute_copy(&timeoutmilliseconds),
                     core::mem::transmute_copy(&callback),
                 ) {
@@ -33201,7 +33181,7 @@ impl IFabricServiceManagementClient9 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -33361,7 +33341,7 @@ impl IFabricServiceNotification {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -33803,7 +33783,7 @@ impl IFabricTestManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -33840,7 +33820,7 @@ impl IFabricTestManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -33858,7 +33838,7 @@ impl IFabricTestManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -33883,7 +33863,7 @@ impl IFabricTestManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -33920,7 +33900,7 @@ impl IFabricTestManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -33938,7 +33918,7 @@ impl IFabricTestManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -33963,7 +33943,7 @@ impl IFabricTestManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -34000,7 +33980,7 @@ impl IFabricTestManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -34018,7 +33998,7 @@ impl IFabricTestManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -34043,7 +34023,7 @@ impl IFabricTestManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -34061,7 +34041,7 @@ impl IFabricTestManagementClient {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -34086,7 +34066,7 @@ impl IFabricTestManagementClient {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -34837,7 +34817,7 @@ impl IFabricTestManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -34869,7 +34849,7 @@ impl IFabricTestManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -34886,7 +34866,8 @@ impl IFabricTestManagementClient2 {
     }
     #[cfg(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     ))]
     pub unsafe fn BeginGetChaosReport<P2>(
         &self,
@@ -34906,7 +34887,7 @@ impl IFabricTestManagementClient2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -34924,7 +34905,7 @@ impl IFabricTestManagementClient2 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -34973,7 +34954,8 @@ pub struct IFabricTestManagementClient2_Vtbl {
     EndStopChaos: usize,
     #[cfg(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     ))]
     pub BeginGetChaosReport: unsafe extern "system" fn(
         *mut core::ffi::c_void,
@@ -34984,7 +34966,8 @@ pub struct IFabricTestManagementClient2_Vtbl {
     ) -> windows_core::HRESULT,
     #[cfg(not(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     )))]
     BeginGetChaosReport: usize,
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -35000,7 +34983,8 @@ unsafe impl Send for IFabricTestManagementClient2 {}
 unsafe impl Sync for IFabricTestManagementClient2 {}
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 pub trait IFabricTestManagementClient2_Impl: IFabricTestManagementClient_Impl {
     fn BeginStartChaos(
@@ -35035,7 +35019,8 @@ pub trait IFabricTestManagementClient2_Impl: IFabricTestManagementClient_Impl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl IFabricTestManagementClient2_Vtbl {
     pub const fn new<Identity: IFabricTestManagementClient2_Impl, const OFFSET: isize>() -> Self {
@@ -35192,7 +35177,8 @@ impl IFabricTestManagementClient2_Vtbl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl windows_core::RuntimeName for IFabricTestManagementClient2 {}
 windows_core::imp::define_interface!(
@@ -35235,7 +35221,7 @@ impl IFabricTestManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -35272,7 +35258,7 @@ impl IFabricTestManagementClient3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -35290,7 +35276,7 @@ impl IFabricTestManagementClient3 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -35350,7 +35336,8 @@ unsafe impl Send for IFabricTestManagementClient3 {}
 unsafe impl Sync for IFabricTestManagementClient3 {}
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 pub trait IFabricTestManagementClient3_Impl: IFabricTestManagementClient2_Impl {
     fn BeginStartNodeTransition(
@@ -35376,7 +35363,8 @@ pub trait IFabricTestManagementClient3_Impl: IFabricTestManagementClient2_Impl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl IFabricTestManagementClient3_Vtbl {
     pub const fn new<Identity: IFabricTestManagementClient3_Impl, const OFFSET: isize>() -> Self {
@@ -35490,7 +35478,8 @@ impl IFabricTestManagementClient3_Vtbl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl windows_core::RuntimeName for IFabricTestManagementClient3 {}
 windows_core::imp::define_interface!(
@@ -35529,7 +35518,7 @@ impl IFabricTestManagementClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -35547,7 +35536,7 @@ impl IFabricTestManagementClient4 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -35567,7 +35556,7 @@ impl IFabricTestManagementClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -35585,12 +35574,13 @@ impl IFabricTestManagementClient4 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     ))]
     pub unsafe fn BeginSetChaosSchedule<P2>(
         &self,
@@ -35610,7 +35600,7 @@ impl IFabricTestManagementClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -35627,7 +35617,8 @@ impl IFabricTestManagementClient4 {
     }
     #[cfg(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     ))]
     pub unsafe fn BeginGetChaosEvents<P2>(
         &self,
@@ -35647,7 +35638,7 @@ impl IFabricTestManagementClient4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -35665,7 +35656,7 @@ impl IFabricTestManagementClient4 {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -35709,7 +35700,8 @@ pub struct IFabricTestManagementClient4_Vtbl {
     EndGetChaosSchedule: usize,
     #[cfg(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     ))]
     pub BeginSetChaosSchedule: unsafe extern "system" fn(
         *mut core::ffi::c_void,
@@ -35720,7 +35712,8 @@ pub struct IFabricTestManagementClient4_Vtbl {
     ) -> windows_core::HRESULT,
     #[cfg(not(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     )))]
     BeginSetChaosSchedule: usize,
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -35732,7 +35725,8 @@ pub struct IFabricTestManagementClient4_Vtbl {
     EndSetChaosSchedule: usize,
     #[cfg(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     ))]
     pub BeginGetChaosEvents: unsafe extern "system" fn(
         *mut core::ffi::c_void,
@@ -35743,7 +35737,8 @@ pub struct IFabricTestManagementClient4_Vtbl {
     ) -> windows_core::HRESULT,
     #[cfg(not(all(
         feature = "ServiceFabric_FabricCommon",
-        feature = "ServiceFabric_FabricTypes"
+        feature = "ServiceFabric_FabricTypes",
+        feature = "Win32"
     )))]
     BeginGetChaosEvents: usize,
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -35759,7 +35754,8 @@ unsafe impl Send for IFabricTestManagementClient4 {}
 unsafe impl Sync for IFabricTestManagementClient4 {}
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 pub trait IFabricTestManagementClient4_Impl: IFabricTestManagementClient3_Impl {
     fn BeginGetChaos(
@@ -35803,7 +35799,8 @@ pub trait IFabricTestManagementClient4_Impl: IFabricTestManagementClient3_Impl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl IFabricTestManagementClient4_Vtbl {
     pub const fn new<Identity: IFabricTestManagementClient4_Impl, const OFFSET: isize>() -> Self {
@@ -36018,7 +36015,8 @@ impl IFabricTestManagementClient4_Vtbl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl windows_core::RuntimeName for IFabricTestManagementClient4 {}
 windows_core::imp::define_interface!(
@@ -36063,7 +36061,7 @@ impl IFabricTestManagementClient5 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -36111,7 +36109,8 @@ unsafe impl Send for IFabricTestManagementClient5 {}
 unsafe impl Sync for IFabricTestManagementClient5 {}
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 pub trait IFabricTestManagementClient5_Impl: IFabricTestManagementClient4_Impl {
     fn BeginStartNodePoison(
@@ -36127,7 +36126,8 @@ pub trait IFabricTestManagementClient5_Impl: IFabricTestManagementClient4_Impl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl IFabricTestManagementClient5_Vtbl {
     pub const fn new<Identity: IFabricTestManagementClient5_Impl, const OFFSET: isize>() -> Self {
@@ -36191,7 +36191,8 @@ impl IFabricTestManagementClient5_Vtbl {
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
-    feature = "ServiceFabric_FabricTypes"
+    feature = "ServiceFabric_FabricTypes",
+    feature = "Win32"
 ))]
 impl windows_core::RuntimeName for IFabricTestManagementClient5 {}
 windows_core::imp::define_interface!(
@@ -36418,26 +36419,18 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricUpgradeProgressResult, windows_core::IUnknown);
 impl IFabricUpgradeProgressResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_TargetCodeVersion(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_TargetCodeVersion(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_TargetCodeVersion)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_TargetConfigVersion(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_TargetConfigVersion(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_TargetConfigVersion)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -36489,16 +36482,10 @@ impl IFabricUpgradeProgressResult {
 #[doc(hidden)]
 pub struct IFabricUpgradeProgressResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub get_TargetCodeVersion:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_TargetCodeVersion: usize,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
     pub get_TargetConfigVersion:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_TargetConfigVersion: usize,
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
     #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub get_UpgradeState: unsafe extern "system" fn(
         *mut core::ffi::c_void,
@@ -36528,8 +36515,8 @@ unsafe impl Send for IFabricUpgradeProgressResult {}
 unsafe impl Sync for IFabricUpgradeProgressResult {}
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 pub trait IFabricUpgradeProgressResult_Impl: windows_core::IUnknownImpl {
-    fn get_TargetCodeVersion(&self) -> super::FabricTypes::LPCWSTR;
-    fn get_TargetConfigVersion(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_TargetCodeVersion(&self) -> windows_core::PCWSTR;
+    fn get_TargetConfigVersion(&self) -> windows_core::PCWSTR;
     fn get_UpgradeState(&self) -> super::FabricTypes::FABRIC_UPGRADE_STATE;
     fn GetUpgradeDomains(
         &self,
@@ -36549,12 +36536,11 @@ impl IFabricUpgradeProgressResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricUpgradeProgressResult_Impl::get_TargetCodeVersion(this);
+                IFabricUpgradeProgressResult_Impl::get_TargetCodeVersion(this)
             }
         }
         unsafe extern "system" fn get_TargetConfigVersion<
@@ -36562,12 +36548,11 @@ impl IFabricUpgradeProgressResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricUpgradeProgressResult_Impl::get_TargetConfigVersion(this);
+                IFabricUpgradeProgressResult_Impl::get_TargetConfigVersion(this)
             }
         }
         unsafe extern "system" fn get_UpgradeState<
@@ -36670,15 +36655,11 @@ impl IFabricUpgradeProgressResult2 {
             )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_NextUpgradeDomain(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_NextUpgradeDomain(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_NextUpgradeDomain)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
 }
@@ -36693,18 +36674,15 @@ pub struct IFabricUpgradeProgressResult2_Vtbl {
         ) -> super::FabricTypes::FABRIC_ROLLING_UPGRADE_MODE,
     #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
     get_RollingUpgradeMode: usize,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub get_NextUpgradeDomain:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_NextUpgradeDomain: usize,
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
 }
 unsafe impl Send for IFabricUpgradeProgressResult2 {}
 unsafe impl Sync for IFabricUpgradeProgressResult2 {}
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 pub trait IFabricUpgradeProgressResult2_Impl: IFabricUpgradeProgressResult_Impl {
     fn get_RollingUpgradeMode(&self) -> super::FabricTypes::FABRIC_ROLLING_UPGRADE_MODE;
-    fn get_NextUpgradeDomain(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_NextUpgradeDomain(&self) -> windows_core::PCWSTR;
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricUpgradeProgressResult2_Vtbl {
@@ -36726,12 +36704,11 @@ impl IFabricUpgradeProgressResult2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricUpgradeProgressResult2_Impl::get_NextUpgradeDomain(this);
+                IFabricUpgradeProgressResult2_Impl::get_NextUpgradeDomain(this)
             }
         }
         Self {

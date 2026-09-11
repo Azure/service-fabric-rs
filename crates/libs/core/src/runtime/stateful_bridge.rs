@@ -78,7 +78,7 @@ where
     fn CreateReplica(
         &self,
         servicetypename: &crate::PCWSTR,
-        servicename: FABRIC_URI,
+        servicename: &FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &crate::GUID,
@@ -282,7 +282,9 @@ where
         feature = "tracing",
         tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
-    fn GetCurrentProgress(&self) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
+    fn GetCurrentProgress(
+        &self,
+    ) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
         let lsn = self.inner.get_current_progress();
         lsn.map(mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER)
             .map_err(crate::WinError::from)
@@ -292,7 +294,9 @@ where
         feature = "tracing",
         tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
-    fn GetCatchUpCapability(&self) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
+    fn GetCatchUpCapability(
+        &self,
+    ) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
         let lsn = self.inner.get_catch_up_capability();
         lsn.map(mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER)
             .map_err(crate::WinError::from)
@@ -416,11 +420,15 @@ where
         unsafe { self.rplctr.Abort() }
     }
 
-    fn GetCurrentProgress(&self) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
+    fn GetCurrentProgress(
+        &self,
+    ) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
         unsafe { self.rplctr.GetCurrentProgress() }
     }
 
-    fn GetCatchUpCapability(&self) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
+    fn GetCatchUpCapability(
+        &self,
+    ) -> crate::WinResult<mssf_com::FabricTypes::FABRIC_SEQUENCE_NUMBER> {
         unsafe { self.rplctr.GetCatchUpCapability() }
     }
 }
@@ -566,7 +574,10 @@ where
         feature = "tracing",
         tracing::instrument(skip_all, ret(level = "debug"), err)
     )]
-    fn RemoveReplica(&self, replicaid: mssf_com::FabricTypes::FABRIC_REPLICA_ID) -> crate::WinResult<()> {
+    fn RemoveReplica(
+        &self,
+        replicaid: mssf_com::FabricTypes::FABRIC_REPLICA_ID,
+    ) -> crate::WinResult<()> {
         self.inner
             .remove_replica(replicaid.0)
             .map_err(crate::WinError::from)

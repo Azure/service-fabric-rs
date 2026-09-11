@@ -93,7 +93,7 @@ impl Uri {
     /// Needs to have the same lifetime as the original WString.
     /// This is for FFI calls.
     pub fn as_raw(&self) -> FABRIC_URI {
-        FABRIC_URI(self.0.as_pcwstr().0 as *mut core::ffi::c_void)
+        self.0.as_pcwstr()
     }
 
     pub fn new(s: WString) -> Self {
@@ -121,7 +121,7 @@ impl From<FABRIC_URI> for Uri {
 
 impl From<&FABRIC_URI> for Uri {
     fn from(value: &FABRIC_URI) -> Self {
-        Self::from(WString::from(windows_core::PCWSTR(value.0 as *const u16)))
+        Self::from(WString::from(*value))
     }
 }
 

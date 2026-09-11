@@ -72,7 +72,7 @@ impl From<&IFabricNodeContextResult2> for NodeContext {
             node_name: WString::from(raw_ref.NodeName),
             node_type: WString::from(raw_ref.NodeType),
             ip_address_or_fqdn: WString::from(raw_ref.IPAddressOrFQDN),
-            node_instance_id: raw_ref.NodeInstanceId,
+            node_instance_id: raw_ref.NodeInstanceId.0,
             node_id: raw_ref.NodeId.into(),
         }
     }

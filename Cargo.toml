@@ -65,14 +65,9 @@ tower = { version = "0.5", default-features = false, features = ["util"] }
 bytes = "1"
 url = "2"
 uuid = { version = "1", default-features = false }
-# The in-house metadata generation (windows-clang/windows-rdl based bindgen that
-# ignores AgileAttribute) is only in the windows-rs git tree; the published
-# windows-bindgen is still 0.66.0. The generated mssf-com bindings target this
-# git windows-core API, so windows/windows-core are pinned to the same git
-# source to line up with it.
-windows = { git = "https://github.com/microsoft/windows-rs", default-features = false }
-windows-bindgen = { git = "https://github.com/microsoft/windows-rs" }
-windows-core = { git = "https://github.com/microsoft/windows-rs" }
+windows = { version = "0.62.2", default-features = false }
+windows-bindgen = "0.100.0"
+windows-core = "0.100.0"
 
 # crates in this repo
 mssf-com = { version = "0.6", path = "./crates/libs/com", default-features = false }

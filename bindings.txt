@@ -1,8 +1,9 @@
---in  ./build/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd
---out crates/libs/com/src/Microsoft.rs
-
+--in ./build/_deps/fabric_metadata-src/.windows/winmd/Windows.ServiceFabric.winmd
+--in default
+--out crates/libs/com/
+--package
 --filter
-    Microsoft
-  
---config
-  package=true
+    Windows.ServiceFabric.FabricTypes
+    Windows.ServiceFabric.FabricCommon
+    Windows.ServiceFabric.FabricRuntime
+    Windows.ServiceFabric.FabricClient

@@ -69,7 +69,7 @@ where
     fn CreateInstance(
         &self,
         servicetypename: &crate::PCWSTR,
-        servicename: FABRIC_URI,
+        servicename: &FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &crate::GUID,

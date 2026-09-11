@@ -15,7 +15,7 @@ where
             certstorelocation,
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -29,7 +29,7 @@ where
     unsafe {
         let mut result__ = core::mem::zeroed();
         FabricDecryptValue(encryptedvalue.param().abi(), &mut result__)
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -58,7 +58,7 @@ where
             algorithmoid.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -81,7 +81,7 @@ where
             algorithmoid.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -104,7 +104,7 @@ where
             text.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -112,7 +112,8 @@ pub unsafe fn FabricGetLastErrorMessage() -> windows_core::Result<IFabricStringR
     windows_core::link!("" "C" fn FabricGetLastErrorMessage(message : *mut *mut core::ffi::c_void) -> windows_core::HRESULT);
     unsafe {
         let mut result__ = core::mem::zeroed();
-        FabricGetLastErrorMessage(&mut result__).and_then(|| windows_core::Type::from_abi(result__))
+        FabricGetLastErrorMessage(&mut result__)
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 windows_core::imp::define_interface!(
@@ -201,7 +202,7 @@ impl IFabricAsyncOperationContext {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn Cancel(&self) -> windows_core::HRESULT {
@@ -363,11 +364,10 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricStringListResult, windows_core::IUnknown);
 impl IFabricStringListResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub unsafe fn GetStrings(
         &self,
         itemcount: *mut u32,
-    ) -> windows_core::Result<*mut super::FabricTypes::LPCWSTR> {
+    ) -> windows_core::Result<*mut windows_core::PCWSTR> {
         unsafe {
             let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).GetStrings)(
@@ -383,25 +383,17 @@ impl IFabricStringListResult {
 #[doc(hidden)]
 pub struct IFabricStringListResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub GetStrings: unsafe extern "system" fn(
         *mut core::ffi::c_void,
         *mut u32,
-        *mut *mut super::FabricTypes::LPCWSTR,
+        *mut *mut windows_core::PCWSTR,
     ) -> windows_core::HRESULT,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    GetStrings: usize,
 }
 unsafe impl Send for IFabricStringListResult {}
 unsafe impl Sync for IFabricStringListResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
 pub trait IFabricStringListResult_Impl: windows_core::IUnknownImpl {
-    fn GetStrings(
-        &self,
-        itemcount: *mut u32,
-    ) -> windows_core::Result<*mut super::FabricTypes::LPCWSTR>;
+    fn GetStrings(&self, itemcount: *mut u32) -> windows_core::Result<*mut windows_core::PCWSTR>;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricStringListResult_Vtbl {
     pub const fn new<Identity: IFabricStringListResult_Impl, const OFFSET: isize>() -> Self {
         unsafe extern "system" fn GetStrings<
@@ -410,7 +402,7 @@ impl IFabricStringListResult_Vtbl {
         >(
             this: *mut core::ffi::c_void,
             itemcount: *mut u32,
-            buffereditems: *mut *mut super::FabricTypes::LPCWSTR,
+            buffereditems: *mut *mut windows_core::PCWSTR,
         ) -> windows_core::HRESULT {
             unsafe {
                 let this: &Identity =
@@ -436,7 +428,6 @@ impl IFabricStringListResult_Vtbl {
         iid == &<IFabricStringListResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
 impl windows_core::RuntimeName for IFabricStringListResult {}
 windows_core::imp::define_interface!(
     IFabricStringResult,
@@ -445,15 +436,11 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricStringResult, windows_core::IUnknown);
 impl IFabricStringResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_String(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_String(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(self).get_String)(
-                windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            (windows_core::Interface::vtable(self).get_String)(windows_core::Interface::as_raw(
+                self,
+            ))
         }
     }
 }
@@ -461,19 +448,13 @@ impl IFabricStringResult {
 #[doc(hidden)]
 pub struct IFabricStringResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub get_String:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_String: usize,
+    pub get_String: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
 }
 unsafe impl Send for IFabricStringResult {}
 unsafe impl Sync for IFabricStringResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
 pub trait IFabricStringResult_Impl: windows_core::IUnknownImpl {
-    fn get_String(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_String(&self) -> windows_core::PCWSTR;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricStringResult_Vtbl {
     pub const fn new<Identity: IFabricStringResult_Impl, const OFFSET: isize>() -> Self {
         unsafe extern "system" fn get_String<
@@ -481,12 +462,11 @@ impl IFabricStringResult_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricStringResult_Impl::get_String(this);
+                IFabricStringResult_Impl::get_String(this)
             }
         }
         Self {
@@ -498,5 +478,4 @@ impl IFabricStringResult_Vtbl {
         iid == &<IFabricStringResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
 impl windows_core::RuntimeName for IFabricStringResult {}

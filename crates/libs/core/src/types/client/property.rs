@@ -93,7 +93,7 @@ impl NamedPropertyMetadata {
             property_name: ptr.PropertyName.into(),
             property_type_id: ptr.TypeId.into(),
             value_size: ptr.ValueSize,
-            sequence_number: ptr.SequenceNumber,
+            sequence_number: ptr.SequenceNumber.0,
             last_modified_utc: try_filetime_to_system_time(ptr.LastModifiedUtc)
                 .unwrap_or(SystemTime::UNIX_EPOCH),
             name: Uri::from(ptr.Name),

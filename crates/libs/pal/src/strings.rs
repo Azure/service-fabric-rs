@@ -96,8 +96,8 @@ impl AsRef<PCWSTR> for PCWSTR {
     }
 }
 
-impl windows_core::TypeKind for PCWSTR {
-    type TypeKind = windows_core::CopyType;
+impl windows_core::imp::TypeKind for PCWSTR {
+    type TypeKind = windows_core::imp::CopyType;
 }
 
 // Copied minimal impl from windows_core crate which is not available on linux.
@@ -173,8 +173,8 @@ impl AsRef<PCSTR> for PCSTR {
     }
 }
 
-impl windows_core::TypeKind for PCSTR {
-    type TypeKind = windows_core::CopyType;
+impl windows_core::imp::TypeKind for PCSTR {
+    type TypeKind = windows_core::imp::CopyType;
 }
 
 /// WString is the utf16 string, similar to std::wstring in cpp.

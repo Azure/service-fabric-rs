@@ -43,15 +43,21 @@ impl crate::runtime::ISelfReconfiguringServicePartition for SelfReconfiguringSer
     fn report_load(&self, metrics: &[LoadMetric]) -> crate::Result<()> {
         let metrics_ref = LoadMetricListRef::from_slice(metrics);
         let raw = metrics_ref.as_raw_slice();
-        unsafe { self.com_impl.ReportLoad(raw.len() as u32, raw.as_ptr()) }.ok().map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportLoad(raw.len() as u32, raw.as_ptr()) }
+            .ok()
+            .map_err(crate::Error::from)
     }
 
     fn report_fault(&self, fault_type: FaultType) -> crate::Result<()> {
-        unsafe { self.com_impl.ReportFault(fault_type.into()) }.ok().map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportFault(fault_type.into()) }
+            .ok()
+            .map_err(crate::Error::from)
     }
 
     fn report_move_cost(&self, move_cost: MoveCost) -> crate::Result<()> {
-        unsafe { self.com_impl.ReportMoveCost(move_cost.into()) }.ok().map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportMoveCost(move_cost.into()) }
+            .ok()
+            .map_err(crate::Error::from)
     }
 
     fn report_instance_health(&self, healthinfo: &HealthInformation) -> crate::Result<()> {
@@ -79,6 +85,8 @@ impl crate::runtime::ISelfReconfiguringServicePartition for SelfReconfiguringSer
         report: &SelfReconfiguringConfigurationReport,
     ) -> crate::Result<()> {
         let view = report.get_view();
-        unsafe { self.com_impl.ReportConfiguration(view.get_raw()) }.ok().map_err(crate::Error::from)
+        unsafe { self.com_impl.ReportConfiguration(view.get_raw()) }
+            .ok()
+            .map_err(crate::Error::from)
     }
 }

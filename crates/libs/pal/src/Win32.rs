@@ -10,8 +10,8 @@ pub mod Foundation {
         pub dwLowDateTime: u32,
         pub dwHighDateTime: u32,
     }
-    impl windows_core::TypeKind for FILETIME {
-        type TypeKind = windows_core::CopyType;
+    impl windows_core::imp::TypeKind for FILETIME {
+        type TypeKind = windows_core::imp::CopyType;
     }
 
     // Error codes used by SF from windows.

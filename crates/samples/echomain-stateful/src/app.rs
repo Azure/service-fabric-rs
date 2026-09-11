@@ -20,10 +20,9 @@ use mssf_com::FabricRuntime::{
     IFabricStatefulServiceReplica, IFabricStatefulServiceReplica_Impl,
 };
 use mssf_com::FabricTypes::{
-    FABRIC_EPOCH, FABRIC_REPLICA_ID, FABRIC_REPLICA_INFORMATION,
-    FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_OPEN_MODE_INVALID, FABRIC_REPLICA_ROLE,
-    FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_MODE, FABRIC_SEQUENCE_NUMBER,
-    FABRIC_URI,
+    FABRIC_EPOCH, FABRIC_REPLICA_ID, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_OPEN_MODE,
+    FABRIC_REPLICA_OPEN_MODE_INVALID, FABRIC_REPLICA_ROLE, FABRIC_REPLICA_SET_CONFIGURATION,
+    FABRIC_REPLICA_SET_QUORUM_MODE, FABRIC_SEQUENCE_NUMBER, FABRIC_URI,
 };
 use mssf_core::WString;
 use mssf_core::sync::wait::AsyncContext;
@@ -64,7 +63,7 @@ impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory_Impl {
     fn CreateReplica(
         &self,
         servicetypename: &mssf_core::PCWSTR,
-        servicename: FABRIC_URI,
+        servicename: &FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &mssf_core::GUID,
@@ -119,7 +118,11 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginOpen");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.get_Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
 
@@ -144,7 +147,11 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginChangeRole");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.get_Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
 
@@ -164,7 +171,11 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginUpdateEpoch");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.get_Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
     fn EndUpdateEpoch(
@@ -181,7 +192,11 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginClose");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.get_Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
     fn EndClose(
@@ -213,7 +228,11 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginOnDataLoss");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.get_Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
     fn EndOnDataLoss(
@@ -239,7 +258,11 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginWaitForCatchUpQuorum");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.get_Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
     fn EndWaitForCatchUpQuorum(
@@ -264,7 +287,11 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginBuildReplica");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.get_Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
     fn EndBuildReplica(
@@ -328,7 +355,11 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
 
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.get_Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
 
         // TODO: emplement stop thread.
 
@@ -391,7 +422,11 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
 
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.get_Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
 
@@ -419,7 +454,11 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
         info!("AppInstance::BeginChangeRole");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.get_Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
 

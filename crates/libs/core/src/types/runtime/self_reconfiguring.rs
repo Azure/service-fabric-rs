@@ -16,7 +16,7 @@ use std::marker::PhantomData;
 
 use crate::WString;
 use mssf_com::FabricTypes::{
-    FABRIC_SELF_RECONFIGURING_CONFIGURATION_CHANGE_REQUEST,
+    FABRIC_INSTANCE_ID, FABRIC_SELF_RECONFIGURING_CONFIGURATION_CHANGE_REQUEST,
     FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT,
     FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT_ID,
     FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST,
@@ -244,7 +244,7 @@ impl From<&FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST> for InstanceChange
             WString::from(r.Endpoints)
         };
         Self {
-            instance_id: r.InstanceId,
+            instance_id: r.InstanceId.0,
             role: SelfReconfiguringInstanceRole::from(&r.Role),
             requested_role: SelfReconfiguringInstanceRole::from(&r.RequestedRole),
             activation_state: SelfReconfiguringInstanceActivationState::from(&r.ActivationState),
@@ -290,7 +290,7 @@ pub struct InstanceInformation {
 impl From<&InstanceInformation> for FABRIC_SELF_RECONFIGURING_INSTANCE_INFORMATION {
     fn from(val: &InstanceInformation) -> Self {
         Self {
-            InstanceId: val.instance_id,
+            InstanceId: FABRIC_INSTANCE_ID(val.instance_id),
             Role: (&val.role).into(),
             ActivationState: (&val.activation_state).into(),
             Reserved: std::ptr::null_mut(),
@@ -453,7 +453,7 @@ mod tests {
     fn change_request_inbound_single_item() {
         let endpoints = WString::from("localhost:4321");
         let item = FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST {
-            InstanceId: 12,
+            InstanceId: FABRIC_INSTANCE_ID(12),
             Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_NONE,
             RequestedRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
             ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED,
@@ -486,7 +486,7 @@ mod tests {
         let endpoints = WString::from("localhost:1234");
         let items = [
             FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST {
-                InstanceId: 10,
+                InstanceId: FABRIC_INSTANCE_ID(10),
                 Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
                 RequestedRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
                 ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED,
@@ -496,7 +496,7 @@ mod tests {
             },
             // Second item with a null endpoints pointer.
             FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST {
-                InstanceId: 11,
+                InstanceId: FABRIC_INSTANCE_ID(11),
                 Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
                 RequestedRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
                 ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
@@ -585,7 +585,7 @@ mod tests {
         assert_eq!(list.Count, 2);
 
         let first = unsafe { &*list.Items.offset(0) };
-        assert_eq!(first.InstanceId, 100);
+        assert_eq!(first.InstanceId.0, 100);
         assert_eq!(first.Role, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER);
         assert_eq!(
             first.ActivationState,
@@ -593,7 +593,7 @@ mod tests {
         );
 
         let second = unsafe { &*list.Items.offset(1) };
-        assert_eq!(second.InstanceId, 101);
+        assert_eq!(second.InstanceId.0, 101);
         assert_eq!(second.Role, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL);
     }
 }

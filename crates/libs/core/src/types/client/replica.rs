@@ -20,9 +20,10 @@ use mssf_com::{
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED, FABRIC_QUERY_SERVICE_REPLICA_STATUS_INBUILD,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_INVALID, FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
         FABRIC_QUERY_SERVICE_REPLICA_STATUS_STANDBY, FABRIC_REMOVE_REPLICA_DESCRIPTION,
-        FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_KIND_SELF_RECONFIGURING,
-        FABRIC_SERVICE_KIND_STATEFUL, FABRIC_SERVICE_KIND_STATELESS,
-        FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION, FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
+        FABRIC_REPLICA_ID, FABRIC_RESTART_REPLICA_DESCRIPTION,
+        FABRIC_SERVICE_KIND_SELF_RECONFIGURING, FABRIC_SERVICE_KIND_STATEFUL,
+        FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
+        FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
         FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM,
         FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM_EX1,
         FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
@@ -160,7 +161,7 @@ impl From<&FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM>
         }
         .unwrap();
         Self {
-            replica_id: value.ReplicaId,
+            replica_id: value.ReplicaId.0,
             replica_role: (&value.ReplicaRole).into(),
             replica_status: (&value.ReplicaStatus).into(),
             aggregated_health_state: (&value.AggregatedHealthState).into(),
@@ -214,7 +215,7 @@ impl From<&FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM>
 {
     fn from(value: &FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM) -> Self {
         Self {
-            instance_id: value.InstanceId,
+            instance_id: value.InstanceId.0,
             replica_status: (&value.ReplicaStatus).into(),
             aggregated_health_state: (&value.AggregatedHealthState).into(),
             replica_address: WString::from(value.ReplicaAddress),
@@ -236,7 +237,7 @@ impl From<&RestartReplicaDescription> for FABRIC_RESTART_REPLICA_DESCRIPTION {
         Self {
             NodeName: PCWSTR(value.node_name.as_ptr()),
             PartitionId: value.partition_id,
-            ReplicaOrInstanceId: value.replica_or_instance_id,
+            ReplicaOrInstanceId: FABRIC_REPLICA_ID(value.replica_or_instance_id),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -255,7 +256,7 @@ impl From<&RemoveReplicaDescription> for FABRIC_REMOVE_REPLICA_DESCRIPTION {
         Self {
             NodeName: PCWSTR(value.node_name.as_ptr()),
             PartitionId: value.partition_id,
-            ReplicaOrInstanceId: value.replica_or_instance_id,
+            ReplicaOrInstanceId: FABRIC_REPLICA_ID(value.replica_or_instance_id),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -280,9 +281,9 @@ pub struct DeployedStatefulServiceReplicaDetailQueryResult {
 impl DeployedStatefulServiceReplicaDetailQueryResult {
     pub fn new(value: &FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM) -> Self {
         Self {
-            service_name: WString::from(PCWSTR(value.ServiceName.0 as *const u16)),
+            service_name: WString::from(value.ServiceName),
             partition_id: value.PartitionId,
-            replica_id: value.ReplicaId,
+            replica_id: value.ReplicaId.0,
             current_service_operation: (value.CurrentServiceOperation).into(),
             current_service_operation_start_time_utc: try_filetime_to_system_time(
                 value.CurrentServiceOperationStartTimeUtc,
@@ -312,12 +313,12 @@ pub struct DeployedStatelessServiceInstanceQueryResult {
 impl DeployedStatelessServiceInstanceQueryResult {
     pub fn new(value: &FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM) -> Self {
         Self {
-            service_name: WString::from(PCWSTR(value.ServiceName.0 as *const u16)),
+            service_name: WString::from(value.ServiceName),
             service_type_name: WString::from(value.ServiceTypeName),
             service_manifest_version: WString::from(value.ServiceManifestVersion),
             code_package_name: WString::from(value.CodePackageName),
             partition_id: value.PartitionId,
-            instance_id: value.InstanceId,
+            instance_id: value.InstanceId.0,
             replica_status: (&value.ReplicaStatus).into(),
             address: WString::from(value.Address),
         }
@@ -339,7 +340,7 @@ impl From<&DeployedServiceReplicaDetailQueryDescription>
         Self {
             NodeName: PCWSTR(value.node_name.as_ptr()),
             PartitionId: value.partition_id,
-            ReplicaId: value.replica_id,
+            ReplicaId: FABRIC_REPLICA_ID(value.replica_id),
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -427,7 +428,7 @@ impl crate::mem::GetRawWithBoxPool<mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_
         mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_QUERY_DESCRIPTION {
             PartitionId: self.partition_id,
             Reserved: std::ptr::null_mut(),
-            ReplicaOrInstanceId: self.replica_id_or_instance_id,
+            ReplicaOrInstanceId: FABRIC_REPLICA_ID(self.replica_id_or_instance_id),
             HealthPolicy: health_policy,
             EventsFilter: events_filter,
         }
@@ -530,7 +531,7 @@ impl From<&mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH>
 
         Self {
             partition_id: value.PartitionId,
-            replica_id: value.ReplicaId,
+            replica_id: value.ReplicaId.0,
             aggregated_health_state: (&value.AggregatedHealthState).into(),
             health_events,
         }
@@ -553,7 +554,7 @@ impl From<&mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH>
     fn from(value: &mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH) -> Self {
         Self {
             partition_id: value.PartitionId,
-            instance_id: value.InstanceId,
+            instance_id: value.InstanceId.0,
             aggregated_health_state: (&value.AggregatedHealthState).into(),
             health_events: unsafe { value.HealthEvents.as_ref() }.map_or(vec![], |list| {
                 crate::iter::vec_from_raw_com(list.Count as usize, list.Items)
@@ -627,7 +628,7 @@ impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE> for ReplicaHealth
                 };
                 Self::Stateful(StatefulServiceReplicaHealthState {
                     partition_id: raw.PartitionId,
-                    replica_id: raw.ReplicaId,
+                    replica_id: raw.ReplicaId.0,
                     aggregated_health_state: (&raw.AggregatedHealthState).into(),
                 })
             }
@@ -640,7 +641,7 @@ impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE> for ReplicaHealth
                 };
                 Self::Stateless(StatelessServiceInstanceHealthState {
                     partition_id: raw.PartitionId,
-                    instance_id: raw.InstanceId,
+                    instance_id: raw.InstanceId.0,
                     aggregated_health_state: (&raw.AggregatedHealthState).into(),
                 })
             }
@@ -653,7 +654,7 @@ impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE> for ReplicaHealth
                 };
                 Self::SelfReconfiguring(SelfReconfiguringServiceInstanceHealthState {
                     partition_id: raw.PartitionId,
-                    instance_id: raw.InstanceId,
+                    instance_id: raw.InstanceId.0,
                     aggregated_health_state: (&raw.AggregatedHealthState).into(),
                 })
             }
@@ -675,7 +676,7 @@ mod tests {
             Reserved: std::ptr::null_mut(),
         };
         let raw = FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM {
-            ReplicaId: 42,
+            ReplicaId: FABRIC_REPLICA_ID(42),
             ReplicaRole: mssf_com::FabricTypes::FABRIC_REPLICA_ROLE_PRIMARY,
             ReplicaStatus: FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
             AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,

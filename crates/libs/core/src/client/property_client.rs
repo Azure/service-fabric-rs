@@ -324,7 +324,13 @@ impl PropertyManagementClient {
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
             move |callback| unsafe {
-                com1.BeginSubmitPropertyBatch(name.as_raw(), batch.len() as u32, batch.as_ptr(), timeout_milliseconds, callback)
+                com1.BeginSubmitPropertyBatch(
+                    name.as_raw(),
+                    batch.len() as u32,
+                    batch.as_ptr(),
+                    timeout_milliseconds,
+                    callback,
+                )
             },
             move |ctx| unsafe {
                 let mut failed_operation_index_in_request = 0;

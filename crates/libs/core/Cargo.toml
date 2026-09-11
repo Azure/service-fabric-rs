@@ -35,7 +35,7 @@ tokio.workspace = true
 [target.'cfg(windows)'.dependencies.windows]
 workspace = true
 features = [
-    "debugapi", # for IsDebuggerPresent (flat Windows.Win32 layout)
+    "Win32_System_Diagnostics_Debug",
 ]
 
 [dependencies.mssf-com]

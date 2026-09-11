@@ -14,11 +14,12 @@
 pub mod imp {
     pub use windows_core::imp::*;
 }
+pub use windows_core::imp::{CopyType, Type, TypeKind};
 pub use windows_core::{
-    AsImpl, BOOL, ComObject, ComObjectInner, ComObjectInterface, Compose, ComposeBase, CopyType,
+    AsImpl, BOOL, ComObject, ComObjectInner, ComObjectInterface, Compose, ComposeBase,
     DYNAMIC_CAST_IID, Error, GUID, HRESULT, IInspectable, IInspectable_Vtbl, IUnknown,
     IUnknown_Vtbl, IUnknownImpl, Interface, InterfaceRef, OutParam, OutRef, Param, ParamValue, Ref,
-    Result, RuntimeName, RuntimeType, StaticComObject, Type, TypeKind, implement,
+    Result, RuntimeName, RuntimeType, StaticComObject, implement,
 };
 
 /// `link!` macro for windows-bindgen generated free functions.

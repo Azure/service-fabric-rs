@@ -20,7 +20,7 @@ where
             callback.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -42,7 +42,7 @@ where
             callback.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -64,7 +64,7 @@ where
             callback.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -80,7 +80,7 @@ where
     unsafe {
         let mut result__ = core::mem::zeroed();
         FabricBeginGetNodeContext(timeoutmilliseconds, callback.param().abi(), &mut result__)
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -135,7 +135,7 @@ where
             storeeventhandler.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -173,7 +173,7 @@ where
             notificationmode,
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -211,7 +211,7 @@ where
             notificationmode,
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -251,7 +251,7 @@ where
             notificationmode,
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -291,7 +291,7 @@ where
             secondaryeventhandler.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -303,7 +303,7 @@ where
     let mut result__ = core::ptr::null_mut();
     unsafe {
         FabricCreateRuntime(&T::IID, &mut result__)
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -371,7 +371,7 @@ where
     let mut result__ = core::ptr::null_mut();
     unsafe {
         FabricGetActivationContext(&T::IID, &mut result__)
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -383,7 +383,7 @@ where
     let mut result__ = core::ptr::null_mut();
     unsafe {
         FabricGetCodePackageActivator(&T::IID, &mut result__)
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -414,7 +414,7 @@ where
             sectionname.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -437,7 +437,7 @@ where
             sectionname.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 #[inline]
@@ -460,7 +460,7 @@ where
             sectionname.param().abi(),
             &mut result__,
         )
-        .and_then(|| windows_core::Type::from_abi(result__))
+        .and_then(|| windows_core::imp::Type::from_abi(result__))
     }
 }
 pub const FabricRuntime: windows_core::GUID =
@@ -496,7 +496,7 @@ impl IExtentLogicalLog {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -539,7 +539,7 @@ impl IExtentLogicalLog {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -569,7 +569,7 @@ impl IExtentLogicalLog {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -638,8 +638,6 @@ pub struct IExtentLogicalLog_Vtbl {
     #[cfg(not(feature = "ServiceFabric_FabricCommon"))]
     EndClose: usize,
 }
-unsafe impl Send for IExtentLogicalLog {}
-unsafe impl Sync for IExtentLogicalLog {}
 #[cfg(feature = "ServiceFabric_FabricCommon")]
 pub trait IExtentLogicalLog_Impl: windows_core::IUnknownImpl {
     fn BeginOpen(
@@ -843,7 +841,7 @@ impl IFabricAtomicGroupStateProvider {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -880,7 +878,7 @@ impl IFabricAtomicGroupStateProvider {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -915,7 +913,7 @@ impl IFabricAtomicGroupStateProvider {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -1242,7 +1240,7 @@ impl IFabricAtomicGroupStateReplicator {
                 operationsequencenumber as _,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -1288,7 +1286,7 @@ impl IFabricAtomicGroupStateReplicator {
                 commitsequencenumber as _,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -1334,7 +1332,7 @@ impl IFabricAtomicGroupStateReplicator {
                 rollbacksequencenumber as _,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -1721,15 +1719,9 @@ impl IFabricCodePackage {
             )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_Path(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_Path(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(self).get_Path)(
-                windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            (windows_core::Interface::vtable(self).get_Path)(windows_core::Interface::as_raw(self))
         }
     }
 }
@@ -1745,18 +1737,14 @@ pub struct IFabricCodePackage_Vtbl {
             -> *const super::FabricTypes::FABRIC_CODE_PACKAGE_DESCRIPTION,
     #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
     get_Description: usize,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub get_Path:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_Path: usize,
+    pub get_Path: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
 }
 unsafe impl Send for IFabricCodePackage {}
 unsafe impl Sync for IFabricCodePackage {}
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 pub trait IFabricCodePackage_Impl: windows_core::IUnknownImpl {
     fn get_Description(&self) -> *const super::FabricTypes::FABRIC_CODE_PACKAGE_DESCRIPTION;
-    fn get_Path(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_Path(&self) -> windows_core::PCWSTR;
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricCodePackage_Vtbl {
@@ -1778,12 +1766,11 @@ impl IFabricCodePackage_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricCodePackage_Impl::get_Path(this);
+                IFabricCodePackage_Impl::get_Path(this)
             }
         }
         Self {
@@ -1918,70 +1905,46 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricCodePackageActivationContext {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_ContextId(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_ContextId(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(self).get_ContextId)(
-                windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            (windows_core::Interface::vtable(self).get_ContextId)(windows_core::Interface::as_raw(
+                self,
+            ))
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_CodePackageName(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_CodePackageName(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_CodePackageName)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_CodePackageVersion(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_CodePackageVersion(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_CodePackageVersion)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_WorkDirectory(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_WorkDirectory(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_WorkDirectory)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_LogDirectory(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_LogDirectory(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_LogDirectory)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_TempDirectory(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_TempDirectory(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_TempDirectory)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -2052,7 +2015,7 @@ impl IFabricCodePackageActivationContext {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -2065,7 +2028,7 @@ impl IFabricCodePackageActivationContext {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -2078,7 +2041,7 @@ impl IFabricCodePackageActivationContext {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn GetCodePackage<P0>(
@@ -2095,7 +2058,7 @@ impl IFabricCodePackageActivationContext {
                 codepackagename.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn GetConfigurationPackage<P0>(
@@ -2112,7 +2075,7 @@ impl IFabricCodePackageActivationContext {
                 configpackagename.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn GetDataPackage<P0>(
@@ -2129,7 +2092,7 @@ impl IFabricCodePackageActivationContext {
                 datapackagename.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn RegisterCodePackageChangeHandler<P0>(
@@ -2219,7 +2182,7 @@ impl IFabricCodePackageActivationContext {
 }
 #[repr(C)]
 #[doc(hidden)]
-pub struct IFabricCodePackageActivationContext_Vtbl { pub base__ : windows_core::IUnknown_Vtbl , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_ContextId : unsafe extern "system" fn (* mut core::ffi::c_void , * mut super::FabricTypes::LPCWSTR) , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_ContextId : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_CodePackageName : unsafe extern "system" fn (* mut core::ffi::c_void , * mut super::FabricTypes::LPCWSTR) , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_CodePackageName : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_CodePackageVersion : unsafe extern "system" fn (* mut core::ffi::c_void , * mut super::FabricTypes::LPCWSTR) , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_CodePackageVersion : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_WorkDirectory : unsafe extern "system" fn (* mut core::ffi::c_void , * mut super::FabricTypes::LPCWSTR) , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_WorkDirectory : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_LogDirectory : unsafe extern "system" fn (* mut core::ffi::c_void , * mut super::FabricTypes::LPCWSTR) , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_LogDirectory : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_TempDirectory : unsafe extern "system" fn (* mut core::ffi::c_void , * mut super::FabricTypes::LPCWSTR) , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_TempDirectory : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_ServiceTypes : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_SERVICE_TYPE_DESCRIPTION_LIST , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_ServiceTypes : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_ServiceGroupTypes : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_SERVICE_GROUP_TYPE_DESCRIPTION_LIST , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_ServiceGroupTypes : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_ApplicationPrincipals : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_ApplicationPrincipals : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_ServiceEndpointResources : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION_LIST , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_ServiceEndpointResources : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub GetServiceEndpointResource : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut super::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] GetServiceEndpointResource : usize , # [cfg (feature = "ServiceFabric_FabricCommon")] pub GetCodePackageNames : unsafe extern "system" fn (* mut core::ffi::c_void , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricCommon"))] GetCodePackageNames : usize , # [cfg (feature = "ServiceFabric_FabricCommon")] pub GetConfigurationPackageNames : unsafe extern "system" fn (* mut core::ffi::c_void , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricCommon"))] GetConfigurationPackageNames : usize , # [cfg (feature = "ServiceFabric_FabricCommon")] pub GetDataPackageNames : unsafe extern "system" fn (* mut core::ffi::c_void , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricCommon"))] GetDataPackageNames : usize , pub GetCodePackage : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , pub GetConfigurationPackage : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , pub GetDataPackage : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , pub RegisterCodePackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , * mut core::ffi::c_void , * mut i64) -> windows_core::HRESULT , pub UnregisterCodePackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , i64) -> windows_core::HRESULT , pub RegisterConfigurationPackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , * mut core::ffi::c_void , * mut i64) -> windows_core::HRESULT , pub UnregisterConfigurationPackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , i64) -> windows_core::HRESULT , pub RegisterDataPackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , * mut core::ffi::c_void , * mut i64) -> windows_core::HRESULT , pub UnregisterDataPackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , i64) -> windows_core::HRESULT , }
+pub struct IFabricCodePackageActivationContext_Vtbl { pub base__ : windows_core::IUnknown_Vtbl , pub get_ContextId : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> windows_core::PCWSTR , pub get_CodePackageName : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> windows_core::PCWSTR , pub get_CodePackageVersion : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> windows_core::PCWSTR , pub get_WorkDirectory : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> windows_core::PCWSTR , pub get_LogDirectory : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> windows_core::PCWSTR , pub get_TempDirectory : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> windows_core::PCWSTR , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_ServiceTypes : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_SERVICE_TYPE_DESCRIPTION_LIST , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_ServiceTypes : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_ServiceGroupTypes : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_SERVICE_GROUP_TYPE_DESCRIPTION_LIST , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_ServiceGroupTypes : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_ApplicationPrincipals : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_APPLICATION_PRINCIPALS_DESCRIPTION , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_ApplicationPrincipals : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_ServiceEndpointResources : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION_LIST , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_ServiceEndpointResources : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub GetServiceEndpointResource : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut super::FabricTypes::FABRIC_ENDPOINT_RESOURCE_DESCRIPTION) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] GetServiceEndpointResource : usize , # [cfg (feature = "ServiceFabric_FabricCommon")] pub GetCodePackageNames : unsafe extern "system" fn (* mut core::ffi::c_void , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricCommon"))] GetCodePackageNames : usize , # [cfg (feature = "ServiceFabric_FabricCommon")] pub GetConfigurationPackageNames : unsafe extern "system" fn (* mut core::ffi::c_void , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricCommon"))] GetConfigurationPackageNames : usize , # [cfg (feature = "ServiceFabric_FabricCommon")] pub GetDataPackageNames : unsafe extern "system" fn (* mut core::ffi::c_void , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricCommon"))] GetDataPackageNames : usize , pub GetCodePackage : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , pub GetConfigurationPackage : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , pub GetDataPackage : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , pub RegisterCodePackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , * mut core::ffi::c_void , * mut i64) -> windows_core::HRESULT , pub UnregisterCodePackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , i64) -> windows_core::HRESULT , pub RegisterConfigurationPackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , * mut core::ffi::c_void , * mut i64) -> windows_core::HRESULT , pub UnregisterConfigurationPackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , i64) -> windows_core::HRESULT , pub RegisterDataPackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , * mut core::ffi::c_void , * mut i64) -> windows_core::HRESULT , pub UnregisterDataPackageChangeHandler : unsafe extern "system" fn (* mut core::ffi::c_void , i64) -> windows_core::HRESULT , }
 unsafe impl Send for IFabricCodePackageActivationContext {}
 unsafe impl Sync for IFabricCodePackageActivationContext {}
 #[cfg(all(
@@ -2227,12 +2190,12 @@ unsafe impl Sync for IFabricCodePackageActivationContext {}
     feature = "ServiceFabric_FabricTypes"
 ))]
 pub trait IFabricCodePackageActivationContext_Impl: windows_core::IUnknownImpl {
-    fn get_ContextId(&self) -> super::FabricTypes::LPCWSTR;
-    fn get_CodePackageName(&self) -> super::FabricTypes::LPCWSTR;
-    fn get_CodePackageVersion(&self) -> super::FabricTypes::LPCWSTR;
-    fn get_WorkDirectory(&self) -> super::FabricTypes::LPCWSTR;
-    fn get_LogDirectory(&self) -> super::FabricTypes::LPCWSTR;
-    fn get_TempDirectory(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_ContextId(&self) -> windows_core::PCWSTR;
+    fn get_CodePackageName(&self) -> windows_core::PCWSTR;
+    fn get_CodePackageVersion(&self) -> windows_core::PCWSTR;
+    fn get_WorkDirectory(&self) -> windows_core::PCWSTR;
+    fn get_LogDirectory(&self) -> windows_core::PCWSTR;
+    fn get_TempDirectory(&self) -> windows_core::PCWSTR;
     fn get_ServiceTypes(&self) -> *const super::FabricTypes::FABRIC_SERVICE_TYPE_DESCRIPTION_LIST;
     fn get_ServiceGroupTypes(
         &self,
@@ -2299,12 +2262,11 @@ impl IFabricCodePackageActivationContext_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricCodePackageActivationContext_Impl::get_ContextId(this);
+                IFabricCodePackageActivationContext_Impl::get_ContextId(this)
             }
         }
         unsafe extern "system" fn get_CodePackageName<
@@ -2312,12 +2274,11 @@ impl IFabricCodePackageActivationContext_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricCodePackageActivationContext_Impl::get_CodePackageName(this);
+                IFabricCodePackageActivationContext_Impl::get_CodePackageName(this)
             }
         }
         unsafe extern "system" fn get_CodePackageVersion<
@@ -2325,12 +2286,11 @@ impl IFabricCodePackageActivationContext_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricCodePackageActivationContext_Impl::get_CodePackageVersion(this);
+                IFabricCodePackageActivationContext_Impl::get_CodePackageVersion(this)
             }
         }
         unsafe extern "system" fn get_WorkDirectory<
@@ -2338,12 +2298,11 @@ impl IFabricCodePackageActivationContext_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricCodePackageActivationContext_Impl::get_WorkDirectory(this);
+                IFabricCodePackageActivationContext_Impl::get_WorkDirectory(this)
             }
         }
         unsafe extern "system" fn get_LogDirectory<
@@ -2351,12 +2310,11 @@ impl IFabricCodePackageActivationContext_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricCodePackageActivationContext_Impl::get_LogDirectory(this);
+                IFabricCodePackageActivationContext_Impl::get_LogDirectory(this)
             }
         }
         unsafe extern "system" fn get_TempDirectory<
@@ -2364,12 +2322,11 @@ impl IFabricCodePackageActivationContext_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricCodePackageActivationContext_Impl::get_TempDirectory(this);
+                IFabricCodePackageActivationContext_Impl::get_TempDirectory(this)
             }
         }
         unsafe extern "system" fn get_ServiceTypes<
@@ -2742,20 +2699,19 @@ impl IFabricCodePackageActivationContext2 {
     #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub unsafe fn get_ApplicationName(&self) -> super::FabricTypes::FABRIC_URI {
         unsafe {
-            (windows_core::Interface::vtable(self).get_ApplicationName)(
-                windows_core::Interface::as_raw(self),
-            )
-        }
-    }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_ApplicationTypeName(&self) -> super::FabricTypes::LPCWSTR {
-        unsafe {
             let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(self).get_ApplicationTypeName)(
+            (windows_core::Interface::vtable(self).get_ApplicationName)(
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             );
             result__
+        }
+    }
+    pub unsafe fn get_ApplicationTypeName(&self) -> windows_core::PCWSTR {
+        unsafe {
+            (windows_core::Interface::vtable(self).get_ApplicationTypeName)(
+                windows_core::Interface::as_raw(self),
+            )
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -2768,7 +2724,7 @@ impl IFabricCodePackageActivationContext2 {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -2781,7 +2737,7 @@ impl IFabricCodePackageActivationContext2 {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -2791,14 +2747,11 @@ pub struct IFabricCodePackageActivationContext2_Vtbl {
     pub base__: IFabricCodePackageActivationContext_Vtbl,
     #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub get_ApplicationName:
-        unsafe extern "system" fn(*mut core::ffi::c_void) -> super::FabricTypes::FABRIC_URI,
+        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::FABRIC_URI),
     #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
     get_ApplicationName: usize,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub get_ApplicationTypeName:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_ApplicationTypeName: usize,
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
     #[cfg(feature = "ServiceFabric_FabricCommon")]
     pub GetServiceManifestName: unsafe extern "system" fn(
         *mut core::ffi::c_void,
@@ -2824,7 +2777,7 @@ pub trait IFabricCodePackageActivationContext2_Impl:
     IFabricCodePackageActivationContext_Impl
 {
     fn get_ApplicationName(&self) -> super::FabricTypes::FABRIC_URI;
-    fn get_ApplicationTypeName(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_ApplicationTypeName(&self) -> windows_core::PCWSTR;
     fn GetServiceManifestName(
         &self,
     ) -> windows_core::Result<super::FabricCommon::IFabricStringResult>;
@@ -2844,11 +2797,12 @@ impl IFabricCodePackageActivationContext2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-        ) -> super::FabricTypes::FABRIC_URI {
+            result__: *mut super::FabricTypes::FABRIC_URI,
+        ) {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                IFabricCodePackageActivationContext2_Impl::get_ApplicationName(this)
+                *result__ = IFabricCodePackageActivationContext2_Impl::get_ApplicationName(this);
             }
         }
         unsafe extern "system" fn get_ApplicationTypeName<
@@ -2856,13 +2810,11 @@ impl IFabricCodePackageActivationContext2_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ =
-                    IFabricCodePackageActivationContext2_Impl::get_ApplicationTypeName(this);
+                IFabricCodePackageActivationContext2_Impl::get_ApplicationTypeName(this)
             }
         }
         unsafe extern "system" fn GetServiceManifestName<
@@ -3326,26 +3278,18 @@ windows_core::imp::interface_hierarchy!(
     IFabricCodePackageActivationContext4
 );
 impl IFabricCodePackageActivationContext5 {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_ServiceListenAddress(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_ServiceListenAddress(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_ServiceListenAddress)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_ServicePublishAddress(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_ServicePublishAddress(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
             (windows_core::Interface::vtable(self).get_ServicePublishAddress)(
                 windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            )
         }
     }
 }
@@ -3353,16 +3297,10 @@ impl IFabricCodePackageActivationContext5 {
 #[doc(hidden)]
 pub struct IFabricCodePackageActivationContext5_Vtbl {
     pub base__: IFabricCodePackageActivationContext4_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub get_ServiceListenAddress:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_ServiceListenAddress: usize,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
     pub get_ServicePublishAddress:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_ServicePublishAddress: usize,
+        unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
 }
 unsafe impl Send for IFabricCodePackageActivationContext5 {}
 unsafe impl Sync for IFabricCodePackageActivationContext5 {}
@@ -3373,8 +3311,8 @@ unsafe impl Sync for IFabricCodePackageActivationContext5 {}
 pub trait IFabricCodePackageActivationContext5_Impl:
     IFabricCodePackageActivationContext4_Impl
 {
-    fn get_ServiceListenAddress(&self) -> super::FabricTypes::LPCWSTR;
-    fn get_ServicePublishAddress(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_ServiceListenAddress(&self) -> windows_core::PCWSTR;
+    fn get_ServicePublishAddress(&self) -> windows_core::PCWSTR;
 }
 #[cfg(all(
     feature = "ServiceFabric_FabricCommon",
@@ -3388,13 +3326,11 @@ impl IFabricCodePackageActivationContext5_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ =
-                    IFabricCodePackageActivationContext5_Impl::get_ServiceListenAddress(this);
+                IFabricCodePackageActivationContext5_Impl::get_ServiceListenAddress(this)
             }
         }
         unsafe extern "system" fn get_ServicePublishAddress<
@@ -3402,13 +3338,11 @@ impl IFabricCodePackageActivationContext5_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ =
-                    IFabricCodePackageActivationContext5_Impl::get_ServicePublishAddress(this);
+                IFabricCodePackageActivationContext5_Impl::get_ServicePublishAddress(this)
             }
         }
         Self {
@@ -3466,7 +3400,7 @@ impl IFabricCodePackageActivationContext6 {
                 logicaldirectoryname.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -3577,7 +3511,7 @@ impl IFabricCodePackageActivator {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -3614,7 +3548,7 @@ impl IFabricCodePackageActivator {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -3988,7 +3922,7 @@ impl IFabricCodePackageActivator2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -4340,15 +4274,9 @@ impl IFabricConfigurationPackage {
             )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_Path(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_Path(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(self).get_Path)(
-                windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            (windows_core::Interface::vtable(self).get_Path)(windows_core::Interface::as_raw(self))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -4377,13 +4305,12 @@ impl IFabricConfigurationPackage {
             .map(|| result__)
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
     pub unsafe fn GetValue<P0, P1>(
         &self,
         sectionname: P0,
         parametername: P1,
         isencrypted: *mut bool,
-    ) -> windows_core::Result<super::FabricTypes::LPCWSTR>
+    ) -> windows_core::Result<windows_core::PCWSTR>
     where
         P0: windows_core::Param<windows_core::PCWSTR>,
         P1: windows_core::Param<windows_core::PCWSTR>,
@@ -4415,13 +4342,13 @@ impl IFabricConfigurationPackage {
                 encryptedvalue.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
 #[repr(C)]
 #[doc(hidden)]
-pub struct IFabricConfigurationPackage_Vtbl { pub base__ : windows_core::IUnknown_Vtbl , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_Description : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_Description : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_Path : unsafe extern "system" fn (* mut core::ffi::c_void , * mut super::FabricTypes::LPCWSTR) , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_Path : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_Settings : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_CONFIGURATION_SETTINGS , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_Settings : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub GetSection : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut super::FabricTypes::FABRIC_CONFIGURATION_SECTION) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] GetSection : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub GetValue : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , windows_core::PCWSTR , * mut bool , * mut super::FabricTypes::LPCWSTR) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] GetValue : usize , # [cfg (feature = "ServiceFabric_FabricCommon")] pub DecryptValue : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricCommon"))] DecryptValue : usize , }
+pub struct IFabricConfigurationPackage_Vtbl { pub base__ : windows_core::IUnknown_Vtbl , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_Description : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_Description : usize , pub get_Path : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> windows_core::PCWSTR , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_Settings : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_CONFIGURATION_SETTINGS , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_Settings : usize , # [cfg (feature = "ServiceFabric_FabricTypes")] pub GetSection : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut super::FabricTypes::FABRIC_CONFIGURATION_SECTION) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] GetSection : usize , pub GetValue : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , windows_core::PCWSTR , * mut bool , * mut windows_core::PCWSTR) -> windows_core::HRESULT , # [cfg (feature = "ServiceFabric_FabricCommon")] pub DecryptValue : unsafe extern "system" fn (* mut core::ffi::c_void , windows_core::PCWSTR , * mut * mut core::ffi::c_void) -> windows_core::HRESULT , # [cfg (not (feature = "ServiceFabric_FabricCommon"))] DecryptValue : usize , }
 unsafe impl Send for IFabricConfigurationPackage {}
 unsafe impl Sync for IFabricConfigurationPackage {}
 #[cfg(all(
@@ -4432,7 +4359,7 @@ pub trait IFabricConfigurationPackage_Impl: windows_core::IUnknownImpl {
     fn get_Description(
         &self,
     ) -> *const super::FabricTypes::FABRIC_CONFIGURATION_PACKAGE_DESCRIPTION;
-    fn get_Path(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_Path(&self) -> windows_core::PCWSTR;
     fn get_Settings(&self) -> *const super::FabricTypes::FABRIC_CONFIGURATION_SETTINGS;
     fn GetSection(
         &self,
@@ -4443,7 +4370,7 @@ pub trait IFabricConfigurationPackage_Impl: windows_core::IUnknownImpl {
         sectionname: &windows_core::PCWSTR,
         parametername: &windows_core::PCWSTR,
         isencrypted: *mut bool,
-    ) -> windows_core::Result<super::FabricTypes::LPCWSTR>;
+    ) -> windows_core::Result<windows_core::PCWSTR>;
     fn DecryptValue(
         &self,
         encryptedvalue: &windows_core::PCWSTR,
@@ -4472,12 +4399,11 @@ impl IFabricConfigurationPackage_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricConfigurationPackage_Impl::get_Path(this);
+                IFabricConfigurationPackage_Impl::get_Path(this)
             }
         }
         unsafe extern "system" fn get_Settings<
@@ -4523,7 +4449,7 @@ impl IFabricConfigurationPackage_Vtbl {
             sectionname: windows_core::PCWSTR,
             parametername: windows_core::PCWSTR,
             isencrypted: *mut bool,
-            bufferedvalue: *mut super::FabricTypes::LPCWSTR,
+            bufferedvalue: *mut windows_core::PCWSTR,
         ) -> windows_core::HRESULT {
             unsafe {
                 let this: &Identity =
@@ -4883,15 +4809,9 @@ impl IFabricDataPackage {
             )
         }
     }
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub unsafe fn get_Path(&self) -> super::FabricTypes::LPCWSTR {
+    pub unsafe fn get_Path(&self) -> windows_core::PCWSTR {
         unsafe {
-            let mut result__ = core::mem::zeroed();
-            (windows_core::Interface::vtable(self).get_Path)(
-                windows_core::Interface::as_raw(self),
-                &mut result__,
-            );
-            result__
+            (windows_core::Interface::vtable(self).get_Path)(windows_core::Interface::as_raw(self))
         }
     }
 }
@@ -4907,18 +4827,14 @@ pub struct IFabricDataPackage_Vtbl {
             -> *const super::FabricTypes::FABRIC_DATA_PACKAGE_DESCRIPTION,
     #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
     get_Description: usize,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
-    pub get_Path:
-        unsafe extern "system" fn(*mut core::ffi::c_void, *mut super::FabricTypes::LPCWSTR),
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
-    get_Path: usize,
+    pub get_Path: unsafe extern "system" fn(*mut core::ffi::c_void) -> windows_core::PCWSTR,
 }
 unsafe impl Send for IFabricDataPackage {}
 unsafe impl Sync for IFabricDataPackage {}
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 pub trait IFabricDataPackage_Impl: windows_core::IUnknownImpl {
     fn get_Description(&self) -> *const super::FabricTypes::FABRIC_DATA_PACKAGE_DESCRIPTION;
-    fn get_Path(&self) -> super::FabricTypes::LPCWSTR;
+    fn get_Path(&self) -> windows_core::PCWSTR;
 }
 #[cfg(feature = "ServiceFabric_FabricTypes")]
 impl IFabricDataPackage_Vtbl {
@@ -4940,12 +4856,11 @@ impl IFabricDataPackage_Vtbl {
             const OFFSET: isize,
         >(
             this: *mut core::ffi::c_void,
-            result__: *mut super::FabricTypes::LPCWSTR,
-        ) {
+        ) -> windows_core::PCWSTR {
             unsafe {
                 let this: &Identity =
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
-                *result__ = IFabricDataPackage_Impl::get_Path(this);
+                IFabricDataPackage_Impl::get_Path(this)
             }
         }
         Self {
@@ -5210,7 +5125,7 @@ impl IFabricKeyValueStoreEnumerator {
                 keyprefix.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn EnumerateMetadataByKey<P0>(
@@ -5227,7 +5142,7 @@ impl IFabricKeyValueStoreEnumerator {
                 keyprefix.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -5350,7 +5265,7 @@ impl IFabricKeyValueStoreEnumerator2 {
                 strictprefix,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn EnumerateMetadataByKey2<P0>(
@@ -5369,7 +5284,7 @@ impl IFabricKeyValueStoreEnumerator2 {
                 strictprefix,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -5782,7 +5697,7 @@ windows_core::imp::interface_hierarchy!(
     windows_core::IUnknown
 );
 impl IFabricKeyValueStoreItemMetadataResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_Metadata(
         &self,
     ) -> *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM_METADATA {
@@ -5795,14 +5710,14 @@ impl IFabricKeyValueStoreItemMetadataResult {
 }
 #[repr(C)]
 #[doc(hidden)]
-pub struct IFabricKeyValueStoreItemMetadataResult_Vtbl { pub base__ : windows_core::IUnknown_Vtbl , # [cfg (feature = "ServiceFabric_FabricTypes")] pub get_Metadata : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM_METADATA , # [cfg (not (feature = "ServiceFabric_FabricTypes"))] get_Metadata : usize , }
+pub struct IFabricKeyValueStoreItemMetadataResult_Vtbl { pub base__ : windows_core::IUnknown_Vtbl , # [cfg (all (feature = "ServiceFabric_FabricTypes" , feature = "Win32"))] pub get_Metadata : unsafe extern "system" fn (* mut core::ffi::c_void ,) -> * const super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM_METADATA , # [cfg (not (all (feature = "ServiceFabric_FabricTypes" , feature = "Win32")))] get_Metadata : usize , }
 unsafe impl Send for IFabricKeyValueStoreItemMetadataResult {}
 unsafe impl Sync for IFabricKeyValueStoreItemMetadataResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricKeyValueStoreItemMetadataResult_Impl: windows_core::IUnknownImpl {
     fn get_Metadata(&self) -> *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM_METADATA;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricKeyValueStoreItemMetadataResult_Vtbl {
     pub const fn new<Identity: IFabricKeyValueStoreItemMetadataResult_Impl, const OFFSET: isize>()
     -> Self {
@@ -5827,7 +5742,7 @@ impl IFabricKeyValueStoreItemMetadataResult_Vtbl {
         iid == &<IFabricKeyValueStoreItemMetadataResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricKeyValueStoreItemMetadataResult {}
 windows_core::imp::define_interface!(
     IFabricKeyValueStoreItemResult,
@@ -5836,7 +5751,7 @@ windows_core::imp::define_interface!(
 );
 windows_core::imp::interface_hierarchy!(IFabricKeyValueStoreItemResult, windows_core::IUnknown);
 impl IFabricKeyValueStoreItemResult {
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub unsafe fn get_Item(&self) -> *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM {
         unsafe {
             (windows_core::Interface::vtable(self).get_Item)(windows_core::Interface::as_raw(self))
@@ -5847,22 +5762,22 @@ impl IFabricKeyValueStoreItemResult {
 #[doc(hidden)]
 pub struct IFabricKeyValueStoreItemResult_Vtbl {
     pub base__: windows_core::IUnknown_Vtbl,
-    #[cfg(feature = "ServiceFabric_FabricTypes")]
+    #[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
     pub get_Item:
         unsafe extern "system" fn(
             *mut core::ffi::c_void,
         )
             -> *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM,
-    #[cfg(not(feature = "ServiceFabric_FabricTypes"))]
+    #[cfg(not(all(feature = "ServiceFabric_FabricTypes", feature = "Win32")))]
     get_Item: usize,
 }
 unsafe impl Send for IFabricKeyValueStoreItemResult {}
 unsafe impl Sync for IFabricKeyValueStoreItemResult {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricKeyValueStoreItemResult_Impl: windows_core::IUnknownImpl {
     fn get_Item(&self) -> *const super::FabricTypes::FABRIC_KEY_VALUE_STORE_ITEM;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricKeyValueStoreItemResult_Vtbl {
     pub const fn new<Identity: IFabricKeyValueStoreItemResult_Impl, const OFFSET: isize>() -> Self {
         unsafe extern "system" fn get_Item<
@@ -5886,7 +5801,7 @@ impl IFabricKeyValueStoreItemResult_Vtbl {
         iid == &<IFabricKeyValueStoreItemResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricKeyValueStoreItemResult {}
 windows_core::imp::define_interface!(
     IFabricKeyValueStoreNotification,
@@ -5919,11 +5834,11 @@ pub struct IFabricKeyValueStoreNotification_Vtbl {
 }
 unsafe impl Send for IFabricKeyValueStoreNotification {}
 unsafe impl Sync for IFabricKeyValueStoreNotification {}
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 pub trait IFabricKeyValueStoreNotification_Impl: IFabricKeyValueStoreItemResult_Impl {
     fn IsDelete(&self) -> bool;
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl IFabricKeyValueStoreNotification_Vtbl {
     pub const fn new<Identity: IFabricKeyValueStoreNotification_Impl, const OFFSET: isize>() -> Self
     {
@@ -5949,7 +5864,7 @@ impl IFabricKeyValueStoreNotification_Vtbl {
             || iid == &<IFabricKeyValueStoreItemResult as windows_core::Interface>::IID
     }
 }
-#[cfg(feature = "ServiceFabric_FabricTypes")]
+#[cfg(all(feature = "ServiceFabric_FabricTypes", feature = "Win32"))]
 impl windows_core::RuntimeName for IFabricKeyValueStoreNotification {}
 windows_core::imp::define_interface!(
     IFabricKeyValueStoreNotificationEnumerator,
@@ -6174,7 +6089,7 @@ impl IFabricKeyValueStoreReplica {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn Add<P0, P1>(
@@ -6259,7 +6174,7 @@ impl IFabricKeyValueStoreReplica {
                 key.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn GetMetadata<P0, P1>(
@@ -6279,7 +6194,7 @@ impl IFabricKeyValueStoreReplica {
                 key.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn Contains<P0, P1>(&self, transaction: P0, key: P1) -> windows_core::Result<bool>
@@ -6312,7 +6227,7 @@ impl IFabricKeyValueStoreReplica {
                 transaction.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn EnumerateByKey<P0, P1>(
@@ -6332,7 +6247,7 @@ impl IFabricKeyValueStoreReplica {
                 keyprefix.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn EnumerateMetadata<P0>(
@@ -6349,7 +6264,7 @@ impl IFabricKeyValueStoreReplica {
                 transaction.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn EnumerateMetadataByKey<P0, P1>(
@@ -6369,7 +6284,7 @@ impl IFabricKeyValueStoreReplica {
                 keyprefix.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -6912,7 +6827,7 @@ impl IFabricKeyValueStoreReplica2 {
                 settings,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -7077,7 +6992,7 @@ impl IFabricKeyValueStoreReplica3 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -7249,7 +7164,7 @@ impl IFabricKeyValueStoreReplica4 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -7482,7 +7397,7 @@ impl IFabricKeyValueStoreReplica5 {
                 key.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn TryGetMetadata<P0, P1>(
@@ -7502,7 +7417,7 @@ impl IFabricKeyValueStoreReplica5 {
                 key.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn EnumerateByKey2<P0, P1>(
@@ -7524,7 +7439,7 @@ impl IFabricKeyValueStoreReplica5 {
                 strictprefix,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn EnumerateMetadataByKey2<P0, P1>(
@@ -7546,7 +7461,7 @@ impl IFabricKeyValueStoreReplica5 {
                 strictprefix,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -7929,7 +7844,7 @@ impl IFabricKeyValueStoreReplica6 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -8061,7 +7976,7 @@ impl IFabricKeyValueStoreReplica7 {
                 fromlsn,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -8081,7 +7996,7 @@ impl IFabricKeyValueStoreReplica7 {
                 fromlsn,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -8491,7 +8406,7 @@ impl IFabricNodeContextResult2 {
                 logicaldirectoryname.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -8792,7 +8707,7 @@ impl IFabricOperationDataStream {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -8807,7 +8722,7 @@ impl IFabricOperationDataStream {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -8928,7 +8843,7 @@ impl IFabricOperationStream {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -8943,7 +8858,7 @@ impl IFabricOperationStream {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -9166,7 +9081,7 @@ impl IFabricPrimaryReplicator {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9218,7 +9133,7 @@ impl IFabricPrimaryReplicator {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9265,7 +9180,7 @@ impl IFabricPrimaryReplicator {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9719,7 +9634,7 @@ impl IFabricReplicator {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9737,7 +9652,7 @@ impl IFabricReplicator {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -9762,7 +9677,7 @@ impl IFabricReplicator {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9797,7 +9712,7 @@ impl IFabricReplicator {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -9827,7 +9742,7 @@ impl IFabricReplicator {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10371,7 +10286,7 @@ impl IFabricRuntime {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10429,7 +10344,7 @@ impl IFabricRuntime {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10470,7 +10385,7 @@ impl IFabricRuntime {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10496,7 +10411,7 @@ impl IFabricRuntime {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -10947,7 +10862,7 @@ impl IFabricRuntime2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -11389,7 +11304,7 @@ impl IFabricSelfReconfiguringServiceFactory {
                 instanceid,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -11418,7 +11333,7 @@ pub trait IFabricSelfReconfiguringServiceFactory_Impl: windows_core::IUnknownImp
     fn CreateInstance(
         &self,
         servicetypename: &windows_core::PCWSTR,
-        servicename: super::FabricTypes::FABRIC_URI,
+        servicename: &super::FabricTypes::FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &super::FabricTypes::FABRIC_PARTITION_ID,
@@ -11448,7 +11363,7 @@ impl IFabricSelfReconfiguringServiceFactory_Vtbl {
                 match IFabricSelfReconfiguringServiceFactory_Impl::CreateInstance(
                     this,
                     core::mem::transmute(&servicetypename),
-                    core::mem::transmute_copy(&servicename),
+                    core::mem::transmute(&servicename),
                     core::mem::transmute_copy(&initializationdatalength),
                     core::mem::transmute_copy(&initializationdata),
                     core::mem::transmute(&partitionid),
@@ -11506,7 +11421,7 @@ impl IFabricSelfReconfiguringServiceInstance {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -11524,7 +11439,7 @@ impl IFabricSelfReconfiguringServiceInstance {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -11568,7 +11483,7 @@ impl IFabricSelfReconfiguringServiceInstance {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -12275,7 +12190,7 @@ impl IFabricServiceGroupFactoryBuilder {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -12434,7 +12349,7 @@ impl IFabricServiceGroupPartition {
                 &T::IID,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -12458,7 +12373,7 @@ unsafe impl Sync for IFabricServiceGroupPartition {}
 pub trait IFabricServiceGroupPartition_Impl: windows_core::IUnknownImpl {
     fn ResolveMember(
         &self,
-        name: super::FabricTypes::FABRIC_URI,
+        name: &super::FabricTypes::FABRIC_URI,
         riid: *const windows_core::GUID,
         member: *mut *mut core::ffi::c_void,
     ) -> windows_core::Result<()>;
@@ -12480,7 +12395,7 @@ impl IFabricServiceGroupPartition_Vtbl {
                     &*((this as *const *const ()).offset(OFFSET) as *const Identity);
                 IFabricServiceGroupPartition_Impl::ResolveMember(
                     this,
-                    core::mem::transmute_copy(&name),
+                    core::mem::transmute(&name),
                     core::mem::transmute_copy(&riid),
                     core::mem::transmute_copy(&member),
                 )
@@ -12527,7 +12442,7 @@ impl IFabricStateProvider {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -12570,7 +12485,7 @@ impl IFabricStateProvider {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -12595,7 +12510,7 @@ impl IFabricStateProvider {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -12615,7 +12530,7 @@ impl IFabricStateProvider {
                 copycontextstream.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -12924,7 +12839,7 @@ impl IFabricStateReplicator {
                 sequencenumber as _,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -12955,7 +12870,7 @@ impl IFabricStateReplicator {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     pub unsafe fn GetCopyStream(&self) -> windows_core::Result<IFabricOperationStream> {
@@ -12965,7 +12880,7 @@ impl IFabricStateReplicator {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -13210,7 +13125,7 @@ impl IFabricStateReplicator2 {
                 windows_core::Interface::as_raw(self),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -13304,7 +13219,7 @@ impl IFabricStatefulServiceFactory {
                 replicaid,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -13333,7 +13248,7 @@ pub trait IFabricStatefulServiceFactory_Impl: windows_core::IUnknownImpl {
     fn CreateReplica(
         &self,
         servicetypename: &windows_core::PCWSTR,
-        servicename: super::FabricTypes::FABRIC_URI,
+        servicename: &super::FabricTypes::FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &super::FabricTypes::FABRIC_PARTITION_ID,
@@ -13362,7 +13277,7 @@ impl IFabricStatefulServiceFactory_Vtbl {
                 match IFabricStatefulServiceFactory_Impl::CreateReplica(
                     this,
                     core::mem::transmute(&servicetypename),
-                    core::mem::transmute_copy(&servicename),
+                    core::mem::transmute(&servicename),
                     core::mem::transmute_copy(&initializationdatalength),
                     core::mem::transmute_copy(&initializationdata),
                     core::mem::transmute(&partitionid),
@@ -13452,7 +13367,7 @@ impl IFabricStatefulServicePartition {
                 core::mem::transmute(replicator),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricTypes")]
@@ -14084,7 +13999,7 @@ impl IFabricStatefulServiceReplica {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -14099,7 +14014,7 @@ impl IFabricStatefulServiceReplica {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(
@@ -14122,7 +14037,7 @@ impl IFabricStatefulServiceReplica {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -14140,7 +14055,7 @@ impl IFabricStatefulServiceReplica {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -14158,7 +14073,7 @@ impl IFabricStatefulServiceReplica {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -14491,7 +14406,7 @@ impl IFabricStatelessServiceFactory {
                 instanceid,
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
 }
@@ -14520,7 +14435,7 @@ pub trait IFabricStatelessServiceFactory_Impl: windows_core::IUnknownImpl {
     fn CreateInstance(
         &self,
         servicetypename: &windows_core::PCWSTR,
-        servicename: super::FabricTypes::FABRIC_URI,
+        servicename: &super::FabricTypes::FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &super::FabricTypes::FABRIC_PARTITION_ID,
@@ -14549,7 +14464,7 @@ impl IFabricStatelessServiceFactory_Vtbl {
                 match IFabricStatelessServiceFactory_Impl::CreateInstance(
                     this,
                     core::mem::transmute(&servicetypename),
-                    core::mem::transmute_copy(&servicename),
+                    core::mem::transmute(&servicename),
                     core::mem::transmute_copy(&initializationdatalength),
                     core::mem::transmute_copy(&initializationdata),
                     core::mem::transmute(&partitionid),
@@ -14599,7 +14514,7 @@ impl IFabricStatelessServiceInstance {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -14617,7 +14532,7 @@ impl IFabricStatelessServiceInstance {
                 context.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -14635,7 +14550,7 @@ impl IFabricStatelessServiceInstance {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -15505,7 +15420,7 @@ impl IFabricStoreEventHandler2 {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -15647,7 +15562,7 @@ impl IFabricStorePostBackupHandler {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(feature = "ServiceFabric_FabricCommon")]
@@ -15814,7 +15729,7 @@ impl IFabricTransaction {
                 callback.param().abi(),
                 &mut result__,
             )
-            .and_then(|| windows_core::Type::from_abi(result__))
+            .and_then(|| windows_core::imp::Type::from_abi(result__))
         }
     }
     #[cfg(all(

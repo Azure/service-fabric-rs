@@ -27,12 +27,21 @@ const E_UNEXPECTED: FABRIC_ERROR_CODE =
     FABRIC_ERROR_CODE(windows_core::Win32::Foundation::E_UNEXPECTED.0);
 
 // HRESULT codes from win32 errors that SF resuses.
-const E_FILE_EXISTS: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::ERROR_FILE_EXISTS.to_hresult().0);
-const E_DIR_NOT_EMPTY: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::ERROR_DIR_NOT_EMPTY.to_hresult().0);
-const E_NOT_FOUND: FABRIC_ERROR_CODE =
-    FABRIC_ERROR_CODE(windows_core::Win32::Foundation::ERROR_NOT_FOUND.to_hresult().0);
+const E_FILE_EXISTS: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(
+    windows_core::Win32::Foundation::ERROR_FILE_EXISTS
+        .to_hresult()
+        .0,
+);
+const E_DIR_NOT_EMPTY: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(
+    windows_core::Win32::Foundation::ERROR_DIR_NOT_EMPTY
+        .to_hresult()
+        .0,
+);
+const E_NOT_FOUND: FABRIC_ERROR_CODE = FABRIC_ERROR_CODE(
+    windows_core::Win32::Foundation::ERROR_NOT_FOUND
+        .to_hresult()
+        .0,
+);
 
 // Internal error codes used by SF.
 // TODO: Add the complete list from dotnet and cpp code.

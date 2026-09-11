@@ -22,13 +22,12 @@ mssf-pal.workspace = true
 
 [features]
 default = []
-# `Microsoft` is the metadata root namespace. The bindgen `--package` writer
-# treats the root as an always-available feature and does not emit it, so it must
-# be declared here (before the marker) for the generated `ServiceFabric =
-# ["Microsoft"]` dependency to resolve.
-Microsoft = []
+# `Foundation` is the generated dependency name for the referenced Win32
+# metadata emitted alongside the Service Fabric bindings.
+Foundation = ["Win32"]
+Win32 = []
 # generated features
-ServiceFabric = ["Microsoft"]
+ServiceFabric = ["Foundation"]
 ServiceFabric_FabricClient = ["ServiceFabric"]
 ServiceFabric_FabricCommon = ["ServiceFabric"]
 ServiceFabric_FabricRuntime = ["ServiceFabric"]

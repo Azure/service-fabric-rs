@@ -86,6 +86,12 @@ pub const fn utf16_len(bytes: &[u8]) -> usize {
     len
 }
 
+// TODO: Investigate replacing this type and the PAL `w!` macro with the
+// cross-platform versions exported by windows-strings 0.100+. Do not switch
+// `WString` conversions directly: upstream `PCWSTR::len` calls C `wcslen`,
+// while Linux normally defines `wchar_t` as 32-bit and Windows `PCWSTR` stores
+// 16-bit UTF-16 code units. Any migration must retain a portable u16 scan on
+// non-Windows targets or first resolve that behavior upstream.
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct PCWSTR(pub *const u16);

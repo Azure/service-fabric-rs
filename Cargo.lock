@@ -926,6 +926,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "mssf-metadata"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "66e83d6b1856756248041ac8ea02b498773525c28b217af3c1b7a6661f26d4e4"
+
+[[package]]
 name = "mssf-net"
 version = "0.1.0"
 dependencies = [
@@ -1789,6 +1795,7 @@ dependencies = [
 name = "tools_api"
 version = "0.0.0"
 dependencies = [
+ "mssf-metadata",
  "windows-bindgen",
 ]
 

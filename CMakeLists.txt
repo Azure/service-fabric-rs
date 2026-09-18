@@ -5,18 +5,6 @@ project(service-fabric-rs LANGUAGES)
 # add cmake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-if(WIN32)
-message(STATUS "fetching fabric_metadata")
-include(FetchContent)
-FetchContent_Declare(fabric_metadata
-    GIT_REPOSITORY https://github.com/youyuanwu/service-fabric-metadata-fork.git
-    GIT_TAG        0c24a9d39f6ea3a1f50ca8c06c4d4b3d29182c58
-    GIT_SHALLOW    TRUE
-    SOURCE_SUBDIR  _none   # prevent add_subdirectory on the fetched repo
-)
-FetchContent_MakeAvailable(fabric_metadata)
-endif(WIN32)
-
 # generate rust code
 find_program (
     cargo_exe
@@ -25,9 +13,7 @@ find_program (
 )
 
 add_custom_target(generate_rust
-    COMMAND ${CMAKE_COMMAND} -E env
-        "MSSF_WINMD_PATH=${fabric_metadata_SOURCE_DIR}/.windows/winmd/Windows.ServiceFabric.winmd"
-        ${cargo_exe} run -p tools_api
+    COMMAND ${cargo_exe} run -p tools_api
     COMMAND ${cargo_exe} fmt -p mssf-com # format the generated crate
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )

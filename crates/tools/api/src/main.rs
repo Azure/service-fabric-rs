@@ -4,7 +4,7 @@
 // ------------------------------------------------------------
 use std::{env, fs, path::PathBuf};
 
-use windows_bindgen::bindgen;
+use windows_bindgen::Bindgen;
 
 fn main() {
     let workspace = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -16,64 +16,34 @@ fn main() {
     env::set_current_dir(&workspace)
         .unwrap_or_else(|e| panic!("change directory to {}: {e}", workspace.display()));
 
-    let winmd = env::var_os("MSSF_WINMD_PATH")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| {
-            PathBuf::from(
-                "./build/_deps/fabric_metadata-src/.windows/winmd/Windows.ServiceFabric.winmd",
-            )
-        });
-    assert!(
-        winmd.is_file(),
-        "Service Fabric metadata not found at {} (override with MSSF_WINMD_PATH)",
-        winmd.display()
-    );
-
     let old_namespace = workspace.join("crates/libs/com/src/Microsoft");
     if old_namespace.exists() {
         fs::remove_dir_all(&old_namespace)
             .unwrap_or_else(|e| panic!("remove {}: {e}", old_namespace.display()));
     }
 
-    {
-        let out_file = "crates/libs/com/";
-        let winmd = winmd
-            .to_str()
-            .expect("Service Fabric metadata path is not valid UTF-8");
-
-        let args = vec![
-            "--in",
-            winmd,
-            "--in",
-            "default",
-            "--out",
-            out_file,
-            "--package",
-            "--filter",
-        ];
-        // Note: winmd currently does not contain C free standing functions,
-        // if they are added in the future, we may need to add more filters here.
-        let filter_types = vec!["Windows.ServiceFabric.FabricTypes"];
-        let filter_common = vec![
-            "Windows.ServiceFabric.FabricCommon", // include fabric types
-        ];
-
-        let filter_runtime = vec![
-            "Windows.ServiceFabric.FabricRuntime", // include fabric types
-        ];
-
-        let filter_client = vec![
-            "Windows.ServiceFabric.FabricClient", // include fabric types
-        ];
-
-        bindgen(
-            args.into_iter()
-                .chain(filter_types)
-                .chain(filter_common)
-                .chain(filter_runtime)
-                .chain(filter_client),
+    let mut bindgen = Bindgen::new();
+    if let Some(winmd) = env::var_os("MSSF_WINMD_PATH").map(PathBuf::from) {
+        assert!(
+            winmd.is_file(),
+            "Service Fabric metadata override not found at {}",
+            winmd.display()
         );
+        bindgen.input(winmd);
+    } else {
+        bindgen.input_bytes(mssf_metadata::METADATA);
     }
+    bindgen
+        .input_default()
+        .output("crates/libs/com/")
+        .package()
+        .filters([
+            "Windows.ServiceFabric.FabricTypes",
+            "Windows.ServiceFabric.FabricCommon",
+            "Windows.ServiceFabric.FabricRuntime",
+            "Windows.ServiceFabric.FabricClient",
+        ])
+        .write();
 
     // The new windows-bindgen projects scoped (newtype) enums with their variants
     // as *associated* constants (`impl FABRIC_X { pub const FABRIC_X_Y: Self = Self(n); }`),

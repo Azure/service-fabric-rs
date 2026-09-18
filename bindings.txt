@@ -1,9 +1,0 @@
---in ./build/_deps/fabric_metadata-src/.windows/winmd/Windows.ServiceFabric.winmd
---in default
---out crates/libs/com/
---package
---filter
-    Windows.ServiceFabric.FabricTypes
-    Windows.ServiceFabric.FabricCommon
-    Windows.ServiceFabric.FabricRuntime
-    Windows.ServiceFabric.FabricClient

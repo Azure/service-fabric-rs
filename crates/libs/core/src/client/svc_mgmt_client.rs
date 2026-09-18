@@ -15,17 +15,10 @@ use mssf_com::{
     FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient8},
     FabricTypes::{
         FABRIC_DELETE_SERVICE_DESCRIPTION, FABRIC_PARTITION_KEY_TYPE,
-        FABRIC_PARTITION_KEY_TYPE_INT64, FABRIC_PARTITION_KEY_TYPE_INVALID,
-        FABRIC_PARTITION_KEY_TYPE_NONE, FABRIC_PARTITION_KEY_TYPE_STRING,
         FABRIC_REMOVE_REPLICA_DESCRIPTION, FABRIC_RESOLVED_SERVICE_ENDPOINT,
         FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_DESCRIPTION,
         FABRIC_SERVICE_ENDPOINT_ROLE, FABRIC_SERVICE_NOTIFICATION_FILTER_DESCRIPTION,
-        FABRIC_SERVICE_PARTITION_KIND, FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE,
-        FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
-        FABRIC_SERVICE_PARTITION_KIND_SINGLETON, FABRIC_SERVICE_ROLE_INVALID,
-        FABRIC_SERVICE_ROLE_STATEFUL_AUXILIARY, FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY,
-        FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY_AUXILIARY, FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY,
-        FABRIC_SERVICE_ROLE_STATELESS, FABRIC_SERVICE_UPDATE_DESCRIPTION, FABRIC_URI,
+        FABRIC_SERVICE_PARTITION_KIND, FABRIC_SERVICE_UPDATE_DESCRIPTION, FABRIC_URI,
     },
 };
 
@@ -454,13 +447,19 @@ impl PartitionKeyType {
         match self {
             // Not sure if this is ok for i64
             PartitionKeyType::Int64(x) => (
-                FABRIC_PARTITION_KEY_TYPE_INT64,
+                FABRIC_PARTITION_KEY_TYPE::FABRIC_PARTITION_KEY_TYPE_INT64,
                 x as *const i64 as *const c_void,
             ),
-            PartitionKeyType::Invalid => (FABRIC_PARTITION_KEY_TYPE_INVALID, std::ptr::null()),
-            PartitionKeyType::None => (FABRIC_PARTITION_KEY_TYPE_NONE, std::ptr::null()),
+            PartitionKeyType::Invalid => (
+                FABRIC_PARTITION_KEY_TYPE::FABRIC_PARTITION_KEY_TYPE_INVALID,
+                std::ptr::null(),
+            ),
+            PartitionKeyType::None => (
+                FABRIC_PARTITION_KEY_TYPE::FABRIC_PARTITION_KEY_TYPE_NONE,
+                std::ptr::null(),
+            ),
             PartitionKeyType::String(x) => (
-                FABRIC_PARTITION_KEY_TYPE_STRING,
+                FABRIC_PARTITION_KEY_TYPE::FABRIC_PARTITION_KEY_TYPE_STRING,
                 x.as_pcwstr().as_ptr() as *const c_void,
             ),
         }
@@ -478,10 +477,18 @@ pub enum ServicePartitionKind {
 impl From<&ServicePartitionKind> for FABRIC_SERVICE_PARTITION_KIND {
     fn from(value: &ServicePartitionKind) -> Self {
         match value {
-            ServicePartitionKind::Int64Range => FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE,
-            ServicePartitionKind::Invalid => FABRIC_SERVICE_PARTITION_KIND_INVALID,
-            ServicePartitionKind::Named => FABRIC_SERVICE_PARTITION_KIND_NAMED,
-            ServicePartitionKind::Singleton => FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
+            ServicePartitionKind::Int64Range => {
+                FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE
+            }
+            ServicePartitionKind::Invalid => {
+                FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_INVALID
+            }
+            ServicePartitionKind::Named => {
+                FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_NAMED
+            }
+            ServicePartitionKind::Singleton => {
+                FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_SINGLETON
+            }
         }
     }
 }
@@ -489,10 +496,18 @@ impl From<&ServicePartitionKind> for FABRIC_SERVICE_PARTITION_KIND {
 impl From<FABRIC_SERVICE_PARTITION_KIND> for ServicePartitionKind {
     fn from(value: FABRIC_SERVICE_PARTITION_KIND) -> Self {
         match value {
-            FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE => ServicePartitionKind::Int64Range,
-            FABRIC_SERVICE_PARTITION_KIND_INVALID => ServicePartitionKind::Invalid,
-            FABRIC_SERVICE_PARTITION_KIND_NAMED => ServicePartitionKind::Named,
-            FABRIC_SERVICE_PARTITION_KIND_SINGLETON => ServicePartitionKind::Singleton,
+            FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE => {
+                ServicePartitionKind::Int64Range
+            }
+            FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_INVALID => {
+                ServicePartitionKind::Invalid
+            }
+            FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_NAMED => {
+                ServicePartitionKind::Named
+            }
+            FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_SINGLETON => {
+                ServicePartitionKind::Singleton
+            }
             _ => {
                 if cfg!(debug_assertions) {
                     panic!("unknown type: {value:?}");
@@ -578,14 +593,24 @@ pub enum ServiceEndpointRole {
 impl From<FABRIC_SERVICE_ENDPOINT_ROLE> for ServiceEndpointRole {
     fn from(value: FABRIC_SERVICE_ENDPOINT_ROLE) -> Self {
         match value {
-            FABRIC_SERVICE_ROLE_INVALID => ServiceEndpointRole::Invalid,
-            FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY => ServiceEndpointRole::StatefulPrimary,
-            FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY_AUXILIARY => {
+            FABRIC_SERVICE_ENDPOINT_ROLE::FABRIC_SERVICE_ROLE_INVALID => {
+                ServiceEndpointRole::Invalid
+            }
+            FABRIC_SERVICE_ENDPOINT_ROLE::FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY => {
+                ServiceEndpointRole::StatefulPrimary
+            }
+            FABRIC_SERVICE_ENDPOINT_ROLE::FABRIC_SERVICE_ROLE_STATEFUL_PRIMARY_AUXILIARY => {
                 ServiceEndpointRole::StatefulPrimaryAuxiliary
             }
-            FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY => ServiceEndpointRole::StatefulSecondary,
-            FABRIC_SERVICE_ROLE_STATEFUL_AUXILIARY => ServiceEndpointRole::StatefulAuxiliary,
-            FABRIC_SERVICE_ROLE_STATELESS => ServiceEndpointRole::Stateless,
+            FABRIC_SERVICE_ENDPOINT_ROLE::FABRIC_SERVICE_ROLE_STATEFUL_SECONDARY => {
+                ServiceEndpointRole::StatefulSecondary
+            }
+            FABRIC_SERVICE_ENDPOINT_ROLE::FABRIC_SERVICE_ROLE_STATEFUL_AUXILIARY => {
+                ServiceEndpointRole::StatefulAuxiliary
+            }
+            FABRIC_SERVICE_ENDPOINT_ROLE::FABRIC_SERVICE_ROLE_STATELESS => {
+                ServiceEndpointRole::Stateless
+            }
             _ => {
                 if cfg!(debug_assertions) {
                     panic!("unknown type: {value:?}");
@@ -626,7 +651,7 @@ mod tests {
         let (key_type, raw) = k.as_raw_parts();
         assert_eq!(
             key_type,
-            mssf_com::FabricTypes::FABRIC_PARTITION_KEY_TYPE_INT64
+            mssf_com::FabricTypes::FABRIC_PARTITION_KEY_TYPE::FABRIC_PARTITION_KEY_TYPE_INT64
         );
         let i = unsafe { (raw as *const i64).as_ref().unwrap() };
         assert_eq!(*i, 99);
@@ -645,7 +670,7 @@ mod tests {
         let (key_type, raw) = k.as_raw_parts();
         assert_eq!(
             key_type,
-            mssf_com::FabricTypes::FABRIC_PARTITION_KEY_TYPE_STRING
+            mssf_com::FabricTypes::FABRIC_PARTITION_KEY_TYPE::FABRIC_PARTITION_KEY_TYPE_STRING
         );
         let s = WString::from(PCWSTR::from_raw(raw as *const u16));
         assert_eq!(s, src);

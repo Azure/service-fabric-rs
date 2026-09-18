@@ -16,14 +16,9 @@ use mssf_com::{
         FABRIC_DEPLOYED_SERVICE_REPLICA_DETAIL_QUERY_DESCRIPTION,
         FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM,
         FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
-        FABRIC_QUERY_SERVICE_REPLICA_STATUS, FABRIC_QUERY_SERVICE_REPLICA_STATUS_DOWN,
-        FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED, FABRIC_QUERY_SERVICE_REPLICA_STATUS_INBUILD,
-        FABRIC_QUERY_SERVICE_REPLICA_STATUS_INVALID, FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
-        FABRIC_QUERY_SERVICE_REPLICA_STATUS_STANDBY, FABRIC_REMOVE_REPLICA_DESCRIPTION,
-        FABRIC_REPLICA_ID, FABRIC_RESTART_REPLICA_DESCRIPTION,
-        FABRIC_SERVICE_KIND_SELF_RECONFIGURING, FABRIC_SERVICE_KIND_STATEFUL,
-        FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION,
-        FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
+        FABRIC_QUERY_SERVICE_REPLICA_STATUS, FABRIC_REMOVE_REPLICA_DESCRIPTION, FABRIC_REPLICA_ID,
+        FABRIC_RESTART_REPLICA_DESCRIPTION, FABRIC_SERVICE_KIND,
+        FABRIC_SERVICE_REPLICA_QUERY_DESCRIPTION, FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM,
         FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM,
         FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM_EX1,
         FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM,
@@ -83,7 +78,7 @@ pub enum ServiceReplicaQueryResultItem {
 impl From<&FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceReplicaQueryResultItem {
     fn from(value: &FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM) -> Self {
         match value.Kind {
-            FABRIC_SERVICE_KIND_STATEFUL => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATEFUL => {
                 let raw = unsafe {
                     (value.Value as *const FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM)
                         .as_ref()
@@ -91,7 +86,7 @@ impl From<&FABRIC_SERVICE_REPLICA_QUERY_RESULT_ITEM> for ServiceReplicaQueryResu
                 };
                 Self::Stateful(raw.into())
             }
-            FABRIC_SERVICE_KIND_STATELESS => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATELESS => {
                 let raw = unsafe {
                     (value.Value as *const FABRIC_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM)
                         .as_ref()
@@ -187,12 +182,24 @@ pub enum QueryServiceReplicaStatus {
 impl From<&FABRIC_QUERY_SERVICE_REPLICA_STATUS> for QueryServiceReplicaStatus {
     fn from(value: &FABRIC_QUERY_SERVICE_REPLICA_STATUS) -> Self {
         match *value {
-            FABRIC_QUERY_SERVICE_REPLICA_STATUS_INVALID => Self::Invalid,
-            FABRIC_QUERY_SERVICE_REPLICA_STATUS_INBUILD => Self::Inbuild,
-            FABRIC_QUERY_SERVICE_REPLICA_STATUS_STANDBY => Self::Standby,
-            FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY => Self::Ready,
-            FABRIC_QUERY_SERVICE_REPLICA_STATUS_DOWN => Self::Down,
-            FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED => Self::Dropped,
+            FABRIC_QUERY_SERVICE_REPLICA_STATUS::FABRIC_QUERY_SERVICE_REPLICA_STATUS_INVALID => {
+                Self::Invalid
+            }
+            FABRIC_QUERY_SERVICE_REPLICA_STATUS::FABRIC_QUERY_SERVICE_REPLICA_STATUS_INBUILD => {
+                Self::Inbuild
+            }
+            FABRIC_QUERY_SERVICE_REPLICA_STATUS::FABRIC_QUERY_SERVICE_REPLICA_STATUS_STANDBY => {
+                Self::Standby
+            }
+            FABRIC_QUERY_SERVICE_REPLICA_STATUS::FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY => {
+                Self::Ready
+            }
+            FABRIC_QUERY_SERVICE_REPLICA_STATUS::FABRIC_QUERY_SERVICE_REPLICA_STATUS_DOWN => {
+                Self::Down
+            }
+            FABRIC_QUERY_SERVICE_REPLICA_STATUS::FABRIC_QUERY_SERVICE_REPLICA_STATUS_DROPPED => {
+                Self::Dropped
+            }
             _ => Self::Invalid,
         }
     }
@@ -362,7 +369,7 @@ impl DeployedServiceReplicaDetailQueryResult {
     pub fn new(com: IFabricGetDeployedServiceReplicaDetailResult) -> Self {
         let replica_detail = unsafe { com.get_ReplicaDetail().as_ref().unwrap() };
         let value = match replica_detail.Kind {
-            FABRIC_SERVICE_KIND_STATEFUL => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATEFUL => {
                 let raw = unsafe {
                     (replica_detail.Value
                         as *const FABRIC_DEPLOYED_STATEFUL_SERVICE_REPLICA_DETAIL_QUERY_RESULT_ITEM)
@@ -373,7 +380,7 @@ impl DeployedServiceReplicaDetailQueryResult {
                     DeployedStatefulServiceReplicaDetailQueryResult::new(raw),
                 )
             }
-            FABRIC_SERVICE_KIND_STATELESS => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATELESS => {
                 let raw = unsafe {
                     (replica_detail.Value
                         as *const FABRIC_DEPLOYED_STATELESS_SERVICE_INSTANCE_QUERY_RESULT_ITEM)
@@ -460,7 +467,7 @@ pub enum ReplicaHealth {
 impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH> for ReplicaHealth {
     fn from(value: &mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH) -> Self {
         match value.Kind {
-            FABRIC_SERVICE_KIND_STATEFUL => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATEFUL => {
                 let raw = unsafe {
                     (value.Value
                         as *const mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH)
@@ -469,7 +476,7 @@ impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH> for ReplicaHealth {
                 };
                 Self::Stateful(raw.into())
             }
-            FABRIC_SERVICE_KIND_STATELESS => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATELESS => {
                 let raw = unsafe {
                     (value.Value
                         as *const mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH)
@@ -619,7 +626,7 @@ pub struct SelfReconfiguringServiceInstanceHealthState {
 impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE> for ReplicaHealthState {
     fn from(value: &mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE) -> Self {
         match value.Kind {
-            FABRIC_SERVICE_KIND_STATEFUL => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATEFUL => {
                 let raw = unsafe {
                     (value.Value
                         as *const mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_STATE)
@@ -632,7 +639,7 @@ impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE> for ReplicaHealth
                     aggregated_health_state: (&raw.AggregatedHealthState).into(),
                 })
             }
-            FABRIC_SERVICE_KIND_STATELESS => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATELESS => {
                 let raw = unsafe {
                     (value.Value
                         as *const mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_INSTANCE_HEALTH_STATE)
@@ -645,7 +652,7 @@ impl From<&mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE> for ReplicaHealth
                     aggregated_health_state: (&raw.AggregatedHealthState).into(),
                 })
             }
-            FABRIC_SERVICE_KIND_SELF_RECONFIGURING => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_SELF_RECONFIGURING => {
                 let raw = unsafe {
                     (value.Value
                         as *const mssf_com::FabricTypes::FABRIC_SELF_RECONFIGURING_SERVICE_INSTANCE_HEALTH_STATE)
@@ -672,14 +679,17 @@ mod tests {
         let replica_address = WString::from("127.0.0.1:1234");
         let node_name = WString::from("Node1");
         let ex1 = FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM_EX1 {
-            PreviousReplicaRole: mssf_com::FabricTypes::FABRIC_REPLICA_ROLE_IDLE_SECONDARY,
+            PreviousReplicaRole:
+                mssf_com::FabricTypes::FABRIC_REPLICA_ROLE::FABRIC_REPLICA_ROLE_IDLE_SECONDARY,
             Reserved: std::ptr::null_mut(),
         };
         let raw = FABRIC_STATEFUL_SERVICE_REPLICA_QUERY_RESULT_ITEM {
             ReplicaId: FABRIC_REPLICA_ID(42),
-            ReplicaRole: mssf_com::FabricTypes::FABRIC_REPLICA_ROLE_PRIMARY,
-            ReplicaStatus: FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
-            AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
+            ReplicaRole: mssf_com::FabricTypes::FABRIC_REPLICA_ROLE::FABRIC_REPLICA_ROLE_PRIMARY,
+            ReplicaStatus:
+                FABRIC_QUERY_SERVICE_REPLICA_STATUS::FABRIC_QUERY_SERVICE_REPLICA_STATUS_READY,
+            AggregatedHealthState:
+                mssf_com::FabricTypes::FABRIC_HEALTH_STATE::FABRIC_HEALTH_STATE_OK,
             ReplicaAddress: replica_address.as_pcwstr(),
             NodeName: node_name.as_pcwstr(),
             LastInBuildDurationInSeconds: 99,

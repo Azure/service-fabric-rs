@@ -159,12 +159,12 @@ mod test {
 
     use super::{Error, ErrorCode};
     use crate::HRESULT;
-    use mssf_com::FabricTypes::FABRIC_E_CODE_PACKAGE_NOT_FOUND;
+    use mssf_com::FabricTypes::FABRIC_ERROR_CODE;
     use windows_core::Win32::Foundation::{E_ACCESSDENIED, E_POINTER};
 
     #[test]
     fn test_fabric_error() {
-        let fe = Error::from(FABRIC_E_CODE_PACKAGE_NOT_FOUND);
+        let fe = Error::from(FABRIC_ERROR_CODE::FABRIC_E_CODE_PACKAGE_NOT_FOUND);
         // check debug string
         assert_eq!(
             format!("{fe:?}"),

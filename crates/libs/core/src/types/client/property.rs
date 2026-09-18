@@ -7,14 +7,7 @@ use std::time::SystemTime;
 
 use mssf_com::{
     FabricClient::IFabricNameEnumerationResult,
-    FabricTypes::{
-        FABRIC_ENUMERATION_BEST_EFFORT_FINISHED, FABRIC_ENUMERATION_BEST_EFFORT_MASK,
-        FABRIC_ENUMERATION_BEST_EFFORT_MORE_DATA, FABRIC_ENUMERATION_CONSISTENT_FINISHED,
-        FABRIC_ENUMERATION_CONSISTENT_MASK, FABRIC_ENUMERATION_CONSISTENT_MORE_DATA,
-        FABRIC_ENUMERATION_FINISHED_MASK, FABRIC_ENUMERATION_INVALID,
-        FABRIC_ENUMERATION_MORE_DATA_MASK, FABRIC_ENUMERATION_STATUS,
-        FABRIC_NAMED_PROPERTY_METADATA,
-    },
+    FabricTypes::{FABRIC_ENUMERATION_STATUS, FABRIC_NAMED_PROPERTY_METADATA},
 };
 use windows_core::WString;
 
@@ -63,15 +56,23 @@ pub enum EnumerationStatus {
 impl From<FABRIC_ENUMERATION_STATUS> for EnumerationStatus {
     fn from(value: FABRIC_ENUMERATION_STATUS) -> Self {
         match value {
-            FABRIC_ENUMERATION_BEST_EFFORT_FINISHED => Self::BestEffortFinished,
-            FABRIC_ENUMERATION_BEST_EFFORT_MASK => Self::BestEffortMask,
-            FABRIC_ENUMERATION_INVALID => Self::Invalid,
-            FABRIC_ENUMERATION_BEST_EFFORT_MORE_DATA => Self::BestEffortMoreData,
-            FABRIC_ENUMERATION_CONSISTENT_FINISHED => Self::ConsistentFinished,
-            FABRIC_ENUMERATION_CONSISTENT_MASK => Self::ConsistentMask,
-            FABRIC_ENUMERATION_CONSISTENT_MORE_DATA => Self::ConsistentMoreData,
-            FABRIC_ENUMERATION_FINISHED_MASK => Self::FinishedMask,
-            FABRIC_ENUMERATION_MORE_DATA_MASK => Self::MoreDataMask,
+            FABRIC_ENUMERATION_STATUS::FABRIC_ENUMERATION_BEST_EFFORT_FINISHED => {
+                Self::BestEffortFinished
+            }
+            FABRIC_ENUMERATION_STATUS::FABRIC_ENUMERATION_BEST_EFFORT_MASK => Self::BestEffortMask,
+            FABRIC_ENUMERATION_STATUS::FABRIC_ENUMERATION_INVALID => Self::Invalid,
+            FABRIC_ENUMERATION_STATUS::FABRIC_ENUMERATION_BEST_EFFORT_MORE_DATA => {
+                Self::BestEffortMoreData
+            }
+            FABRIC_ENUMERATION_STATUS::FABRIC_ENUMERATION_CONSISTENT_FINISHED => {
+                Self::ConsistentFinished
+            }
+            FABRIC_ENUMERATION_STATUS::FABRIC_ENUMERATION_CONSISTENT_MASK => Self::ConsistentMask,
+            FABRIC_ENUMERATION_STATUS::FABRIC_ENUMERATION_CONSISTENT_MORE_DATA => {
+                Self::ConsistentMoreData
+            }
+            FABRIC_ENUMERATION_STATUS::FABRIC_ENUMERATION_FINISHED_MASK => Self::FinishedMask,
+            FABRIC_ENUMERATION_STATUS::FABRIC_ENUMERATION_MORE_DATA_MASK => Self::MoreDataMask,
             _ => Self::Invalid,
         }
     }
@@ -120,23 +121,37 @@ impl PropertyMetadataResult {
 // See: https://github.com/microsoft/service-fabric/blob/master/src/prod/src/managed/Api/src/System/Fabric/CheckValuePropertyOperation.cs
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PropertyTypeId {
-    Invalid = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_INVALID.0 as isize,
-    Binary = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_BINARY.0 as isize,
-    Int64 = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_INT64.0 as isize,
-    Double = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_DOUBLE.0 as isize,
-    WString = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_WSTRING.0 as isize,
-    Guid = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_GUID.0 as isize,
+    Invalid =
+        mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_INVALID.0 as isize,
+    Binary = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_BINARY.0 as isize,
+    Int64 = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_INT64.0 as isize,
+    Double = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_DOUBLE.0 as isize,
+    WString =
+        mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_WSTRING.0 as isize,
+    Guid = mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_GUID.0 as isize,
 }
 
 impl From<mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID> for PropertyTypeId {
     fn from(value: mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID) -> Self {
         match value {
-            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_INVALID => PropertyTypeId::Invalid,
-            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_BINARY => PropertyTypeId::Binary,
-            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_INT64 => PropertyTypeId::Int64,
-            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_DOUBLE => PropertyTypeId::Double,
-            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_WSTRING => PropertyTypeId::WString,
-            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_GUID => PropertyTypeId::Guid,
+            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_INVALID => {
+                PropertyTypeId::Invalid
+            }
+            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_BINARY => {
+                PropertyTypeId::Binary
+            }
+            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_INT64 => {
+                PropertyTypeId::Int64
+            }
+            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_DOUBLE => {
+                PropertyTypeId::Double
+            }
+            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_WSTRING => {
+                PropertyTypeId::WString
+            }
+            mssf_com::FabricTypes::FABRIC_PROPERTY_TYPE_ID::FABRIC_PROPERTY_TYPE_GUID => {
+                PropertyTypeId::Guid
+            }
             _ => PropertyTypeId::Invalid,
         }
     }

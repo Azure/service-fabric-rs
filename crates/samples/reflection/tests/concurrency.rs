@@ -288,7 +288,7 @@ async fn five_stuck_at_close_then_create_delete_sixth() {
 /// 1. **Delete with a short timeout.** First call uses a 3 s
 ///    timeout (much shorter than the test-wide `SF_TIMEOUT`). Since
 ///    Close is never approved, SF times out the operation and the
-///    call returns `FABRIC_E_TIMEOUT`. The cluster-side delete
+///    call returns `FABRIC_ERROR_CODE::FABRIC_E_TIMEOUT`. The cluster-side delete
 ///    remains in flight.
 ///
 /// 2. **Delete with explicit token cancel.** Second call uses
@@ -301,7 +301,7 @@ async fn five_stuck_at_close_then_create_delete_sixth() {
 /// 3. **Plain delete + approve Close.** Third call uses
 ///    `SF_TIMEOUT` and no token. The parked `Close` gate is then
 ///    approved; SF tears the replica down and the call completes.
-///    It may return `Ok` or `FABRIC_E_SERVICE_DOES_NOT_EXIST`
+///    It may return `Ok` or `FABRIC_ERROR_CODE::FABRIC_E_SERVICE_DOES_NOT_EXIST`
 ///    depending on whether the cluster-side delete races ahead of
 ///    the retried client call. Either way the service is gone.
 ///
@@ -349,7 +349,7 @@ async fn cancel_delete_then_retry_succeeds_after_close() {
     );
     tracing::info!("svc -> Primary; replica is Up");
 
-    // ---- Phase 2: first delete with short timeout, expect FABRIC_E_TIMEOUT ----
+    // ---- Phase 2: first delete with short timeout, expect FABRIC_ERROR_CODE::FABRIC_E_TIMEOUT ----
     //
     // Spawn delete with a 3 s SF timeout. Drive ChangeRole(None) so
     // SF emits the Close gate and confirm the Close is parked
@@ -456,7 +456,7 @@ async fn cancel_delete_then_retry_succeeds_after_close() {
     // Re-issue `delete_service` with no token and approve the
     // parked Close. SF tears down the replica and the call
     // completes; either `Ok` (the retried op sees its own
-    // completion) or `FABRIC_E_SERVICE_DOES_NOT_EXIST` (the
+    // completion) or `FABRIC_ERROR_CODE::FABRIC_E_SERVICE_DOES_NOT_EXIST` (the
     // cluster-side delete from earlier requests already removed
     // the service by the time this op reaches SF). Both are
     // correct idempotent endings.

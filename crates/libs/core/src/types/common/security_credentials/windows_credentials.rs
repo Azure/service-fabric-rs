@@ -11,8 +11,7 @@ use std::{
 };
 
 use mssf_com::FabricTypes::{
-    FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS, FABRIC_SECURITY_CREDENTIALS,
-    FABRIC_WINDOWS_CREDENTIALS,
+    FABRIC_SECURITY_CREDENTIAL_KIND, FABRIC_SECURITY_CREDENTIALS, FABRIC_WINDOWS_CREDENTIALS,
 };
 use windows_core::{PCWSTR, WString};
 
@@ -49,7 +48,7 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
             Reserved: ptr::null_mut(),
         };
         let security_credentials = FABRIC_SECURITY_CREDENTIALS {
-            Kind: FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS,
+            Kind: FABRIC_SECURITY_CREDENTIAL_KIND::FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS,
             Value: addr_of_mut!(value) as *mut c_void,
         };
 
@@ -66,10 +65,7 @@ impl FabricSecurityCredentialKind for FabricWindowsCredentials {
 #[cfg(test)]
 mod test {
     use mssf_com::FabricClient::IFabricClientSettings2;
-    use mssf_com::FabricTypes::{
-        FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN,
-        FABRIC_PROTECTION_LEVEL_NONE,
-    };
+    use mssf_com::FabricTypes::{FABRIC_ERROR_CODE, FABRIC_PROTECTION_LEVEL};
     use std::sync::{Arc, Mutex};
 
     use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
@@ -105,7 +101,9 @@ mod test {
         let result = creds.apply_inner(mock.into());
         assert_eq!(
             result,
-            Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
+            Err(crate::Error::from(
+                FABRIC_ERROR_CODE::FABRIC_E_INVALID_CREDENTIALS
+            ))
         )
     }
 
@@ -116,7 +114,9 @@ mod test {
         let result = creds.apply_inner(mock);
         assert_eq!(
             result,
-            Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
+            Err(crate::Error::from(
+                FABRIC_ERROR_CODE::FABRIC_E_INVALID_CREDENTIALS
+            ))
         )
     }
 
@@ -130,7 +130,10 @@ mod test {
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
                 let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
-                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS);
+                assert_eq!(
+                    creds_ref.Kind,
+                    FABRIC_SECURITY_CREDENTIAL_KIND::FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS
+                );
 
                 let value = creds_ref.Value as *const FABRIC_WINDOWS_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
@@ -146,7 +149,10 @@ mod test {
                 };
 
                 value_ref.RemoteSpn.is_null();
-                assert_eq!(value_ref.ProtectionLevel, FABRIC_PROTECTION_LEVEL_NONE);
+                assert_eq!(
+                    value_ref.ProtectionLevel,
+                    FABRIC_PROTECTION_LEVEL::FABRIC_PROTECTION_LEVEL_NONE
+                );
                 assert!(value_ref.Reserved.is_null());
 
                 Ok(())
@@ -170,7 +176,10 @@ mod test {
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
                 let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
-                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS);
+                assert_eq!(
+                    creds_ref.Kind,
+                    FABRIC_SECURITY_CREDENTIAL_KIND::FABRIC_SECURITY_CREDENTIAL_KIND_WINDOWS
+                );
 
                 let value = creds_ref.Value as *const FABRIC_WINDOWS_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
@@ -190,7 +199,7 @@ mod test {
 
                 assert_eq!(
                     value_ref.ProtectionLevel,
-                    FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
+                    FABRIC_PROTECTION_LEVEL::FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
                 );
                 assert!(value_ref.Reserved.is_null());
 

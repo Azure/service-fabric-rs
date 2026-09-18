@@ -16,10 +16,6 @@ use mssf_com::FabricTypes::{
     FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM,
     FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX1,
     FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX2, FABRIC_DEPLOYMENT_STATUS,
-    FABRIC_DEPLOYMENT_STATUS_ACTIVATING, FABRIC_DEPLOYMENT_STATUS_ACTIVE,
-    FABRIC_DEPLOYMENT_STATUS_DEACTIVATING, FABRIC_DEPLOYMENT_STATUS_DOWNLOADING,
-    FABRIC_DEPLOYMENT_STATUS_FAILED, FABRIC_DEPLOYMENT_STATUS_INVALID,
-    FABRIC_DEPLOYMENT_STATUS_RAN_TO_COMPLETION, FABRIC_DEPLOYMENT_STATUS_UPGRADING,
 };
 use windows_core::{PCWSTR, WString};
 
@@ -171,14 +167,16 @@ pub enum DeploymentStatus {
 impl From<FABRIC_DEPLOYMENT_STATUS> for DeploymentStatus {
     fn from(value: FABRIC_DEPLOYMENT_STATUS) -> Self {
         match value {
-            FABRIC_DEPLOYMENT_STATUS_DOWNLOADING => Self::Downloading,
-            FABRIC_DEPLOYMENT_STATUS_ACTIVATING => Self::Activating,
-            FABRIC_DEPLOYMENT_STATUS_ACTIVE => Self::Active,
-            FABRIC_DEPLOYMENT_STATUS_UPGRADING => Self::Upgrading,
-            FABRIC_DEPLOYMENT_STATUS_DEACTIVATING => Self::Deactivating,
-            FABRIC_DEPLOYMENT_STATUS_RAN_TO_COMPLETION => Self::RanToCompletion,
-            FABRIC_DEPLOYMENT_STATUS_FAILED => Self::Failed,
-            FABRIC_DEPLOYMENT_STATUS_INVALID => Self::Invalid,
+            FABRIC_DEPLOYMENT_STATUS::FABRIC_DEPLOYMENT_STATUS_DOWNLOADING => Self::Downloading,
+            FABRIC_DEPLOYMENT_STATUS::FABRIC_DEPLOYMENT_STATUS_ACTIVATING => Self::Activating,
+            FABRIC_DEPLOYMENT_STATUS::FABRIC_DEPLOYMENT_STATUS_ACTIVE => Self::Active,
+            FABRIC_DEPLOYMENT_STATUS::FABRIC_DEPLOYMENT_STATUS_UPGRADING => Self::Upgrading,
+            FABRIC_DEPLOYMENT_STATUS::FABRIC_DEPLOYMENT_STATUS_DEACTIVATING => Self::Deactivating,
+            FABRIC_DEPLOYMENT_STATUS::FABRIC_DEPLOYMENT_STATUS_RAN_TO_COMPLETION => {
+                Self::RanToCompletion
+            }
+            FABRIC_DEPLOYMENT_STATUS::FABRIC_DEPLOYMENT_STATUS_FAILED => Self::Failed,
+            FABRIC_DEPLOYMENT_STATUS::FABRIC_DEPLOYMENT_STATUS_INVALID => Self::Invalid,
             _ => Self::Invalid,
         }
     }
@@ -332,7 +330,7 @@ mod tests {
         let manifest_version = WString::from("1.0.0");
         let activation_id = WString::from("activation-1");
         let ex2 = FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX2 {
-            HealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
+            HealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE::FABRIC_HEALTH_STATE_OK,
             Reserved: std::ptr::null_mut(),
         };
         let ex1 = FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM_EX1 {
@@ -342,7 +340,7 @@ mod tests {
         let raw = FABRIC_DEPLOYED_SERVICE_PACKAGE_QUERY_RESULT_ITEM {
             ServiceManifestName: manifest_name.as_pcwstr(),
             ServiceManifestVersion: manifest_version.as_pcwstr(),
-            DeployedServicePackageStatus: FABRIC_DEPLOYMENT_STATUS_ACTIVE,
+            DeployedServicePackageStatus: FABRIC_DEPLOYMENT_STATUS::FABRIC_DEPLOYMENT_STATUS_ACTIVE,
             Reserved: std::ptr::addr_of!(ex1) as *mut _,
         };
         let item = DeployedServicePackageQueryResultItem::from(&raw);

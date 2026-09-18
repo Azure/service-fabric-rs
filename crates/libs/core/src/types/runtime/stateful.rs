@@ -10,11 +10,8 @@ use std::{ffi::c_void, marker::PhantomData};
 use crate::{PCWSTR, WString};
 use mssf_com::FabricTypes::{
     FABRIC_EPOCH, FABRIC_REPLICA_ID, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1,
-    FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_OPEN_MODE_EXISTING, FABRIC_REPLICA_OPEN_MODE_INVALID,
-    FABRIC_REPLICA_OPEN_MODE_NEW, FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_ALL,
-    FABRIC_REPLICA_SET_QUORUM_INVALID, FABRIC_REPLICA_SET_QUORUM_MODE,
-    FABRIC_REPLICA_SET_WRITE_QUORUM, FABRIC_REPLICA_STATUS, FABRIC_REPLICA_STATUS_DOWN,
-    FABRIC_REPLICA_STATUS_INVALID, FABRIC_REPLICA_STATUS_UP, FABRIC_SEQUENCE_NUMBER,
+    FABRIC_REPLICA_OPEN_MODE, FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_MODE,
+    FABRIC_REPLICA_STATUS, FABRIC_SEQUENCE_NUMBER,
 };
 
 use crate::types::ReplicaRole;
@@ -29,8 +26,8 @@ pub enum OpenMode {
 impl From<FABRIC_REPLICA_OPEN_MODE> for OpenMode {
     fn from(e: FABRIC_REPLICA_OPEN_MODE) -> Self {
         match e {
-            FABRIC_REPLICA_OPEN_MODE_EXISTING => OpenMode::Existing,
-            FABRIC_REPLICA_OPEN_MODE_NEW => OpenMode::New,
+            FABRIC_REPLICA_OPEN_MODE::FABRIC_REPLICA_OPEN_MODE_EXISTING => OpenMode::Existing,
+            FABRIC_REPLICA_OPEN_MODE::FABRIC_REPLICA_OPEN_MODE_NEW => OpenMode::New,
             _ => OpenMode::Invald,
         }
     }
@@ -38,9 +35,9 @@ impl From<FABRIC_REPLICA_OPEN_MODE> for OpenMode {
 impl From<OpenMode> for FABRIC_REPLICA_OPEN_MODE {
     fn from(val: OpenMode) -> Self {
         match val {
-            OpenMode::Invald => FABRIC_REPLICA_OPEN_MODE_INVALID,
-            OpenMode::Existing => FABRIC_REPLICA_OPEN_MODE_EXISTING,
-            OpenMode::New => FABRIC_REPLICA_OPEN_MODE_NEW,
+            OpenMode::Invald => FABRIC_REPLICA_OPEN_MODE::FABRIC_REPLICA_OPEN_MODE_INVALID,
+            OpenMode::Existing => FABRIC_REPLICA_OPEN_MODE::FABRIC_REPLICA_OPEN_MODE_EXISTING,
+            OpenMode::New => FABRIC_REPLICA_OPEN_MODE::FABRIC_REPLICA_OPEN_MODE_NEW,
         }
     }
 }
@@ -117,9 +114,9 @@ pub enum ReplicaStatus {
 impl From<ReplicaStatus> for FABRIC_REPLICA_STATUS {
     fn from(val: ReplicaStatus) -> Self {
         match val {
-            ReplicaStatus::Invalid => FABRIC_REPLICA_STATUS_INVALID,
-            ReplicaStatus::Down => FABRIC_REPLICA_STATUS_DOWN,
-            ReplicaStatus::Up => FABRIC_REPLICA_STATUS_UP,
+            ReplicaStatus::Invalid => FABRIC_REPLICA_STATUS::FABRIC_REPLICA_STATUS_INVALID,
+            ReplicaStatus::Down => FABRIC_REPLICA_STATUS::FABRIC_REPLICA_STATUS_DOWN,
+            ReplicaStatus::Up => FABRIC_REPLICA_STATUS::FABRIC_REPLICA_STATUS_UP,
         }
     }
 }
@@ -127,9 +124,9 @@ impl From<ReplicaStatus> for FABRIC_REPLICA_STATUS {
 impl From<FABRIC_REPLICA_STATUS> for ReplicaStatus {
     fn from(r: FABRIC_REPLICA_STATUS) -> Self {
         match r {
-            FABRIC_REPLICA_STATUS_INVALID => ReplicaStatus::Invalid,
-            FABRIC_REPLICA_STATUS_DOWN => ReplicaStatus::Down,
-            FABRIC_REPLICA_STATUS_UP => ReplicaStatus::Up,
+            FABRIC_REPLICA_STATUS::FABRIC_REPLICA_STATUS_INVALID => ReplicaStatus::Invalid,
+            FABRIC_REPLICA_STATUS::FABRIC_REPLICA_STATUS_DOWN => ReplicaStatus::Down,
+            FABRIC_REPLICA_STATUS::FABRIC_REPLICA_STATUS_UP => ReplicaStatus::Up,
             _ => ReplicaStatus::Invalid,
         }
     }
@@ -279,9 +276,15 @@ pub enum ReplicaSetQuorumMode {
 impl From<FABRIC_REPLICA_SET_QUORUM_MODE> for ReplicaSetQuorumMode {
     fn from(r: FABRIC_REPLICA_SET_QUORUM_MODE) -> Self {
         match r {
-            FABRIC_REPLICA_SET_QUORUM_ALL => ReplicaSetQuorumMode::All,
-            FABRIC_REPLICA_SET_QUORUM_INVALID => ReplicaSetQuorumMode::Invalid,
-            FABRIC_REPLICA_SET_WRITE_QUORUM => ReplicaSetQuorumMode::Write,
+            FABRIC_REPLICA_SET_QUORUM_MODE::FABRIC_REPLICA_SET_QUORUM_ALL => {
+                ReplicaSetQuorumMode::All
+            }
+            FABRIC_REPLICA_SET_QUORUM_MODE::FABRIC_REPLICA_SET_QUORUM_INVALID => {
+                ReplicaSetQuorumMode::Invalid
+            }
+            FABRIC_REPLICA_SET_QUORUM_MODE::FABRIC_REPLICA_SET_WRITE_QUORUM => {
+                ReplicaSetQuorumMode::Write
+            }
             _ => ReplicaSetQuorumMode::Invalid,
         }
     }
@@ -290,9 +293,15 @@ impl From<FABRIC_REPLICA_SET_QUORUM_MODE> for ReplicaSetQuorumMode {
 impl From<ReplicaSetQuorumMode> for FABRIC_REPLICA_SET_QUORUM_MODE {
     fn from(val: ReplicaSetQuorumMode) -> Self {
         match val {
-            ReplicaSetQuorumMode::All => FABRIC_REPLICA_SET_QUORUM_ALL,
-            ReplicaSetQuorumMode::Invalid => FABRIC_REPLICA_SET_QUORUM_INVALID,
-            ReplicaSetQuorumMode::Write => FABRIC_REPLICA_SET_WRITE_QUORUM,
+            ReplicaSetQuorumMode::All => {
+                FABRIC_REPLICA_SET_QUORUM_MODE::FABRIC_REPLICA_SET_QUORUM_ALL
+            }
+            ReplicaSetQuorumMode::Invalid => {
+                FABRIC_REPLICA_SET_QUORUM_MODE::FABRIC_REPLICA_SET_QUORUM_INVALID
+            }
+            ReplicaSetQuorumMode::Write => {
+                FABRIC_REPLICA_SET_QUORUM_MODE::FABRIC_REPLICA_SET_WRITE_QUORUM
+            }
         }
     }
 }
@@ -304,7 +313,7 @@ mod test {
     use crate::WString;
     use mssf_com::FabricTypes::{
         FABRIC_REPLICA_ID, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_INFORMATION_EX1,
-        FABRIC_REPLICA_ROLE_PRIMARY, FABRIC_REPLICA_STATUS_UP, FABRIC_SEQUENCE_NUMBER,
+        FABRIC_REPLICA_ROLE, FABRIC_REPLICA_STATUS, FABRIC_SEQUENCE_NUMBER,
     };
 
     use super::{Epoch, ReplicaInformation, ReplicaSetConfig};
@@ -317,8 +326,8 @@ mod test {
         };
         let info = FABRIC_REPLICA_INFORMATION {
             Id: FABRIC_REPLICA_ID(id),
-            Role: FABRIC_REPLICA_ROLE_PRIMARY,
-            Status: FABRIC_REPLICA_STATUS_UP,
+            Role: FABRIC_REPLICA_ROLE::FABRIC_REPLICA_ROLE_PRIMARY,
+            Status: FABRIC_REPLICA_STATUS::FABRIC_REPLICA_STATUS_UP,
             ReplicatorAddress: crate::PCWSTR::null(),
             CurrentProgress: FABRIC_SEQUENCE_NUMBER(123),
             CatchUpCapability: FABRIC_SEQUENCE_NUMBER(123),

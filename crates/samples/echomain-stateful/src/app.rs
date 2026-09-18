@@ -21,8 +21,8 @@ use mssf_com::FabricRuntime::{
 };
 use mssf_com::FabricTypes::{
     FABRIC_EPOCH, FABRIC_REPLICA_ID, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_OPEN_MODE,
-    FABRIC_REPLICA_OPEN_MODE_INVALID, FABRIC_REPLICA_ROLE, FABRIC_REPLICA_SET_CONFIGURATION,
-    FABRIC_REPLICA_SET_QUORUM_MODE, FABRIC_SEQUENCE_NUMBER, FABRIC_URI,
+    FABRIC_REPLICA_ROLE, FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_MODE,
+    FABRIC_SEQUENCE_NUMBER, FABRIC_URI,
 };
 use mssf_core::WString;
 use mssf_core::sync::wait::AsyncContext;
@@ -343,7 +343,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
     ) -> ::mssf_core::WinResult<IFabricAsyncOperationContext> {
         info!("echo_replica::BeginOpen");
 
-        if openmode == FABRIC_REPLICA_OPEN_MODE_INVALID {
+        if openmode == FABRIC_REPLICA_OPEN_MODE::FABRIC_REPLICA_OPEN_MODE_INVALID {
             //TODO: return error
         }
 

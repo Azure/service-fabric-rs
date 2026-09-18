@@ -40,11 +40,11 @@ pub struct ApplicationQueryDescription {
 bitflags::bitflags! {
     #[derive(Debug, Clone, Copy)]
     pub struct ApplicationDefinitionKindFilter: i32 {
-        const All = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_FILTER_ALL.0;
-        const Compose = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_FILTER_COMPOSE.0;
-        const Default = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_FILTER_DEFAULT.0;
-        const MeshApplicationDescription = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_FILTER_MESH_APPLICATION_DESCRIPTION.0;
-        const ServiceFabricApplicationDescription = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_FILTER_SERVICE_FABRIC_APPLICATION_DESCRIPTION.0;
+        const All = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_FILTER::FABRIC_APPLICATION_DEFINITION_KIND_FILTER_ALL.0;
+        const Compose = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_FILTER::FABRIC_APPLICATION_DEFINITION_KIND_FILTER_COMPOSE.0;
+        const Default = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_FILTER::FABRIC_APPLICATION_DEFINITION_KIND_FILTER_DEFAULT.0;
+        const MeshApplicationDescription = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_FILTER::FABRIC_APPLICATION_DEFINITION_KIND_FILTER_MESH_APPLICATION_DESCRIPTION.0;
+        const ServiceFabricApplicationDescription = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_FILTER::FABRIC_APPLICATION_DEFINITION_KIND_FILTER_SERVICE_FABRIC_APPLICATION_DESCRIPTION.0;
     }
 }
 impl Default for ApplicationDefinitionKindFilter {
@@ -57,26 +57,25 @@ impl Default for ApplicationDefinitionKindFilter {
 #[derive(Debug, Clone, Copy)]
 #[repr(i32)]
 pub enum ApplicationDefinitionKind {
-    Invalid = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_INVALID.0,
-    ServiceFabricApplicationDescription = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_SERVICE_FABRIC_APPLICATION_DESCRIPTION.0,
-    Compose = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_COMPOSE.0,
-    MeshApplicationDescription =
-        mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_MESH_APPLICATION_DESCRIPTION.0,
+    Invalid = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND::FABRIC_APPLICATION_DEFINITION_KIND_INVALID.0,
+    ServiceFabricApplicationDescription = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND::FABRIC_APPLICATION_DEFINITION_KIND_SERVICE_FABRIC_APPLICATION_DESCRIPTION.0,
+    Compose = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND::FABRIC_APPLICATION_DEFINITION_KIND_COMPOSE.0,
+    MeshApplicationDescription = mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND::FABRIC_APPLICATION_DEFINITION_KIND_MESH_APPLICATION_DESCRIPTION.0,
 }
 
 impl From<FABRIC_APPLICATION_DEFINITION_KIND> for ApplicationDefinitionKind {
     fn from(value: FABRIC_APPLICATION_DEFINITION_KIND) -> Self {
         match value {
-            mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_INVALID => {
+            mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND::FABRIC_APPLICATION_DEFINITION_KIND_INVALID => {
                 ApplicationDefinitionKind::Invalid
             }
-            mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_SERVICE_FABRIC_APPLICATION_DESCRIPTION => {
+            mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND::FABRIC_APPLICATION_DEFINITION_KIND_SERVICE_FABRIC_APPLICATION_DESCRIPTION => {
                 ApplicationDefinitionKind::ServiceFabricApplicationDescription
             }
-            mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_COMPOSE => {
+            mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND::FABRIC_APPLICATION_DEFINITION_KIND_COMPOSE => {
                 ApplicationDefinitionKind::Compose
             }
-            mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND_MESH_APPLICATION_DESCRIPTION => {
+            mssf_com::FabricTypes::FABRIC_APPLICATION_DEFINITION_KIND::FABRIC_APPLICATION_DEFINITION_KIND_MESH_APPLICATION_DESCRIPTION => {
                 ApplicationDefinitionKind::MeshApplicationDescription
             }
             _ => ApplicationDefinitionKind::Invalid,
@@ -88,27 +87,30 @@ impl From<FABRIC_APPLICATION_DEFINITION_KIND> for ApplicationDefinitionKind {
 #[derive(Debug, Clone, Copy)]
 #[repr(i32)]
 pub enum ApplicationStatus {
-    Creating = mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_CREATING.0,
-    Deleting = mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_DELETING.0,
-    Failed = mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_FAILED.0,
-    Invalid = mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_INVALID.0,
-    Ready = mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_READY.0,
-    Upgrading = mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_UPGRADING.0,
+    Creating =
+        mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_CREATING.0,
+    Deleting =
+        mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_DELETING.0,
+    Failed = mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_FAILED.0,
+    Invalid = mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_INVALID.0,
+    Ready = mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_READY.0,
+    Upgrading =
+        mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_UPGRADING.0,
 }
 
 impl From<FABRIC_APPLICATION_STATUS> for ApplicationStatus {
     fn from(value: FABRIC_APPLICATION_STATUS) -> Self {
         match value {
-            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_CREATING => {
+            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_CREATING => {
                 ApplicationStatus::Creating
             }
-            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_DELETING => {
+            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_DELETING => {
                 ApplicationStatus::Deleting
             }
-            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_FAILED => ApplicationStatus::Failed,
-            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_INVALID => ApplicationStatus::Invalid,
-            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_READY => ApplicationStatus::Ready,
-            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS_UPGRADING => {
+            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_FAILED => ApplicationStatus::Failed,
+            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_INVALID => ApplicationStatus::Invalid,
+            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_READY => ApplicationStatus::Ready,
+            mssf_com::FabricTypes::FABRIC_APPLICATION_STATUS::FABRIC_APPLICATION_STATUS_UPGRADING => {
                 ApplicationStatus::Upgrading
             }
             _ => ApplicationStatus::Invalid,

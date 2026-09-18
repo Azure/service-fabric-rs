@@ -10,10 +10,7 @@ use mssf_com::{
         IFabricClientSettings_Impl, IFabricClientSettings2, IFabricClientSettings2_Impl,
         IFabricClientSettingsResult,
     },
-    FabricTypes::{
-        FABRIC_CLIENT_SETTINGS, FABRIC_E_INVALID_CONFIGURATION, FABRIC_E_INVALID_CREDENTIALS,
-        FABRIC_SECURITY_CREDENTIALS,
-    },
+    FabricTypes::{FABRIC_CLIENT_SETTINGS, FABRIC_ERROR_CODE, FABRIC_SECURITY_CREDENTIALS},
 };
 pub(crate) mod test_constants {
     pub const TEST_SERVER_NAME_1: &str = "test.contoso.com";
@@ -84,16 +81,16 @@ impl MockIFabricClientSettings {
     pub fn new_all_methods_fail() -> Self {
         Self {
             set_security_credentials_mock: Box::new(|_| {
-                Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS).into())
+                Err(crate::Error::from(FABRIC_ERROR_CODE::FABRIC_E_INVALID_CREDENTIALS).into())
             }),
             set_keepalive_mock: Box::new(|_| {
-                Err(crate::Error::from(FABRIC_E_INVALID_CONFIGURATION).into())
+                Err(crate::Error::from(FABRIC_ERROR_CODE::FABRIC_E_INVALID_CONFIGURATION).into())
             }),
             get_settings_mock: Box::new(|| {
-                Err(crate::Error::from(FABRIC_E_INVALID_CONFIGURATION).into())
+                Err(crate::Error::from(FABRIC_ERROR_CODE::FABRIC_E_INVALID_CONFIGURATION).into())
             }),
             set_settings_mock: Box::new(|_| {
-                Err(crate::Error::from(FABRIC_E_INVALID_CONFIGURATION).into())
+                Err(crate::Error::from(FABRIC_ERROR_CODE::FABRIC_E_INVALID_CONFIGURATION).into())
             }),
         }
     }

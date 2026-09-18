@@ -215,7 +215,7 @@ pub enum ClaimsRetrievalMetadata {
 impl From<&FABRIC_CLAIMS_RETRIEVAL_METADATA> for ClaimsRetrievalMetadata {
     fn from(value: &FABRIC_CLAIMS_RETRIEVAL_METADATA) -> Self {
         match value.Kind {
-            mssf_com::FabricTypes::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND_AAD => {
+            mssf_com::FabricTypes::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND_AAD => {
                 let aad_meta = unsafe {
                     (value.Value
                         as *const mssf_com::FabricTypes::FABRIC_AAD_ClAIMS_RETRIEVAL_METADATA)
@@ -237,7 +237,7 @@ impl From<&FABRIC_CLAIMS_RETRIEVAL_METADATA> for ClaimsRetrievalMetadata {
                     login_endpoint: ex1.map_or(WString::new(), |v| WString::from(v.LoginEndpoint)),
                 })
             }
-            mssf_com::FabricTypes::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND_NONE => {
+            mssf_com::FabricTypes::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND_NONE => {
                 ClaimsRetrievalMetadata::None
             }
             _ => ClaimsRetrievalMetadata::None,

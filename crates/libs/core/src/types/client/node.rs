@@ -19,11 +19,7 @@ use mssf_com::{
         FABRIC_NODE_QUERY_RESULT_ITEM_EX4, FABRIC_NODE_QUERY_RESULT_ITEM_EX5,
         FABRIC_NODE_QUERY_RESULT_ITEM_EX6, FABRIC_NODE_QUERY_RESULT_ITEM_EX7,
         FABRIC_NODE_QUERY_RESULT_ITEM_EX8, FABRIC_NODE_QUERY_RESULT_ITEM_EX9, FABRIC_PAGING_STATUS,
-        FABRIC_QUERY_NODE_STATUS_FILTER_ALL, FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT,
-        FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED, FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING,
-        FABRIC_QUERY_NODE_STATUS_FILTER_DOWN, FABRIC_QUERY_NODE_STATUS_FILTER_ENABLING,
-        FABRIC_QUERY_NODE_STATUS_FILTER_REMOVED, FABRIC_QUERY_NODE_STATUS_FILTER_UNKNOWN,
-        FABRIC_QUERY_NODE_STATUS_FILTER_UP,
+        FABRIC_QUERY_NODE_STATUS_FILTER,
     },
 };
 use std::ffi::c_void;
@@ -51,15 +47,15 @@ pub struct PagedQueryDescription {
 bitflags! {
     #[derive(Debug)]
     pub struct NodeStatusFilter: u32{
-        const All = FABRIC_QUERY_NODE_STATUS_FILTER_ALL.0 as u32;
-        const Default = FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT.0 as u32;
-        const Disabled = FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED.0 as u32;
-        const Disabling = FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING.0 as u32;
-        const Down = FABRIC_QUERY_NODE_STATUS_FILTER_DOWN.0 as u32;
-        const Enabling = FABRIC_QUERY_NODE_STATUS_FILTER_ENABLING.0 as u32;
-        const Removed = FABRIC_QUERY_NODE_STATUS_FILTER_REMOVED.0 as u32;
-        const Unknown = FABRIC_QUERY_NODE_STATUS_FILTER_UNKNOWN.0 as u32;
-        const Up = FABRIC_QUERY_NODE_STATUS_FILTER_UP.0 as u32;
+        const All = FABRIC_QUERY_NODE_STATUS_FILTER::FABRIC_QUERY_NODE_STATUS_FILTER_ALL.0 as u32;
+        const Default = FABRIC_QUERY_NODE_STATUS_FILTER::FABRIC_QUERY_NODE_STATUS_FILTER_DEFAULT.0 as u32;
+        const Disabled = FABRIC_QUERY_NODE_STATUS_FILTER::FABRIC_QUERY_NODE_STATUS_FILTER_DISABLED.0 as u32;
+        const Disabling = FABRIC_QUERY_NODE_STATUS_FILTER::FABRIC_QUERY_NODE_STATUS_FILTER_DISABLING.0 as u32;
+        const Down = FABRIC_QUERY_NODE_STATUS_FILTER::FABRIC_QUERY_NODE_STATUS_FILTER_DOWN.0 as u32;
+        const Enabling = FABRIC_QUERY_NODE_STATUS_FILTER::FABRIC_QUERY_NODE_STATUS_FILTER_ENABLING.0 as u32;
+        const Removed = FABRIC_QUERY_NODE_STATUS_FILTER::FABRIC_QUERY_NODE_STATUS_FILTER_REMOVED.0 as u32;
+        const Unknown = FABRIC_QUERY_NODE_STATUS_FILTER::FABRIC_QUERY_NODE_STATUS_FILTER_UNKNOWN.0 as u32;
+        const Up = FABRIC_QUERY_NODE_STATUS_FILTER::FABRIC_QUERY_NODE_STATUS_FILTER_UP.0 as u32;
     }
 }
 
@@ -223,25 +219,40 @@ impl From<FABRIC_NODE_ID> for NodeId {
 #[derive(Debug, Clone, Copy)]
 #[repr(i32)]
 pub enum NodeStatus {
-    Up = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_UP.0,
-    Down = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DOWN.0,
-    Enabling = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_ENABLING.0,
-    Disabled = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DISABLED.0,
-    Disabling = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DISABLING.0,
-    Removed = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_REMOVED.0,
-    Unknown = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_UNKNOWN.0,
-    Invalid = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_INVALID.0,
+    Up = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_UP.0,
+    Down = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_DOWN.0,
+    Enabling = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_ENABLING.0,
+    Disabled = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_DISABLED.0,
+    Disabling =
+        mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_DISABLING.0,
+    Removed = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_REMOVED.0,
+    Unknown = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_UNKNOWN.0,
+    Invalid = mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_INVALID.0,
 }
 impl From<FABRIC_QUERY_NODE_STATUS> for NodeStatus {
     fn from(value: FABRIC_QUERY_NODE_STATUS) -> Self {
         match value {
-            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_UP => NodeStatus::Up,
-            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DOWN => NodeStatus::Down,
-            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_ENABLING => NodeStatus::Enabling,
-            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DISABLED => NodeStatus::Disabled,
-            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_DISABLING => NodeStatus::Disabling,
-            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_REMOVED => NodeStatus::Removed,
-            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_UNKNOWN => NodeStatus::Unknown,
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_UP => {
+                NodeStatus::Up
+            }
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_DOWN => {
+                NodeStatus::Down
+            }
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_ENABLING => {
+                NodeStatus::Enabling
+            }
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_DISABLED => {
+                NodeStatus::Disabled
+            }
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_DISABLING => {
+                NodeStatus::Disabling
+            }
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_REMOVED => {
+                NodeStatus::Removed
+            }
+            mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_UNKNOWN => {
+                NodeStatus::Unknown
+            }
             _ => NodeStatus::Invalid,
         }
     }
@@ -317,9 +328,11 @@ mod tests {
             NodeType: node_type.as_pcwstr(),
             CodeVersion: code_version.as_pcwstr(),
             ConfigVersion: config_version.as_pcwstr(),
-            NodeStatus: mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS_UP,
+            NodeStatus:
+                mssf_com::FabricTypes::FABRIC_QUERY_NODE_STATUS::FABRIC_QUERY_NODE_STATUS_UP,
             NodeUpTimeInSeconds: 555,
-            AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
+            AggregatedHealthState:
+                mssf_com::FabricTypes::FABRIC_HEALTH_STATE::FABRIC_HEALTH_STATE_OK,
             IsSeedNode: true,
             UpgradeDomain: upgrade_domain.as_pcwstr(),
             FaultDomain: fault_domain.as_raw(),

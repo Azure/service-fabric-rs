@@ -158,11 +158,11 @@ bitflags::bitflags! {
     /// bitflag of FABRIC_HEALTH_STATE_FILTER
     #[derive(Debug, Clone)]
     pub struct HealthStateFilterFlags: i32{
-        const ALL = mssf_com::FabricTypes::FABRIC_HEALTH_STATE_FILTER_ALL.0;
-        const ERROR = mssf_com::FabricTypes::FABRIC_HEALTH_STATE_FILTER_ERROR.0;
-        const WARNING = mssf_com::FabricTypes::FABRIC_HEALTH_STATE_FILTER_WARNING.0;
-        const OK = mssf_com::FabricTypes::FABRIC_HEALTH_STATE_FILTER_OK.0;
-        const NONE = mssf_com::FabricTypes::FABRIC_HEALTH_STATE_FILTER_NONE.0;
+        const ALL = mssf_com::FabricTypes::FABRIC_HEALTH_STATE_FILTER::FABRIC_HEALTH_STATE_FILTER_ALL.0;
+        const ERROR = mssf_com::FabricTypes::FABRIC_HEALTH_STATE_FILTER::FABRIC_HEALTH_STATE_FILTER_ERROR.0;
+        const WARNING = mssf_com::FabricTypes::FABRIC_HEALTH_STATE_FILTER::FABRIC_HEALTH_STATE_FILTER_WARNING.0;
+        const OK = mssf_com::FabricTypes::FABRIC_HEALTH_STATE_FILTER::FABRIC_HEALTH_STATE_FILTER_OK.0;
+        const NONE = mssf_com::FabricTypes::FABRIC_HEALTH_STATE_FILTER::FABRIC_HEALTH_STATE_FILTER_NONE.0;
     }
 }
 

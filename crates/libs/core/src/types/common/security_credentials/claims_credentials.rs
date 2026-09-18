@@ -8,8 +8,8 @@
 use std::{ffi::c_void, ptr::addr_of_mut};
 
 use mssf_com::FabricTypes::{
-    FABRIC_CLAIMS_CREDENTIALS, FABRIC_CLAIMS_CREDENTIALS_EX1,
-    FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS, FABRIC_SECURITY_CREDENTIALS,
+    FABRIC_CLAIMS_CREDENTIALS, FABRIC_CLAIMS_CREDENTIALS_EX1, FABRIC_SECURITY_CREDENTIAL_KIND,
+    FABRIC_SECURITY_CREDENTIALS,
 };
 use windows_core::{PCWSTR, WString};
 
@@ -80,7 +80,7 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
         };
 
         let security_credentials = FABRIC_SECURITY_CREDENTIALS {
-            Kind: FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS,
+            Kind: FABRIC_SECURITY_CREDENTIAL_KIND::FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS,
             Value: addr_of_mut!(value) as *mut c_void,
         };
 
@@ -97,10 +97,7 @@ impl FabricSecurityCredentialKind for FabricClaimsCredentials {
 #[cfg(test)]
 mod test {
     use mssf_com::FabricClient::IFabricClientSettings2;
-    use mssf_com::FabricTypes::{
-        FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN,
-        FABRIC_PROTECTION_LEVEL_SIGN,
-    };
+    use mssf_com::FabricTypes::{FABRIC_ERROR_CODE, FABRIC_PROTECTION_LEVEL};
     use std::sync::{Arc, Mutex};
 
     use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
@@ -141,7 +138,9 @@ mod test {
         let result = creds.apply_inner(mock.into());
         assert_eq!(
             result,
-            Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
+            Err(crate::Error::from(
+                FABRIC_ERROR_CODE::FABRIC_E_INVALID_CREDENTIALS
+            ))
         )
     }
 
@@ -152,7 +151,9 @@ mod test {
         let result = creds.apply_inner(mock);
         assert_eq!(
             result,
-            Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
+            Err(crate::Error::from(
+                FABRIC_ERROR_CODE::FABRIC_E_INVALID_CREDENTIALS
+            ))
         )
     }
 
@@ -166,7 +167,10 @@ mod test {
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
                 let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
-                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS);
+                assert_eq!(
+                    creds_ref.Kind,
+                    FABRIC_SECURITY_CREDENTIAL_KIND::FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS
+                );
 
                 let value = creds_ref.Value as *const FABRIC_CLAIMS_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
@@ -181,7 +185,10 @@ mod test {
                     )
                 };
                 value_ref.LocalClaims.is_null();
-                assert_eq!(value_ref.ProtectionLevel, FABRIC_PROTECTION_LEVEL_SIGN);
+                assert_eq!(
+                    value_ref.ProtectionLevel,
+                    FABRIC_PROTECTION_LEVEL::FABRIC_PROTECTION_LEVEL_SIGN
+                );
                 // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
                 unsafe {
                     check_array_parameter(
@@ -227,7 +234,10 @@ mod test {
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
                 let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
-                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS);
+                assert_eq!(
+                    creds_ref.Kind,
+                    FABRIC_SECURITY_CREDENTIAL_KIND::FABRIC_SECURITY_CREDENTIAL_KIND_CLAIMS
+                );
 
                 let value = creds_ref.Value as *const FABRIC_CLAIMS_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
@@ -247,7 +257,7 @@ mod test {
 
                 assert_eq!(
                     value_ref.ProtectionLevel,
-                    FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
+                    FABRIC_PROTECTION_LEVEL::FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
                 );
                 // SAFETY: ServerCommonNameCount and ServerCommonNames go together. Should be valid for dereference.
                 unsafe {

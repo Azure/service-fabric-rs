@@ -134,10 +134,10 @@ impl CodePackageActivationContext {
     /// If the report has high priority, you can specify send options to send it immediately.
     ///
     /// Possible Errors:
-    ///     FABRIC_E_HEALTH_STALE_REPORT:
+    ///     FABRIC_ERROR_CODE::FABRIC_E_HEALTH_STALE_REPORT:
     ///         HealthReport already exist for the same entity,
     ///         SourceId and Property with same or higher SequenceNumber.
-    ///     FABRIC_E_HEALTH_MAX_REPORTS_REACHED:
+    ///     FABRIC_ERROR_CODE::FABRIC_E_HEALTH_MAX_REPORTS_REACHED:
     ///         HeathClient has reached the maximum number of health reports
     ///         that can accept for processing. More reports will be accepted when progress is done
     ///         with the currently accepted reports. By default, the FabricClient.HealthClient can accept 10000 different reports.

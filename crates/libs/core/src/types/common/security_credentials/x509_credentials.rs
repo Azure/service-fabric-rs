@@ -12,11 +12,8 @@
 use std::{ffi::c_void, ptr::addr_of_mut};
 
 use mssf_com::FabricTypes::{
-    FABRIC_PROTECTION_LEVEL, FABRIC_SECURITY_CREDENTIAL_KIND_X509, FABRIC_SECURITY_CREDENTIALS,
-    FABRIC_X509_CREDENTIALS, FABRIC_X509_FIND_TYPE, FABRIC_X509_FIND_TYPE_FINDBYEXTENSION,
-    FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME, FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT,
-    FABRIC_X509_STORE_LOCATION, FABRIC_X509_STORE_LOCATION_CURRENTUSER,
-    FABRIC_X509_STORE_LOCATION_INVALID, FABRIC_X509_STORE_LOCATION_LOCALMACHINE,
+    FABRIC_PROTECTION_LEVEL, FABRIC_SECURITY_CREDENTIAL_KIND, FABRIC_SECURITY_CREDENTIALS,
+    FABRIC_X509_CREDENTIALS, FABRIC_X509_FIND_TYPE, FABRIC_X509_STORE_LOCATION,
 };
 use windows_core::{PCWSTR, WString};
 
@@ -34,13 +31,13 @@ impl From<&FabricX509FindType> for FABRIC_X509_FIND_TYPE {
     fn from(value: &FabricX509FindType) -> Self {
         match value {
             FabricX509FindType::FindByExtension { extension: _ } => {
-                FABRIC_X509_FIND_TYPE_FINDBYEXTENSION
+                FABRIC_X509_FIND_TYPE::FABRIC_X509_FIND_TYPE_FINDBYEXTENSION
             }
             FabricX509FindType::FindBySubjectName { subject_name: _ } => {
-                FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME
+                FABRIC_X509_FIND_TYPE::FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME
             }
             FabricX509FindType::FindByThumbprint { thumbprint: _ } => {
-                FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT
+                FABRIC_X509_FIND_TYPE::FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT
             }
         }
     }
@@ -66,9 +63,13 @@ impl TryFrom<FABRIC_X509_STORE_LOCATION> for FabricX509StoreLocation {
 
     fn try_from(value: FABRIC_X509_STORE_LOCATION) -> Result<Self, Self::Error> {
         match value {
-            FABRIC_X509_STORE_LOCATION_CURRENTUSER => Ok(FabricX509StoreLocation::CurrentUser),
-            FABRIC_X509_STORE_LOCATION_LOCALMACHINE => Ok(FabricX509StoreLocation::LocalMachine),
-            FABRIC_X509_STORE_LOCATION_INVALID => {
+            FABRIC_X509_STORE_LOCATION::FABRIC_X509_STORE_LOCATION_CURRENTUSER => {
+                Ok(FabricX509StoreLocation::CurrentUser)
+            }
+            FABRIC_X509_STORE_LOCATION::FABRIC_X509_STORE_LOCATION_LOCALMACHINE => {
+                Ok(FabricX509StoreLocation::LocalMachine)
+            }
+            FABRIC_X509_STORE_LOCATION::FABRIC_X509_STORE_LOCATION_INVALID => {
                 Err(FabricX509StoreLocationConversionError::InvalidValue)
             }
             x => Err(FabricX509StoreLocationConversionError::UnknownValue(x)),
@@ -79,8 +80,12 @@ impl TryFrom<FABRIC_X509_STORE_LOCATION> for FabricX509StoreLocation {
 impl From<FabricX509StoreLocation> for FABRIC_X509_STORE_LOCATION {
     fn from(value: FabricX509StoreLocation) -> Self {
         match value {
-            FabricX509StoreLocation::CurrentUser => FABRIC_X509_STORE_LOCATION_CURRENTUSER,
-            FabricX509StoreLocation::LocalMachine => FABRIC_X509_STORE_LOCATION_LOCALMACHINE,
+            FabricX509StoreLocation::CurrentUser => {
+                FABRIC_X509_STORE_LOCATION::FABRIC_X509_STORE_LOCATION_CURRENTUSER
+            }
+            FabricX509StoreLocation::LocalMachine => {
+                FABRIC_X509_STORE_LOCATION::FABRIC_X509_STORE_LOCATION_LOCALMACHINE
+            }
         }
     }
 }
@@ -137,7 +142,7 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
             Reserved: std::ptr::null_mut(),
         };
         let security_credentials = FABRIC_SECURITY_CREDENTIALS {
-            Kind: FABRIC_SECURITY_CREDENTIAL_KIND_X509,
+            Kind: FABRIC_SECURITY_CREDENTIAL_KIND::FABRIC_SECURITY_CREDENTIAL_KIND_X509,
             Value: addr_of_mut!(value) as *mut c_void,
         };
 
@@ -154,10 +159,7 @@ impl FabricSecurityCredentialKind for FabricX509Credentials {
 #[cfg(test)]
 mod test {
     use mssf_com::FabricClient::IFabricClientSettings2;
-    use mssf_com::FabricTypes::{
-        FABRIC_E_INVALID_CREDENTIALS, FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN,
-        FABRIC_PROTECTION_LEVEL_NONE,
-    };
+    use mssf_com::FabricTypes::{FABRIC_ERROR_CODE, FABRIC_PROTECTION_LEVEL};
     use std::sync::{Arc, Mutex};
 
     use crate::types::mockifabricclientsettings::MockIFabricClientSettings;
@@ -201,7 +203,9 @@ mod test {
         let result = creds.apply_inner(mock.into());
         assert_eq!(
             result,
-            Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
+            Err(crate::Error::from(
+                FABRIC_ERROR_CODE::FABRIC_E_INVALID_CREDENTIALS
+            ))
         )
     }
 
@@ -212,7 +216,9 @@ mod test {
         let result = creds.apply_inner(mock);
         assert_eq!(
             result,
-            Err(crate::Error::from(FABRIC_E_INVALID_CREDENTIALS))
+            Err(crate::Error::from(
+                FABRIC_ERROR_CODE::FABRIC_E_INVALID_CREDENTIALS
+            ))
         )
     }
 
@@ -226,7 +232,10 @@ mod test {
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
                 let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
-                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_X509);
+                assert_eq!(
+                    creds_ref.Kind,
+                    FABRIC_SECURITY_CREDENTIAL_KIND::FABRIC_SECURITY_CREDENTIAL_KIND_X509
+                );
 
                 let value = creds_ref.Value as *const FABRIC_X509_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
@@ -241,14 +250,17 @@ mod test {
                     )
                 };
 
-                assert_eq!(value_ref.FindType, FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME);
+                assert_eq!(
+                    value_ref.FindType,
+                    FABRIC_X509_FIND_TYPE::FABRIC_X509_FIND_TYPE_FINDBYSUBJECTNAME
+                );
                 let find_val_ptr = value_ref.FindValue as *const u16;
                 assert!(!find_val_ptr.is_null() && find_val_ptr.is_aligned());
                 let val_str = WString::from(PCWSTR::from_raw(find_val_ptr)).to_string_lossy();
                 assert_eq!(val_str.as_str(), TEST_SERVER_NAME_1);
                 assert_eq!(
                     value_ref.StoreLocation,
-                    FABRIC_X509_STORE_LOCATION_CURRENTUSER
+                    FABRIC_X509_STORE_LOCATION::FABRIC_X509_STORE_LOCATION_CURRENTUSER
                 );
                 assert_eq!(
                     WString::from(value_ref.StoreName)
@@ -257,7 +269,10 @@ mod test {
                     TEST_STORE_2
                 );
 
-                assert_eq!(value_ref.ProtectionLevel, FABRIC_PROTECTION_LEVEL_NONE);
+                assert_eq!(
+                    value_ref.ProtectionLevel,
+                    FABRIC_PROTECTION_LEVEL::FABRIC_PROTECTION_LEVEL_NONE
+                );
                 assert!(value_ref.Reserved.is_null());
 
                 Ok(())
@@ -281,7 +296,10 @@ mod test {
                 assert!(!creds.is_null() && creds.is_aligned());
                 // SAFETY: test code. non-null and alignment is checked above
                 let creds_ref: &FABRIC_SECURITY_CREDENTIALS = unsafe { creds.as_ref() }.unwrap();
-                assert_eq!(creds_ref.Kind, FABRIC_SECURITY_CREDENTIAL_KIND_X509);
+                assert_eq!(
+                    creds_ref.Kind,
+                    FABRIC_SECURITY_CREDENTIAL_KIND::FABRIC_SECURITY_CREDENTIAL_KIND_X509
+                );
 
                 let value = creds_ref.Value as *const FABRIC_X509_CREDENTIALS;
                 assert!(!value.is_null() && value.is_aligned());
@@ -296,14 +314,17 @@ mod test {
                     )
                 };
 
-                assert_eq!(value_ref.FindType, FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT);
+                assert_eq!(
+                    value_ref.FindType,
+                    FABRIC_X509_FIND_TYPE::FABRIC_X509_FIND_TYPE_FINDBYTHUMBPRINT
+                );
                 let find_val_ptr = value_ref.FindValue as *const u16;
                 assert!(!find_val_ptr.is_null() && find_val_ptr.is_aligned());
                 let val_str = WString::from(PCWSTR::from_raw(find_val_ptr)).to_string_lossy();
                 assert_eq!(val_str.as_str(), TEST_THUMBPRINT_1);
                 assert_eq!(
                     value_ref.StoreLocation,
-                    FABRIC_X509_STORE_LOCATION_LOCALMACHINE
+                    FABRIC_X509_STORE_LOCATION::FABRIC_X509_STORE_LOCATION_LOCALMACHINE
                 );
                 assert_eq!(
                     WString::from(value_ref.StoreName)
@@ -314,7 +335,7 @@ mod test {
 
                 assert_eq!(
                     value_ref.ProtectionLevel,
-                    FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
+                    FABRIC_PROTECTION_LEVEL::FABRIC_PROTECTION_LEVEL_ENCRYPTANDSIGN
                 );
                 assert!(value_ref.Reserved.is_null());
 

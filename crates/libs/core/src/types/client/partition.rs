@@ -12,13 +12,7 @@ use mssf_com::{
     FabricClient::{IFabricGetPartitionListResult2, IFabricGetPartitionLoadInformationResult},
     FabricTypes::{
         FABRIC_PARTITION_LOAD_INFORMATION_QUERY_DESCRIPTION, FABRIC_QUERY_SERVICE_PARTITION_STATUS,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_DELETING,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_IN_QUORUM_LOSS,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_INVALID,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_NOT_READY,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY,
-        FABRIC_QUERY_SERVICE_PARTITION_STATUS_RECONFIGURING, FABRIC_SERVICE_KIND_STATEFUL,
-        FABRIC_SERVICE_KIND_STATELESS, FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
+        FABRIC_SERVICE_KIND, FABRIC_SERVICE_PARTITION_QUERY_DESCRIPTION,
         FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM,
         FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM,
         FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM,
@@ -80,7 +74,7 @@ pub enum ServicePartitionQueryResultItem {
 impl From<&FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartitionQueryResultItem {
     fn from(value: &FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM) -> Self {
         match value.Kind {
-            FABRIC_SERVICE_KIND_STATEFUL => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATEFUL => {
                 let raw = unsafe {
                     (value.Value as *const FABRIC_STATEFUL_SERVICE_PARTITION_QUERY_RESULT_ITEM)
                         .as_ref()
@@ -88,7 +82,7 @@ impl From<&FABRIC_SERVICE_PARTITION_QUERY_RESULT_ITEM> for ServicePartitionQuery
                 };
                 Self::Stateful(raw.into())
             }
-            FABRIC_SERVICE_KIND_STATELESS => {
+            FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATELESS => {
                 let raw = unsafe {
                     (value.Value as *const FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM)
                         .as_ref()
@@ -153,12 +147,12 @@ pub enum ServicePartitionStatus {
 impl From<&FABRIC_QUERY_SERVICE_PARTITION_STATUS> for ServicePartitionStatus {
     fn from(value: &FABRIC_QUERY_SERVICE_PARTITION_STATUS) -> Self {
         match *value {
-            FABRIC_QUERY_SERVICE_PARTITION_STATUS_INVALID => Self::Invalid,
-            FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY => Self::Ready,
-            FABRIC_QUERY_SERVICE_PARTITION_STATUS_NOT_READY => Self::NotReady,
-            FABRIC_QUERY_SERVICE_PARTITION_STATUS_IN_QUORUM_LOSS => Self::InQuorumLoss,
-            FABRIC_QUERY_SERVICE_PARTITION_STATUS_RECONFIGURING => Self::Reconfiguring,
-            FABRIC_QUERY_SERVICE_PARTITION_STATUS_DELETING => Self::Deleting,
+            FABRIC_QUERY_SERVICE_PARTITION_STATUS::FABRIC_QUERY_SERVICE_PARTITION_STATUS_INVALID => Self::Invalid,
+            FABRIC_QUERY_SERVICE_PARTITION_STATUS::FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY => Self::Ready,
+            FABRIC_QUERY_SERVICE_PARTITION_STATUS::FABRIC_QUERY_SERVICE_PARTITION_STATUS_NOT_READY => Self::NotReady,
+            FABRIC_QUERY_SERVICE_PARTITION_STATUS::FABRIC_QUERY_SERVICE_PARTITION_STATUS_IN_QUORUM_LOSS => Self::InQuorumLoss,
+            FABRIC_QUERY_SERVICE_PARTITION_STATUS::FABRIC_QUERY_SERVICE_PARTITION_STATUS_RECONFIGURING => Self::Reconfiguring,
+            FABRIC_QUERY_SERVICE_PARTITION_STATUS::FABRIC_QUERY_SERVICE_PARTITION_STATUS_DELETING => Self::Deleting,
             _ => Self::Invalid,
         }
     }
@@ -460,11 +454,12 @@ mod tests {
         let replica_state = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_HEALTH_STATE {
             PartitionId: GUID::zeroed(),
             ReplicaId: mssf_com::FabricTypes::FABRIC_REPLICA_ID(42),
-            AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
+            AggregatedHealthState:
+                mssf_com::FabricTypes::FABRIC_HEALTH_STATE::FABRIC_HEALTH_STATE_OK,
             Reserved: std::ptr::null_mut(),
         };
         let replica_health_state = mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE {
-            Kind: mssf_com::FabricTypes::FABRIC_SERVICE_KIND_STATEFUL,
+            Kind: mssf_com::FabricTypes::FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATEFUL,
             Value: &replica_state as *const _ as *mut _,
         };
         let list = mssf_com::FabricTypes::FABRIC_REPLICA_HEALTH_STATE_LIST {
@@ -473,7 +468,8 @@ mod tests {
         };
         let raw = mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH {
             PartitionId: GUID::zeroed(),
-            AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
+            AggregatedHealthState:
+                mssf_com::FabricTypes::FABRIC_HEALTH_STATE::FABRIC_HEALTH_STATE_OK,
             HealthEvents: std::ptr::null(),
             ReplicaHealthStates: &list,
             Reserved: std::ptr::null_mut(),
@@ -494,7 +490,7 @@ mod tests {
             Reserved: std::ptr::null_mut(),
         };
         let partition_information = mssf_com::FabricTypes::FABRIC_SERVICE_PARTITION_INFORMATION {
-            Kind: mssf_com::FabricTypes::FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
+            Kind: mssf_com::FabricTypes::FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_SINGLETON,
             Value: std::ptr::addr_of!(singleton_info) as *mut _,
         };
         let ex1 = FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM_EX1 {
@@ -505,8 +501,9 @@ mod tests {
         let raw = FABRIC_STATELESS_SERVICE_PARTITION_QUERY_RESULT_ITEM {
             PartitionInformation: std::ptr::addr_of!(partition_information),
             InstanceCount: 3,
-            HealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
-            PartitionStatus: FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY,
+            HealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE::FABRIC_HEALTH_STATE_OK,
+            PartitionStatus:
+                FABRIC_QUERY_SERVICE_PARTITION_STATUS::FABRIC_QUERY_SERVICE_PARTITION_STATUS_READY,
             Reserved: std::ptr::addr_of!(ex1) as *mut _,
         };
 

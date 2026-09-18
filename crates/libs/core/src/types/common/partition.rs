@@ -9,17 +9,9 @@ use crate::{GUID, WString};
 use mssf_com::FabricTypes::{
     FABRIC_INT64_RANGE_PARTITION_INFORMATION, FABRIC_NAMED_PARTITION_INFORMATION,
     FABRIC_NAMED_PARTITION_SCHEME_DESCRIPTION, FABRIC_PARTITION_SCHEME,
-    FABRIC_PARTITION_SCHEME_NAMED, FABRIC_PARTITION_SCHEME_SINGLETON,
-    FABRIC_PARTITION_SCHEME_UNIFORM_INT64_RANGE, FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE,
-    FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_EXCLUSIVE_PROCESS,
-    FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_SHARED_PROCESS, FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
-    FABRIC_SERVICE_PARTITION_ACCESS_STATUS_GRANTED, FABRIC_SERVICE_PARTITION_ACCESS_STATUS_INVALID,
-    FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NO_WRITE_QUORUM,
-    FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NOT_PRIMARY,
-    FABRIC_SERVICE_PARTITION_ACCESS_STATUS_RECONFIGURATION_PENDING,
-    FABRIC_SERVICE_PARTITION_INFORMATION, FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE,
-    FABRIC_SERVICE_PARTITION_KIND_INVALID, FABRIC_SERVICE_PARTITION_KIND_NAMED,
-    FABRIC_SERVICE_PARTITION_KIND_SINGLETON, FABRIC_SINGLETON_PARTITION_INFORMATION,
+    FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE, FABRIC_SERVICE_PARTITION_ACCESS_STATUS,
+    FABRIC_SERVICE_PARTITION_INFORMATION, FABRIC_SERVICE_PARTITION_KIND,
+    FABRIC_SINGLETON_PARTITION_INFORMATION,
     FABRIC_UNIFORM_INT64_RANGE_PARTITION_SCHEME_DESCRIPTION,
 };
 use windows_core::PCWSTR;
@@ -79,7 +71,7 @@ impl From<&FABRIC_NAMED_PARTITION_INFORMATION> for NamedPartitionInfomation {
 impl From<&FABRIC_SERVICE_PARTITION_INFORMATION> for ServicePartitionInformation {
     fn from(value: &FABRIC_SERVICE_PARTITION_INFORMATION) -> Self {
         match value.Kind {
-            FABRIC_SERVICE_PARTITION_KIND_SINGLETON => {
+            FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_SINGLETON => {
                 let raw = unsafe {
                     (value.Value as *const FABRIC_SINGLETON_PARTITION_INFORMATION)
                         .as_ref()
@@ -87,7 +79,7 @@ impl From<&FABRIC_SERVICE_PARTITION_INFORMATION> for ServicePartitionInformation
                 };
                 Self::Singleton(raw.into())
             }
-            FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE => {
+            FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_INT64_RANGE => {
                 let raw = unsafe {
                     (value.Value as *const FABRIC_INT64_RANGE_PARTITION_INFORMATION)
                         .as_ref()
@@ -95,7 +87,7 @@ impl From<&FABRIC_SERVICE_PARTITION_INFORMATION> for ServicePartitionInformation
                 };
                 Self::Int64Range(raw.into())
             }
-            FABRIC_SERVICE_PARTITION_KIND_NAMED => {
+            FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_NAMED => {
                 let raw = unsafe {
                     (value.Value as *const FABRIC_NAMED_PARTITION_INFORMATION)
                         .as_ref()
@@ -103,7 +95,7 @@ impl From<&FABRIC_SERVICE_PARTITION_INFORMATION> for ServicePartitionInformation
                 };
                 Self::Named(raw.into())
             }
-            FABRIC_SERVICE_PARTITION_KIND_INVALID => Self::Invalid,
+            FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_INVALID => Self::Invalid,
             _ => Self::Invalid,
         }
     }
@@ -150,11 +142,11 @@ pub enum ServicePartitionAccessStatus {
 impl From<FABRIC_SERVICE_PARTITION_ACCESS_STATUS> for ServicePartitionAccessStatus {
     fn from(value: FABRIC_SERVICE_PARTITION_ACCESS_STATUS) -> Self {
         match value {
-            FABRIC_SERVICE_PARTITION_ACCESS_STATUS_INVALID => Self::Invalid,
-            FABRIC_SERVICE_PARTITION_ACCESS_STATUS_GRANTED => Self::Granted,
-            FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NOT_PRIMARY => Self::NotPrimary,
-            FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NO_WRITE_QUORUM => Self::NoWriteQuorum,
-            FABRIC_SERVICE_PARTITION_ACCESS_STATUS_RECONFIGURATION_PENDING => {
+            FABRIC_SERVICE_PARTITION_ACCESS_STATUS::FABRIC_SERVICE_PARTITION_ACCESS_STATUS_INVALID => Self::Invalid,
+            FABRIC_SERVICE_PARTITION_ACCESS_STATUS::FABRIC_SERVICE_PARTITION_ACCESS_STATUS_GRANTED => Self::Granted,
+            FABRIC_SERVICE_PARTITION_ACCESS_STATUS::FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NOT_PRIMARY => Self::NotPrimary,
+            FABRIC_SERVICE_PARTITION_ACCESS_STATUS::FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NO_WRITE_QUORUM => Self::NoWriteQuorum,
+            FABRIC_SERVICE_PARTITION_ACCESS_STATUS::FABRIC_SERVICE_PARTITION_ACCESS_STATUS_RECONFIGURATION_PENDING => {
                 Self::ReconfigurationPending
             }
             _ => Self::Invalid,
@@ -165,16 +157,16 @@ impl From<FABRIC_SERVICE_PARTITION_ACCESS_STATUS> for ServicePartitionAccessStat
 impl From<ServicePartitionAccessStatus> for FABRIC_SERVICE_PARTITION_ACCESS_STATUS {
     fn from(value: ServicePartitionAccessStatus) -> Self {
         match value {
-            ServicePartitionAccessStatus::Invalid => FABRIC_SERVICE_PARTITION_ACCESS_STATUS_INVALID,
-            ServicePartitionAccessStatus::Granted => FABRIC_SERVICE_PARTITION_ACCESS_STATUS_GRANTED,
+            ServicePartitionAccessStatus::Invalid => FABRIC_SERVICE_PARTITION_ACCESS_STATUS::FABRIC_SERVICE_PARTITION_ACCESS_STATUS_INVALID,
+            ServicePartitionAccessStatus::Granted => FABRIC_SERVICE_PARTITION_ACCESS_STATUS::FABRIC_SERVICE_PARTITION_ACCESS_STATUS_GRANTED,
             ServicePartitionAccessStatus::ReconfigurationPending => {
-                FABRIC_SERVICE_PARTITION_ACCESS_STATUS_RECONFIGURATION_PENDING
+                FABRIC_SERVICE_PARTITION_ACCESS_STATUS::FABRIC_SERVICE_PARTITION_ACCESS_STATUS_RECONFIGURATION_PENDING
             }
             ServicePartitionAccessStatus::NotPrimary => {
-                FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NOT_PRIMARY
+                FABRIC_SERVICE_PARTITION_ACCESS_STATUS::FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NOT_PRIMARY
             }
             ServicePartitionAccessStatus::NoWriteQuorum => {
-                FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NO_WRITE_QUORUM
+                FABRIC_SERVICE_PARTITION_ACCESS_STATUS::FABRIC_SERVICE_PARTITION_ACCESS_STATUS_NO_WRITE_QUORUM
             }
         }
     }
@@ -275,10 +267,10 @@ impl From<ServicePackageActivationMode> for FABRIC_SERVICE_PACKAGE_ACTIVATION_MO
     fn from(mode: ServicePackageActivationMode) -> Self {
         match mode {
             ServicePackageActivationMode::SharedProcess => {
-                FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_SHARED_PROCESS
+                FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE::FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_SHARED_PROCESS
             }
             ServicePackageActivationMode::ExclusiveProcess => {
-                FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_EXCLUSIVE_PROCESS
+                FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE::FABRIC_SERVICE_PACKAGE_ACTIVATION_MODE_EXCLUSIVE_PROCESS
             }
         }
     }
@@ -297,15 +289,16 @@ impl PartitionSchemeDescription {
     /// Needs to have lifetime as self. Can be moved.
     pub(crate) fn as_raw(&self) -> (FABRIC_PARTITION_SCHEME, *mut c_void) {
         match self {
-            PartitionSchemeDescription::Singleton => {
-                (FABRIC_PARTITION_SCHEME_SINGLETON, std::ptr::null_mut())
-            }
+            PartitionSchemeDescription::Singleton => (
+                FABRIC_PARTITION_SCHEME::FABRIC_PARTITION_SCHEME_SINGLETON,
+                std::ptr::null_mut(),
+            ),
             PartitionSchemeDescription::Int64Range(scheme) => (
-                FABRIC_PARTITION_SCHEME_UNIFORM_INT64_RANGE,
+                FABRIC_PARTITION_SCHEME::FABRIC_PARTITION_SCHEME_UNIFORM_INT64_RANGE,
                 scheme.as_raw() as *const _ as *mut _,
             ),
             PartitionSchemeDescription::Named(scheme) => (
-                FABRIC_PARTITION_SCHEME_NAMED,
+                FABRIC_PARTITION_SCHEME::FABRIC_PARTITION_SCHEME_NAMED,
                 scheme.as_raw() as *const _ as *mut _,
             ),
             PartitionSchemeDescription::Invalid => panic!("Invalid partition scheme description"),

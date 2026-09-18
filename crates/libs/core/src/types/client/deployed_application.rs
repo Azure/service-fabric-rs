@@ -257,7 +257,7 @@ mod tests {
         let log_directory = WString::from("log_dir");
         let temp_directory = WString::from("temp_dir");
         let ex2 = FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX2 {
-            HealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_OK,
+            HealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE::FABRIC_HEALTH_STATE_OK,
             Reserved: std::ptr::null_mut(),
         };
         let ex1 = FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM_EX {
@@ -269,7 +269,8 @@ mod tests {
         let raw = FABRIC_DEPLOYED_APPLICATION_QUERY_RESULT_ITEM {
             ApplicationName: app_name.as_raw(),
             ApplicationTypeName: app_type_name.as_pcwstr(),
-            DeployedApplicationStatus: mssf_com::FabricTypes::FABRIC_DEPLOYMENT_STATUS_ACTIVE,
+            DeployedApplicationStatus:
+                mssf_com::FabricTypes::FABRIC_DEPLOYMENT_STATUS::FABRIC_DEPLOYMENT_STATUS_ACTIVE,
             Reserved: std::ptr::addr_of!(ex1) as *mut _,
         };
         let item = DeployedApplicationQueryResultItem::from(&raw);

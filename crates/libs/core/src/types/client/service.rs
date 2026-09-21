@@ -514,6 +514,20 @@ pub struct ServiceSensitivityDescription {
     pub is_maximum_sensitivity: bool,
 }
 
+impl GetRaw<mssf_com::FabricTypes::SERVICE_SENSITIVITY_DESCRIPTION>
+    for ServiceSensitivityDescription
+{
+    fn get_raw(&self) -> mssf_com::FabricTypes::SERVICE_SENSITIVITY_DESCRIPTION {
+        mssf_com::FabricTypes::SERVICE_SENSITIVITY_DESCRIPTION {
+            PrimaryDefaultSensitivity: self.primary_default_sensitivity,
+            SecondaryDefaultSensitivity: self.secondary_default_sensitivity,
+            AuxiliaryDefaultSensitivity: self.auxiliary_default_sensitivity,
+            IsMaximumSensitivity: self.is_maximum_sensitivity,
+            Reserved: std::ptr::null_mut(),
+        }
+    }
+}
+
 impl StatefulServiceFailoverSettings {
     /// Compute the flags bitmask from which fields are set.
     fn compute_flags(&self) -> StatefulServiceFailoverSettingsFlags {
@@ -568,15 +582,7 @@ impl GetRawWithBoxPool<Option<FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS>>
 
         // EX6: ServiceSensitivityDescription
         let service_sensitivity_ptr = if let Some(s) = &self.service_sensitivity {
-            pool.push(Box::new(
-                mssf_com::FabricTypes::SERVICE_SENSITIVITY_DESCRIPTION {
-                    PrimaryDefaultSensitivity: s.primary_default_sensitivity,
-                    SecondaryDefaultSensitivity: s.secondary_default_sensitivity,
-                    AuxiliaryDefaultSensitivity: s.auxiliary_default_sensitivity,
-                    IsMaximumSensitivity: s.is_maximum_sensitivity,
-                    Reserved: std::ptr::null_mut(),
-                },
-            )) as *const _ as *mut _
+            pool.push(Box::new(s.get_raw())).cast_mut()
         } else {
             std::ptr::null_mut()
         };
@@ -752,7 +758,8 @@ pub struct StatefulServiceUpdateDescription {
     // ex10 - TagsDescription (not yet wired - complex type)
     // ex11
     auxiliary_replica_count: i32,
-    // ex12 - ServiceSensitivityDescription (not yet wired - complex type)
+    // ex12
+    service_sensitivity: Option<ServiceSensitivityDescription>,
 }
 
 // setters for the fields
@@ -854,6 +861,30 @@ impl StatefulServiceUpdateDescription {
         self.auxiliary_replica_count = auxiliary_replica_count;
         self
     }
+
+    /// Replace the service sensitivity settings when updating a stateful service.
+    ///
+    /// Sets the service-sensitivity update flag and marshals the description
+    /// through EX12. Omitting this setter leaves sensitivity unchanged; passing
+    /// a description with `is_maximum_sensitivity: false` explicitly clears it.
+    /// All sensitivity fields are supplied together, including the default
+    /// replica sensitivities. Unrelated service update fields remain unchanged.
+    ///
+    /// ```
+    /// use mssf_core::types::{ServiceSensitivityDescription, StatefulServiceUpdateDescription};
+    ///
+    /// let update = StatefulServiceUpdateDescription::new()
+    ///     .with_service_sensitivity(ServiceSensitivityDescription {
+    ///         is_maximum_sensitivity: true,
+    ///         ..Default::default()
+    ///     });
+    /// ```
+    pub fn with_service_sensitivity(mut self, sensitivity: ServiceSensitivityDescription) -> Self {
+        self.flags |=
+            StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_SERVICE_SENSITIVITY;
+        self.service_sensitivity = Some(sensitivity);
+        self
+    }
 }
 
 /// FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION
@@ -906,8 +937,14 @@ impl GetRawWithBoxPool<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION>
             },
         ));
 
+        let service_sensitivity_ptr = self
+            .service_sensitivity
+            .as_ref()
+            .map_or(std::ptr::null_mut(), |s| {
+                pool.push(Box::new(s.get_raw())).cast_mut()
+            });
         let ex12 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX12 {
-            ServiceSensitivityDescription: std::ptr::null_mut(), // TODO: complex type
+            ServiceSensitivityDescription: service_sensitivity_ptr,
             Reserved: std::ptr::null_mut(),
         }));
         let ex11 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX11 {
@@ -1384,6 +1421,10 @@ impl GetRaw<FABRIC_DELETE_SERVICE_DESCRIPTION> for DeleteServiceDescription {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "service_sensitivity_tests.rs"]
+mod service_sensitivity_tests;
 
 #[cfg(test)]
 mod health_query_tests {

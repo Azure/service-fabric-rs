@@ -45,8 +45,8 @@ pub use service::{
     DeleteServiceDescription, NamedRepartitionDescription, QueryServiceStatus, ServiceDescription,
     ServiceHealthQueryDescription, ServiceHealthResult, ServiceHealthState,
     ServiceHealthStatesFilter, ServiceListResult, ServiceQueryDescription, ServiceQueryResultItem,
-    ServiceRepartitionDescription, ServiceUpdateDescription, StatefulServiceDescription,
-    StatefulServiceUpdateDescription, StatelessServiceDescription,
+    ServiceRepartitionDescription, ServiceSensitivityDescription, ServiceUpdateDescription,
+    StatefulServiceDescription, StatefulServiceUpdateDescription, StatelessServiceDescription,
     StatelessServiceUpdateDescription,
 };
 

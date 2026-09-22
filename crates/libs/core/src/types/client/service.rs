@@ -1500,7 +1500,10 @@ mod service_sensitivity_tests {
             for value in 0..64 {
                 let _ptr = pool.push(Box::new(value));
             }
-            assert_eq!(raw.Kind, FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL);
+            assert_eq!(
+                raw.Kind,
+                FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL
+            );
             // SAFETY: the stateful description and its full chain are owned by pool.
             let stateful = unsafe {
                 &*raw

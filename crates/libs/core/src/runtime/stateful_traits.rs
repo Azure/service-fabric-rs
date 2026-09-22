@@ -140,7 +140,7 @@ pub trait IPrimaryReplicator: IReplicator {
     // SF calls this to indicate that possible data loss has occurred (write quorum loss),
     // returns is isStateChanged. If true, SF will re-create other secondaries.
     // The default SF impl might be a pass through to the state provider.
-    async fn on_data_loss(&self, cancellation_token: BoxedCancelToken) -> crate::Result<u8>;
+    async fn on_data_loss(&self, cancellation_token: BoxedCancelToken) -> crate::Result<bool>;
 
     // Remarks on replicator configuration:
     // At any time the replicator can have one or two configurations. There is always a current

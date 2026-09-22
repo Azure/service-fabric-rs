@@ -41,6 +41,7 @@ where
             self.com_impl
                 .RegisterStatelessServiceFactory(servicetypename.as_pcwstr(), &bridge)
         }
+        .ok()
         .map_err(crate::Error::from)
     }
 
@@ -56,6 +57,7 @@ where
             self.com_impl
                 .RegisterStatefulServiceFactory(servicetypename.as_pcwstr(), &bridge)
         }
+        .ok()
         .map_err(crate::Error::from)
     }
 
@@ -71,6 +73,7 @@ where
             self.com_impl
                 .RegisterSelfReconfiguringServiceFactory(servicetypename.as_pcwstr(), &bridge)
         }
+        .ok()
         .map_err(crate::Error::from)
     }
 }

@@ -16,7 +16,7 @@ use std::marker::PhantomData;
 
 use crate::WString;
 use mssf_com::FabricTypes::{
-    FABRIC_SELF_RECONFIGURING_CONFIGURATION_CHANGE_REQUEST,
+    FABRIC_INSTANCE_ID, FABRIC_SELF_RECONFIGURING_CONFIGURATION_CHANGE_REQUEST,
     FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT,
     FABRIC_SELF_RECONFIGURING_CONFIGURATION_REPORT_ID,
     FABRIC_SELF_RECONFIGURING_CONFIGURATION_REQUEST,
@@ -25,15 +25,7 @@ use mssf_com::FabricTypes::{
     FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST,
     FABRIC_SELF_RECONFIGURING_INSTANCE_INFORMATION,
     FABRIC_SELF_RECONFIGURING_INSTANCE_INFORMATION_LIST,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_EXISTING,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_INVALID,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_NEW, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_NONE,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED,
-    FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_INVALID,
+    FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE,
 };
 
 /// Whether a self-reconfiguring instance is being opened as new or existing.
@@ -48,8 +40,8 @@ pub enum SelfReconfiguringOpenMode {
 impl From<FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE> for SelfReconfiguringOpenMode {
     fn from(e: FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE) -> Self {
         match e {
-            FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_NEW => SelfReconfiguringOpenMode::New,
-            FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_EXISTING => {
+            FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE::FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_NEW => SelfReconfiguringOpenMode::New,
+            FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE::FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_EXISTING => {
                 SelfReconfiguringOpenMode::Existing
             }
             _ => SelfReconfiguringOpenMode::Invalid,
@@ -61,11 +53,11 @@ impl From<SelfReconfiguringOpenMode> for FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN
     fn from(val: SelfReconfiguringOpenMode) -> Self {
         match val {
             SelfReconfiguringOpenMode::Invalid => {
-                FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_INVALID
+                FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE::FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_INVALID
             }
-            SelfReconfiguringOpenMode::New => FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_NEW,
+            SelfReconfiguringOpenMode::New => FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE::FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_NEW,
             SelfReconfiguringOpenMode::Existing => {
-                FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_EXISTING
+                FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE::FABRIC_SELF_RECONFIGURING_INSTANCE_OPEN_MODE_EXISTING
             }
         }
     }
@@ -83,10 +75,10 @@ pub enum SelfReconfiguringInstanceRole {
 impl From<&FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE> for SelfReconfiguringInstanceRole {
     fn from(r: &FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE) -> Self {
         match *r {
-            FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL => {
+            FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL => {
                 SelfReconfiguringInstanceRole::Initial
             }
-            FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER => SelfReconfiguringInstanceRole::Member,
+            FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER => SelfReconfiguringInstanceRole::Member,
             _ => SelfReconfiguringInstanceRole::None,
         }
     }
@@ -95,11 +87,11 @@ impl From<&FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE> for SelfReconfiguringInstanc
 impl From<&SelfReconfiguringInstanceRole> for FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE {
     fn from(val: &SelfReconfiguringInstanceRole) -> Self {
         match *val {
-            SelfReconfiguringInstanceRole::None => FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_NONE,
+            SelfReconfiguringInstanceRole::None => FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_NONE,
             SelfReconfiguringInstanceRole::Initial => {
-                FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL
+                FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL
             }
-            SelfReconfiguringInstanceRole::Member => FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
+            SelfReconfiguringInstanceRole::Member => FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
         }
     }
 }
@@ -118,10 +110,10 @@ impl From<&FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE>
 {
     fn from(s: &FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE) -> Self {
         match *s {
-            FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED => {
+            FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED => {
                 SelfReconfiguringInstanceActivationState::Activated
             }
-            FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED => {
+            FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED => {
                 SelfReconfiguringInstanceActivationState::Deactivated
             }
             _ => SelfReconfiguringInstanceActivationState::Invalid,
@@ -135,13 +127,13 @@ impl From<&SelfReconfiguringInstanceActivationState>
     fn from(val: &SelfReconfiguringInstanceActivationState) -> Self {
         match *val {
             SelfReconfiguringInstanceActivationState::Invalid => {
-                FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_INVALID
+                FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_INVALID
             }
             SelfReconfiguringInstanceActivationState::Activated => {
-                FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED
+                FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED
             }
             SelfReconfiguringInstanceActivationState::Deactivated => {
-                FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED
+                FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED
             }
         }
     }
@@ -244,7 +236,7 @@ impl From<&FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST> for InstanceChange
             WString::from(r.Endpoints)
         };
         Self {
-            instance_id: r.InstanceId,
+            instance_id: r.InstanceId.0,
             role: SelfReconfiguringInstanceRole::from(&r.Role),
             requested_role: SelfReconfiguringInstanceRole::from(&r.RequestedRole),
             activation_state: SelfReconfiguringInstanceActivationState::from(&r.ActivationState),
@@ -290,7 +282,7 @@ pub struct InstanceInformation {
 impl From<&InstanceInformation> for FABRIC_SELF_RECONFIGURING_INSTANCE_INFORMATION {
     fn from(val: &InstanceInformation) -> Self {
         Self {
-            InstanceId: val.instance_id,
+            InstanceId: FABRIC_INSTANCE_ID(val.instance_id),
             Role: (&val.role).into(),
             ActivationState: (&val.activation_state).into(),
             Reserved: std::ptr::null_mut(),
@@ -453,11 +445,11 @@ mod tests {
     fn change_request_inbound_single_item() {
         let endpoints = WString::from("localhost:4321");
         let item = FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST {
-            InstanceId: 12,
-            Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_NONE,
-            RequestedRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
-            ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED,
-            RequestedActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
+            InstanceId: FABRIC_INSTANCE_ID(12),
+            Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_NONE,
+            RequestedRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
+            ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED,
+            RequestedActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
             Endpoints: PCWSTR(endpoints.as_ptr()),
             Reserved: std::ptr::null_mut(),
         };
@@ -486,21 +478,21 @@ mod tests {
         let endpoints = WString::from("localhost:1234");
         let items = [
             FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST {
-                InstanceId: 10,
-                Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
-                RequestedRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
-                ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED,
-                RequestedActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
+                InstanceId: FABRIC_INSTANCE_ID(10),
+                Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL,
+                RequestedRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
+                ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_DEACTIVATED,
+                RequestedActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
                 Endpoints: PCWSTR(endpoints.as_ptr()),
                 Reserved: std::ptr::null_mut(),
             },
             // Second item with a null endpoints pointer.
             FABRIC_SELF_RECONFIGURING_INSTANCE_CHANGE_REQUEST {
-                InstanceId: 11,
-                Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
-                RequestedRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
-                ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
-                RequestedActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
+                InstanceId: FABRIC_INSTANCE_ID(11),
+                Role: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
+                RequestedRole: FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER,
+                ActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
+                RequestedActivationState: FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED,
                 Endpoints: PCWSTR::null(),
                 Reserved: std::ptr::null_mut(),
             },
@@ -585,15 +577,18 @@ mod tests {
         assert_eq!(list.Count, 2);
 
         let first = unsafe { &*list.Items.offset(0) };
-        assert_eq!(first.InstanceId, 100);
-        assert_eq!(first.Role, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER);
+        assert_eq!(first.InstanceId.0, 100);
+        assert_eq!(
+            first.Role,
+            FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_MEMBER
+        );
         assert_eq!(
             first.ActivationState,
-            FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED
+            FABRIC_SELF_RECONFIGURING_INSTANCE_ACTIVATION_STATE::FABRIC_SELF_RECONFIGURING_INSTANCE_STATE_ACTIVATED
         );
 
         let second = unsafe { &*list.Items.offset(1) };
-        assert_eq!(second.InstanceId, 101);
-        assert_eq!(second.Role, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL);
+        assert_eq!(second.InstanceId.0, 101);
+        assert_eq!(second.Role, FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE::FABRIC_SELF_RECONFIGURING_INSTANCE_ROLE_INITIAL);
     }
 }

@@ -8,7 +8,7 @@
 use std::time::Duration;
 
 use crate::{WString, client::FabricClient, sync::SimpleCancelToken, types::Uri};
-use mssf_com::FabricTypes::FABRIC_E_SERVICE_DOES_NOT_EXIST;
+use mssf_com::FabricTypes::FABRIC_ERROR_CODE;
 
 use crate::{
     client::svc_mgmt_client::PartitionKeyType,
@@ -144,17 +144,20 @@ async fn test_fabric_client() {
                 // If the app is not provisioned we validate the error.
                 if cfg!(unix) {
                     // In linux ci the app is not healthy from day one.
-                    // FABRIC_E_SERVICE_OFFLINE is the expected result.
+                    // FABRIC_ERROR_CODE::FABRIC_E_SERVICE_OFFLINE is the expected result.
                     // TODO: Investigate the ci.
                     assert!(
-                        e.code() == crate::HRESULT(FABRIC_E_SERVICE_DOES_NOT_EXIST.0)
+                        e.code() == crate::HRESULT(FABRIC_ERROR_CODE::FABRIC_E_SERVICE_DOES_NOT_EXIST.0)
                             || e.code()
                                 == crate::HRESULT(
-                                    mssf_com::FabricTypes::FABRIC_E_SERVICE_OFFLINE.0
+                                    mssf_com::FabricTypes::FABRIC_ERROR_CODE::FABRIC_E_SERVICE_OFFLINE.0
                                 )
                     );
                 } else {
-                    assert_eq!(e.code(), crate::HRESULT(FABRIC_E_SERVICE_DOES_NOT_EXIST.0));
+                    assert_eq!(
+                        e.code(),
+                        crate::HRESULT(FABRIC_ERROR_CODE::FABRIC_E_SERVICE_DOES_NOT_EXIST.0)
+                    );
                     println!("EchoApp not provisioned. Skip validate.")
                 }
             }

@@ -10,11 +10,11 @@
     clippy::all
 )]
 
-pub mod Microsoft;
+pub mod Windows;
 
 // expose mod directly
 #[cfg(feature = "ServiceFabric")]
-pub use Microsoft::ServiceFabric::*;
+pub use Windows::ServiceFabric::*;
 
 // Special usage for mssf_pal.
 // See mssf_pal documentations for why this is used this way.

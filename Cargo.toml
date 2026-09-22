@@ -11,6 +11,7 @@ members = [
     "tests/mssf-tests",
 ]
 package.edition = "2024"
+package.rust-version = "1.95.0"
 package.authors = [ "youyuanwu@outlook.com" ]
 package.documentation = "https://learn.microsoft.com/en-us/azure/service-fabric/"
 package.repository = "https://github.com/Azure/service-fabric-rs"
@@ -65,9 +66,10 @@ tower = { version = "0.5", default-features = false, features = ["util"] }
 bytes = "1"
 url = "2"
 uuid = { version = "1", default-features = false }
-windows = { version = "0.62", default-features = false }
-windows-bindgen = "0.66"
-windows-core = "0.62"
+windows = { version = "0.62.2", default-features = false }
+windows-bindgen = "0.100.0"
+windows-core = "0.100.0"
+mssf-metadata = "0.0.3"
 
 # crates in this repo
 mssf-com = { version = "0.6", path = "./crates/libs/com", default-features = false }

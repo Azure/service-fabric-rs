@@ -2,6 +2,7 @@
 name = "samples_client"
 version = "0.0.1"
 edition.workspace = true
+rust-version.workspace = true
 publish = false
 
 [dependencies]

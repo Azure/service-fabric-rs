@@ -5,7 +5,7 @@ use std::{
 
 use mssf_com::{
     FabricRuntime::{IFabricKeyValueStoreReplica8, IFabricStoreEventHandler},
-    FabricTypes::FABRIC_REPLICATOR_ADDRESS,
+    FabricTypes::FABRIC_REPLICATOR_SETTINGS_FLAGS,
 };
 use mssf_core::{
     Error, GUID, WString,
@@ -64,7 +64,7 @@ impl IStatefulServiceFactory for Factory {
             initializationdata.len()
         );
         let settings = ReplicatorSettings {
-            flags: FABRIC_REPLICATOR_ADDRESS.0 as u32,
+            flags: FABRIC_REPLICATOR_SETTINGS_FLAGS::FABRIC_REPLICATOR_ADDRESS.0 as u32,
             replicator_address: WString::from(get_addr(self.replication_port, "localhost".into())),
             ..Default::default()
         };

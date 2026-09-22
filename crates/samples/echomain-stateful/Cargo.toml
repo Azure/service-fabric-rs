@@ -2,6 +2,7 @@
 name = "samples_echomain_stateful"
 version = "0.0.1"
 edition.workspace = true
+rust-version.workspace = true
 publish = false
 
 [dependencies]
@@ -12,4 +13,3 @@ tokio.workspace = true
 windows-core.workspace = true
 mssf-com.workspace = true
 mssf-core = { workspace = true, features = [], default-features = false } # do not use any features
-

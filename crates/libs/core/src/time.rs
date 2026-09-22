@@ -3,8 +3,8 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+use mssf_com::Windows::Win32::FILETIME;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use windows_core::Win32::Foundation::FILETIME;
 
 /// A [`FILETIME`] tick is 100 nanoseconds
 const FILETIME_NS_PER_TICK: u64 = 100;

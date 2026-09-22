@@ -69,11 +69,11 @@ where
     fn CreateInstance(
         &self,
         servicetypename: &crate::PCWSTR,
-        servicename: FABRIC_URI,
+        servicename: &FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &crate::GUID,
-        instanceid: i64,
+        instanceid: mssf_com::FabricTypes::FABRIC_INSTANCE_ID,
     ) -> crate::WinResult<IFabricSelfReconfiguringServiceInstance> {
         let h_servicename = Uri::from(servicename);
         let h_servicetypename = WString::from(*servicetypename);
@@ -90,7 +90,7 @@ where
             h_servicename,
             data,
             *partitionid,
-            instanceid,
+            instanceid.0,
         )?;
         let rt = self.rt.clone();
         let instance_bridge = IFabricSelfReconfiguringServiceInstanceBridge::create(instance, rt);

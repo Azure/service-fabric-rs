@@ -2,53 +2,40 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
-use std::fs::{self};
+use std::{env, path::PathBuf};
 
-use windows_bindgen::bindgen;
+use windows_bindgen::Bindgen;
 
 fn main() {
-    let winmd = "./build/_deps/fabric_metadata-src/.windows/winmd/Microsoft.ServiceFabric.winmd";
-    // create output dir if not exist
-    fs::create_dir_all("crates/libs/com/src/Microsoft/ServiceFabric/").unwrap();
+    let workspace = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(|path| path.parent())
+        .and_then(|path| path.parent())
+        .expect("tools_api must be located under crates/tools")
+        .to_path_buf();
+    env::set_current_dir(&workspace)
+        .unwrap_or_else(|e| panic!("change directory to {}: {e}", workspace.display()));
 
-    {
-        let out_file = "crates/libs/com/";
-
-        let args = vec![
-            "--in",
-            winmd,
-            "--in",
-            "default",
-            "--out",
-            out_file,
-            "--package",
-            "--no-allow",
-            "--reference",
-            "windows,skip-root,Windows",
-            "--filter",
-        ];
-        // Note: winmd currently does not contain C free standing functions,
-        // if they are added in the future, we may need to add more filters here.
-        let filter_types = vec!["Microsoft.ServiceFabric.FabricTypes"];
-        let filter_common = vec![
-            "Microsoft.ServiceFabric.FabricCommon", // include fabric types
-        ];
-
-        let filter_runtime = vec![
-            "Microsoft.ServiceFabric.FabricRuntime", // include fabric types
-        ];
-
-        let filter_client = vec![
-            "Microsoft.ServiceFabric.FabricClient", // include fabric types
-        ];
-
-        bindgen(
-            args.into_iter()
-                .chain(filter_types)
-                .chain(filter_common)
-                .chain(filter_runtime)
-                .chain(filter_client),
-        )
-        .unwrap();
+    let mut bindgen = Bindgen::new();
+    if let Some(winmd) = env::var_os("MSSF_WINMD_PATH").map(PathBuf::from) {
+        assert!(
+            winmd.is_file(),
+            "Service Fabric metadata override not found at {}",
+            winmd.display()
+        );
+        bindgen.input(winmd);
+    } else {
+        bindgen.input_bytes(mssf_metadata::METADATA);
     }
+    bindgen
+        .input_default()
+        .output("crates/libs/com/")
+        .package()
+        .filters([
+            "Windows.ServiceFabric.FabricTypes",
+            "Windows.ServiceFabric.FabricCommon",
+            "Windows.ServiceFabric.FabricRuntime",
+            "Windows.ServiceFabric.FabricClient",
+        ])
+        .write();
 }

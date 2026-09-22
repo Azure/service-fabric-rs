@@ -29,13 +29,13 @@ pub fn fill_fabric_error(e: crate::WinError) -> crate::WinError {
 #[cfg(windows)] // linux error propagate is not working yet
 mod test {
     use crate::{WString, WinError};
-    use mssf_com::FabricTypes::FABRIC_E_GATEWAY_NOT_REACHABLE;
+    use mssf_com::FabricTypes::FABRIC_ERROR_CODE;
 
     #[test]
     fn test_win_error() {
         let s = WString::from("MyError");
         let e = WinError::new(
-            crate::HRESULT(FABRIC_E_GATEWAY_NOT_REACHABLE.0),
+            crate::HRESULT(FABRIC_ERROR_CODE::FABRIC_E_GATEWAY_NOT_REACHABLE.0),
             s.clone().to_string(),
         );
         assert_eq!(e.message(), s.to_string_lossy());

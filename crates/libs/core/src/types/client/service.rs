@@ -9,10 +9,8 @@ use mssf_com::{
     FabricClient::IFabricGetServiceListResult2,
     FabricTypes::{
         FABRIC_DELETE_SERVICE_DESCRIPTION, FABRIC_NAMED_REPARTITION_DESCRIPTION,
-        FABRIC_SERVICE_DESCRIPTION, FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
-        FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS, FABRIC_SERVICE_HEALTH_STATE,
-        FABRIC_SERVICE_PARTITION_KIND, FABRIC_SERVICE_PARTITION_KIND_INVALID,
-        FABRIC_SERVICE_PARTITION_KIND_NAMED, FABRIC_SERVICE_QUERY_DESCRIPTION,
+        FABRIC_SERVICE_DESCRIPTION, FABRIC_SERVICE_DESCRIPTION_KIND, FABRIC_SERVICE_HEALTH_STATE,
+        FABRIC_SERVICE_PARTITION_KIND, FABRIC_SERVICE_QUERY_DESCRIPTION,
         FABRIC_SERVICE_QUERY_DESCRIPTION_EX1, FABRIC_SERVICE_QUERY_DESCRIPTION_EX2,
         FABRIC_SERVICE_QUERY_DESCRIPTION_EX3, FABRIC_SERVICE_QUERY_RESULT_ITEM,
         FABRIC_SERVICE_UPDATE_DESCRIPTION, FABRIC_STATEFUL_SERVICE_DESCRIPTION,
@@ -383,7 +381,7 @@ impl GetRawWithBoxPool<FABRIC_SERVICE_DESCRIPTION> for ServiceDescription {
                 let raw = desc.get_raw_with_pool(pool);
                 let raw_ptr = pool.push(Box::new(raw));
                 FABRIC_SERVICE_DESCRIPTION {
-                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
+                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
                     Value: raw_ptr as *const _ as *mut c_void,
                 }
             }
@@ -391,7 +389,8 @@ impl GetRawWithBoxPool<FABRIC_SERVICE_DESCRIPTION> for ServiceDescription {
                 let raw = desc.get_raw_with_pool(pool);
                 let raw_ptr = pool.push(Box::new(raw));
                 FABRIC_SERVICE_DESCRIPTION {
-                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
+                    Kind:
+                        FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
                     Value: raw_ptr as *const _ as *mut c_void,
                 }
             }
@@ -427,9 +426,9 @@ impl GetRawWithBoxPool<FABRIC_NAMED_REPARTITION_DESCRIPTION> for NamedRepartitio
         let (remove_count, remove_ptr) = pool.push_vec(names_to_remove);
         FABRIC_NAMED_REPARTITION_DESCRIPTION {
             NamesToAddCount: add_count as u32,
-            NamesToAdd: add_ptr,
+            NamesToAdd: add_ptr as *mut _,
             NamesToRemoveCount: remove_count as u32,
-            NamesToRemove: remove_ptr,
+            NamesToRemove: remove_ptr as *mut _,
             Reserved: std::ptr::null_mut(),
         }
     }
@@ -446,11 +445,15 @@ impl GetRawWithBoxPool<(FABRIC_SERVICE_PARTITION_KIND, *const c_void)>
             ServiceRepartitionDescription::Named(desc) => {
                 let raw = desc.get_raw_with_pool(pool);
                 let raw_ptr = pool.push(Box::new(raw));
-                (FABRIC_SERVICE_PARTITION_KIND_NAMED, raw_ptr as *const _)
+                (
+                    FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_NAMED,
+                    raw_ptr as *const _,
+                )
             }
-            ServiceRepartitionDescription::Invalid => {
-                (FABRIC_SERVICE_PARTITION_KIND_INVALID, std::ptr::null())
-            }
+            ServiceRepartitionDescription::Invalid => (
+                FABRIC_SERVICE_PARTITION_KIND::FABRIC_SERVICE_PARTITION_KIND_INVALID,
+                std::ptr::null(),
+            ),
         }
     }
 }
@@ -460,16 +463,16 @@ bitflags::bitflags! {
     /// Indicates what fields are set in the failover settings.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct StatefulServiceFailoverSettingsFlags: u32 {
-        const NONE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_NONE.0 as u32;
-        const REPLICA_RESTART_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_REPLICA_RESTART_WAIT_DURATION.0 as u32;
-        const QUORUM_LOSS_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_QUORUM_LOSS_WAIT_DURATION.0 as u32;
-        const STANDBY_REPLICA_KEEP_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_STANDBY_REPLICA_KEEP_DURATION.0 as u32;
-        const SERVICE_PLACEMENT_TIME_LIMIT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_SERVICE_PLACEMENT_TIME_LIMIT.0 as u32;
-        const DROP_SOURCE_REPLICA_ON_MOVE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_DROP_SOURCE_REPLICA_ON_MOVE.0 as u32;
-        const IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE.0 as u32;
-        const RESTORE_REPLICA_LOCATION_AFTER_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE.0 as u32;
-        const AUXILIARY_REPLICA_COUNT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_AUXILIARY_REPLICA_COUNT.0 as u32;
-        const SERVICE_SENSITIVITY = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SETTINGS_SERVICE_SENSITIVITY.0 as u32;
+        const NONE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS::FABRIC_STATEFUL_SERVICE_SETTINGS_NONE.0 as u32;
+        const REPLICA_RESTART_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS::FABRIC_STATEFUL_SERVICE_SETTINGS_REPLICA_RESTART_WAIT_DURATION.0 as u32;
+        const QUORUM_LOSS_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS::FABRIC_STATEFUL_SERVICE_SETTINGS_QUORUM_LOSS_WAIT_DURATION.0 as u32;
+        const STANDBY_REPLICA_KEEP_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS::FABRIC_STATEFUL_SERVICE_SETTINGS_STANDBY_REPLICA_KEEP_DURATION.0 as u32;
+        const SERVICE_PLACEMENT_TIME_LIMIT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS::FABRIC_STATEFUL_SERVICE_SETTINGS_SERVICE_PLACEMENT_TIME_LIMIT.0 as u32;
+        const DROP_SOURCE_REPLICA_ON_MOVE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS::FABRIC_STATEFUL_SERVICE_SETTINGS_DROP_SOURCE_REPLICA_ON_MOVE.0 as u32;
+        const IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS::FABRIC_STATEFUL_SERVICE_SETTINGS_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE.0 as u32;
+        const RESTORE_REPLICA_LOCATION_AFTER_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS::FABRIC_STATEFUL_SERVICE_SETTINGS_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE.0 as u32;
+        const AUXILIARY_REPLICA_COUNT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS::FABRIC_STATEFUL_SERVICE_SETTINGS_AUXILIARY_REPLICA_COUNT.0 as u32;
+        const SERVICE_SENSITIVITY = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_FAILOVER_SETTINGS_FLAGS::FABRIC_STATEFUL_SERVICE_SETTINGS_SERVICE_SENSITIVITY.0 as u32;
     }
 }
 
@@ -667,27 +670,27 @@ bitflags::bitflags! {
     /// Indicates what fields are set in the description.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct StatefulServiceUpdateDescriptionFlags: u32 {
-        const FABRIC_STATEFUL_SERVICE_NONE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_NONE.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_TARGET_REPLICA_SET_SIZE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_TARGET_REPLICA_SET_SIZE.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_REPLICA_RESTART_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_REPLICA_RESTART_WAIT_DURATION.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_QUORUM_LOSS_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_QUORUM_LOSS_WAIT_DURATION.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_STANDBY_REPLICA_KEEP_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_STANDBY_REPLICA_KEEP_DURATION.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_MIN_REPLICA_SET_SIZE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_MIN_REPLICA_SET_SIZE.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_PLACEMENT_CONSTRAINTS = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_PLACEMENT_CONSTRAINTS.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_POLICY_LIST = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_POLICY_LIST.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_CORRELATIONS = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_CORRELATIONS.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_METRICS = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_METRICS.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_MOVE_COST = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_MOVE_COST.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_SCALING_POLICY = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SCALING_POLICY.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_SERVICE_PLACEMENT_TIME_LIMIT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SERVICE_PLACEMENT_TIME_LIMIT.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_DROP_SOURCE_REPLICA_ON_MOVE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_DROP_SOURCE_REPLICA_ON_MOVE.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_SERVICE_DNS_NAME = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SERVICE_DNS_NAME.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_PLACE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_PLACE.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_RUN = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_RUN.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_AUXILIARY_REPLICA_COUNT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_AUXILIARY_REPLICA_COUNT.0 as u32;
-        const FABRIC_STATEFUL_SERVICE_SERVICE_SENSITIVITY = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_SERVICE_SENSITIVITY.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_NONE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_NONE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_TARGET_REPLICA_SET_SIZE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_TARGET_REPLICA_SET_SIZE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_REPLICA_RESTART_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_REPLICA_RESTART_WAIT_DURATION.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_QUORUM_LOSS_WAIT_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_QUORUM_LOSS_WAIT_DURATION.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_STANDBY_REPLICA_KEEP_DURATION = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_STANDBY_REPLICA_KEEP_DURATION.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_MIN_REPLICA_SET_SIZE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_MIN_REPLICA_SET_SIZE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_PLACEMENT_CONSTRAINTS = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_PLACEMENT_CONSTRAINTS.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_POLICY_LIST = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_POLICY_LIST.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_CORRELATIONS = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_CORRELATIONS.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_METRICS = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_METRICS.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_MOVE_COST = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_MOVE_COST.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_SCALING_POLICY = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_SCALING_POLICY.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_SERVICE_PLACEMENT_TIME_LIMIT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_SERVICE_PLACEMENT_TIME_LIMIT.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_DROP_SOURCE_REPLICA_ON_MOVE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_DROP_SOURCE_REPLICA_ON_MOVE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_SERVICE_DNS_NAME = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_SERVICE_DNS_NAME.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_IS_SINGLETON_REPLICA_MOVE_ALLOWED_DURING_UPGRADE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_RESTORE_REPLICA_LOCATION_AFTER_UPGRADE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_PLACE = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_PLACE.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_RUN = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_TAGS_REQUIRED_TO_RUN.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_AUXILIARY_REPLICA_COUNT = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_AUXILIARY_REPLICA_COUNT.0 as u32;
+        const FABRIC_STATEFUL_SERVICE_SERVICE_SENSITIVITY = mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_FLAGS::FABRIC_STATEFUL_SERVICE_SERVICE_SENSITIVITY.0 as u32;
     }
 }
 impl Default for StatefulServiceUpdateDescriptionFlags {
@@ -709,7 +712,7 @@ impl GetRawWithBoxPool<FABRIC_SERVICE_UPDATE_DESCRIPTION> for ServiceUpdateDescr
                 let raw = desc.get_raw_with_pool(pool);
                 let raw_ptr = pool.push(Box::new(raw));
                 FABRIC_SERVICE_UPDATE_DESCRIPTION {
-                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
+                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
                     Value: raw_ptr as *const _ as *mut c_void,
                 }
             }
@@ -717,7 +720,8 @@ impl GetRawWithBoxPool<FABRIC_SERVICE_UPDATE_DESCRIPTION> for ServiceUpdateDescr
                 let raw = desc.get_raw_with_pool(pool);
                 let raw_ptr = pool.push(Box::new(raw));
                 FABRIC_SERVICE_UPDATE_DESCRIPTION {
-                    Kind: FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
+                    Kind:
+                        FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
                     Value: raw_ptr as *const _ as *mut c_void,
                 }
             }
@@ -1116,7 +1120,7 @@ pub enum ServiceQueryResultItem {
 impl From<&FABRIC_SERVICE_QUERY_RESULT_ITEM> for ServiceQueryResultItem {
     fn from(value: &FABRIC_SERVICE_QUERY_RESULT_ITEM) -> Self {
         match value.Kind {
-            mssf_com::FabricTypes::FABRIC_SERVICE_KIND_STATEFUL => {
+            mssf_com::FabricTypes::FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATEFUL => {
                 let item = unsafe {
                     (value.Value
                         as *const mssf_com::FabricTypes::FABRIC_STATEFUL_SERVICE_QUERY_RESULT_ITEM)
@@ -1125,7 +1129,7 @@ impl From<&FABRIC_SERVICE_QUERY_RESULT_ITEM> for ServiceQueryResultItem {
                 };
                 ServiceQueryResultItem::Stateful(StatefulServiceQueryResultItem::from(item))
             }
-            mssf_com::FabricTypes::FABRIC_SERVICE_KIND_STATELESS => {
+            mssf_com::FabricTypes::FABRIC_SERVICE_KIND::FABRIC_SERVICE_KIND_STATELESS => {
                 let item = unsafe {
                     (value.Value
                         as *const mssf_com::FabricTypes::FABRIC_STATELESS_SERVICE_QUERY_RESULT_ITEM)
@@ -1191,18 +1195,18 @@ pub enum QueryServiceStatus {
 impl From<mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS> for QueryServiceStatus {
     fn from(value: mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS) -> Self {
         match value {
-            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_ACTIVE => QueryServiceStatus::Active,
-            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_UPGRADING => {
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS::FABRIC_QUERY_SERVICE_STATUS_ACTIVE => QueryServiceStatus::Active,
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS::FABRIC_QUERY_SERVICE_STATUS_UPGRADING => {
                 QueryServiceStatus::Upgrading
             }
-            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_DELETING => {
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS::FABRIC_QUERY_SERVICE_STATUS_DELETING => {
                 QueryServiceStatus::Deleting
             }
-            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_CREATING => {
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS::FABRIC_QUERY_SERVICE_STATUS_CREATING => {
                 QueryServiceStatus::Creating
             }
-            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_FAILED => QueryServiceStatus::Failed,
-            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS_UNKNOWN => {
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS::FABRIC_QUERY_SERVICE_STATUS_FAILED => QueryServiceStatus::Failed,
+            mssf_com::FabricTypes::FABRIC_QUERY_SERVICE_STATUS::FABRIC_QUERY_SERVICE_STATUS_UNKNOWN => {
                 QueryServiceStatus::Unknown
             }
             _ => QueryServiceStatus::Unknown,
@@ -1496,7 +1500,10 @@ mod service_sensitivity_tests {
             for value in 0..64 {
                 let _ptr = pool.push(Box::new(value));
             }
-            assert_eq!(raw.Kind, FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL);
+            assert_eq!(
+                raw.Kind,
+                FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL
+            );
             // SAFETY: the stateful description and its full chain are owned by pool.
             let stateful = unsafe {
                 &*raw
@@ -1558,7 +1565,8 @@ mod health_query_tests {
     fn test_service_health_result_partition_health_states() {
         let partition_state = mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATE {
             PartitionId: GUID::zeroed(),
-            AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_WARNING,
+            AggregatedHealthState:
+                mssf_com::FabricTypes::FABRIC_HEALTH_STATE::FABRIC_HEALTH_STATE_WARNING,
             Reserved: std::ptr::null_mut(),
         };
         let list = mssf_com::FabricTypes::FABRIC_PARTITION_HEALTH_STATE_LIST {
@@ -1567,7 +1575,8 @@ mod health_query_tests {
         };
         let raw = mssf_com::FabricTypes::FABRIC_SERVICE_HEALTH {
             ServiceName: Uri::from("fabric:/App1/Svc1").as_raw(),
-            AggregatedHealthState: mssf_com::FabricTypes::FABRIC_HEALTH_STATE_WARNING,
+            AggregatedHealthState:
+                mssf_com::FabricTypes::FABRIC_HEALTH_STATE::FABRIC_HEALTH_STATE_WARNING,
             HealthEvents: std::ptr::null(),
             PartitionHealthStates: &list,
             Reserved: std::ptr::null_mut(),

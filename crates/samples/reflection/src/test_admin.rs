@@ -417,7 +417,7 @@ impl TestCreateUpdateClient {
         let list = match qc.get_partition_list(&desc, self.timeout, None).await {
             Ok(l) => l,
             Err(e) => {
-                // There is a known SF issue that this returns FABRIC_E_PARTITION_NOT_FOUND
+                // There is a known SF issue that this returns FABRIC_ERROR_CODE::FABRIC_E_PARTITION_NOT_FOUND
                 // after 2 repartition requests running concurrently.
                 tracing::error!("SF BUG: get_partition_list failed: {e}");
                 return vec![];

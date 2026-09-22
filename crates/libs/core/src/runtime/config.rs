@@ -90,7 +90,7 @@ impl ConfigurationPackage {
         section_name: &WString,
         parameter_name: &WString,
     ) -> crate::Result<(WString, bool)> {
-        let mut is_encrypted: u8 = Default::default();
+        let mut is_encrypted: bool = Default::default();
         let raw = unsafe {
             self.com.GetValue(
                 section_name.as_pcwstr(),
@@ -98,7 +98,7 @@ impl ConfigurationPackage {
                 std::ptr::addr_of_mut!(is_encrypted),
             )
         }?;
-        Ok((WString::from(raw), is_encrypted != 0))
+        Ok((WString::from(raw), is_encrypted))
     }
 
     pub fn decrypt_value(&self, encryptedvalue: &WString) -> crate::Result<WString> {

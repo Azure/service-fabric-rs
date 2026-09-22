@@ -98,7 +98,7 @@ impl IFabricAsyncOperationContext_Impl for AsyncContext_Impl {
         true
     }
 
-    fn Callback(&self) -> crate::WinResult<IFabricAsyncOperationCallback> {
+    fn get_Callback(&self) -> crate::WinResult<IFabricAsyncOperationCallback> {
         // get a view of the callback
         let callback_copy: IFabricAsyncOperationCallback = self.callback_.clone();
         Ok(callback_copy)
@@ -119,7 +119,7 @@ mod tests {
     fn test_waitable_callback() {
         let (token, callback) = WaitableCallback::channel();
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(Some(&callback)).into();
-        unsafe { ctx.Callback().unwrap().Invoke(&ctx) };
+        unsafe { ctx.get_Callback().unwrap().Invoke(&ctx) };
         token.wait();
     }
 }

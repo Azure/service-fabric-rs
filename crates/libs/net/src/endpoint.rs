@@ -55,7 +55,7 @@ impl std::fmt::Display for HostPort {
 /// | [`NotFound`][Self::NotFound] | Listener omitted → client sees resource deletion |
 ///
 /// `mssf_util::resolve::ServicePartitionResolver` collapses the empty-endpoint
-/// case into `FABRIC_E_SERVICE_OFFLINE`, so it cannot make this distinction on
+/// case into `FABRIC_ERROR_CODE::FABRIC_E_SERVICE_OFFLINE`, so it cannot make this distinction on
 /// its own; the SF-backed source classifies explicitly instead.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EndpointSnapshot {

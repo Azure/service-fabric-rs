@@ -38,7 +38,7 @@ impl From<&IFabricGatewayInformationResult> for GatewayInformationResult {
         Self {
             node_address: WString::from(info.NodeAddress),
             node_id: info.NodeId.into(),
-            node_instance_id: info.NodeInstanceId,
+            node_instance_id: info.NodeInstanceId.0,
             node_name: WString::from(info.NodeName),
         }
     }
@@ -99,9 +99,8 @@ where
 {
     fn OnClaimsRetrieval(
         &self,
-        metadata: *const mssf_com::Microsoft::ServiceFabric::FabricTypes::FABRIC_CLAIMS_RETRIEVAL_METADATA,
-    ) -> crate::WinResult<mssf_com::Microsoft::ServiceFabric::FabricCommon::IFabricStringResult>
-    {
+        metadata: *const mssf_com::Windows::ServiceFabric::FabricTypes::FABRIC_CLAIMS_RETRIEVAL_METADATA,
+    ) -> crate::WinResult<mssf_com::Windows::ServiceFabric::FabricCommon::IFabricStringResult> {
         let meta = unsafe { metadata.as_ref().unwrap() };
         let claims_meta = ClaimsRetrievalMetadata::from(meta);
         let result = self
@@ -216,16 +215,16 @@ pub enum ClaimsRetrievalMetadata {
 impl From<&FABRIC_CLAIMS_RETRIEVAL_METADATA> for ClaimsRetrievalMetadata {
     fn from(value: &FABRIC_CLAIMS_RETRIEVAL_METADATA) -> Self {
         match value.Kind {
-            mssf_com::FabricTypes::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND_AAD => {
+            mssf_com::FabricTypes::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND_AAD => {
                 let aad_meta = unsafe {
                     (value.Value
-                        as *const mssf_com::FabricTypes::FABRIC_AAD_CLAIMS_RETRIEVAL_METADATA)
+                        as *const mssf_com::FabricTypes::FABRIC_AAD_ClAIMS_RETRIEVAL_METADATA)
                         .as_ref()
                         .unwrap()
                 };
                 let ex1 = unsafe {
                     (aad_meta.Reserved
-                        as *const mssf_com::FabricTypes::FABRIC_AAD_CLAIMS_RETRIEVAL_METADATA_EX1)
+                        as *const mssf_com::FabricTypes::FABRIC_AAD_ClAIMS_RETRIEVAL_METADATA_EX1)
                         .as_ref()
                 };
 
@@ -238,7 +237,7 @@ impl From<&FABRIC_CLAIMS_RETRIEVAL_METADATA> for ClaimsRetrievalMetadata {
                     login_endpoint: ex1.map_or(WString::new(), |v| WString::from(v.LoginEndpoint)),
                 })
             }
-            mssf_com::FabricTypes::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND_NONE => {
+            mssf_com::FabricTypes::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND::FABRIC_CLAIMS_RETRIEVAL_METADATA_KIND_NONE => {
                 ClaimsRetrievalMetadata::None
             }
             _ => ClaimsRetrievalMetadata::None,

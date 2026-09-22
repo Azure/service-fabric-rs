@@ -105,7 +105,7 @@ where
             // We trust the code in mssf here to not panic, or we have bigger problem (memory corruption etc.).
             let self_impl: &BridgeContext<T> = unsafe { self_cp.as_impl() };
             self_impl.set_content(task_res);
-            let cb = unsafe { self_cp.Callback().unwrap() };
+            let cb = unsafe { self_cp.get_Callback().unwrap() };
 
             // We move the callback invocation off of the tokio I/O thread as they take locks
             // and may block.
@@ -184,7 +184,7 @@ impl<T> IFabricAsyncOperationContext_Impl for BridgeContext_Impl<T> {
         self.is_completed_synchronously
     }
 
-    fn Callback(&self) -> crate::WinResult<IFabricAsyncOperationCallback> {
+    fn get_Callback(&self) -> crate::WinResult<IFabricAsyncOperationCallback> {
         let cp = self.callback.clone();
         Ok(cp)
     }

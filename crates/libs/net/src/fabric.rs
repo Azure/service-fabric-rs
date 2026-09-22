@@ -56,9 +56,9 @@ const DROP_DELAY: Duration = Duration::from_secs(5);
 /// everything else, including unrecognized and non-Fabric errors, falls back
 /// to the transient [`EndpointSnapshot::NoPrimary`].
 ///
-/// Note that `FABRIC_E_SERVICE_OFFLINE` rarely arrives here directly:
+/// Note that `FABRIC_ERROR_CODE::FABRIC_E_SERVICE_OFFLINE` rarely arrives here directly:
 /// [`ServicePartitionResolver`] retries transient failures and surfaces
-/// `FABRIC_E_TIMEOUT` on exhaustion. The outcome is the same either way.
+/// `FABRIC_ERROR_CODE::FABRIC_E_TIMEOUT` on exhaustion. The outcome is the same either way.
 pub fn classify_resolve_error(err: &mssf_core::Error) -> EndpointSnapshot {
     match err.try_as_fabric_error_code() {
         Ok(ErrorCode::FABRIC_E_SERVICE_DOES_NOT_EXIST)

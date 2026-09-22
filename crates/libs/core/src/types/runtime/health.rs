@@ -1,5 +1,7 @@
 use crate::PCWSTR;
-use mssf_com::FabricTypes::{FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT_SEND_OPTIONS};
+use mssf_com::FabricTypes::{
+    FABRIC_HEALTH_INFORMATION, FABRIC_HEALTH_REPORT_SEND_OPTIONS, FABRIC_SEQUENCE_NUMBER,
+};
 
 use crate::{WString, types::HealthState};
 
@@ -45,7 +47,7 @@ impl From<&FABRIC_HEALTH_INFORMATION> for HealthInformation {
             time_to_live_seconds: value.TimeToLiveSeconds,
             state: HealthState::from(&value.State),
             description: WString::from(value.Description),
-            sequence_number: value.SequenceNumber,
+            sequence_number: value.SequenceNumber.0,
             remove_when_expired: value.RemoveWhenExpired,
         }
     }
@@ -60,7 +62,7 @@ impl From<&HealthInformation> for FABRIC_HEALTH_INFORMATION {
             TimeToLiveSeconds: value.time_to_live_seconds,
             State: (&value.state).into(),
             Description: PCWSTR(value.description.as_ptr()),
-            SequenceNumber: value.sequence_number,
+            SequenceNumber: FABRIC_SEQUENCE_NUMBER(value.sequence_number),
             RemoveWhenExpired: value.remove_when_expired,
             Reserved: std::ptr::null_mut(),
         }

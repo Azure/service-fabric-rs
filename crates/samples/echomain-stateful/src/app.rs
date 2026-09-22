@@ -20,9 +20,9 @@ use mssf_com::FabricRuntime::{
     IFabricStatefulServiceReplica, IFabricStatefulServiceReplica_Impl,
 };
 use mssf_com::FabricTypes::{
-    FABRIC_EPOCH, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_OPEN_MODE,
-    FABRIC_REPLICA_OPEN_MODE_INVALID, FABRIC_REPLICA_ROLE, FABRIC_REPLICA_SET_CONFIGURATION,
-    FABRIC_REPLICA_SET_QUORUM_MODE, FABRIC_URI,
+    FABRIC_EPOCH, FABRIC_REPLICA_ID, FABRIC_REPLICA_INFORMATION, FABRIC_REPLICA_OPEN_MODE,
+    FABRIC_REPLICA_ROLE, FABRIC_REPLICA_SET_CONFIGURATION, FABRIC_REPLICA_SET_QUORUM_MODE,
+    FABRIC_SEQUENCE_NUMBER, FABRIC_URI,
 };
 use mssf_core::WString;
 use mssf_core::sync::wait::AsyncContext;
@@ -38,6 +38,7 @@ pub fn run(runtime: &IFabricRuntime, port: u32, hostname: WString) {
     let factory: IFabricStatefulServiceFactory = StatefulServiceFactory::new(port, hostname).into();
     let service_type_name = mssf_core::WString::from("StatefulEchoAppService");
     unsafe { runtime.RegisterStatefulServiceFactory(service_type_name.as_pcwstr(), &factory) }
+        .ok()
         .expect("register failed");
 }
 
@@ -62,11 +63,11 @@ impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory_Impl {
     fn CreateReplica(
         &self,
         servicetypename: &mssf_core::PCWSTR,
-        servicename: FABRIC_URI,
+        servicename: &FABRIC_URI,
         initializationdatalength: u32,
         initializationdata: *const u8,
         partitionid: &mssf_core::GUID,
-        instanceid: i64,
+        instanceid: FABRIC_REPLICA_ID,
     ) -> mssf_core::WinResult<IFabricStatefulServiceReplica> {
         let mut init_data: String = "".to_string();
         if initializationdata.is_null() && initializationdatalength != 0 {
@@ -84,7 +85,7 @@ impl IFabricStatefulServiceFactory_Impl for StatefulServiceFactory_Impl {
             servicename,
             init_data,
             partitionid,
-            instanceid
+            instanceid.0
         );
         let port_copy = self.port_;
         let hostname_copy = self.hostname_.clone();
@@ -117,7 +118,11 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginOpen");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
 
@@ -142,7 +147,11 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginChangeRole");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
 
@@ -162,7 +171,11 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginUpdateEpoch");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
     fn EndUpdateEpoch(
@@ -179,7 +192,11 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginClose");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
     fn EndClose(
@@ -192,15 +209,13 @@ impl IFabricReplicator_Impl for AppFabricReplicator_Impl {
     fn Abort(&self) {
         info!("AppFabricReplicator::Abort");
     }
-    fn GetCurrentProgress(&self) -> ::mssf_core::WinResult<i64> {
+    fn GetCurrentProgress(&self) -> ::mssf_core::WinResult<FABRIC_SEQUENCE_NUMBER> {
         info!("AppFabricReplicator::GetCurrentProgress");
-        let v = 0;
-        Ok(v)
+        Ok(FABRIC_SEQUENCE_NUMBER(0))
     }
-    fn GetCatchUpCapability(&self) -> ::mssf_core::WinResult<i64> {
+    fn GetCatchUpCapability(&self) -> ::mssf_core::WinResult<FABRIC_SEQUENCE_NUMBER> {
         info!("AppFabricReplicator::GetCatchUpCapability");
-        let v = 0;
-        Ok(v)
+        Ok(FABRIC_SEQUENCE_NUMBER(0))
     }
 }
 
@@ -213,16 +228,19 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginOnDataLoss");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
     fn EndOnDataLoss(
         &self,
         _context: windows_core::Ref<IFabricAsyncOperationContext>,
-    ) -> ::mssf_core::WinResult<u8> {
+    ) -> ::mssf_core::WinResult<bool> {
         info!("AppFabricReplicator::EndOnDataLoss");
-        let v = 0;
-        Ok(v)
+        Ok(false)
     }
     fn UpdateCatchUpReplicaSetConfiguration(
         &self,
@@ -240,7 +258,11 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginWaitForCatchUpQuorum");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
     fn EndWaitForCatchUpQuorum(
@@ -265,7 +287,11 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::BeginBuildReplica");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
     fn EndBuildReplica(
@@ -275,10 +301,10 @@ impl IFabricPrimaryReplicator_Impl for AppFabricReplicator_Impl {
         info!("AppFabricReplicator::EndBuildReplica");
         Ok(())
     }
-    fn RemoveReplica(&self, replicaid: i64) -> ::mssf_core::WinResult<()> {
+    fn RemoveReplica(&self, replicaid: FABRIC_REPLICA_ID) -> ::mssf_core::WinResult<()> {
         info!(
             "AppFabricReplicator::UpdateCurrentReplicaSetConfiguration {} ",
-            replicaid
+            replicaid.0
         );
         Ok(())
     }
@@ -317,7 +343,7 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
     ) -> ::mssf_core::WinResult<IFabricAsyncOperationContext> {
         info!("echo_replica::BeginOpen");
 
-        if openmode == FABRIC_REPLICA_OPEN_MODE_INVALID {
+        if openmode == FABRIC_REPLICA_OPEN_MODE::FABRIC_REPLICA_OPEN_MODE_INVALID {
             //TODO: return error
         }
 
@@ -329,7 +355,11 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
 
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
 
         // TODO: emplement stop thread.
 
@@ -392,7 +422,11 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
 
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
 
@@ -420,7 +454,11 @@ impl IFabricStatefulServiceReplica_Impl for AppInstance_Impl {
         info!("AppInstance::BeginChangeRole");
         let ctx: IFabricAsyncOperationContext = AsyncContext::new(callback.as_ref()).into();
         // invoke callback right away
-        unsafe { ctx.Callback().expect("cannot get callback").Invoke(&ctx) };
+        unsafe {
+            ctx.get_Callback()
+                .expect("cannot get callback")
+                .Invoke(&ctx)
+        };
         Ok(ctx)
     }
 

@@ -2,6 +2,7 @@
 name = "mssf-com"
 version = "0.6.2"
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 documentation.workspace = true
 repository.workspace = true
@@ -22,7 +23,10 @@ mssf-pal.workspace = true
 
 [features]
 default = []
-Foundation = []
+# `Foundation` is the generated dependency name for the referenced Win32
+# metadata emitted alongside the Service Fabric bindings.
+Foundation = ["Win32"]
+Win32 = []
 # generated features
 ServiceFabric = ["Foundation"]
 ServiceFabric_FabricClient = ["ServiceFabric"]

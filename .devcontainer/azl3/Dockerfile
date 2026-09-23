@@ -14,7 +14,7 @@ RUN tdnf update -y \
 RUN mkdir -p /var/opt/microsoft/servicefabric/ \
     && echo "Accepted" > /var/opt/microsoft/servicefabric/accepted-eula-ga
 
-ENV SF_VERSION=11.5.118.5
+ENV SF_VERSION=11.8.131.5
 RUN wget -q https://download.microsoft.com/download/3/1/F/31F3FEEB-F073-4E27-A98B-8E691FF74F40/ServiceFabric.AL.${SF_VERSION}.rpm \
     && tdnf install --noplugins --skipsignature -y ./ServiceFabric.AL.${SF_VERSION}.rpm \
     && rm ServiceFabric.AL.${SF_VERSION}.rpm \

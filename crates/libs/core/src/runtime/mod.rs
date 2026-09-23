@@ -11,7 +11,6 @@ use mssf_com::FabricRuntime::IFabricRuntime2;
 pub use self::runtime_wrapper::Runtime;
 
 pub mod config;
-pub mod error;
 
 pub mod executor;
 pub mod node_context;

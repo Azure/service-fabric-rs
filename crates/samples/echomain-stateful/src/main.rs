@@ -78,7 +78,7 @@ fn get_hostname() -> WString {
 
     let hostname_raw = unsafe { (*node_ctx).IPAddressOrFQDN };
 
-    let ret = WString::from_wide(unsafe { hostname_raw.as_wide() });
+    let ret = WString::from(hostname_raw);
     info!("got hostname: {:?}", ret);
     ret
 }

@@ -5,98 +5,16 @@
 
 use std::fmt::Write;
 
-/// Decodes a single UTF-8 char from `bytes` starting at `pos`, returning the
-/// code point and the next position. Const-evaluable helper for the `w!` macro.
-/// Copied from `windows-strings` so the const machinery works on all platforms.
-#[doc(hidden)]
-pub const fn decode_utf8_char(bytes: &[u8], mut pos: usize) -> Option<(u32, usize)> {
-    if bytes.len() == pos {
-        return None;
-    }
-    let ch = bytes[pos] as u32;
-    pos += 1;
-    if ch <= 0x7f {
-        return Some((ch, pos));
-    }
-    if (ch & 0xe0) == 0xc0 {
-        if bytes.len() - pos < 1 {
-            return None;
-        }
-        let ch2 = bytes[pos] as u32;
-        pos += 1;
-        if (ch2 & 0xc0) != 0x80 {
-            return None;
-        }
-        let result: u32 = ((ch & 0x1f) << 6) | (ch2 & 0x3f);
-        if result <= 0x7f {
-            return None;
-        }
-        return Some((result, pos));
-    }
-    if (ch & 0xf0) == 0xe0 {
-        if bytes.len() - pos < 2 {
-            return None;
-        }
-        let ch2 = bytes[pos] as u32;
-        pos += 1;
-        let ch3 = bytes[pos] as u32;
-        pos += 1;
-        if (ch2 & 0xc0) != 0x80 || (ch3 & 0xc0) != 0x80 {
-            return None;
-        }
-        let result = ((ch & 0x0f) << 12) | ((ch2 & 0x3f) << 6) | (ch3 & 0x3f);
-        if result <= 0x7ff || (0xd800 <= result && result <= 0xdfff) {
-            return None;
-        }
-        return Some((result, pos));
-    }
-    if (ch & 0xf8) == 0xf0 {
-        if bytes.len() - pos < 3 {
-            return None;
-        }
-        let ch2 = bytes[pos] as u32;
-        pos += 1;
-        let ch3 = bytes[pos] as u32;
-        pos += 1;
-        let ch4 = bytes[pos] as u32;
-        pos += 1;
-        if (ch2 & 0xc0) != 0x80 || (ch3 & 0xc0) != 0x80 || (ch4 & 0xc0) != 0x80 {
-            return None;
-        }
-        let result =
-            ((ch & 0x07) << 18) | ((ch2 & 0x3f) << 12) | ((ch3 & 0x3f) << 6) | (ch4 & 0x3f);
-        if result <= 0xffff || 0x10ffff < result {
-            return None;
-        }
-        return Some((result, pos));
-    }
-    None
-}
-
-/// Number of UTF-16 code units needed to encode `bytes` (interpreted as UTF-8).
-/// Const-evaluable helper for the `w!` macro.
-#[doc(hidden)]
-pub const fn utf16_len(bytes: &[u8]) -> usize {
-    let mut pos = 0;
-    let mut len = 0;
-    while let Some((code_point, new_pos)) = decode_utf8_char(bytes, pos) {
-        pos = new_pos;
-        len += if code_point <= 0xffff { 1 } else { 2 };
-    }
-    len
-}
-
-// TODO: Investigate replacing this type and the PAL `w!` macro with the
-// cross-platform versions exported by windows-strings 0.100+. Do not switch
-// `WString` conversions directly: upstream `PCWSTR::len` calls C `wcslen`,
-// while Linux normally defines `wchar_t` as 32-bit and Windows `PCWSTR` stores
-// 16-bit UTF-16 code units. Any migration must retain a portable u16 scan on
-// non-Windows targets or first resolve that behavior upstream.
+/// A pointer to a constant null-terminated UTF-16 string.
+///
+/// Service Fabric uses UTF-16 on every supported platform. This is deliberately
+/// distinct from `windows_core::PCWSTR`, whose length operations use the
+/// platform `wcslen` even where `wchar_t` is not 16 bits.
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct PCWSTR(pub *const u16);
 
-impl AsRef<PCWSTR> for PCWSTR {
+impl AsRef<Self> for PCWSTR {
     fn as_ref(&self) -> &Self {
         self
     }
@@ -106,34 +24,32 @@ impl windows_core::imp::TypeKind for PCWSTR {
     type TypeKind = windows_core::imp::CopyType;
 }
 
-// Copied minimal impl from windows_core crate which is not available on linux.
-// This is used on windows as well instead of the original defs if you use mssf-pal.
 impl PCWSTR {
-    /// Construct a new `PCWSTR` from a raw pointer
+    /// Constructs a `PCWSTR` from a raw pointer.
     pub const fn from_raw(ptr: *const u16) -> Self {
         Self(ptr)
     }
 
-    /// Construct a null `PCWSTR`
+    /// Constructs a null `PCWSTR`.
     pub const fn null() -> Self {
         Self(core::ptr::null())
     }
 
-    /// Returns a raw pointer to the `PCWSTR`
+    /// Returns the raw pointer.
     pub const fn as_ptr(&self) -> *const u16 {
         self.0
     }
 
-    /// Checks whether the `PCWSTR` is null
+    /// Returns whether the pointer is null.
     pub fn is_null(&self) -> bool {
         self.0.is_null()
     }
 
-    /// String length without the trailing 0
+    /// Returns the UTF-16 string length without the trailing null.
     ///
     /// # Safety
     ///
-    /// The `PCWSTR`'s pointer needs to be valid for reads up until and including the next `\0`.
+    /// The pointer must be valid for reads up to and including the next null `u16`.
     pub unsafe fn len(&self) -> usize {
         let mut len = 0;
         let mut ptr = self.0;
@@ -144,20 +60,20 @@ impl PCWSTR {
         len
     }
 
-    /// Returns `true` if the string length is zero, and `false` otherwise.
+    /// Returns whether the UTF-16 string is empty.
     ///
     /// # Safety
     ///
-    /// The `PCWSTR`'s pointer needs to be valid for reads up until and including the next `\0`.
+    /// The pointer must be valid for reads up to and including the next null `u16`.
     pub unsafe fn is_empty(&self) -> bool {
         unsafe { self.len() == 0 }
     }
 
-    /// String data without the trailing 0
+    /// Returns the UTF-16 string data without the trailing null.
     ///
     /// # Safety
     ///
-    /// The `PCWSTR`'s pointer needs to be valid for reads up until and including the next `\0`.
+    /// The pointer must be valid for reads up to and including the next null `u16`.
     pub unsafe fn as_wide(&self) -> &[u16] {
         unsafe { core::slice::from_raw_parts(self.0, self.len()) }
     }
@@ -167,20 +83,6 @@ impl Default for PCWSTR {
     fn default() -> Self {
         Self::null()
     }
-}
-
-#[repr(transparent)]
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub struct PCSTR(pub *const u8);
-
-impl AsRef<PCSTR> for PCSTR {
-    fn as_ref(&self) -> &Self {
-        self
-    }
-}
-
-impl windows_core::imp::TypeKind for PCSTR {
-    type TypeKind = windows_core::imp::CopyType;
 }
 
 /// WString is the utf16 string, similar to std::wstring in cpp.
@@ -298,10 +200,7 @@ impl From<PCWSTR> for WString {
 /// FFI conversion.
 impl From<Option<&WString>> for PCWSTR {
     fn from(value: Option<&WString>) -> Self {
-        match value {
-            Some(s) => s.as_pcwstr(),
-            None => PCWSTR::null(),
-        }
+        value.map_or_else(Self::null, WString::as_pcwstr)
     }
 }
 
@@ -341,7 +240,7 @@ mod tests {
             assert_eq!(s, h.to_string_lossy());
             assert_eq!(h.as_wide().len(), s.len());
             let raw = h.as_ptr();
-            let h2 = WString::from(PCWSTR(raw));
+            let h2 = WString::from(PCWSTR::from_raw(raw));
             assert_eq!(s, h2.to_string_lossy());
             assert_eq!(h, h2);
             assert_ne!(h, WString::from("dummy"));
@@ -350,5 +249,44 @@ mod tests {
         test_case("hello");
         test_case("s");
         test_case("");
+    }
+
+    #[test]
+    fn pcwstr_conversion_scans_utf16_code_units() {
+        let value = WString::from("a😀ω");
+        let raw = value.as_pcwstr();
+
+        assert_eq!(unsafe { raw.as_wide() }, value.as_wide());
+        assert_eq!(WString::from(raw), value);
+    }
+
+    #[test]
+    fn pcwstr_null_conversion_is_empty() {
+        let raw = PCWSTR::null();
+
+        assert!(raw.is_null());
+        assert_eq!(WString::from(raw), WString::new());
+    }
+
+    #[test]
+    fn wide_literal_returns_pal_pcwstr() {
+        const VALUE: PCWSTR = crate::w!("a😀ω");
+
+        assert_eq!(unsafe { VALUE.as_wide() }, WString::from("a😀ω").as_wide());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn upstream_pcwstr_uses_linux_wchar_width() {
+        use windows_core::PCWSTR as UpstreamPCWSTR;
+
+        #[repr(align(4))]
+        struct AlignedUtf16([u16; 4]);
+
+        let value = AlignedUtf16(['a' as u16, 'b' as u16, 0, 0]);
+        let raw = UpstreamPCWSTR::from_raw(value.0.as_ptr());
+
+        assert_eq!(unsafe { raw.len() }, 1);
+        assert_eq!(unsafe { raw.as_wide() }, &value.0[..1]);
     }
 }

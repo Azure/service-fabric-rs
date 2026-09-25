@@ -34,7 +34,7 @@ RUN wget -q https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/pack
     && echo "servicefabric servicefabric/accepted-eula-ga select true" | debconf-set-selections \
     && echo "servicefabricsdkcommon servicefabricsdkcommon/accepted-eula-ga select true" | debconf-set-selections
 
-ENV SF_VERSION=11.5.111.4
+ENV SF_VERSION=11.8.121.4
 RUN wget -q https://download.microsoft.com/download/3/1/F/31F3FEEB-F073-4E27-A98B-8E691FF74F40/ServiceFabric.U22.${SF_VERSION}.deb \
     && apt-get update \
     && apt-get install -y --no-install-recommends ./ServiceFabric.U22.${SF_VERSION}.deb \

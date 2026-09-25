@@ -43,7 +43,9 @@ See also the broader proposal: [`docs/proposal/GrpcXds.md`](../proposal/GrpcXds.
 
 ## Non-Goals
 
-- Multiple mapped services per server instance.
+- Dynamic registration: the set of mapped services is fixed at build time.
+- A cluster-wide SF-facing tier: the `FabricClient` is shared per *process*,
+  not per cluster.
 - Multiple partitions, partition keys, stateless services, secondaries, or
   read-from-secondary routing.
 - RDS, delta/incremental xDS, federation (`xdstp://`), or LRS/ORCA load
@@ -70,18 +72,19 @@ therefore structurally guarantees the successor does not link the incumbent.
 | `endpoint.rs` | `HostPort`, `EndpointSnapshot`, the `EndpointSource` trait, `ScriptedEndpointSource` |
 | `address.rs` | `AddressInterpreter` — pluggable interpretation of the opaque SF address |
 | `config.rs` | `XdsMapping` — one SF service ↔ one xDS resource name |
+| `registry.rs` | `ServiceRegistry` — the set of services one ADS server publishes |
 | `resources.rs` | Pure LDS / CDS / EDS construction |
 | `ads.rs` | The SotW ADS service, and `bootstrap_json` |
-| `fabric.rs` | `FabricEndpointSource` — the SF-backed source |
+| `fabric.rs` | `FabricNaming` (one shared `FabricClient`) and `FabricEndpointSource` |
 
 ## Architecture
 
 ```
  SF Naming ──notify──► FabricEndpointSource ──watch──► AdsService ──ADS──► stock xDS client
                           (fabric.rs)                    (ads.rs)                │
-                                                                                │ direct gRPC
-                                                                                ▼
-                                                                        primary replica
+                                                        serves a                │ direct gRPC
+                                                   ServiceRegistry              ▼
+                                                     (registry.rs)      primary replica
 ```
 
 Only *configuration* flows through this crate. Client RPCs go **directly** to
@@ -107,8 +110,10 @@ The minimum accepted chain is therefore **LDS → CDS → EDS**.
 
 ### Why State-of-the-World, not delta
 
-Delta xDS is `unimplemented` in the target client. SotW is sufficient, and for a
-single mapped service the "send everything" semantics cost nothing.
+Delta xDS is `unimplemented` in the target client. SotW is sufficient, and at
+this scale the "send everything" semantics cost little — though see
+[Serving several services](#serving-several-services) for the one place where
+they are genuinely dangerous.
 
 ### Why a `watch` channel
 
@@ -155,6 +160,150 @@ These are not stylistic. Each one prevents a client-side rejection:
 
 Each of these has a dedicated unit test in `resources.rs`, so a regression is
 caught without needing a live client to reject it.
+
+## Serving several services
+
+One ADS server publishes any number of services. Clients subscribe by resource
+name, so this is what xDS is designed for; `ServiceRegistry` holds the set and
+`AdsService::from_registry` serves it. The single-service constructors remain as
+one-entry sugar.
+
+### The index is keyed by `(type_url, name)`, not by name
+
+Each entry contributes two names — a `Listener` named `<xds_name>` and a
+`Cluster` named `<xds_name>-primary`, which EDS reuses. Deriving the cluster
+name by appending a constant suffix is injective, so distinct xDS names can
+never produce colliding cluster names; unique `xds_name` is therefore the only
+rule the builder has to enforce, and it does so at registration time, where a
+configuration mistake is cheap to diagnose.
+
+What a bare-name index *would* get wrong is the cross-type case: a mapping named
+`x-primary` has a Listener whose name equals the Cluster of a different mapping
+named `x`. Both are legitimate and must resolve to different entries. Including
+the type URL in the key makes conflating them impossible rather than merely
+unlikely.
+
+### LDS and CDS carry the whole subscribed set; EDS carries only what changed
+
+This is the sharpest correctness constraint in the multi-service design.
+Listeners and Clusters are `ALL_RESOURCES_REQUIRED_IN_SOTW`: a response that
+omits a resource the client is subscribed to is not a no-op, it is a
+**deletion**. So any LDS or CDS response must enumerate every subscribed entry —
+including when the response was triggered by a change to just one of them.
+Pushing only the changed service's Listener would silently break every *other*
+service on that stream.
+
+EDS has no such rule; it is tracked per-resource. An endpoint change therefore
+pushes exactly one `ClusterLoadAssignment`, for the cluster that actually moved.
+
+`tests/scripted_ads.rs` guards this directly, and the guard had to be built
+carefully: each `tonic-xds` client opens its *own* ADS stream subscribed only to
+its own target, so two clients cannot observe a cross-service deletion no matter
+how badly the server behaves. The real guard,
+`a_change_repeats_every_subscribed_listener`, therefore speaks the ADS protocol
+directly, puts both Listeners on **one** stream, changes one service, and
+asserts the pushed LDS response still enumerates both. It was verified to fail —
+reporting `["svc-a"]` — when the push is narrowed to the changed entry.
+
+A stream that is subscribed to *neither* the changed Listener nor the changed
+Cluster is skipped entirely. Re-sending its unchanged set would be correct but
+would make every service's churn cost every client a response.
+
+### Fan-in across sources
+
+Each entry has its own `watch::Receiver`, and a stream awaits the first change
+across all of them. `watch::Receiver::changed` is cancel-safe, so the fan-in set
+is rebuilt on each loop iteration rather than held across them — which would
+otherwise require a self-referential future. The registry is non-empty by
+construction, which is load-bearing: the underlying `select_all` panics on an
+empty set.
+
+Reads go through *separate cloned receivers*. `changed()` needs `&mut`, and that
+borrow lives for as long as the fan-in future does — the whole `select!` — so no
+arm could otherwise read the current state. Cloning is an `Arc` bump and means
+every response is built from the live value rather than a cached copy that could
+drift out of step with the registry.
+
+**A source whose sender is dropped is retired from the fan-in, not fatal.** A
+closed `watch` channel reports "changed" immediately and forever, so a dead
+source would spin; worse, because every reconnecting stream re-subscribes to the
+same dead channel, one torn-down source would break every *other* service on the
+server, permanently. That blast radius is new with multi-service and is the
+reason for the `alive` mask. A retired entry is deliberately **not** published as
+`NotFound`: a dropped sender is a host-process lifecycle event, not naming
+reporting the service gone, and `NotFound` is a permanent client-side deletion.
+Its last published state is served instead. If every source retires, the fan-in
+simply never resolves, leaving cancellation free to run.
+
+### Name resolution has one implementation
+
+`resources_for` resolves a non-wildcard request through
+`ServiceRegistry::index_of` rather than scanning entries and re-deriving names.
+The wildcard (empty `resource_names`) case still means "every entry", which no
+index can express. Routing the named case through the index keeps the
+`(type_url, name)` rules in exactly one place instead of having the serving path
+quietly reimplement them.
+
+### What this does not consolidate
+
+`FabricNaming` gives the whole process **one** `FabricClient` and one
+notification callback, so the SF-side cost of mapping N services is one naming
+connection and N filters — not N of everything. What is still not consolidated
+is *cluster-wide*: every node running this crate maintains its own filters.
+Collapsing those into one cluster-wide subscription with a relay is the
+two-tier discovery work in the proposal.
+
+The registry is also immutable once built — there is no dynamic
+registration while serving.
+
+## One `FabricClient` for the process
+
+SF installs the service-notification callback when the `FabricClient` is
+**built**; it cannot be attached afterwards. A naive "one source owns one
+client" design therefore silently makes the callback per-service too, and N
+mapped services become N naming connections and N callbacks — precisely the
+naming load this work exists to reduce.
+
+`FabricNaming` owns the client and installs a single callback that dispatches on
+`service_name` through a `HashMap` of per-service `watch` senders.
+`FabricNaming::source_for` claims a name in that map, registers the SF filter,
+and returns the source; `FabricEndpointSource::new` remains for the
+single-service case, where it simply builds a private `FabricNaming` and marks
+the source as owning it.
+
+Registering the same SF service twice is **rejected**. Both sources would
+register a filter and then race for the same notifications, with only one
+winning the route — starving the other silently. Note the check keys on the SF
+service URI, not the xDS name: two different xDS aliases for one service collide
+here even though the registry would accept them.
+
+The dispatch table is generic over its payload purely so the routing rules can
+be unit-tested without constructing a `ServiceNotification`, which wraps a COM
+object.
+
+### Callback constraints, revisited
+
+The callback still runs synchronously on an SF COM thread, so the shared path is
+a read-lock, one hash lookup and a non-blocking `send_replace`. Two details
+matter: the lock is an `RwLock` so concurrent notifications never serialize
+against each other (writes happen only when a source is added or removed), and a
+poisoned lock is **recovered rather than unwrapped** — unwinding out of a COM
+callback is undefined behaviour, so a panic there is not an acceptable failure
+mode.
+
+### Teardown order
+
+Sources first, then the naming host:
+
+1. each `FabricEndpointSource::shutdown` stops its interpretation task,
+   unregisters its filter, and drops its route — the route last, so a
+   notification arriving mid-teardown has nowhere to go rather than reaching a
+   half-torn source;
+2. `FabricNaming::shutdown` releases the client and applies the issue #184
+   delay, once.
+
+A source that owns its naming (the single-service constructor) does step 2
+itself, so existing single-service callers are unaffected.
 
 ## Endpoint state: three values, not two
 
@@ -345,26 +494,20 @@ The test creates and deletes its own service, so re-runs are idempotent.
 
 ## Known limitations and deferred work
 
-- **One mapped service per ADS server.** `AdsService` holds exactly one
-  `XdsMapping` and one `EndpointSource`, so serving N services means N ADS
-  servers on N ports. Note the SF-side cost is unchanged either way — one
-  `FabricClient` and one notification filter *per service* — but the naming load
-  is the same concern the proposal's two-tier design addresses, so this matters
-  at cluster scale.
-
-  The limitation is this crate's, not xDS's: xDS is designed for one control
-  plane serving many resources, clients subscribe by resource name, and
-  `resources_for` already filters on `resource_names`. Lifting it means (a) a
-  map of xDS name → (mapping, source), (b) **returning every subscribed Listener
-  and Cluster in one response** — both are `ALL_RESOURCES_REQUIRED_IN_SOTW`, so
-  emitting a subset silently deletes the others on the client — and (c) fanning
-  in over N `watch` receivers to push only the affected cluster's EDS.
-
-  When it lands, **validate that xDS names are unique across mappings**. The
-  `<xds_name>-primary` cluster derivation is itself injective (appending a
-  constant suffix cannot make two distinct names collide), but a registry keyed
-  by bare name rather than by `(type_url, name)` would conflate a Listener and a
-  Cluster that happen to share a string.
+- **One `FabricClient` per process, not per cluster.** Every node running this
+  crate keeps its own naming connection and its own filters. Collapsing those
+  into one cluster-wide subscription plus a relay is the proposal's two-tier
+  design, and is what matters at cluster scale.
+- **The registry is fixed at build time.** Services cannot be added or removed
+  while the server runs. Lifting this means making the registry observable and
+  re-pushing LDS/CDS to every open stream on a change, since both are
+  `ALL_RESOURCES_REQUIRED_IN_SOTW`.
+- **The fan-in boxes one future per live entry per wakeup.** At prototype scale
+  (a handful of services) this is not worth optimizing, and the obvious
+  alternative — `WatchStream` in a `StreamMap` — yields its initial value
+  immediately, which would produce a spurious push on every stream. If the
+  service count grows enough for this to matter, the fix is a hand-rolled
+  `poll_fn` over the receivers, not a stream adapter.
 - **A NACK is logged and then forgotten.** `stream_aggregated_resources` traces
   the `error_detail` and does not advance state, which is correct, but a
   persistently rejected resource is never re-sent and raises no metric or health

@@ -64,10 +64,9 @@ Build Rust libraries only:
 cargo build
 ```
 
-Alternatively, build all Rust libraries and samples:
+Alternatively, build and package all supported samples:
 ```sh
-cmake . -B build
-cmake --build build
+just
 ```
 
 ## License

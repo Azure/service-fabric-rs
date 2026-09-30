@@ -6,7 +6,7 @@ RUN tdnf update -y \
     && tdnf upgrade -y \
     && tdnf install --noplugins --skipsignature -y \
         tar unzip ca-certificates gcc glibc-devel binutils \
-        make curl wget awk net-tools python3-pip git socat cmake sudo \
+        make curl wget awk net-tools python3-pip git socat sudo \
         protobuf-compiler \
     && tdnf clean all
 
@@ -46,6 +46,15 @@ ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
 ARG RUST_VERSION=stable
+ARG JUST_VERSION=1.58.0
+ARG JUST_SHA256=4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d
+
+# Install a pinned just release system-wide.
+RUN wget -q "https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz" -O /tmp/just.tar.gz \
+    && echo "${JUST_SHA256}  /tmp/just.tar.gz" | sha256sum --check - \
+    && tar -xzf /tmp/just.tar.gz -C /usr/local/bin just \
+    && rm /tmp/just.tar.gz \
+    && just --version
 
 # Install docker CLI (client only, no daemon) so the container can talk
 # to the host docker daemon via a mounted /var/run/docker.sock.

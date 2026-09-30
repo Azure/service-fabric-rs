@@ -115,7 +115,7 @@ jobs:
         run: |
           tdnf update --noplugins --skipsignature -y
           tdnf install --noplugins --skipsignature -y \
-            tar unzip ca-certificates curl jq gcc glibc-devel binutils make protobuf-compiler
+            tar unzip ca-certificates curl jq gcc glibc-devel binutils make python3 protobuf-compiler
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

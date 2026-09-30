@@ -1,6 +1,6 @@
 ---
 name: onebox-deploy-test
-description: 'Build the Rust SF samples, deploy them to a local onebox cluster (Linux devcontainer or Windows host), and run the integration test suite. Use when the user asks to "run the integration tests", "deploy to onebox and test", "redeploy and re-run", "verify on a real cluster", "bring up onebox", or after non-trivial changes to crates/samples/* or crates/libs/* that need end-to-end validation. Covers cmake build, sfctl/PowerShell provisioning, cluster health waits, and `cargo test --all -- --nocapture`.'
+description: 'Build the Rust SF samples, deploy them to a local onebox cluster (Linux devcontainer or Windows host), and run the integration test suite. Use when the user asks to "run the integration tests", "deploy to onebox and test", "redeploy and re-run", "verify on a real cluster", "bring up onebox", or after non-trivial changes to crates/samples/* or crates/libs/* that need end-to-end validation. Covers just builds, sfctl/PowerShell provisioning, cluster health waits, and `cargo test --all -- --nocapture`.'
 ---
 
 # Onebox Deploy & Test
@@ -42,27 +42,23 @@ Run a quick check before doing anything else; if any fails, stop and report:
 
 1. **Inside the devcontainer.** Confirm with `cat /etc/os-release | head -2` (expect `Ubuntu` or `Azure Linux`) and `command -v sfctl` (must succeed). The host machine doesn't have SF or `sfctl` installed.
 2. **Onebox sibling container reachable.** `sfctl cluster select` should connect to the default `http://onebox:19080` (the sibling container's hostname). If it errors with `connection refused`, the onebox container hasn't finished starting — wait 10 s and retry up to 3 times.
-3. **Working tree compiles.** `cargo check -p samples_reflection -p samples_echomain -p samples_echomain_stateful` — fail fast if there's a build error before invoking the slow cmake path.
+3. **Working tree compiles.** `cargo check -p samples_reflection -p samples_echomain -p samples_echomain_stateful` — fail fast if there's a build error before invoking the full build.
 
-### Step 1 — Build everything via cmake
+### Step 1 — Build everything via just
 
-`cmake` drives `cargo build` *and* packages every sample into `build/sf_apps/<app-name>/` (this is what `sfctl application upload` consumes).
+`just` drives `cargo build` *and* packages every sample into `build/sf_apps/<app-name>/` (this is what `sfctl application upload` consumes).
 
 ```bash
-# First-time only: configure the build directory.
-[ -f build/CMakeCache.txt ] || cmake . -DCMAKE_BUILD_TYPE=Debug -B build
-
-# Always: rebuild rust binaries + repackage SF apps.
-cmake --build build --config Debug
+just
 ```
 
 Expected outputs after success:
 - `build/sf_apps/samples_reflection/` (with `ApplicationManifest.xml`, `ServicePackage/`, etc.)
 - `build/sf_apps/samples_echomain/`
 - `build/sf_apps/samples_echomain_stateful/`
-- `build/sf_apps/kvstore/` *(Windows only — gated by `if(WIN32)` in the root CMakeLists)*
+- `build/sf_apps/kvstore/` *(Windows only)*
 
-If any are missing, inspect the cmake log around the failing target — the per-sample `CMakeLists.txt` files (e.g. [crates/samples/reflection/CMakeLists.txt](../../../crates/samples/reflection/CMakeLists.txt)) define what gets packaged.
+If any are missing, inspect the `just` log around the failing recipe. The root [`justfile`](../../../justfile) defines what gets packaged.
 
 ### Step 2 — Wait for the cluster to be healthy and provision apps
 
@@ -133,17 +129,14 @@ The CI equivalent is the `build` job in
 ### Preconditions (Windows)
 
 1. **Working tree compiles.** `cargo check --all-targets` — fail
-   fast before the slow cmake path. CI also runs `cargo fmt --all -- --check`
+   fast before the full build. CI also runs `cargo fmt --all -- --check`
    and `cargo clippy -- -D warnings`; mirror them locally if you
    want a CI-clean state.
 2. **`protoc` is on `PATH`.** Required by the reflection sample's
    build script. CI installs it with `taiki-e/install-action@protoc`;
    locally use `winget install protobuf` or any equivalent.
-3. **`cmake` is on `PATH`** (`cmake --version`). If a Visual
-   Studio install ships cmake (e.g. VS 18 ships
-   `C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe`),
-   prepend that directory to `$env:PATH` once per shell instead of
-   installing a second copy.
+3. **`just` is on `PATH`** (`just --version`). Install it with
+   `winget install --id Casey.Just --exact` if needed.
 
 > Skip the CI-only `Remove conflict dll paths` step (deletes
 > `C:\Program Files\MySQL\...`) and the `check_sf_installed.ps1` /
@@ -160,26 +153,20 @@ The CI equivalent is the `build` job in
 > `Import-Module` or `Connect-ServiceFabricCluster` between
 > commands in the same shell.
 
-### Step 1 — Build everything via cmake
+### Step 1 — Build everything via just
 
-Same as Linux — `cmake` drives `cargo build` *and* packages every
+Same as Linux — `just` drives `cargo build` *and* packages every
 sample into `build\sf_apps\<app-name>\`.
 
 ```powershell
-# First-time only: configure the build directory.
-if (-not (Test-Path build\CMakeCache.txt)) {
-    cmake . -DCMAKE_BUILD_TYPE=Debug -B build
-}
-
-# Always: rebuild rust binaries + repackage SF apps.
-cmake --build build --config Debug
+just
 ```
 
 Expected outputs after success:
 - `build\sf_apps\samples_reflection\`
 - `build\sf_apps\samples_echomain\`
 - `build\sf_apps\samples_echomain_stateful\`
-- `build\sf_apps\kvstore\` *(Windows only — gated by `if(WIN32)` in the root CMakeLists)*
+- `build\sf_apps\kvstore\` *(Windows only)*
 
 ### Step 2 — Bring up the local 5-node cluster
 
@@ -283,7 +270,7 @@ artifact upload step rather than re-running this skill locally.
 
 ## Common Pitfalls
 
-- **`cmake --build` skips a sample after editing only `Cargo.toml`.** Cargo notices the change but cmake's package step caches based on file timestamps. Force re-package with `cmake --build build --config Debug --target build_rust_sample_reflection` (or `force_clean` then full rebuild).
+- **A deployed sample is stale after editing `Cargo.toml`.** Rebuild and repackage it with `just build-sample-reflection`, or run `just` for the full set.
 - **(Linux) `sfctl: command not found`.** The host doesn't have it; you're outside the devcontainer. Start it via VS Code's "Reopen in Container" or rerun in the right shell.
 - **(Linux) `http://onebox:19080` unreachable from the repo container.** The onebox container may have crashed. The devcontainer can't reach the host's docker daemon, so ask the user to check container status from a host shell (`docker ps`) and restart it there if needed — there is no auto-restart.
 - **(Windows) `Connect-ServiceFabricCluster` fails immediately after `StartOnebox.ps1`.** Re-run the connect; the SDK script already waits, but a freshly-restarted cluster occasionally needs a few extra seconds for the naming service.

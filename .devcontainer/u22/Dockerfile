@@ -16,10 +16,9 @@ RUN apt-get update -y \
     && update-locale LANG=en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
-# install cmake + sfctl via pip (kept in one RUN so the pip cache
-# isn't preserved across layers).
+# Install sfctl via pip (kept in one RUN so the pip cache isn't
+# preserved across layers).
 RUN python3 -m pip install --upgrade pip \
-    && pip install --upgrade cmake \
     && pip3 install -I sfctl==11.1.0
 ENV PATH="${PATH}:~/.local/bin"
 
@@ -60,6 +59,15 @@ ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
 ARG RUST_VERSION=stable
+ARG JUST_VERSION=1.58.0
+ARG JUST_SHA256=4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d
+
+# Install a pinned just release system-wide.
+RUN wget -q "https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz" -O /tmp/just.tar.gz \
+    && echo "${JUST_SHA256}  /tmp/just.tar.gz" | sha256sum --check - \
+    && tar -xzf /tmp/just.tar.gz -C /usr/local/bin just \
+    && rm /tmp/just.tar.gz \
+    && just --version
 
 # Install docker CLI so the container can talk to the host docker
 # daemon via a mounted /var/run/docker.sock. Used for things like

@@ -29,7 +29,7 @@ The service registers as `ReflectionAppService` and:
 
 ```powershell
 # Build
-cmake --build build --config Debug
+just build-sample-reflection
 
 # Deploy to a local one-box cluster
 .\scripts\reflection_ctl.ps1 -Action Add

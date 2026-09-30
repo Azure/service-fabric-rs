@@ -79,7 +79,7 @@ In PowerShell (`$env:OS -eq 'Windows_NT'`):
 
 ```powershell
 Get-Service FabricHostSvc           # must be Running (StartOnebox.ps1 starts it)
-Test-Path .\target\debug\reflection_ctl.exe   # operator CLI; built by cmake or `cargo build -p samples_reflection --bin reflection_ctl`
+Test-Path .\target\debug\reflection_ctl.exe   # operator CLI; built by just or `cargo build -p samples_reflection --bin reflection_ctl`
 ```
 
 For cluster bring-up + initial provisioning of `EchoApp` and
@@ -102,26 +102,22 @@ Pick the smallest applicable subset; you don't always need to redeploy.
 | Test failed, gates are parked, cluster is dirty | Step 5 (cleanup) → Step 1 if redeploying |
 | Just need to inspect what's pending | Step 5a (`list`) only |
 
-### Step 1 — Build (`cmake --build`)
+### Step 1 — Build (`just`)
 
-`cmake` drives `cargo build` AND repackages the SF apps into
+`just` drives `cargo build` AND repackages the SF apps into
 `build/sf_apps/` — *both* are required for SF to pick up new
 binaries. `cargo build` alone is not enough.
 
 **Linux**:
 
 ```bash
-[ -f build/CMakeCache.txt ] || cmake . -DCMAKE_BUILD_TYPE=Debug -B build
-cmake --build build --config Debug
+just build-sample-reflection
 ```
 
 **Windows** (PowerShell, repo root):
 
 ```powershell
-if (-not (Test-Path build\CMakeCache.txt)) {
-    cmake . -DCMAKE_BUILD_TYPE=Debug -B build
-}
-cmake --build build --config Debug
+just build-sample-reflection
 ```
 
 After success: `build/sf_apps/samples_reflection/` (Linux) or
@@ -249,7 +245,7 @@ all require the cluster to be up.
 
 ### Step 5 — Operate the cluster ([reflection_ctl/main.rs](../../../crates/samples/reflection/reflection_ctl/main.rs))
 
-The operator CLI is built by Step 1 (`cmake --build`) or
+The operator CLI is built by Step 1 (`just build-sample-reflection`) or
 explicitly via `cargo build -p samples_reflection --bin reflection_ctl`.
 Binary path: `./target/debug/reflection_ctl` (Linux) or
 `.\target\debug\reflection_ctl.exe` (Windows). The `--host` default
@@ -321,9 +317,8 @@ reflection_ctl detach \
 - **Stuck `Active`/Error sub-service after a panic (Windows).**
   `Remove-ServiceFabricService -ServiceName ... -Force` is the
   PowerShell equivalent of the Linux script's `--force-remove true`.
-- **`cmake --build` skips a sample after editing only `Cargo.toml`.**
-  Force re-package with `cmake --build build --config Debug --target
-  build_rust_sample_reflection` or `force_clean` then full rebuild.
+- **The deployed sample is stale after editing `Cargo.toml`.**
+  Rebuild and repackage it with `just build-sample-reflection`.
 - **(Linux) `onebox` hostname doesn't resolve from a fresh shell.**
   Inside the devcontainer, `getent hosts onebox` should return
   `172.18.0.2`. If not, the sibling container isn't running.
@@ -337,7 +332,7 @@ reflection_ctl detach \
   `build-devcontainer` job runs steps 1 + 3 + 4c via
   `devcontainers/ci@v0.3`.
 - **Windows** — the `build` job (`runs-on: windows-latest`) runs
-  the cmake build, `StartOnebox.ps1 -Auto`, the per-sample
+  the `just` build, `StartOnebox.ps1 -Auto`, the per-sample
   `*_ctl.ps1 -Action Add` scripts, and `cargo test --all -- --nocapture`.
 
 Since both e2e tests are default-on, they are included automatically

@@ -43,14 +43,13 @@ jobs:
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-    - name: Show cmake version
-      run: cmake --version
-
     - name: Install rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: ${{ matrix.rust-version }}
         components: rustfmt, clippy
+
+    - uses: taiki-e/install-action@just
     
     - name: Remove rust toolchain file to avoid conflict
       run: rm rust-toolchain.toml
@@ -68,11 +67,10 @@ jobs:
     - name: Run cargo clippy
       run: cargo +${{ matrix.rust-version }} clippy -- -D warnings
 
-    - name: run cmake
-      run: > 
-        cmake . -DCMAKE_BUILD_TYPE=Debug -B build
     - name: run build
-      run: cmake --build build --config Debug
+      env:
+        RUSTUP_TOOLCHAIN: ${{ matrix.rust-version }}
+      run: just
 
     # mysql bin has conflicting dlls with fabric than prevents fabric from starting
     - name: Remove conflict dll paths
@@ -117,7 +115,7 @@ jobs:
         run: |
           tdnf update --noplugins --skipsignature -y
           tdnf install --noplugins --skipsignature -y \
-            tar unzip ca-certificates gcc glibc-devel binutils make protobuf-compiler
+            tar unzip ca-certificates curl jq gcc glibc-devel binutils make python3 protobuf-compiler
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -132,10 +130,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
-      - name: Install cmake
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: "~3.29.0" # Use version 3.29.x
+      - uses: taiki-e/install-action@just
       
       - name: Run cargo check
         run: cargo +${{ matrix.rust-version }} check --all-targets
@@ -153,11 +148,10 @@ jobs:
       - name: Run mssf-net tests (no Service Fabric)
         run: cargo +${{ matrix.rust-version }} test -p mssf-net
 
-      - name: run cmake
-        run: > 
-          cmake . -DCMAKE_BUILD_TYPE=Debug -B build
       - name: run build
-        run: cmake --build build --config Debug
+        env:
+          RUSTUP_TOOLCHAIN: ${{ matrix.rust-version }}
+        run: just
 
   build-devcontainer:
     needs: setup
@@ -225,8 +219,7 @@ jobs:
               echo "ERROR: Rust version mismatch!"
               exit 1
             fi
-            cmake . -DCMAKE_BUILD_TYPE=Debug -B build
-            cmake --build build --config Debug
+            RUSTUP_TOOLCHAIN="${{ matrix.rust-version }}" just
             echo "Preparing test apps"
             bash ./scripts/prepare_test_apps.sh || { echo "Fail to prepare test apps"; exit 1; }
             echo "Running tests"
@@ -290,14 +283,13 @@ jobs:
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-    - name: Show cmake version
-      run: cmake --version
-
     - name: Install rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: ${{ needs.setup.outputs.rust-max-version }}
         components: rustfmt, clippy
+
+    - uses: taiki-e/install-action@just
 
     - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
@@ -315,21 +307,23 @@ jobs:
           exit 1
         fi
 
-    - name: cmake configure
-      run: > 
-        cmake . -DCMAKE_BUILD_TYPE=Debug -B build
-
     - name: remove generated com code
-      run: cmake --build build --config Debug --target force_clean
+      env:
+        RUSTUP_TOOLCHAIN: ${{ needs.setup.outputs.rust-max-version }}
+      run: just clean-generated
 
     - name: generate rust code
-      run: cmake --build build --config Debug --target generate_rust
+      env:
+        RUSTUP_TOOLCHAIN: ${{ needs.setup.outputs.rust-max-version }}
+      run: just generate-rust
 
     - name: check all generated files are checked in git
       run: git diff --exit-code
 
     - name: build rust code
-      run: cmake --build build --config Debug
+      env:
+        RUSTUP_TOOLCHAIN: ${{ needs.setup.outputs.rust-max-version }}
+      run: just
 
     - name: check crate packaging
       run: cargo package -p mssf-pal -p mssf-com -p mssf-core -p mssf-util --allow-dirty

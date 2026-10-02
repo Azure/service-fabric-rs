@@ -18,6 +18,8 @@ use crate::{
     types::Uri,
 };
 
+const GET_CURRENT_STATE_COMMAND: &str = "GetCurrentState";
+
 #[derive(Debug, Clone)]
 pub struct InfrastructureServiceClient {
     com: IFabricInfrastructureServiceClient,
@@ -67,7 +69,7 @@ impl InfrastructureServiceClient {
         timeout: Duration,
         cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<WString> {
-        let command = WString::from("GetCurrentState");
+        let command = WString::from(GET_CURRENT_STATE_COMMAND);
         let result = self
             .invoke_query_internal(
                 service_name.as_raw(),

@@ -11,8 +11,9 @@ use connection::{ClientConnectionEventHandlerBridge, LambdaClientConnectionNotif
 use health_client::HealthClient;
 use mssf_com::FabricClient::{
     IFabricApplicationManagementClient, IFabricClientConnectionEventHandler,
-    IFabricClientSettings2, IFabricHealthClient4, IFabricPropertyManagementClient2,
-    IFabricQueryClient13, IFabricServiceManagementClient8, IFabricServiceNotificationEventHandler,
+    IFabricClientSettings2, IFabricHealthClient4, IFabricInfrastructureServiceClient,
+    IFabricPropertyManagementClient2, IFabricQueryClient13, IFabricRepairManagementClient,
+    IFabricServiceManagementClient8, IFabricServiceNotificationEventHandler,
 };
 use notification::{
     LambdaServiceNotificationHandler, ServiceNotificationEventHandler,
@@ -29,14 +30,18 @@ mod notification;
 // Export public client modules
 pub mod application_client;
 pub mod health_client;
+pub mod infrastructure_client;
 mod property_client;
 pub mod query_client;
+pub mod repair_client;
 pub mod svc_mgmt_client;
 // reexport
 pub use application_client::ApplicationManagementClient;
 pub use connection::{ClaimsRetrievalMetadata, GatewayInformationResult};
+pub use infrastructure_client::InfrastructureServiceClient;
 pub use notification::ServiceNotification;
 pub use property_client::PropertyManagementClient;
+pub use repair_client::RepairManagementClient;
 
 #[cfg(test)]
 mod tests;
@@ -298,6 +303,8 @@ pub struct FabricClient {
     query_client: QueryClient,
     health_client: HealthClient,
     application_client: ApplicationManagementClient,
+    infrastructure_client: InfrastructureServiceClient,
+    repair_client: RepairManagementClient,
 }
 
 impl FabricClient {
@@ -321,12 +328,19 @@ impl FabricClient {
             .clone()
             .cast::<IFabricApplicationManagementClient>()
             .unwrap();
+        let com_infrastructure_client = com
+            .clone()
+            .cast::<IFabricInfrastructureServiceClient>()
+            .unwrap();
+        let com_repair_client = com.cast::<IFabricRepairManagementClient>().unwrap();
         Self {
             property_client: PropertyManagementClient::from(com_property_client),
             service_client: ServiceManagementClient::from(com_service_client),
             query_client: QueryClient::from(com_query_client),
             health_client: HealthClient::from(com_health_client),
             application_client: ApplicationManagementClient::from(com_application_client),
+            infrastructure_client: InfrastructureServiceClient::from(com_infrastructure_client),
+            repair_client: RepairManagementClient::from(com_repair_client),
         }
     }
 
@@ -354,5 +368,15 @@ impl FabricClient {
     /// upgrade progress.
     pub fn get_application_manager(&self) -> &ApplicationManagementClient {
         &self.application_client
+    }
+
+    /// Get the client for read-only Infrastructure Service queries.
+    pub fn get_infrastructure_manager(&self) -> &InfrastructureServiceClient {
+        &self.infrastructure_client
+    }
+
+    /// Get the client for querying and managing repair tasks.
+    pub fn get_repair_manager(&self) -> &RepairManagementClient {
+        &self.repair_client
     }
 }

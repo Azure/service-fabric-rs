@@ -55,6 +55,10 @@ mod deployed_service_package;
 pub use deployed_service_package::*;
 mod deployed_application;
 pub use deployed_application::*;
+mod infrastructure_upgrade;
+pub use infrastructure_upgrade::*;
+mod repair_task;
+pub use repair_task::*;
 
 // FABRIC_SERVICE_NOTIFICATION_FILTER_FLAGS
 bitflags::bitflags! {

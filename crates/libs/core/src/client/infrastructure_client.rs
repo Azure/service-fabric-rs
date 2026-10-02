@@ -59,10 +59,9 @@ impl InfrastructureServiceClient {
         )
     }
 
-    /// Queries one Azure Infrastructure Service instance and returns reportable
+    /// Queries one Azure Infrastructure Service instance and returns all known
     /// platform or tenant jobs from its current coordinator state.
-    /// This will return jobs that are in Executing, Suspended, or Failed states
-    pub async fn get_reportable_upgrade_jobs(
+    pub async fn get_upgrade_jobs(
         &self,
         service_name: &Uri,
         timeout: Duration,

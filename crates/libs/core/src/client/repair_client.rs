@@ -51,14 +51,13 @@ impl RepairManagementClient {
         )
     }
 
-    /// Returns only Azure platform or tenant infrastructure tasks in the SF
-    /// Preparing, Approved, Executing, or Restoring states.
-    pub async fn get_reportable_upgrade_tasks(
+    /// Returns Azure platform or tenant infrastructure tasks in all Repair Manager states.
+    pub async fn get_upgrade_tasks(
         &self,
         timeout: Duration,
         cancellation_token: Option<BoxedCancelToken>,
     ) -> crate::Result<Vec<RepairTask>> {
-        let query = RepairTaskQueryDescription::in_flight();
+        let query = RepairTaskQueryDescription::all();
         let receiver = self.get_repair_task_list_internal(
             &query,
             timeout.as_millis().try_into()?,

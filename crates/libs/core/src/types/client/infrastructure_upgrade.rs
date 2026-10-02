@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-//! Safe types for actionable Azure infrastructure jobs coordinated by Service Fabric.
+//! Safe types for Azure infrastructure jobs coordinated by Service Fabric.
 
 use serde_json::Value;
 
@@ -32,6 +32,7 @@ impl std::fmt::Display for InfrastructureUpgradeType {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InfrastructureUpgradeJobStatus {
+    Unknown,
     Pending,
     Executing,
     Alerted,
@@ -41,17 +42,12 @@ pub enum InfrastructureUpgradeJobStatus {
     Suspended,
 }
 
-impl InfrastructureUpgradeJobStatus {
-    fn is_reportable(self) -> bool {
-        matches!(self, Self::Executing | Self::Failed | Self::Suspended)
-    }
-}
-
 impl TryFrom<&str> for InfrastructureUpgradeJobStatus {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
+            "Unknown" => Ok(Self::Unknown),
             "Pending" => Ok(Self::Pending),
             "Executing" => Ok(Self::Executing),
             "Alerted" => Ok(Self::Alerted),
@@ -67,6 +63,7 @@ impl TryFrom<&str> for InfrastructureUpgradeJobStatus {
 impl std::fmt::Display for InfrastructureUpgradeJobStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let value = match self {
+            Self::Unknown => "Unknown",
             Self::Pending => "Pending",
             Self::Executing => "Executing",
             Self::Alerted => "Alerted",
@@ -158,26 +155,30 @@ impl InfrastructureUpgradeJob {
         let detailed_status = notification
             .get("ActiveJobDetailedStatus")
             .and_then(Value::as_str);
-        let (status, phase) = match detailed_status {
-            Some("Failed") => (InfrastructureUpgradeJobStatus::Failed, None),
-            Some("Suspended") => (InfrastructureUpgradeJobStatus::Suspended, None),
-            Some("Pending" | "Alerted" | "Cancelled" | "Completed") => return Ok(None),
-            _ => (
-                InfrastructureUpgradeJobStatus::Executing,
-                Some(match last_known_job_state {
-                    // skipping Unknown and Idle last known job states
-                    "WaitingForApproval" => InfrastructureUpgradeJobPhase::WaitingForApproval,
-                    "Executing" => InfrastructureUpgradeJobPhase::Executing,
-                    "WaitingForHealthCheck" => InfrastructureUpgradeJobPhase::WaitingForHealthCheck,
-                    "Unknown" | "Idle" => return Ok(None),
-                    state => {
-                        return Err(invalid_query_response(format!(
-                            "unsupported serial LastKnownJobState '{state}'"
-                        )));
-                    }
-                }),
-            ),
+        let coordinator_phase = match last_known_job_state {
+            "WaitingForApproval" => Some(InfrastructureUpgradeJobPhase::WaitingForApproval),
+            "Executing" => Some(InfrastructureUpgradeJobPhase::Executing),
+            "WaitingForHealthCheck" => Some(InfrastructureUpgradeJobPhase::WaitingForHealthCheck),
+            "Unknown" | "Idle" => None,
+            state => {
+                return Err(invalid_query_response(format!(
+                    "unsupported serial LastKnownJobState '{state}'"
+                )));
+            }
         };
+        let status = match detailed_status
+            .and_then(|value| InfrastructureUpgradeJobStatus::try_from(value).ok())
+        {
+            Some(status) => status,
+            None => match last_known_job_state {
+                "Unknown" => InfrastructureUpgradeJobStatus::Unknown,
+                "Idle" => InfrastructureUpgradeJobStatus::Pending,
+                _ => InfrastructureUpgradeJobStatus::Executing,
+            },
+        };
+        let phase = (status == InfrastructureUpgradeJobStatus::Executing)
+            .then_some(coordinator_phase)
+            .flatten();
         let active_job_type = notification
             .get("ActiveJobType")
             .and_then(Value::as_str)
@@ -231,9 +232,6 @@ impl InfrastructureUpgradeJob {
                 let Ok(status) = InfrastructureUpgradeJobStatus::try_from(status_value) else {
                     return Ok(None);
                 };
-                if !status.is_reportable() {
-                    return Ok(None);
-                }
                 let impact_action =
                     job.get("ImpactAction")
                         .and_then(Value::as_str)
@@ -247,27 +245,24 @@ impl InfrastructureUpgradeJob {
                     "TenantMaintenance" => InfrastructureUpgradeType::TenantMaintenance,
                     _ => return Ok(None),
                 };
-                let phase = match status {
-                    InfrastructureUpgradeJobStatus::Executing => {
-                        match (
-                            job.get("ImpactStep").and_then(Value::as_str),
-                            job.get("AcknowledgementStatus").and_then(Value::as_str),
-                        ) {
-                            (Some("ImpactStart"), Some("WaitingForAcknowledgement")) => {
-                                Some(InfrastructureUpgradeJobPhase::WaitingForApproval)
-                            }
-                            (Some("ImpactStart"), Some("Acknowledged" | "Timedout")) => {
-                                Some(InfrastructureUpgradeJobPhase::Executing)
-                            }
-                            (Some("ImpactEnd"), Some("WaitingForAcknowledgement")) => {
-                                Some(InfrastructureUpgradeJobPhase::WaitingForHealthCheck)
-                            }
-                            _ => None,
+                let phase = if status == InfrastructureUpgradeJobStatus::Executing {
+                    match (
+                        job.get("ImpactStep").and_then(Value::as_str),
+                        job.get("AcknowledgementStatus").and_then(Value::as_str),
+                    ) {
+                        (Some("ImpactStart"), Some("WaitingForAcknowledgement")) => {
+                            Some(InfrastructureUpgradeJobPhase::WaitingForApproval)
                         }
+                        (Some("ImpactStart"), Some("Acknowledged" | "Timedout")) => {
+                            Some(InfrastructureUpgradeJobPhase::Executing)
+                        }
+                        (Some("ImpactEnd"), Some("WaitingForAcknowledgement")) => {
+                            Some(InfrastructureUpgradeJobPhase::WaitingForHealthCheck)
+                        }
+                        _ => None,
                     }
-                    InfrastructureUpgradeJobStatus::Failed
-                    | InfrastructureUpgradeJobStatus::Suspended => None,
-                    _ => return Ok(None),
+                } else {
+                    None
                 };
                 let job_id = job
                     .get("Id")
@@ -319,7 +314,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parallel_query_returns_reportable_infrastructure_job_statuses() {
+    fn parallel_query_maps_job_types_phases_and_nodes() {
         let response = r#"{
             "Mode": "Parallel",
             "Jobs": [
@@ -399,7 +394,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(jobs.len(), 6);
+        assert_eq!(jobs.len(), 7);
         assert_eq!(jobs[0].job_id, "11111111-1111-1111-1111-111111111111");
         assert_eq!(
             jobs[0].upgrade_type,
@@ -416,6 +411,7 @@ mod tests {
             jobs.iter().map(|job| job.upgrade_type).collect::<Vec<_>>(),
             vec![
                 InfrastructureUpgradeType::TenantUpdate,
+                InfrastructureUpgradeType::PlatformUpdate,
                 InfrastructureUpgradeType::PlatformMaintenance,
                 InfrastructureUpgradeType::TenantMaintenance,
                 InfrastructureUpgradeType::PlatformUpdate,
@@ -423,14 +419,61 @@ mod tests {
                 InfrastructureUpgradeType::TenantMaintenance,
             ]
         );
-        assert_eq!(jobs[4].status, InfrastructureUpgradeJobStatus::Failed);
-        assert_eq!(jobs[4].phase, None);
-        assert_eq!(jobs[5].status, InfrastructureUpgradeJobStatus::Suspended);
+        assert_eq!(jobs[1].status, InfrastructureUpgradeJobStatus::Completed);
+        assert_eq!(jobs[1].phase, None);
+        assert_eq!(jobs[5].status, InfrastructureUpgradeJobStatus::Failed);
         assert_eq!(jobs[5].phase, None);
+        assert_eq!(jobs[6].status, InfrastructureUpgradeJobStatus::Suspended);
+        assert_eq!(jobs[6].phase, None);
     }
 
     #[test]
-    fn serial_query_returns_all_in_flight_infrastructure_job_types() {
+    fn parallel_query_returns_all_known_job_statuses() {
+        let cases = [
+            ("Unknown", InfrastructureUpgradeJobStatus::Unknown),
+            ("Pending", InfrastructureUpgradeJobStatus::Pending),
+            ("Executing", InfrastructureUpgradeJobStatus::Executing),
+            ("Alerted", InfrastructureUpgradeJobStatus::Alerted),
+            ("Cancelled", InfrastructureUpgradeJobStatus::Cancelled),
+            ("Completed", InfrastructureUpgradeJobStatus::Completed),
+            ("Failed", InfrastructureUpgradeJobStatus::Failed),
+            ("Suspended", InfrastructureUpgradeJobStatus::Suspended),
+        ];
+        let jobs = cases
+            .iter()
+            .map(|(status, _)| {
+                serde_json::json!({
+                    "Id": format!("job-{status}"),
+                    "ImpactAction": "TenantUpdate",
+                    "JobStatus": status,
+                    "ImpactStep": "ImpactStart",
+                    "AcknowledgementStatus": "Acknowledged"
+                })
+            })
+            .collect::<Vec<_>>();
+        let response = serde_json::json!({
+            "Mode": "Parallel",
+            "Jobs": jobs
+        })
+        .to_string();
+
+        let parsed = InfrastructureUpgradeJob::from_query_response(
+            &Uri::from("fabric:/System/InfrastructureService/PSNode"),
+            &response,
+        )
+        .unwrap();
+
+        assert_eq!(
+            parsed.iter().map(|job| job.status).collect::<Vec<_>>(),
+            cases
+                .iter()
+                .map(|(_, expected)| *expected)
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn serial_query_returns_all_infrastructure_job_types() {
         let cases = [
             (
                 "PlatformUpdateJob",
@@ -547,19 +590,19 @@ mod tests {
     }
 
     #[test]
-    fn serial_query_returns_only_reportable_job_statuses() {
+    fn serial_query_returns_all_known_job_statuses() {
         let cases = [
-            ("Executing", true),
-            ("Failed", true),
-            ("Suspended", true),
-            ("Pending", false),
-            ("Alerted", false),
-            ("Cancelled", false),
-            ("Completed", false),
-            ("Unknown", false),
+            ("Unknown", InfrastructureUpgradeJobStatus::Unknown),
+            ("Pending", InfrastructureUpgradeJobStatus::Pending),
+            ("Executing", InfrastructureUpgradeJobStatus::Executing),
+            ("Alerted", InfrastructureUpgradeJobStatus::Alerted),
+            ("Cancelled", InfrastructureUpgradeJobStatus::Cancelled),
+            ("Completed", InfrastructureUpgradeJobStatus::Completed),
+            ("Failed", InfrastructureUpgradeJobStatus::Failed),
+            ("Suspended", InfrastructureUpgradeJobStatus::Suspended),
         ];
 
-        for (status, expected) in cases {
+        for (status, expected_status) in cases {
             let last_known_job_state = if status == "Executing" {
                 "Executing"
             } else {
@@ -586,23 +629,23 @@ mod tests {
             )
             .unwrap();
 
-            assert_eq!(!jobs.is_empty(), expected, "job status: {status}");
-            if expected {
-                let expected_phase = match status {
-                    "Executing" => Some(InfrastructureUpgradeJobPhase::Executing),
-                    _ => None,
-                };
-                assert_eq!(jobs[0].phase, expected_phase, "job status: {status}");
-            }
+            assert_eq!(jobs.len(), 1, "job status: {status}");
+            assert_eq!(jobs[0].status, expected_status, "job status: {status}");
+            let expected_phase = match status {
+                "Executing" => Some(InfrastructureUpgradeJobPhase::Executing),
+                _ => None,
+            };
+            assert_eq!(jobs[0].phase, expected_phase, "job status: {status}");
         }
     }
 
     #[test]
-    fn serial_idle_query_returns_no_job() {
+    fn serial_idle_query_with_notification_returns_pending_job() {
         let response = r#"{
             "Mode": "Serial",
             "LastKnownJobState": "Idle",
             "ManagementNotification": {
+                "ActiveJobId": "pending-job",
                 "ActiveJobType": "PlatformUpdateJob",
                 "ActiveJobDetailedStatus": "WaitingForStartStepAcknowledgement",
                 "ActiveJobStepTargetUD": 2
@@ -612,6 +655,23 @@ mod tests {
         let jobs = InfrastructureUpgradeJob::from_query_response(
             &Uri::from("fabric:/System/InfrastructureService/CtrlNode"),
             response,
+        )
+        .unwrap();
+
+        assert_eq!(jobs.len(), 1);
+        assert_eq!(jobs[0].status, InfrastructureUpgradeJobStatus::Pending);
+        assert_eq!(jobs[0].phase, None);
+    }
+
+    #[test]
+    fn serial_idle_query_without_notification_returns_no_job() {
+        let jobs = InfrastructureUpgradeJob::from_query_response(
+            &Uri::from("fabric:/System/InfrastructureService/CtrlNode"),
+            r#"{
+                "Mode": "Serial",
+                "LastKnownJobState": "Idle",
+                "ManagementNotification": null
+            }"#,
         )
         .unwrap();
 

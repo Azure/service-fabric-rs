@@ -41,33 +41,42 @@ impl std::fmt::Display for RepairTaskType {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RepairTaskState {
+    Invalid,
+    Created,
+    Claimed,
     Preparing,
     Approved,
     Executing,
     Restoring,
+    Completed,
 }
 
 impl std::fmt::Display for RepairTaskState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Invalid => write!(f, "Invalid"),
+            Self::Created => write!(f, "Created"),
+            Self::Claimed => write!(f, "Claimed"),
             Self::Preparing => write!(f, "Preparing"),
             Self::Approved => write!(f, "Approved"),
             Self::Executing => write!(f, "Executing"),
             Self::Restoring => write!(f, "Restoring"),
+            Self::Completed => write!(f, "Completed"),
         }
     }
 }
 
-impl TryFrom<FABRIC_REPAIR_TASK_STATE> for RepairTaskState {
-    type Error = ();
-
-    fn try_from(value: FABRIC_REPAIR_TASK_STATE) -> Result<Self, Self::Error> {
+impl From<FABRIC_REPAIR_TASK_STATE> for RepairTaskState {
+    fn from(value: FABRIC_REPAIR_TASK_STATE) -> Self {
         match value {
-            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_PREPARING => Ok(Self::Preparing),
-            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_APPROVED => Ok(Self::Approved),
-            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_EXECUTING => Ok(Self::Executing),
-            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_RESTORING => Ok(Self::Restoring),
-            _ => Err(()),
+            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_CREATED => Self::Created,
+            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_CLAIMED => Self::Claimed,
+            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_PREPARING => Self::Preparing,
+            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_APPROVED => Self::Approved,
+            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_EXECUTING => Self::Executing,
+            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_RESTORING => Self::Restoring,
+            FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_COMPLETED => Self::Completed,
+            _ => Self::Invalid,
         }
     }
 }
@@ -137,17 +146,13 @@ pub(crate) struct RepairTaskQueryDescription {
 }
 
 impl RepairTaskQueryDescription {
-    pub(crate) fn in_flight() -> Self {
-        let state_filter =
-            FABRIC_REPAIR_TASK_STATE_FILTER::FABRIC_REPAIR_TASK_STATE_FILTER_PREPARING.0
-                | FABRIC_REPAIR_TASK_STATE_FILTER::FABRIC_REPAIR_TASK_STATE_FILTER_APPROVED.0
-                | FABRIC_REPAIR_TASK_STATE_FILTER::FABRIC_REPAIR_TASK_STATE_FILTER_EXECUTING.0
-                | FABRIC_REPAIR_TASK_STATE_FILTER::FABRIC_REPAIR_TASK_STATE_FILTER_RESTORING.0;
+    pub(crate) fn all() -> Self {
         Self {
-            //Infra service tasks are prefixed with "Azure" in the task ID.
-            //Since repair manager stores other, unrelated tasks, we filter them out here
+            // Infrastructure Service tasks are prefixed with "Azure" in the task ID.
+            // Repair Manager stores other, unrelated tasks, so filter them out here.
             task_id_filter: WString::from("Azure/"),
-            state_filter: state_filter as u32,
+            state_filter: FABRIC_REPAIR_TASK_STATE_FILTER::FABRIC_REPAIR_TASK_STATE_FILTER_ALL.0
+                as u32,
         }
     }
 }
@@ -183,14 +188,13 @@ impl RepairTask {
     }
 
     fn from_raw(task: &FABRIC_REPAIR_TASK) -> Option<Self> {
-        let state = RepairTaskState::try_from(task.State).ok()?;
         let task_id = WString::from(task.TaskId);
         let (repair_type, upgrade_domain) = parse_repair_task_id(&task_id.to_string_lossy())?;
 
         Some(Self {
             task_id,
             repair_type,
-            state,
+            state: task.State.into(),
             upgrade_domain,
             target_nodes: repair_target_nodes(task),
             node_impacts: repair_node_impacts(task),
@@ -275,8 +279,8 @@ mod tests {
     };
 
     #[test]
-    fn in_flight_task_query_marshals_expected_filters() {
-        let query = RepairTaskQueryDescription::in_flight();
+    fn upgrade_task_query_marshals_expected_filters() {
+        let query = RepairTaskQueryDescription::all();
         let mut pool = BoxPool::new();
         let raw = query.get_raw_with_pool(&mut pool);
         let scope = unsafe { raw.Scope.as_ref().unwrap() };
@@ -288,17 +292,13 @@ mod tests {
         assert_eq!(WString::from(raw.TaskIdFilter).to_string_lossy(), "Azure/");
         assert_eq!(
             raw.StateFilter,
-            (FABRIC_REPAIR_TASK_STATE_FILTER::FABRIC_REPAIR_TASK_STATE_FILTER_PREPARING.0
-                | FABRIC_REPAIR_TASK_STATE_FILTER::FABRIC_REPAIR_TASK_STATE_FILTER_APPROVED.0
-                | FABRIC_REPAIR_TASK_STATE_FILTER::FABRIC_REPAIR_TASK_STATE_FILTER_EXECUTING.0
-                | FABRIC_REPAIR_TASK_STATE_FILTER::FABRIC_REPAIR_TASK_STATE_FILTER_RESTORING.0)
-                as u32
+            FABRIC_REPAIR_TASK_STATE_FILTER::FABRIC_REPAIR_TASK_STATE_FILTER_ALL.0 as u32
         );
         assert!(raw.ExecutorFilter.is_null());
     }
 
     #[test]
-    fn repair_task_filter_rejects_terminal_and_unknown_tasks() {
+    fn repair_task_parser_accepts_completed_and_rejects_unknown_types() {
         let completed_id = WString::from("Azure/TenantUpdate/job/4/100");
         let completed = FABRIC_REPAIR_TASK {
             TaskId: completed_id.as_pcwstr(),
@@ -312,8 +312,60 @@ mod tests {
             ..Default::default()
         };
 
-        assert!(RepairTask::from_raw(&completed).is_none());
+        assert_eq!(
+            RepairTask::from_raw(&completed).unwrap().state,
+            RepairTaskState::Completed
+        );
         assert!(RepairTask::from_raw(&unknown).is_none());
+    }
+
+    #[test]
+    fn repair_task_parser_maps_all_states() {
+        let cases = [
+            (
+                FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_INVALID,
+                RepairTaskState::Invalid,
+            ),
+            (
+                FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_CREATED,
+                RepairTaskState::Created,
+            ),
+            (
+                FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_CLAIMED,
+                RepairTaskState::Claimed,
+            ),
+            (
+                FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_PREPARING,
+                RepairTaskState::Preparing,
+            ),
+            (
+                FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_APPROVED,
+                RepairTaskState::Approved,
+            ),
+            (
+                FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_EXECUTING,
+                RepairTaskState::Executing,
+            ),
+            (
+                FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_RESTORING,
+                RepairTaskState::Restoring,
+            ),
+            (
+                FABRIC_REPAIR_TASK_STATE::FABRIC_REPAIR_TASK_STATE_COMPLETED,
+                RepairTaskState::Completed,
+            ),
+        ];
+        let task_id = WString::from("Azure/PlatformUpdate/job/2/100");
+
+        for (native_state, expected) in cases {
+            let task = FABRIC_REPAIR_TASK {
+                TaskId: task_id.as_pcwstr(),
+                State: native_state,
+                ..Default::default()
+            };
+
+            assert_eq!(RepairTask::from_raw(&task).unwrap().state, expected);
+        }
     }
 
     #[test]
@@ -335,7 +387,7 @@ mod tests {
     }
 
     #[test]
-    fn repair_task_filter_returns_in_flight_update_with_nodes() {
+    fn repair_task_parser_returns_update_with_nodes() {
         let task_id = WString::from("Azure/PlatformUpdate/job/2/100");
         let target_node = WString::from("_CtrlNode_2");
         let target_node_ptrs = [target_node.as_pcwstr()];

@@ -15,7 +15,7 @@ use crate::{
     runtime::executor::BoxedCancelToken,
     strings::StringResult,
     sync::{FabricReceiver, fabric_begin_end_proxy},
-    types::{InfrastructureUpgradeJob, Uri},
+    types::Uri,
 };
 
 #[derive(Debug, Clone)]
@@ -59,14 +59,14 @@ impl InfrastructureServiceClient {
         )
     }
 
-    /// Queries one Azure Infrastructure Service instance and returns all known
-    /// platform or tenant jobs from its current coordinator state.
-    pub async fn get_upgrade_jobs(
+    /// Queries one Azure Infrastructure Service instance and returns its current
+    /// coordinator state without interpreting the response payload.
+    pub async fn get_current_state(
         &self,
         service_name: &Uri,
         timeout: Duration,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> crate::Result<Vec<InfrastructureUpgradeJob>> {
+    ) -> crate::Result<WString> {
         let command = WString::from("GetCurrentState");
         let result = self
             .invoke_query_internal(
@@ -76,7 +76,6 @@ impl InfrastructureServiceClient {
                 cancellation_token,
             )
             .await??;
-        let response = StringResult::from(&result).into_inner().to_string_lossy();
-        InfrastructureUpgradeJob::from_query_response(service_name, &response)
+        Ok(StringResult::from(&result).into_inner())
     }
 }

@@ -28,7 +28,6 @@ config = { workspace = true, optional = true }
 libloading.workspace = true
 lazy_static.workspace = true
 mssf-pal.workspace = true
-serde_json.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true

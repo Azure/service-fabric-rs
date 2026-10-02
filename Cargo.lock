@@ -919,7 +919,6 @@ dependencies = [
  "libloading",
  "mssf-com",
  "mssf-pal",
- "serde_json",
  "tokio",
  "tracing",
  "trait-variant",

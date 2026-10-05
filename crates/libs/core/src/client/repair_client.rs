@@ -52,7 +52,13 @@ impl RepairManagementClient {
     }
 
     /// Returns Azure platform or tenant infrastructure tasks in all Repair Manager states.
-    pub async fn get_upgrade_tasks(
+    ///
+    /// # Arguments
+    ///
+    /// * `timeout` - The maximum duration for the operation in milliseconds.
+    /// * `cancellation_token` - An optional token for cancelling the pending
+    ///   operation.
+    pub async fn get_repair_task_list(
         &self,
         timeout: Duration,
         cancellation_token: Option<BoxedCancelToken>,

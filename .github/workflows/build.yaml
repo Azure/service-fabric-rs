@@ -203,6 +203,8 @@ jobs:
       - name: Run in Dev Container
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
+          # Bake rejects the devcontainer CLI's generated Dockerfile outside the build context.
+          COMPOSE_BAKE: "false"
           # This env var is used in the docker-compose.yml to set the rust version in the container
           RUST_VERSION: ${{ matrix.rust-version }}
         with:

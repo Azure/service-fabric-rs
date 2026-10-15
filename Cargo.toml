@@ -18,7 +18,7 @@ package.repository = "https://github.com/Azure/service-fabric-rs"
 package.license = "MIT"
 
 [workspace.dependencies]
-async-trait = "0.1"
+async-trait = "0.1.92"
 async-stream = "0.3"
 bitflags = "2"
 clap = { version = "4", features = ["derive"] }

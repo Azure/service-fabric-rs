@@ -44,7 +44,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Install rust stable
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # v1
       with:
         toolchain: ${{ matrix.rust-version }}
         components: rustfmt, clippy
@@ -123,7 +123,7 @@ jobs:
         run: rm -f rust-toolchain.toml
 
       - name: Install rust stable
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # v1
         with:
           toolchain: ${{ matrix.rust-version }}
           components: rustfmt, clippy
@@ -203,6 +203,8 @@ jobs:
       - name: Run in Dev Container
         uses: devcontainers/ci@513af61f4de4f75d37e4438f184ba4358f0fc1ca # v0.3.1900000450
         env:
+          # Bake rejects the devcontainer CLI's generated Dockerfile outside the build context.
+          COMPOSE_BAKE: "false"
           # This env var is used in the docker-compose.yml to set the rust version in the container
           RUST_VERSION: ${{ matrix.rust-version }}
         with:
@@ -284,7 +286,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Install rust stable
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # v1
       with:
         toolchain: ${{ needs.setup.outputs.rust-max-version }}
         components: rustfmt, clippy

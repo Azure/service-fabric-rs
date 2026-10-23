@@ -5,10 +5,13 @@
 
 //! Service Fabric naming → gRPC xDS (ADS) mapping.
 //!
-//! Exposes one configured SF stateful singleton service through an Envoy v3
+//! Exposes configured SF stateful singleton services through an Envoy v3
 //! State-of-the-World [Aggregated Discovery Service][ads] so that a stock
-//! xDS-capable gRPC client (e.g. [`tonic-xds`]) can reach the service's
+//! xDS-capable gRPC client (e.g. [`tonic-xds`]) can reach a service's
 //! current primary replica with **no SF-specific client code**.
+//!
+//! One ADS server can publish any number of services: clients subscribe by
+//! resource name, and [`registry::ServiceRegistry`] holds the set.
 //!
 //! The crate publishes the minimum resource chain such a client accepts:
 //! LDS (with an *inline* `RouteConfiguration`) → CDS → EDS. RDS is not used.
@@ -17,7 +20,11 @@
 //!
 //! - [`endpoint`] — SF-independent endpoint state and the subscription contract.
 //! - [`address`] — pluggable interpretation of the opaque SF endpoint address.
-//! - [`config`] — the one-service mapping configuration.
+//! - [`config`] — the per-service mapping configuration.
+//! - [`registry`] — the set of services one ADS server publishes.
+//!
+//! - [`fabric`] — `FabricNaming`, one shared `FabricClient`, and the SF-backed
+//!   [`FabricEndpointSource`].
 //!
 //! # Experimental
 //!
@@ -36,6 +43,7 @@ pub mod config;
 pub mod endpoint;
 pub mod error;
 pub mod fabric;
+pub mod registry;
 pub mod resources;
 
 pub use crate::address::{AddressError, AddressInterpreter, host_port_interpreter};
@@ -45,4 +53,5 @@ pub use crate::endpoint::{
     EndpointSnapshot, EndpointSource, HostPort, ScriptedEndpointHandle, ScriptedEndpointSource,
 };
 pub use crate::error::Error;
-pub use crate::fabric::{FabricEndpointSource, classify_resolve_error};
+pub use crate::fabric::{FabricEndpointSource, FabricNaming, classify_resolve_error};
+pub use crate::registry::{RegisteredService, ServiceRegistry, ServiceRegistryBuilder};

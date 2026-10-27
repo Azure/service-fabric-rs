@@ -44,19 +44,19 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Install rust stable
-      uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+      uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2.0.0
       with:
         toolchain: ${{ matrix.rust-version }}
         components: rustfmt, clippy
+        cache: true
+        cache-on-failure: false
 
-    - uses: taiki-e/install-action@just
+    - uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2
+      with:
+        tool: just,protoc
     
     - name: Remove rust toolchain file to avoid conflict
       run: rm rust-toolchain.toml
-
-    - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
-
-    - uses: taiki-e/install-action@protoc
 
     - name: Run cargo check
       run: cargo +${{ matrix.rust-version }} check --all-targets
@@ -123,14 +123,16 @@ jobs:
         run: rm -f rust-toolchain.toml
 
       - name: Install rust stable
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2.0.0
         with:
           toolchain: ${{ matrix.rust-version }}
           components: rustfmt, clippy
+          cache: true
+          cache-on-failure: false
 
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
-
-      - uses: taiki-e/install-action@just
+      - uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2
+        with:
+          tool: just
       
       - name: Run cargo check
         run: cargo +${{ matrix.rust-version }} check --all-targets
@@ -286,16 +288,16 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Install rust stable
-      uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+      uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2.0.0
       with:
         toolchain: ${{ needs.setup.outputs.rust-max-version }}
         components: rustfmt, clippy
+        cache: true
+        cache-on-failure: false
 
-    - uses: taiki-e/install-action@just
-
-    - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
-
-    - uses: taiki-e/install-action@protoc
+    - uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2
+      with:
+        tool: just,protoc
 
     - name: Verify rust-toolchain.toml matches expected version
       shell: bash

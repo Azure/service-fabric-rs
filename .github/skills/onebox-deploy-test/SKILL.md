@@ -138,8 +138,8 @@ The CI equivalent is the `build` job in
 3. **`just` is on `PATH`** (`just --version`). Install it with
    `winget install --id Casey.Just --exact` if needed.
 
-> Skip the CI-only `Remove conflict dll paths` step (deletes
-> `C:\Program Files\MySQL\...`) and the `check_sf_installed.ps1` /
+> Skip the CI-only `Remove conflict dll paths` step (detects MySQL bin
+> directories via `libprotobuf.dll` and deletes them) and the `check_sf_installed.ps1` /
 > `check_cluster_online.ps1` smoke checks — they exist to harden
 > the GitHub-hosted runner image and are not needed locally.
 
@@ -261,7 +261,7 @@ Runs Steps 1–4 in one shot via `devcontainers/ci@v0.3` and adds:
 Runs the matrix `(rust-min, rust-max)` × `windows-latest` and adds:
 
 - `cargo fmt --all -- --check` and `cargo clippy -- -D warnings` gates before the build.
-- `Remove conflict dll paths` — deletes `C:\Program Files\MySQL\MySQL Server 8.0\bin` because its `libprotobuf.dll` is incompatible with Service Fabric and prevents the runtime from starting on the GitHub-hosted runner image. Not needed on a clean local box.
+- `Remove conflict dll paths` — locates `libprotobuf.dll` on PATH and deletes its containing directory only when it is a MySQL bin directory, without hardcoding the MySQL version. MySQL's DLLs conflict with Service Fabric and prevent the runtime from starting on the GitHub-hosted runner image. Not needed on a clean local box.
 - `check_sf_installed.ps1` and `check_cluster_online.ps1` smoke checks — also CI-image hardening.
 
 For local iteration both extra-step blocks are unnecessary. If the

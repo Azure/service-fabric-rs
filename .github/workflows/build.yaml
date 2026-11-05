@@ -2,6 +2,8 @@ name: build
 
 on:
   push:
+    # PR branches are covered by pull_request.
+    branches: [main]
   pull_request:
   workflow_dispatch:
   schedule:

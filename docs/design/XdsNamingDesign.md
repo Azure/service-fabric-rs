@@ -43,7 +43,8 @@ See also the broader proposal: [`docs/proposal/GrpcXds.md`](../proposal/GrpcXds.
 
 ## Non-Goals
 
-- Multiple mapped services per server instance.
+- Dynamic registration: the set of mapped services is fixed at build time.
+- Sharing `FabricClient` instances or providing a cluster-wide SF-facing tier.
 - Multiple partitions, partition keys, stateless services, secondaries, or
   read-from-secondary routing.
 - RDS, delta/incremental xDS, federation (`xdstp://`), or LRS/ORCA load
@@ -70,18 +71,19 @@ therefore structurally guarantees the successor does not link the incumbent.
 | `endpoint.rs` | `HostPort`, `EndpointSnapshot`, the `EndpointSource` trait, `ScriptedEndpointSource` |
 | `address.rs` | `AddressInterpreter` — pluggable interpretation of the opaque SF address |
 | `config.rs` | `XdsMapping` — one SF service ↔ one xDS resource name |
+| `registry.rs` | `ServiceRegistry` — the set of services one ADS server publishes |
 | `resources.rs` | Pure LDS / CDS / EDS construction |
 | `ads.rs` | The SotW ADS service, and `bootstrap_json` |
-| `fabric.rs` | `FabricEndpointSource` — the SF-backed source |
+| `fabric.rs` | `FabricEndpointSource` — SF resolve + notifications |
 
 ## Architecture
 
 ```
  SF Naming ──notify──► FabricEndpointSource ──watch──► AdsService ──ADS──► stock xDS client
                           (fabric.rs)                    (ads.rs)                │
-                                                                                │ direct gRPC
-                                                                                ▼
-                                                                        primary replica
+                                                        serves a                │ direct gRPC
+                                                   ServiceRegistry              ▼
+                                                     (registry.rs)      primary replica
 ```
 
 Only *configuration* flows through this crate. Client RPCs go **directly** to
@@ -107,8 +109,8 @@ The minimum accepted chain is therefore **LDS → CDS → EDS**.
 
 ### Why State-of-the-World, not delta
 
-Delta xDS is `unimplemented` in the target client. SotW is sufficient, and for a
-single mapped service the "send everything" semantics cost nothing.
+Delta xDS is `unimplemented` in the target client. SotW is sufficient, and at
+this scale the "send everything" semantics cost little.
 
 ### Why a `watch` channel
 
@@ -155,6 +157,32 @@ These are not stylistic. Each one prevents a client-side rejection:
 
 Each of these has a dedicated unit test in `resources.rs`, so a regression is
 caught without needing a live client to reject it.
+
+## Serving several services
+
+`ServiceRegistry` pairs each mapping with its existing `EndpointSource`.
+`AdsService::from_registry` serves the fixed, non-empty set; the single-service
+constructors remain wrappers around one entry. Duplicate xDS names are rejected
+at registration. Lookups use `(type_url, name)` so a Listener named `x-primary`
+cannot be confused with the Cluster derived from a different mapping named `x`.
+
+Each stream tracks subscriptions by resource type. LDS and CDS are
+`ALL_RESOURCES_REQUIRED_IN_SOTW`: every response must include the complete
+subscribed set, except resources intentionally deleted by `NotFound`. Sending
+only the changed service would delete the others on the client. EDS updates
+contain only the changed cluster's endpoints; streams not subscribed to the
+changed service receive no push. A request changing the subscribed resource set
+is answered even when it carries the previous response nonce.
+
+The stream awaits changes across the sources' `watch` receivers. Closed sources
+are retired from that wait without ending the stream or deleting their last
+published state: a closed channel is not evidence that SF deleted the service.
+If all sources close, client requests and cancellation remain responsive.
+
+`tests/scripted_ads.rs` checks independent routing, relocation, deletion, and
+source closure with stock xDS clients. A direct ADS test subscribes to both
+Listeners on one stream and verifies that changing one still returns both;
+separate clients alone cannot detect an incomplete multi-resource response.
 
 ## Endpoint state: three values, not two
 
@@ -345,26 +373,11 @@ The test creates and deletes its own service, so re-runs are idempotent.
 
 ## Known limitations and deferred work
 
-- **One mapped service per ADS server.** `AdsService` holds exactly one
-  `XdsMapping` and one `EndpointSource`, so serving N services means N ADS
-  servers on N ports. Note the SF-side cost is unchanged either way — one
-  `FabricClient` and one notification filter *per service* — but the naming load
-  is the same concern the proposal's two-tier design addresses, so this matters
-  at cluster scale.
-
-  The limitation is this crate's, not xDS's: xDS is designed for one control
-  plane serving many resources, clients subscribe by resource name, and
-  `resources_for` already filters on `resource_names`. Lifting it means (a) a
-  map of xDS name → (mapping, source), (b) **returning every subscribed Listener
-  and Cluster in one response** — both are `ALL_RESOURCES_REQUIRED_IN_SOTW`, so
-  emitting a subset silently deletes the others on the client — and (c) fanning
-  in over N `watch` receivers to push only the affected cluster's EDS.
-
-  When it lands, **validate that xDS names are unique across mappings**. The
-  `<xds_name>-primary` cluster derivation is itself injective (appending a
-  constant suffix cannot make two distinct names collide), but a registry keyed
-  by bare name rather than by `(type_url, name)` would conflate a Listener and a
-  Cluster that happen to share a string.
+- **One `FabricClient` and notification filter per endpoint source.** Sharing
+  clients is deferred; multi-service ADS changes only the xDS-facing server.
+  Cluster-wide subscription sharing remains the proposal's two-tier work.
+- **The registry is fixed at build time.** Services cannot be added or removed
+  while the server runs.
 - **A NACK is logged and then forgotten.** `stream_aggregated_resources` traces
   the `error_detail` and does not advance state, which is correct, but a
   persistently rejected resource is never re-sent and raises no metric or health

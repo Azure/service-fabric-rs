@@ -2,8 +2,8 @@
 
 Experimental Service Fabric naming → gRPC xDS (ADS) mapping.
 
-Exposes an SF stateful service through a standard [xDS][xds] control plane, so a
-**stock gRPC client** can reach the service's current primary replica — and keep
+Exposes SF stateful services through a standard [xDS][xds] control plane, so a
+**stock gRPC client** can reach a service's current primary replica — and keep
 reaching it across failover — with **no Service Fabric code in the client**.
 
 > **Experimental — no stable API guarantee.** Items may change or be removed in
@@ -108,6 +108,44 @@ lifetime to an existing scope — an SF replica's `close(cancellation_token)`, f
 instance — construct it with
 `AdsService::with_cancellation(mapping, source, token)`.
 
+### Serving several services from one control plane
+
+Clients subscribe by resource name, so one ADS server can publish any number of
+services. Create a mapping and `FabricEndpointSource` for each service as above,
+then register them together:
+
+```rust
+use mssf_net::{AdsService, ServiceRegistry};
+
+let registry = ServiceRegistry::builder()
+    .add(orders_mapping, orders.clone())?
+    .add(inventory_mapping, inventory.clone())?
+    .build()?;
+
+let server = AdsService::from_registry(registry)
+    .serve_on_ephemeral_loopback()
+    .await?;
+
+// ... serve ...
+
+server.shutdown().await?;
+orders.shutdown().await;
+inventory.shutdown().await;
+```
+
+Clients then target `xds:///fabric:/MyApp/Orders` and
+`xds:///fabric:/MyApp/Inventory` through the *same* bootstrap, and each service's
+failovers are pushed independently.
+
+This shares the ADS server, not the SF client: each `FabricEndpointSource`
+still owns its own `FabricClient` and notification filter. Client sharing is
+deferred.
+
+Duplicate xDS names are likewise rejected by `add`, so a configuration mistake
+fails at startup rather than silently shadowing a route.
+`AdsService::from_registry_with_cancellation(registry, token)` is the
+cancellation-aware form.
+
 ### Endpoint addresses need an interpreter
 
 An SF endpoint address is a **service-defined string**. It may be `host:port`, a
@@ -148,11 +186,11 @@ See `tests/scripted_ads.rs` for the full end-to-end version.
 
 Deliberately a prototype:
 
-- One mapped service per ADS server (serving N services means N servers).
 - Stateful **singleton partition, primary only** — no partition-key routing and
   no secondaries.
 - No TLS/mTLS, RDS, delta xDS, federation, or load reporting.
 - No agent/relay deployment shape; the ADS server is hosted in-process.
+- The registry is fixed at build time — no dynamic add/remove while serving.
 - Depends on the pre-release `tonic-xds` crate.
 
 Design and rationale: [`docs/design/XdsNamingDesign.md`](../../../docs/design/XdsNamingDesign.md).

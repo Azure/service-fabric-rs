@@ -53,7 +53,7 @@ jobs:
         cache: true
         cache-on-failure: false
 
-    - uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2
+    - uses: taiki-e/install-action@3a3daafd3b7f23b8f65d9f5ba2db203fb59b79e2 # v2
       with:
         tool: just,protoc
     
@@ -138,7 +138,7 @@ jobs:
           cache: true
           cache-on-failure: false
 
-      - uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2
+      - uses: taiki-e/install-action@3a3daafd3b7f23b8f65d9f5ba2db203fb59b79e2 # v2
         with:
           tool: just
       
@@ -303,7 +303,7 @@ jobs:
         cache: true
         cache-on-failure: false
 
-    - uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32 # v2
+    - uses: taiki-e/install-action@3a3daafd3b7f23b8f65d9f5ba2db203fb59b79e2 # v2
       with:
         tool: just,protoc
 

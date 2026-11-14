@@ -18,6 +18,8 @@ pub use Windows::ServiceFabric::*;
 
 // Special usage for mssf_pal.
 // See mssf_pal documentations for why this is used this way.
+#[cfg(not(feature = "ServiceFabric"))]
+use mssf_pal as _;
 #[cfg(feature = "ServiceFabric")]
 use mssf_pal::*;
 extern crate self as windows;

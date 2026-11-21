@@ -35,7 +35,8 @@ pub use service::{
     ServiceHealthQueryDescription, ServiceHealthResult, ServiceHealthState,
     ServiceHealthStatesFilter, ServiceListResult, ServiceQueryDescription, ServiceQueryResultItem,
     ServiceRepartitionDescription, ServiceSensitivityDescription, ServiceUpdateDescription,
-    StatefulServiceDescription, StatefulServiceUpdateDescription, StatelessServiceDescription,
+    StatefulServiceDescription, StatefulServiceLoadMetricDescription,
+    StatefulServiceUpdateDescription, StatelessServiceDescription,
     StatelessServiceUpdateDescription,
 };
 

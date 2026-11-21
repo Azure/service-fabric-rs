@@ -12,7 +12,10 @@ use crate::{
     types::Uri,
 };
 use mssf_com::{
-    FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient8},
+    FabricClient::{
+        IFabricResolvedServicePartitionResult, IFabricServiceDescriptionResult,
+        IFabricServiceManagementClient8,
+    },
     FabricTypes::{
         FABRIC_DELETE_SERVICE_DESCRIPTION, FABRIC_PARTITION_KEY_TYPE,
         FABRIC_REMOVE_REPLICA_DESCRIPTION, FABRIC_RESOLVED_SERVICE_ENDPOINT,
@@ -154,6 +157,25 @@ impl ServiceManagementClient {
                 com1.BeginCreateService(desc, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndCreateService(ctx).ok() },
+            cancellation_token,
+        )
+    }
+
+    fn get_service_description_internal(
+        &self,
+        name: FABRIC_URI,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::Result<IFabricServiceDescriptionResult>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            // SAFETY: the caller keeps the service URI alive through Begin.
+            move |callback| unsafe {
+                com1.BeginGetServiceDescription(name, timeout_milliseconds, callback)
+            },
+            // SAFETY: the proxy supplies the matching operation's context.
+            move |ctx| unsafe { com2.EndGetServiceDescription(ctx) },
             cancellation_token,
         )
     }
@@ -352,6 +374,26 @@ impl ServiceManagementClient {
             self.create_service_internal(&ffi_raw, timeout.as_millis() as u32, cancellation_token)
         }
         .await?
+    }
+
+    /// Reads an existing service's native description.
+    ///
+    /// The returned COM result owns the description and its nested allocations.
+    /// Keep it alive while accessing or copying the native data.
+    ///
+    /// # Errors
+    /// Returns Service Fabric errors, including timeout or cancellation, and
+    /// `E_INVALIDARG` if the timeout does not fit the native millisecond count.
+    pub async fn get_service_description(
+        &self,
+        name: &Uri,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<IFabricServiceDescriptionResult> {
+        let milliseconds =
+            u32::try_from(timeout.as_millis()).map_err(|_| crate::ErrorCode::E_INVALIDARG)?;
+        self.get_service_description_internal(name.as_raw(), milliseconds, cancellation_token)
+            .await?
     }
 
     pub async fn update_service(

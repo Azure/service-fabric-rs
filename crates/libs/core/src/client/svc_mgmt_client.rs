@@ -376,24 +376,28 @@ impl ServiceManagementClient {
         .await?
     }
 
-    /// Reads an existing service's native description.
+    /// Reads an existing service's kind and owned metric configuration.
     ///
-    /// The returned COM result owns the description and its nested allocations.
-    /// Keep it alive while accessing or copying the native data.
+    /// Metric names and supported extensions are copied before the native COM
+    /// result is released. Other service-description fields are not exposed.
     ///
     /// # Errors
     /// Returns Service Fabric errors, including timeout or cancellation, and
-    /// `E_INVALIDARG` if the timeout does not fit the native millisecond count.
+    /// `E_INVALIDARG` for an invalid service kind or oversized timeout,
+    /// `E_POINTER` for missing required native data, and `E_NOTIMPL` for unsupported
+    /// metric extensions.
     pub async fn get_service_description(
         &self,
         name: &Uri,
         timeout: Duration,
         cancellation_token: Option<BoxedCancelToken>,
-    ) -> crate::Result<IFabricServiceDescriptionResult> {
+    ) -> crate::Result<crate::types::ServiceDescriptionResult> {
         let milliseconds =
             u32::try_from(timeout.as_millis()).map_err(|_| crate::ErrorCode::E_INVALIDARG)?;
-        self.get_service_description_internal(name.as_raw(), milliseconds, cancellation_token)
-            .await?
+        let com = self
+            .get_service_description_internal(name.as_raw(), milliseconds, cancellation_token)
+            .await??;
+        crate::types::ServiceDescriptionResult::try_from(&com)
     }
 
     pub async fn update_service(

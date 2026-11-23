@@ -170,11 +170,11 @@ impl ServiceManagementClient {
         let com1 = &self.com;
         let com2 = self.com.clone();
         fabric_begin_end_proxy(
-            // SAFETY: the caller keeps the service URI alive through Begin.
+            // SAFETY: the URI remains live through Begin.
             move |callback| unsafe {
                 com1.BeginGetServiceDescription(name, timeout_milliseconds, callback)
             },
-            // SAFETY: the proxy supplies the matching operation's context.
+            // SAFETY: the proxy supplies Begin's context.
             move |ctx| unsafe { com2.EndGetServiceDescription(ctx) },
             cancellation_token,
         )
@@ -376,16 +376,16 @@ impl ServiceManagementClient {
         .await?
     }
 
-    /// Reads an existing service's kind and owned metric configuration.
-    ///
-    /// Metric names and supported extensions are copied before the native COM
-    /// result is released. Other service-description fields are not exposed.
+    /// Reads owned metrics in a stateful or stateless service-description variant.
     ///
     /// # Errors
-    /// Returns Service Fabric errors, including timeout or cancellation, and
-    /// `E_INVALIDARG` for an invalid service kind or oversized timeout,
-    /// `E_POINTER` for missing required native data, and `E_NOTIMPL` for unsupported
-    /// metric extensions.
+    /// Propagates SF errors. Unsupported service kinds or timeouts exceeding
+    /// `u32::MAX` milliseconds return `E_INVALIDARG`. Missing metric arrays with
+    /// a nonzero count return `E_POINTER`.
+    ///
+    /// # Panics
+    /// Panics if SF returns a null description or service value, or a metric with
+    /// a null name or extensions beyond EX2.
     pub async fn get_service_description(
         &self,
         name: &Uri,

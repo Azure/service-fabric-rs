@@ -6,10 +6,12 @@
 use std::ffi::c_void;
 
 use mssf_com::{
-    FabricClient::IFabricGetServiceListResult2,
+    FabricClient::{IFabricGetServiceListResult2, IFabricServiceDescriptionResult},
     FabricTypes::{
         FABRIC_DELETE_SERVICE_DESCRIPTION, FABRIC_NAMED_REPARTITION_DESCRIPTION,
         FABRIC_SERVICE_DESCRIPTION, FABRIC_SERVICE_DESCRIPTION_KIND, FABRIC_SERVICE_HEALTH_STATE,
+        FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION, FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX1,
+        FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX2, FABRIC_SERVICE_LOAD_METRIC_WEIGHT,
         FABRIC_SERVICE_PARTITION_KIND, FABRIC_SERVICE_QUERY_DESCRIPTION,
         FABRIC_SERVICE_QUERY_DESCRIPTION_EX1, FABRIC_SERVICE_QUERY_DESCRIPTION_EX2,
         FABRIC_SERVICE_QUERY_DESCRIPTION_EX3, FABRIC_SERVICE_QUERY_RESULT_ITEM,
@@ -54,6 +56,88 @@ pub enum ServiceDescription {
     // Invalid,
     Stateful(StatefulServiceDescription), // FABRIC_STATEFUL_SERVICE_DESCRIPTION
     Stateless(StatelessServiceDescription), // FABRIC_STATELESS_SERVICE_DESCRIPTION
+}
+
+/// An owned stateful or stateless service description.
+///
+/// Read result, not a [`ServiceDescription`] creation request. Currently exposes only metrics.
+///
+/// TODO: Expose the remaining fields in each variant, as covered by .NET's ServiceDescription:
+/// <https://learn.microsoft.com/en-us/dotnet/api/system.fabric.description.servicedescription?view=azure-dotnet>.
+#[derive(Debug, Clone)]
+pub enum ServiceDescriptionResult {
+    Stateful(StatefulServiceDescriptionResult),
+    Stateless(StatelessServiceDescriptionResult),
+}
+
+#[derive(Debug, Clone)]
+pub struct StatefulServiceDescriptionResult {
+    pub metrics: Vec<ServiceLoadMetricDescription>,
+}
+
+#[derive(Debug, Clone)]
+pub struct StatelessServiceDescriptionResult {
+    pub metrics: Vec<ServiceLoadMetricDescription>,
+}
+
+impl TryFrom<&IFabricServiceDescriptionResult> for ServiceDescriptionResult {
+    type Error = crate::Error;
+
+    fn try_from(value: &IFabricServiceDescriptionResult) -> crate::Result<Self> {
+        // SAFETY: COM owns the data until this copy completes.
+        unsafe { Self::from_raw(value.get_Description()) }
+    }
+}
+
+impl ServiceDescriptionResult {
+    /// # Safety
+    /// Non-null pointers must reference live native data of the declared kind and
+    /// length, with null-terminated UTF-16 strings.
+    unsafe fn from_raw(raw: *const FABRIC_SERVICE_DESCRIPTION) -> crate::Result<Self> {
+        // SAFETY: the description is live; as_ref checks null.
+        let raw = unsafe { raw.as_ref() }.expect("SF returned a null service description");
+        match raw.Kind {
+            FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL => {
+                // SAFETY: Kind selects Value's type; its data remains live.
+                unsafe {
+                    let value = raw
+                        .Value
+                        .cast::<FABRIC_STATEFUL_SERVICE_DESCRIPTION>()
+                        .as_ref()
+                        .expect("SF returned a null stateful service description");
+                    Ok(Self::Stateful(StatefulServiceDescriptionResult {
+                        metrics: Self::metrics_from_raw(value.MetricCount, value.Metrics)?,
+                    }))
+                }
+            }
+            FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS => {
+                // SAFETY: Kind selects Value's type; its data remains live.
+                unsafe {
+                    let value = raw
+                        .Value
+                        .cast::<FABRIC_STATELESS_SERVICE_DESCRIPTION>()
+                        .as_ref()
+                        .expect("SF returned a null stateless service description");
+                    Ok(Self::Stateless(StatelessServiceDescriptionResult {
+                        metrics: Self::metrics_from_raw(value.MetricCount, value.Metrics)?,
+                    }))
+                }
+            }
+            _ => Err(crate::ErrorCode::E_INVALIDARG.into()),
+        }
+    }
+
+    /// # Safety
+    /// Non-null `metrics` must reference `count` live metrics, including their names and extensions.
+    unsafe fn metrics_from_raw(
+        count: u32,
+        metrics: *const FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION,
+    ) -> crate::Result<Vec<ServiceLoadMetricDescription>> {
+        if count > 0 && metrics.is_null() {
+            return Err(crate::ErrorCode::E_POINTER.into());
+        }
+        Ok(crate::iter::vec_from_raw_com(count as usize, metrics))
+    }
 }
 
 #[derive(Debug)]
@@ -729,6 +813,93 @@ impl GetRawWithBoxPool<FABRIC_SERVICE_UPDATE_DESCRIPTION> for ServiceUpdateDescr
     }
 }
 
+/// Owned metric configuration for service reads and stateful updates.
+///
+/// Defaults apply until replicas report load; they do not reserve resources.
+/// Updates supply the defaults together: zero is a value, not "unchanged".
+/// Preserve individual loads by copying them from the service description.
+/// Missing native metric extensions use zero loads, matching .NET.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ServiceLoadMetricDescription {
+    pub name: WString,
+    pub weight: FABRIC_SERVICE_LOAD_METRIC_WEIGHT,
+    pub primary_default_load: u32,
+    pub secondary_default_load: u32,
+    /// Auxiliary-replica default load (EX1).
+    pub auxiliary_default_load: u32,
+    /// Maximum load (EX2).
+    pub maximum_load: u32,
+}
+
+impl From<&FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION> for ServiceLoadMetricDescription {
+    /// Copies a native metric, including EX1/EX2 when present.
+    ///
+    /// # Panics
+    /// Panics if SF returns a null name or extensions beyond EX2.
+    fn from(raw: &FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION) -> Self {
+        assert!(!raw.Name.is_null(), "SF returned a metric with a null name");
+        let mut auxiliary_default_load = 0;
+        let mut maximum_load = 0;
+        if !raw.Reserved.is_null() {
+            // SAFETY: EX1 is live but may be unaligned.
+            let ex1 = unsafe {
+                raw.Reserved
+                    .cast::<FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX1>()
+                    .read_unaligned()
+            };
+            auxiliary_default_load = ex1.AuxiliaryDefaultLoad;
+            if !ex1.Reserved.is_null() {
+                // SAFETY: EX2 is live but may be unaligned.
+                let ex2 = unsafe {
+                    ex1.Reserved
+                        .cast::<FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX2>()
+                        .read_unaligned()
+                };
+                assert!(
+                    ex2.Reserved.is_null(),
+                    "SF returned an unsupported metric extension beyond EX2"
+                );
+                maximum_load = ex2.MaximumLoad;
+            }
+        }
+        Self {
+            // SAFETY: SF keeps the null-terminated name live during conversion.
+            name: unsafe { WString::from_pcwstr_unaligned(raw.Name) },
+            weight: raw.Weight,
+            primary_default_load: raw.PrimaryDefaultLoad,
+            secondary_default_load: raw.SecondaryDefaultLoad,
+            auxiliary_default_load,
+            maximum_load,
+        }
+    }
+}
+
+impl GetRawWithBoxPool<FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION> for ServiceLoadMetricDescription {
+    fn get_raw_with_pool(&self, pool: &mut BoxPool) -> FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION {
+        let ex2 = pool
+            .push(Box::new(FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX2 {
+                MaximumLoad: self.maximum_load,
+                Reserved: std::ptr::null_mut(),
+            }))
+            .cast_mut()
+            .cast::<c_void>();
+        let ex1 = pool
+            .push(Box::new(FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX1 {
+                AuxiliaryDefaultLoad: self.auxiliary_default_load,
+                Reserved: ex2,
+            }))
+            .cast_mut()
+            .cast::<c_void>();
+        FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION {
+            Name: self.name.as_pcwstr(),
+            Weight: self.weight,
+            PrimaryDefaultLoad: self.primary_default_load,
+            SecondaryDefaultLoad: self.secondary_default_load,
+            Reserved: ex1,
+        }
+    }
+}
+
 /// FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION
 #[derive(Debug, Default)]
 pub struct StatefulServiceUpdateDescription {
@@ -744,7 +915,7 @@ pub struct StatefulServiceUpdateDescription {
     placement_contraints: WString,
     _policy_list: Vec<WString>, // TODO: FABRIC_SERVICE_PLACEMENT_POLICY_DESCRIPTION
     _correlations: Vec<WString>, // TODO: FABRIC_SERVICE_CORRELATION_DESCRIPTION
-    _metrics: Vec<WString>,     // TODO: FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION
+    metrics: Vec<ServiceLoadMetricDescription>,
     // ex4
     default_move_cost: MoveCost, // TODO: FABRIC_MOVE_COST
     // ex5
@@ -889,6 +1060,38 @@ impl StatefulServiceUpdateDescription {
         self.service_sensitivity = Some(sensitivity);
         self
     }
+
+    /// Replaces the service's complete metric collection.
+    ///
+    /// Preserve existing metrics in the input. Empty clears all; omission leaves them unchanged.
+    ///
+    /// # Errors
+    /// Returns `E_INVALIDARG` if the metric count exceeds `u32::MAX`.
+    ///
+    /// # Example
+    /// ```
+    /// use mssf_core::{
+    ///     WString, types::{ServiceLoadMetricDescription, StatefulServiceUpdateDescription},
+    /// };
+    ///
+    /// let metrics = vec![ServiceLoadMetricDescription {
+    ///     name: WString::from("Disk"),
+    ///     primary_default_load: 4096,
+    ///     secondary_default_load: 4096,
+    ///     ..Default::default()
+    /// }];
+    /// let update = StatefulServiceUpdateDescription::new().with_metrics(metrics)?;
+    /// # Ok::<(), mssf_core::Error>(())
+    /// ```
+    pub fn with_metrics(
+        mut self,
+        metrics: Vec<ServiceLoadMetricDescription>,
+    ) -> crate::Result<Self> {
+        u32::try_from(metrics.len()).map_err(|_| crate::ErrorCode::E_INVALIDARG)?;
+        self.metrics = metrics;
+        self.flags |= StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_METRICS;
+        Ok(self)
+    }
 }
 
 /// FABRIC_STATELESS_SERVICE_UPDATE_DESCRIPTION
@@ -988,13 +1191,24 @@ impl GetRawWithBoxPool<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION>
             DefaultMoveCost: self.default_move_cost.into(),
             Reserved: ex5 as *const _ as *mut c_void,
         }));
+        let (metric_count, metrics) = if self.metrics.is_empty() {
+            (0, std::ptr::null_mut())
+        } else {
+            let metrics = self
+                .metrics
+                .iter()
+                .map(|metric| metric.get_raw_with_pool(pool))
+                .collect();
+            let (count, ptr) = pool.push_vec(metrics);
+            (count, ptr.cast_mut())
+        };
         let ex3 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3 {
             PlacementConstraints: self.placement_contraints.as_pcwstr(), // TODO:
             PolicyList: std::ptr::null_mut(),                            // TODO:
             CorrelationCount: 0,
             Correlations: std::ptr::null_mut(), // TODO: FABRIC_SERVICE_CORRELATION_DESCRIPTION
-            Metrics: std::ptr::null_mut(),      // TODO:
-            MetricCount: 0,
+            Metrics: metrics,
+            MetricCount: metric_count as u32, // Length checked by with_metrics.
             Reserved: ex4 as *const _ as *mut c_void,
         }));
         let ex2 = pool.push(Box::new(FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX2 {
@@ -1423,6 +1637,271 @@ impl GetRaw<FABRIC_DELETE_SERVICE_DESCRIPTION> for DeleteServiceDescription {
             ForceDelete: self.force_delete,
             Reserved: std::ptr::null_mut(),
         }
+    }
+}
+
+#[cfg(test)]
+mod service_metric_updates {
+    use super::*;
+
+    #[test]
+    fn reads_stateless_metrics_and_rejects_unknown_kinds() {
+        let name = WString::from("Cpu");
+        let mut metric = FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION {
+            Name: name.as_pcwstr(),
+            PrimaryDefaultLoad: 17,
+            ..Default::default()
+        };
+        let mut stateless = FABRIC_STATELESS_SERVICE_DESCRIPTION {
+            MetricCount: 1,
+            Metrics: std::ptr::from_mut(&mut metric),
+            ..Default::default()
+        };
+        let mut raw = FABRIC_SERVICE_DESCRIPTION {
+            Kind: FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATELESS,
+            Value: std::ptr::from_mut(&mut stateless).cast(),
+        };
+        // SAFETY: the stateless description, metric, and name remain live.
+        let ServiceDescriptionResult::Stateless(actual) =
+            (unsafe { ServiceDescriptionResult::from_raw(&raw) }).unwrap()
+        else {
+            panic!("expected a stateless service description");
+        };
+        assert_eq!(actual.metrics.len(), 1);
+        assert_eq!(actual.metrics[0].name, name);
+        assert_eq!(actual.metrics[0].primary_default_load, 17);
+        raw.Kind = FABRIC_SERVICE_DESCRIPTION_KIND(i32::MAX);
+        // SAFETY: an unsupported kind is rejected before Value is read.
+        assert_eq!(
+            unsafe { ServiceDescriptionResult::from_raw(&raw) }.unwrap_err(),
+            crate::ErrorCode::E_INVALIDARG.into()
+        );
+    }
+
+    #[test]
+    fn reads_unaligned_metric_extensions() {
+        let name = WString::from("Disk");
+        let mut ex1_storage =
+            [std::mem::MaybeUninit::<FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX1>::uninit(); 2];
+        let mut ex2_storage =
+            [std::mem::MaybeUninit::<FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX2>::uninit(); 2];
+        let ex1 = ex1_storage
+            .as_mut_ptr()
+            .cast::<FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX1>()
+            .wrapping_byte_add(1);
+        let ex2 = ex2_storage
+            .as_mut_ptr()
+            .cast::<FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX2>()
+            .wrapping_byte_add(1);
+        // SAFETY: each aligned backing array has space for its extension plus one byte.
+        unsafe {
+            ex2.write_unaligned(FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX2 {
+                MaximumLoad: 409600,
+                Reserved: std::ptr::null_mut(),
+            });
+            ex1.write_unaligned(FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX1 {
+                AuxiliaryDefaultLoad: 51200,
+                Reserved: ex2.cast(),
+            });
+        }
+        let raw = FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION {
+            Name: name.as_pcwstr(),
+            PrimaryDefaultLoad: 1024,
+            SecondaryDefaultLoad: 2048,
+            Reserved: ex1.cast(),
+            ..Default::default()
+        };
+        let actual = ServiceLoadMetricDescription::from(&raw);
+        assert_eq!(actual.name, name);
+        assert_eq!(actual.primary_default_load, 1024);
+        assert_eq!(actual.secondary_default_load, 2048);
+        assert_eq!(actual.auxiliary_default_load, 51200);
+        assert_eq!(actual.maximum_load, 409600);
+    }
+
+    unsafe fn get_ex3(
+        raw: &FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION,
+    ) -> &FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3 {
+        // SAFETY: tests retain the source description and the pool owning its ABI chain.
+        unsafe {
+            let ex1 = &*raw
+                .Reserved
+                .cast::<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX1>();
+            let ex2 = &*ex1
+                .Reserved
+                .cast::<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX2>();
+            &*ex2
+                .Reserved
+                .cast::<FABRIC_STATEFUL_SERVICE_UPDATE_DESCRIPTION_EX3>()
+        }
+    }
+
+    #[test]
+    fn metric_update_preserves_existing_configuration() {
+        let mut expected = [
+            ServiceLoadMetricDescription {
+                name: WString::from("Cpu"),
+                weight: FABRIC_SERVICE_LOAD_METRIC_WEIGHT::FABRIC_SERVICE_LOAD_METRIC_WEIGHT_MEDIUM,
+                primary_default_load: 12,
+                secondary_default_load: 34,
+                ..Default::default()
+            },
+            ServiceLoadMetricDescription {
+                name: WString::from("Disk"),
+                weight: FABRIC_SERVICE_LOAD_METRIC_WEIGHT::FABRIC_SERVICE_LOAD_METRIC_WEIGHT_HIGH,
+                primary_default_load: 1024,
+                secondary_default_load: 204800,
+                auxiliary_default_load: 51200,
+                maximum_load: 409600,
+            },
+        ];
+        let mut metrics = {
+            let source = expected.clone();
+            let mut pool = BoxPool::new();
+            let native: Vec<_> = source
+                .iter()
+                .map(|metric| metric.get_raw_with_pool(&mut pool))
+                .collect();
+            let stateful = FABRIC_STATEFUL_SERVICE_DESCRIPTION {
+                MetricCount: native.len() as u32,
+                Metrics: native.as_ptr().cast_mut(),
+                ..Default::default()
+            };
+            let raw = FABRIC_SERVICE_DESCRIPTION {
+                Kind: FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
+                Value: std::ptr::from_ref(&stateful).cast_mut().cast(),
+            };
+            // SAFETY: the native description, metrics, names, and extensions remain live.
+            let ServiceDescriptionResult::Stateful(result) =
+                (unsafe { ServiceDescriptionResult::from_raw(&raw) }).unwrap()
+            else {
+                panic!("expected a stateful service description");
+            };
+            result.metrics
+        };
+        metrics[1].primary_default_load = 102400;
+        expected[1].primary_default_load = 102400;
+        let desc = StatefulServiceUpdateDescription::new()
+            .with_metrics(metrics)
+            .unwrap();
+        let mut pool = BoxPool::new();
+        let raw = desc.get_raw_with_pool(&mut pool);
+        assert_eq!(
+            raw.Flags,
+            StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_METRICS.bits()
+        );
+        // SAFETY: desc and pool retain the names, array, and extension chain.
+        let ex3 = unsafe { get_ex3(&raw) };
+        assert_eq!(ex3.MetricCount, 2);
+        assert!(!ex3.Metrics.is_null());
+        // SAFETY: the converter emitted two metric entries, and their owners are live.
+        let native = unsafe { std::slice::from_raw_parts(ex3.Metrics, 2) };
+        assert_eq!(native[1].PrimaryDefaultLoad, 102400);
+        assert_eq!(native[1].SecondaryDefaultLoad, 204800);
+        let actual = native
+            .iter()
+            .map(ServiceLoadMetricDescription::from)
+            .collect::<Vec<_>>();
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn individual_default_loads_can_be_set_to_zero() {
+        let original = ServiceLoadMetricDescription {
+            name: WString::from("Disk"),
+            primary_default_load: 100,
+            secondary_default_load: 200,
+            auxiliary_default_load: 300,
+            maximum_load: 400,
+            ..Default::default()
+        };
+        for field in 0..4 {
+            let mut expected = original.clone();
+            match field {
+                0 => expected.primary_default_load = 0,
+                1 => expected.secondary_default_load = 0,
+                2 => expected.auxiliary_default_load = 0,
+                _ => expected.maximum_load = 0,
+            }
+            let update = StatefulServiceUpdateDescription::new()
+                .with_metrics(vec![expected.clone()])
+                .unwrap();
+            let mut pool = BoxPool::new();
+            let raw = update.get_raw_with_pool(&mut pool);
+            assert_eq!(
+                raw.Flags,
+                StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_METRICS.bits()
+            );
+            // SAFETY: update and pool retain the one emitted metric and its extensions.
+            let actual = unsafe {
+                let ex3 = get_ex3(&raw);
+                assert_eq!(ex3.MetricCount, 1);
+                ServiceLoadMetricDescription::from(&*ex3.Metrics)
+            };
+            assert_eq!(actual, expected);
+        }
+    }
+
+    #[test]
+    fn omitted_and_explicitly_empty_metrics_are_distinct() {
+        for clear_metrics in [false, true] {
+            let desc = if clear_metrics {
+                StatefulServiceUpdateDescription::new()
+                    .with_metrics(vec![])
+                    .unwrap()
+            } else {
+                StatefulServiceUpdateDescription::new()
+            };
+            let mut pool = BoxPool::new();
+            let raw = desc.get_raw_with_pool(&mut pool);
+            assert_eq!(
+                raw.Flags,
+                if clear_metrics {
+                    StatefulServiceUpdateDescriptionFlags::FABRIC_STATEFUL_SERVICE_METRICS.bits()
+                } else {
+                    0
+                }
+            );
+            // SAFETY: pool retains the emitted extension chain.
+            let ex3 = unsafe { get_ex3(&raw) };
+            assert_eq!(ex3.MetricCount, 0);
+            assert!(ex3.Metrics.is_null());
+        }
+    }
+
+    #[test]
+    fn invalid_native_metrics_are_rejected_without_losing_settings() {
+        let stateful = FABRIC_STATEFUL_SERVICE_DESCRIPTION {
+            MetricCount: 1,
+            ..Default::default()
+        };
+        let description = FABRIC_SERVICE_DESCRIPTION {
+            Kind: FABRIC_SERVICE_DESCRIPTION_KIND::FABRIC_SERVICE_DESCRIPTION_KIND_STATEFUL,
+            Value: std::ptr::from_ref(&stateful).cast_mut().cast(),
+        };
+        // SAFETY: the description is live; its missing metric array is checked.
+        assert_eq!(
+            unsafe { ServiceDescriptionResult::from_raw(&description) }.unwrap_err(),
+            crate::ErrorCode::E_POINTER.into()
+        );
+        let unnamed = FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION::default();
+        assert!(std::panic::catch_unwind(|| ServiceLoadMetricDescription::from(&unnamed)).is_err());
+        let name = WString::from("Disk");
+        let mut unknown = 0_u32;
+        let mut ex2 = FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX2 {
+            Reserved: std::ptr::from_mut(&mut unknown).cast(),
+            ..Default::default()
+        };
+        let mut ex1 = FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION_EX1 {
+            Reserved: std::ptr::from_mut(&mut ex2).cast(),
+            ..Default::default()
+        };
+        let raw = FABRIC_SERVICE_LOAD_METRIC_DESCRIPTION {
+            Name: name.as_pcwstr(),
+            Reserved: std::ptr::from_mut(&mut ex1).cast(),
+            ..Default::default()
+        };
+        assert!(std::panic::catch_unwind(|| ServiceLoadMetricDescription::from(&raw)).is_err());
     }
 }
 

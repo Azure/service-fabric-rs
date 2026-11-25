@@ -149,6 +149,34 @@ impl WString {
         unsafe { Self::from_wide_iter(value.iter().cloned(), value.len()) }
     }
 
+    /// Copies a possibly unaligned, null-terminated UTF-16 string.
+    ///
+    /// # Safety
+    ///
+    /// Unless null, `value` must point to a readable, null-terminated UTF-16 string.
+    pub unsafe fn from_pcwstr_unaligned(value: PCWSTR) -> Self {
+        if value.is_null() {
+            return Self::new();
+        }
+        let mut wide = Vec::new();
+        let mut ptr = value.as_ptr();
+        loop {
+            // SAFETY: the source is live and terminated, but may be unaligned.
+            let unit = unsafe { ptr.read_unaligned() };
+            if unit == 0 {
+                break;
+            }
+            wide.push(unit);
+            ptr = ptr.wrapping_add(1);
+        }
+        if wide.is_empty() {
+            Self::new()
+        } else {
+            wide.push(0);
+            Self(Some(wide))
+        }
+    }
+
     unsafe fn from_wide_iter<I: Iterator<Item = u16>>(iter: I, len: usize) -> Self {
         if len == 0 {
             return Self::new();

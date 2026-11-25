@@ -12,7 +12,10 @@ use crate::{
     types::Uri,
 };
 use mssf_com::{
-    FabricClient::{IFabricResolvedServicePartitionResult, IFabricServiceManagementClient8},
+    FabricClient::{
+        IFabricResolvedServicePartitionResult, IFabricServiceDescriptionResult,
+        IFabricServiceManagementClient8,
+    },
     FabricTypes::{
         FABRIC_DELETE_SERVICE_DESCRIPTION, FABRIC_PARTITION_KEY_TYPE,
         FABRIC_REMOVE_REPLICA_DESCRIPTION, FABRIC_RESOLVED_SERVICE_ENDPOINT,
@@ -154,6 +157,25 @@ impl ServiceManagementClient {
                 com1.BeginCreateService(desc, timeout_milliseconds, callback)
             },
             move |ctx| unsafe { com2.EndCreateService(ctx).ok() },
+            cancellation_token,
+        )
+    }
+
+    fn get_service_description_internal(
+        &self,
+        name: FABRIC_URI,
+        timeout_milliseconds: u32,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> FabricReceiver<crate::Result<IFabricServiceDescriptionResult>> {
+        let com1 = &self.com;
+        let com2 = self.com.clone();
+        fabric_begin_end_proxy(
+            // SAFETY: the URI remains live through Begin.
+            move |callback| unsafe {
+                com1.BeginGetServiceDescription(name, timeout_milliseconds, callback)
+            },
+            // SAFETY: the proxy supplies Begin's context.
+            move |ctx| unsafe { com2.EndGetServiceDescription(ctx) },
             cancellation_token,
         )
     }
@@ -352,6 +374,30 @@ impl ServiceManagementClient {
             self.create_service_internal(&ffi_raw, timeout.as_millis() as u32, cancellation_token)
         }
         .await?
+    }
+
+    /// Reads owned metrics in a stateful or stateless service-description variant.
+    ///
+    /// # Errors
+    /// Propagates SF errors. Unsupported service kinds or timeouts exceeding
+    /// `u32::MAX` milliseconds return `E_INVALIDARG`. Missing metric arrays with
+    /// a nonzero count return `E_POINTER`.
+    ///
+    /// # Panics
+    /// Panics if SF returns a null description or service value, or a metric with
+    /// a null name or extensions beyond EX2.
+    pub async fn get_service_description(
+        &self,
+        name: &Uri,
+        timeout: Duration,
+        cancellation_token: Option<BoxedCancelToken>,
+    ) -> crate::Result<crate::types::ServiceDescriptionResult> {
+        let milliseconds =
+            u32::try_from(timeout.as_millis()).map_err(|_| crate::ErrorCode::E_INVALIDARG)?;
+        let com = self
+            .get_service_description_internal(name.as_raw(), milliseconds, cancellation_token)
+            .await??;
+        crate::types::ServiceDescriptionResult::try_from(&com)
     }
 
     pub async fn update_service(

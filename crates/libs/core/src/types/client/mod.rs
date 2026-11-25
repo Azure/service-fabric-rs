@@ -32,10 +32,12 @@ pub use property::{
 mod service;
 pub use service::{
     DeleteServiceDescription, NamedRepartitionDescription, QueryServiceStatus, ServiceDescription,
-    ServiceHealthQueryDescription, ServiceHealthResult, ServiceHealthState,
-    ServiceHealthStatesFilter, ServiceListResult, ServiceQueryDescription, ServiceQueryResultItem,
-    ServiceRepartitionDescription, ServiceSensitivityDescription, ServiceUpdateDescription,
-    StatefulServiceDescription, StatefulServiceUpdateDescription, StatelessServiceDescription,
+    ServiceDescriptionResult, ServiceHealthQueryDescription, ServiceHealthResult,
+    ServiceHealthState, ServiceHealthStatesFilter, ServiceListResult, ServiceLoadMetricDescription,
+    ServiceQueryDescription, ServiceQueryResultItem, ServiceRepartitionDescription,
+    ServiceSensitivityDescription, ServiceUpdateDescription, StatefulServiceDescription,
+    StatefulServiceDescriptionResult, StatefulServiceUpdateDescription,
+    StatelessServiceDescription, StatelessServiceDescriptionResult,
     StatelessServiceUpdateDescription,
 };
 

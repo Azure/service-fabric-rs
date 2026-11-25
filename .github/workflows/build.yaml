@@ -10,6 +10,9 @@ on:
     # Temporary frequent schedule to repro some onebox issues.
     - cron: '0 */6 * * *'  # Runs every 6 hours
 
+permissions:
+  contents: read
+
 jobs:
   # This setup job reads the supported versions from repository metadata and
   # exposes them in a form that strategy matrices can consume.
